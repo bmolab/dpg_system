@@ -1,0 +1,536 @@
+{
+    "height": 1221,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "scipy.slerp_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.slerp_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scipy.slerp - turn smoothly between orientations",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 598,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scipy.slerp - turn smoothly between orientations",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scipy.slerp - turn smoothly between orientations"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Interpolates between orientations: given key rotations (quaternions) and where they fall in time, it gives the orientation at any moment in between, turning at a steady rate along the shortest path. Slerp is spherical linear interpolation.\n\nBlending orientations number by number - np.interp, lerp or a filter on the four quaternion values - gives quaternions that are no longer proper rotations, and a turn that speeds up and slows down. slerp does it correctly. Use it to resample a recording of joint or sensor orientations to another rate, to fill a dropped frame, to blend between two poses, or to animate an object from one orientation to another.\n\nSYNTAX:\nscipy.slerp\n\nINPUTS and PARAMETERS:\n\nt:\nWhen to read the orientation: a number, or a list of times. Every input is read and sent - the only inlet that makes the node send. Before the first key or after the last, the first or last orientation is given.\n\nquaternions:\nThe key orientations, one row of w x y z each, held. At least two.\n\ntimes:\nWhen each key happens, held. Without times the keys are at 0, 1, 2 ... - so with two keys, t from 0 to 1 goes from one to the other.\n\nOUTPUTS:\n\nquaternions:\nThe orientation at each t (one quaternion for a single t).\n\nQUATERNIONS:\nFour numbers w x y z, scalar first - the same order as the quaternion nodes. A turn of an angle about an axis is w = cos(angle / 2) and x y z = the axis times sin(angle / 2): no turn is 1 0 0 0; a quarter turn about z is 0.7071 0 0 0.7071. q and -q are the same turn.\n\nREADING THE DEMO:\nTwo keys: no turn (1 0 0 0) and a quarter turn about z (0.7071 0 0 0.7071). A ramp from 0 to 1 slides between them; the plot shows the four values - w falling from 1 to 0.71 and z rising from 0 to 0.71, along smooth arcs (x and y stay 0).\n\nRELATED:\nscipy.rotation_mean averages orientations. quaternion_diff and quaternion_distance compare two. np.interp and scipy.cubic_spline interpolate ordinary values.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Interpolates between orientations: given key rotations (quaternions) and where they fall in time, it gives the orientation at any moment in between, turning at a steady rate along the shortest path. Slerp is spherical linear interpolation.\n\nBlending orientations number by number - np.interp, lerp or a filter on the four quaternion values - gives quaternions that are no longer proper rotations, and a turn that speeds up and slows down. slerp does it correctly. Use it to resample a recording of joint or sensor orientations to another rate, to fill a dropped frame, to blend between two poses, or to animate an object from one orientation to another.\n\nSYNTAX:\nscipy.slerp\n\nINPUTS and PARAMETERS:\n\nt:\nWhen to read the orientation: a number, or a list of times. Every input is read and sent - the only inlet that makes the node send. Before the first key or after the last, the first or last orientation is given.\n\nquaternions:\nThe key orientations, one row of w x y z each, held. At least two.\n\ntimes:\nWhen each key happens, held. Without times the keys are at 0, 1, 2 ... - so with two keys, t from 0 to 1 goes from one to the other.\n\nOUTPUTS:\n\nquaternions:\nThe orientation at each t (one quaternion for a single t).\n\nQUATERNIONS:\nFour numbers w x y z, scalar first - the same order as the quaternion nodes. A turn of an angle about an axis is w = cos(angle / 2) and x y z = the axis times sin(angle / 2): no turn is 1 0 0 0; a quarter turn about z is 0.7071 0 0 0.7071. q and -q are the same turn.\n\nREADING THE DEMO:\nTwo keys: no turn (1 0 0 0) and a quarter turn about z (0.7071 0 0 0.7071). A ramp from 0 to 1 slides between them; the plot shows the four values - w falling from 1 to 0.71 and z rising from 0 to 0.71, along smooth arcs (x and y stay 0).\n\nRELATED:\nscipy.rotation_mean averages orientations. quaternion_diff and quaternion_distance compare two. np.interp and scipy.cubic_spline interpolate ordinary values."
+        },
+        "3": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "4": {
+            "name": "load_bang",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment two keys: no turn, then a quarter turn about z",
+            "name": "comment",
+            "id": 422,
+            "position_x": 140,
+            "position_y": 53,
+            "width": 291,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two keys: no turn, then a quarter turn about z",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two keys: no turn, then a quarter turn about z"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 140,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 0 0 0 0.7071 0 0 0.7071",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "np.reshape",
+            "id": 496,
+            "position_x": 470,
+            "position_y": 92,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 2 4"
+        },
+        "8": {
+            "init": "comment a ramp, 0 to 1",
+            "name": "comment",
+            "id": 533,
+            "position_x": 28,
+            "position_y": 220,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a ramp, 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a ramp, 0 to 1"
+        },
+        "9": {
+            "name": "signal",
+            "id": 570,
+            "position_x": 28,
+            "position_y": 255,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 2.0 saw"
+        },
+        "10": {
+            "init": "comment the turn at each moment",
+            "name": "comment",
+            "id": 607,
+            "position_x": 200,
+            "position_y": 220,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the turn at each moment",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the turn at each moment"
+        },
+        "11": {
+            "name": "scipy.slerp",
+            "id": 644,
+            "position_x": 200,
+            "position_y": 255,
+            "width": 76,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "12": {
+            "init": "comment w x y z: w falls as z rises",
+            "name": "comment",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 220,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "w x y z: w falls as z rises",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "w x y z: w falls as z rises"
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 255,
+            "width": 388,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 380,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 240.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.1,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.1,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 554,
+            "width": 133,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.rotation_mean"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 220,
+            "position_y": 554,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link quaternion_diff"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 379,
+            "position_y": 554,
+            "width": 133,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link quaternion_distance"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 569,
+            "position_y": 554,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.interp"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 664,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternions"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "t"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternions",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

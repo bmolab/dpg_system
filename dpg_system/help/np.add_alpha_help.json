@@ -1,0 +1,1123 @@
+{
+    "height": 1296,
+    "width": 1839,
+    "position": [
+        100,
+        67
+    ],
+    "id": 7855,
+    "name": "np.add_alpha_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 7883,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.add_alpha - brightness as a fourth channel",
+            "name": "comment",
+            "id": 7901,
+            "sid": 2,
+            "position_x": 11,
+            "position_y": 199,
+            "width": 561,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.add_alpha - brightness as a fourth channel",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "np.add_alpha - brightness as a fourth channel"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 7912,
+            "sid": 3,
+            "position_x": 988,
+            "position_y": 248,
+            "width": 798,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Adds a fourth channel - alpha, the opacity - to a three-channel image, made from its brightness.\n\nThe new channel is the AVERAGE of each pixel's three channels. So it is not a plain \"fully opaque\" alpha: used as opacity, bright pixels come out solid and dark ones see-through, and black disappears altogether. That is what you want for laying light material - text, glows, a camera image of a lit figure on black - over something else, so that the black background drops out.\n\nIf you want a fully opaque alpha instead, this is not the node; build the channel yourself and join it on with np.concatenate.\n\nWHAT IT ACCEPTS:\nAn image as an array of height x width x channels. Anything that is not three dimensional is ignored (nothing is sent). An image that already has four channels is taken to have its alpha and is passed through unchanged.\n\nTHE TYPE IS KEPT:\nThe image comes out in the type it came in: a uint8 image (0 to 255) stays uint8, with the average rounded down to a whole number; a float image stays float, with its range unchanged.\n\nSYNTAX:\nnp.add_alpha\n\nEXAMPLE:\nnp.add_alpha\n\nINPUTS and PARAMETERS:\n\ninput:\nThe image. Receiving it triggers the node.\n\nOUTPUTS:\n\nimage with alpha:\nThe image with the brightness channel added as its last channel.\n\nREADING THE DEMO:\nnp.grid makes a 32 x 32 x 3 array - every point's x, y and z - which is also a picture: x as red, rising to the right, y as green, rising down the picture, and z as a flat amount of blue. The metro re-sends it ten times a second, so drag z and both pictures follow.\n\nEach side has its own mgl_context that draws a sphere first, then the image in front of it with mgl_image. Left: the image as it is - with no alpha it is solid everywhere and hides the sphere completely. Right: the same image after np.add_alpha. The dark top-left corner is nearly transparent, so the sphere shows through it; the bright bottom-right corner is nearly solid and hides it. Raise z and the whole image brightens, so it becomes more opaque everywhere.\n\nnp.shape shows the fourth channel arriving: (32, 32, 3) in, (32, 32, 4) out.\n\nThe sphere is there because a display needs something behind the image to show alpha at all - over plain black, a see-through dark pixel looks just like an opaque one.\n\nRELATED:\nmgl_texture and mgl_image draw arrays as pictures. np.astype changes the number type (uint8 or float). np.concatenate joins a channel you made yourself; np.[] slices one out again.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "Adds a fourth channel - alpha, the opacity - to a three-channel image, made from its brightness.\n\nThe new channel is the AVERAGE of each pixel's three channels. So it is not a plain \"fully opaque\" alpha: used as opacity, bright pixels come out solid and dark ones see-through, and black disappears altogether. That is what you want for laying light material - text, glows, a camera image of a lit figure on black - over something else, so that the black background drops out.\n\nIf you want a fully opaque alpha instead, this is not the node; build the channel yourself and join it on with np.concatenate.\n\nWHAT IT ACCEPTS:\nAn image as an array of height x width x channels. Anything that is not three dimensional is ignored (nothing is sent). An image that already has four channels is taken to have its alpha and is passed through unchanged.\n\nTHE TYPE IS KEPT:\nThe image comes out in the type it came in: a uint8 image (0 to 255) stays uint8, with the average rounded down to a whole number; a float image stays float, with its range unchanged.\n\nSYNTAX:\nnp.add_alpha\n\nEXAMPLE:\nnp.add_alpha\n\nINPUTS and PARAMETERS:\n\ninput:\nThe image. Receiving it triggers the node.\n\nOUTPUTS:\n\nimage with alpha:\nThe image with the brightness channel added as its last channel.\n\nREADING THE DEMO:\nnp.grid makes a 32 x 32 x 3 array - every point's x, y and z - which is also a picture: x as red, rising to the right, y as green, rising down the picture, and z as a flat amount of blue. The metro re-sends it ten times a second, so drag z and both pictures follow.\n\nEach side has its own mgl_context that draws a sphere first, then the image in front of it with mgl_image. Left: the image as it is - with no alpha it is solid everywhere and hides the sphere completely. Right: the same image after np.add_alpha. The dark top-left corner is nearly transparent, so the sphere shows through it; the bright bottom-right corner is nearly solid and hides it. Raise z and the whole image brightens, so it becomes more opaque everywhere.\n\nnp.shape shows the fourth channel arriving: (32, 32, 3) in, (32, 32, 4) out.\n\nThe sphere is there because a display needs something behind the image to show alpha at all - over plain black, a see-through dark pixel looks just like an opaque one.\n\nRELATED:\nmgl_texture and mgl_image draw arrays as pictures. np.astype changes the number type (uint8 or float). np.concatenate joins a channel you made yourself; np.[] slices one out again."
+        },
+        "3": {
+            "init": "metro 100",
+            "name": "metro",
+            "id": 7929,
+            "sid": 4,
+            "position_x": 17,
+            "position_y": 265,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "init": "np.grid 0 1 0 1 32 32",
+            "name": "np.grid",
+            "id": 7942,
+            "sid": 5,
+            "position_x": 17,
+            "position_y": 353,
+            "width": 160,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max x",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "divisions x",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "divisions y",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "z",
+                    "value": 0.30000001192092896,
+                    "value_type": "float"
+                }
+            }
+        },
+        "5": {
+            "name": "text_block",
+            "id": 7970,
+            "sid": 6,
+            "position_x": 216,
+            "position_y": 379,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "an RGB picture: red = x, green = y,\nblue = z. drag z",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "text": "an RGB picture: red = x, green = y,\nblue = z. drag z"
+        },
+        "6": {
+            "name": "np.shape",
+            "id": 7987,
+            "sid": 7,
+            "position_x": 16,
+            "position_y": 554,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "name": "list",
+            "id": 7994,
+            "sid": 8,
+            "position_x": 16,
+            "position_y": 614,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[32, 32, 3]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "np.add_alpha",
+            "id": 8018,
+            "sid": 9,
+            "position_x": 356,
+            "position_y": 464,
+            "width": 107,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "highlight": true
+        },
+        "9": {
+            "name": "np.shape",
+            "id": 8025,
+            "sid": 10,
+            "position_x": 345,
+            "position_y": 552,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "list",
+            "id": 8032,
+            "sid": 11,
+            "position_x": 348,
+            "position_y": 618,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[32, 32, 4]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "mgl_context",
+            "id": 8056,
+            "sid": 12,
+            "position_x": 17,
+            "position_y": 717,
+            "width": 248,
+            "height": 332,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_display_width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "match_texture_to_window",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "node_mouse_events",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "8": {
+                    "name": "samples",
+                    "value": "4",
+                    "value_type": "string"
+                },
+                "9": {
+                    "name": "default_light",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "10": {
+                    "name": "light_pos",
+                    "value": [
+                        2.0,
+                        5.0,
+                        5.0
+                    ],
+                    "value_type": "list"
+                },
+                "11": {
+                    "name": "light_intensity",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "default_camera",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "13": {
+                    "name": "camera_fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "camera_pos",
+                    "value": [
+                        0.0,
+                        0.0,
+                        3.0
+                    ],
+                    "value_type": "list"
+                },
+                "15": {
+                    "name": "camera_target",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "16": {
+                    "name": "camera_near",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "camera_far",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "clear_color",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                },
+                "19": {
+                    "name": "win_size",
+                    "value": [
+                        640.0,
+                        480.0
+                    ],
+                    "value_type": "list"
+                },
+                "20": {
+                    "name": "win_pos",
+                    "value": [
+                        100.0,
+                        100.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "12": {
+            "name": "mgl_context",
+            "id": 8143,
+            "sid": 13,
+            "position_x": 345,
+            "position_y": 717,
+            "width": 248,
+            "height": 332,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 256,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_display_width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "match_texture_to_window",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "node_mouse_events",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "8": {
+                    "name": "samples",
+                    "value": "4",
+                    "value_type": "string"
+                },
+                "9": {
+                    "name": "default_light",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "10": {
+                    "name": "light_pos",
+                    "value": [
+                        2.0,
+                        5.0,
+                        5.0
+                    ],
+                    "value_type": "list"
+                },
+                "11": {
+                    "name": "light_intensity",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "default_camera",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "13": {
+                    "name": "camera_fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "camera_pos",
+                    "value": [
+                        0.0,
+                        0.0,
+                        3.0
+                    ],
+                    "value_type": "list"
+                },
+                "15": {
+                    "name": "camera_target",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "16": {
+                    "name": "camera_near",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "camera_far",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "clear_color",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                },
+                "19": {
+                    "name": "win_size",
+                    "value": [
+                        640.0,
+                        480.0
+                    ],
+                    "value_type": "list"
+                },
+                "20": {
+                    "name": "win_pos",
+                    "value": [
+                        100.0,
+                        100.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "13": {
+            "name": "mgl_image",
+            "id": 8247,
+            "sid": 15,
+            "position_x": 197,
+            "position_y": 1065,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "mgl_image",
+            "id": 8267,
+            "sid": 17,
+            "position_x": 515,
+            "position_y": 1065,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link mgl_texture",
+            "name": "help_link",
+            "id": 8382,
+            "sid": 25,
+            "position_x": 21,
+            "position_y": 1300,
+            "width": 85,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "mgl_texture",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "init": "help_link np.astype",
+            "name": "help_link",
+            "id": 8393,
+            "sid": 26,
+            "position_x": 122,
+            "position_y": 1300,
+            "width": 73,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.astype",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "help_link np.concatenate",
+            "name": "help_link",
+            "id": 8404,
+            "sid": 27,
+            "position_x": 211,
+            "position_y": 1300,
+            "width": 104,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.concatenate",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "init": "help_link np.[]",
+            "name": "help_link",
+            "id": 8415,
+            "sid": 28,
+            "position_x": 331,
+            "position_y": 1300,
+            "width": 48,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.[]",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "init": "help_link np.grid",
+            "name": "help_link",
+            "id": 8426,
+            "sid": 29,
+            "position_x": 395,
+            "position_y": 1300,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.grid",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 8437,
+            "sid": 30,
+            "position_x": 21,
+            "position_y": 1266,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "21": {
+            "name": "close",
+            "id": 8448,
+            "sid": 31,
+            "position_x": 15,
+            "position_y": 1374,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "22": {
+            "init": "comment image without alpha",
+            "name": "comment",
+            "id": 8491,
+            "sid": 33,
+            "position_x": 11,
+            "position_y": 675,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "image without alpha over sphere",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "image without alpha over sphere"
+        },
+        "23": {
+            "init": "comment image without alpha",
+            "name": "comment",
+            "id": 8627,
+            "sid": 34,
+            "position_x": 343,
+            "position_y": 676,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "image with alpha over sphere",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "image with alpha over sphere"
+        },
+        "24": {
+            "name": "mgl_sphere",
+            "id": 8646,
+            "sid": 36,
+            "position_x": 338,
+            "position_y": 1065,
+            "width": 124,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "radius",
+                    "value": 1.1200000047683716,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stacks",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "sectors",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "mode",
+                    "value": "solid",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "cull",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "point_size",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "round",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "25": {
+            "name": "mgl_sphere",
+            "id": 8679,
+            "sid": 37,
+            "position_x": 20,
+            "position_y": 1065,
+            "width": 124,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "radius",
+                    "value": 1.1200000047683716,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stacks",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "sectors",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "mode",
+                    "value": "solid",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "cull",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "point_size",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "round",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 7929,
+            "source_node_name": "metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 7942,
+            "dest_node_name": "np.grid",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 7942,
+            "source_node_name": "np.grid",
+            "source_output_index": 0,
+            "source_output_name": "grid points",
+            "dest_node": 7987,
+            "dest_node_name": "np.shape",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "2": {
+            "source_node": 7942,
+            "source_node_name": "np.grid",
+            "source_output_index": 0,
+            "source_output_name": "grid points",
+            "dest_node": 8247,
+            "dest_node_name": "mgl_image",
+            "dest_input_index": 1,
+            "dest_input_name": "texture"
+        },
+        "3": {
+            "source_node": 7942,
+            "source_node_name": "np.grid",
+            "source_output_index": 0,
+            "source_output_name": "grid points",
+            "dest_node": 8018,
+            "dest_node_name": "np.add_alpha",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 7987,
+            "source_node_name": "np.shape",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 7994,
+            "dest_node_name": "list",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "5": {
+            "source_node": 8018,
+            "source_node_name": "np.add_alpha",
+            "source_output_index": 0,
+            "source_output_name": "image with alpha",
+            "dest_node": 8025,
+            "dest_node_name": "np.shape",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "6": {
+            "source_node": 8018,
+            "source_node_name": "np.add_alpha",
+            "source_output_index": 0,
+            "source_output_name": "image with alpha",
+            "dest_node": 8267,
+            "dest_node_name": "mgl_image",
+            "dest_input_index": 1,
+            "dest_input_name": "texture"
+        },
+        "7": {
+            "source_node": 8025,
+            "source_node_name": "np.shape",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 8032,
+            "dest_node_name": "list",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "8": {
+            "source_node": 8056,
+            "source_node_name": "mgl_context",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 8679,
+            "dest_node_name": "mgl_sphere",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "9": {
+            "source_node": 8143,
+            "source_node_name": "mgl_context",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 8646,
+            "dest_node_name": "mgl_sphere",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "10": {
+            "source_node": 8646,
+            "source_node_name": "mgl_sphere",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 8267,
+            "dest_node_name": "mgl_image",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "11": {
+            "source_node": 8679,
+            "source_node_name": "mgl_sphere",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 8247,
+            "dest_node_name": "mgl_image",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        }
+    }
+}

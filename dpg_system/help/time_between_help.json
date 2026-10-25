@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "\nThe time_between node acts as a stopwatch or timer for your patch.\n\nIt measures the duration of time elapsed between receiving a signal at the start input \nand receiving a signal at the end input. \n\nYou use this node to profile the performance of your code, measure user reaction speeds, \nor calculate the length of specific events.\n\nSYNTAX:\ntime_between <units: string>\n\nEXAMPLE:\ntime_between seconds\n\nINPUTS and PARAMETERS:\n\nstart: \nTriggers the \"start\" of the timer. \nWhen data is received here, the node records the current time. \nIt does not produce any output.\n\nend:\nTriggers the \"stop\" of the timer. \nWhen data is received here, the node compares the current time to the recorded start time \nand outputs the difference. \n\nunits: \nThis determines the scale of the output number. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nThe calculated duration between the start and end triggers. \nThis is sent as a number (float) immediately after the \"end\" input is triggered.",
+                    "value": "\nThe time_between node acts as a stopwatch or timer for your patch.\n\nIt measures the duration of time elapsed between receiving a signal at the start input  and receiving a signal at the end input. \n\nYou use this node to profile the performance of your code, measure user reaction speeds,  or calculate the length of specific events.\n\nSYNTAX:\ntime_between <units: string>\n\nEXAMPLE:\ntime_between seconds\n\nINPUTS and PARAMETERS:\n\nstart: \nTriggers the \"start\" of the timer. \nWhen data is received here, the node records the current time.  It does not produce any output.\n\nend:\nTriggers the \"stop\" of the timer. \nWhen data is received here, the node compares the current time to the recorded start time  and outputs the difference. \n\nunits: \nThis determines the scale of the output number. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nThe calculated duration between the start and end triggers.  This is sent as a number (float) immediately after the \"end\" input is triggered.",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "\nThe time_between node acts as a stopwatch or timer for your patch.\n\nIt measures the duration of time elapsed between receiving a signal at the start input \nand receiving a signal at the end input. \n\nYou use this node to profile the performance of your code, measure user reaction speeds, \nor calculate the length of specific events.\n\nSYNTAX:\ntime_between <units: string>\n\nEXAMPLE:\ntime_between seconds\n\nINPUTS and PARAMETERS:\n\nstart: \nTriggers the \"start\" of the timer. \nWhen data is received here, the node records the current time. \nIt does not produce any output.\n\nend:\nTriggers the \"stop\" of the timer. \nWhen data is received here, the node compares the current time to the recorded start time \nand outputs the difference. \n\nunits: \nThis determines the scale of the output number. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nThe calculated duration between the start and end triggers. \nThis is sent as a number (float) immediately after the \"end\" input is triggered."
+            "text": "\nThe time_between node acts as a stopwatch or timer for your patch.\n\nIt measures the duration of time elapsed between receiving a signal at the start input  and receiving a signal at the end input. \n\nYou use this node to profile the performance of your code, measure user reaction speeds,  or calculate the length of specific events.\n\nSYNTAX:\ntime_between <units: string>\n\nEXAMPLE:\ntime_between seconds\n\nINPUTS and PARAMETERS:\n\nstart: \nTriggers the \"start\" of the timer. \nWhen data is received here, the node records the current time.  It does not produce any output.\n\nend:\nTriggers the \"stop\" of the timer. \nWhen data is received here, the node compares the current time to the recorded start time  and outputs the difference. \n\nunits: \nThis determines the scale of the output number. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nThe calculated duration between the start and end triggers.  This is sent as a number (float) immediately after the \"end\" input is triggered."
         },
         "4": {
             "name": "time_between",
@@ -126,7 +126,8 @@
                     "value": "seconds",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "b",

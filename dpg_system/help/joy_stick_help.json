@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "joy_stick is a two-dimensional pad: drag the dot and it sends x and y.\n\nOne control for two values that belong together - a position on a floor, a \npan and tilt, a pair of mix amounts - so that one gesture moves both at once, \nwhich two separate sliders cannot do.\n\nTHE NODES:\n\njoy_stick      the pad; the dot stays where you leave it\nmomentary_xy   the same pad, springing back to the centre when you let go\n\nThe name only sets where it starts: the momentary option switches either one \nbetween the two behaviours.\n\nThe springing version is a control for RATE, like the momentary sliders: hold \nit off centre to keep something moving, let go to stop. When it springs back it \nsends 0 and 0, so whatever it drives should read zero as \"stop\".\n\nSYNTAX:\njoy_stick\njoy_stick <range>\nmomentary_xy <range>\n\nEXAMPLE:\nmomentary_xy 0.5\n\nBoth axes run from -range to +range, with 0 at the centre. The range is 1.0 \nunless given.\n\nINPUTS and PARAMETERS:\n\nmomentary:\nWhether the dot springs back to the centre when released.\n\nrange:\nHow far each axis runs either side of centre.\n\nwidth / height / marker size:\nThe size of the pad, and of the dot.\n\nOUTPUTS: \n\nx out / y out:\nThe two axes, on separate outlets, sent as you drag - and 0, 0 when a momentary \npad springs back.",
+                    "value": "joy_stick is a two-dimensional pad: drag the dot and it sends x and y.\n\nOne control for two values that belong together - a position on a floor, a  pan and tilt, a pair of mix amounts - so that one gesture moves both at once,  which two separate sliders cannot do.\n\nTHE NODES:\n\njoy_stick      the pad; the dot stays where you leave it\nmomentary_xy   the same pad, springing back to the centre when you let go\n\nThe name only sets where it starts: the momentary option switches either one  between the two behaviours.\n\nThe springing version is a control for RATE, like the momentary sliders: hold  it off centre to keep something moving, let go to stop. When it springs back it  sends 0 and 0, so whatever it drives should read zero as \"stop\".\n\nSYNTAX:\njoy_stick\njoy_stick <range>\nmomentary_xy <range>\n\nEXAMPLE:\nmomentary_xy 0.5\n\nBoth axes run from -range to +range, with 0 at the centre. The range is 1.0  unless given.\n\nINPUTS and PARAMETERS:\n\nmomentary:\nWhether the dot springs back to the centre when released.\n\nrange:\nHow far each axis runs either side of centre.\n\nwidth / height / marker size:\nThe size of the pad, and of the dot.\n\nOUTPUTS: \n\nx out / y out:\nThe two axes, on separate outlets, sent as you drag - and 0, 0 when a momentary  pad springs back.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "joy_stick is a two-dimensional pad: drag the dot and it sends x and y.\n\nOne control for two values that belong together - a position on a floor, a \npan and tilt, a pair of mix amounts - so that one gesture moves both at once, \nwhich two separate sliders cannot do.\n\nTHE NODES:\n\njoy_stick      the pad; the dot stays where you leave it\nmomentary_xy   the same pad, springing back to the centre when you let go\n\nThe name only sets where it starts: the momentary option switches either one \nbetween the two behaviours.\n\nThe springing version is a control for RATE, like the momentary sliders: hold \nit off centre to keep something moving, let go to stop. When it springs back it \nsends 0 and 0, so whatever it drives should read zero as \"stop\".\n\nSYNTAX:\njoy_stick\njoy_stick <range>\nmomentary_xy <range>\n\nEXAMPLE:\nmomentary_xy 0.5\n\nBoth axes run from -range to +range, with 0 at the centre. The range is 1.0 \nunless given.\n\nINPUTS and PARAMETERS:\n\nmomentary:\nWhether the dot springs back to the centre when released.\n\nrange:\nHow far each axis runs either side of centre.\n\nwidth / height / marker size:\nThe size of the pad, and of the dot.\n\nOUTPUTS: \n\nx out / y out:\nThe two axes, on separate outlets, sent as you drag - and 0, 0 when a momentary \npad springs back."
+            "text": "joy_stick is a two-dimensional pad: drag the dot and it sends x and y.\n\nOne control for two values that belong together - a position on a floor, a  pan and tilt, a pair of mix amounts - so that one gesture moves both at once,  which two separate sliders cannot do.\n\nTHE NODES:\n\njoy_stick      the pad; the dot stays where you leave it\nmomentary_xy   the same pad, springing back to the centre when you let go\n\nThe name only sets where it starts: the momentary option switches either one  between the two behaviours.\n\nThe springing version is a control for RATE, like the momentary sliders: hold  it off centre to keep something moving, let go to stop. When it springs back it  sends 0 and 0, so whatever it drives should read zero as \"stop\".\n\nSYNTAX:\njoy_stick\njoy_stick <range>\nmomentary_xy <range>\n\nEXAMPLE:\nmomentary_xy 0.5\n\nBoth axes run from -range to +range, with 0 at the centre. The range is 1.0  unless given.\n\nINPUTS and PARAMETERS:\n\nmomentary:\nWhether the dot springs back to the centre when released.\n\nrange:\nHow far each axis runs either side of centre.\n\nwidth / height / marker size:\nThe size of the pad, and of the dot.\n\nOUTPUTS: \n\nx out / y out:\nThe two axes, on separate outlets, sent as you drag - and 0, 0 when a momentary  pad springs back."
         },
         "3": {
             "name": "joy_stick",
@@ -128,7 +128,8 @@
                     "value": 6,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment joy_stick: the dot stays where you leave it",
@@ -272,7 +273,8 @@
                     "value": 6,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "init": "comment momentary_xy: it springs back to the centre",

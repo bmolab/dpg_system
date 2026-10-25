@@ -1,0 +1,879 @@
+{
+    "name": "np.cumprod_help",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/cumprod/out/np.cumprod_help.json",
+    "patches": {
+        "0": {
+            "height": 530,
+            "width": 280,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1273,
+            "name": "make_ones",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1310,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "comment",
+                    "init": "comment ten times a second",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 158,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "ten times a second"
+                },
+                "2": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 75,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "3": {
+                    "name": "comment",
+                    "init": "comment 40 ones",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 165,
+                    "width": 73,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "40 ones",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "40 ones"
+                },
+                "4": {
+                    "name": "np.ones",
+                    "init": "np.ones 40",
+                    "id": 1458,
+                    "position_x": 40,
+                    "position_y": 200,
+                    "width": 160,
+                    "height": 140,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dim 0",
+                            "value": 40,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "out",
+                    "init": "out ones",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 370,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array of ones",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "ones"
+                }
+            }
+        },
+        "1": {
+            "height": 1044,
+            "width": 1722,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1236,
+            "name": "np.cumprod_help",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/cumprod/out/np.cumprod_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.cumprod - the running product",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 384,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.cumprod - the running product",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.cumprod - the running product"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 922,
+                    "position_y": 26,
+                    "width": 768,
+                    "height": 916,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Replaces each value of an array with the running product up to and including it: the first value, then the first two multiplied, then the first three, and so on.\n\nIt is cumsum with multiplying instead of adding. Use it for anything that compounds: growth by a rate per step (interest, a population, a pitch rising by a fixed ratio per note), decay by a factor per step (an echo fading), or a chain of gains or scale factors applied one after another.\n\nSYNTAX:\nnp.cumprod <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumprod\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is multiplied out and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumprod:\nThe running products, the same shape as the input. A single 0 anywhere makes every value after it 0. Whole numbers stay whole numbers (int64), which silently overflow past about 9 x 10 to the 18th - beyond 20 factorial.\n\nREADING THE DEMO:\nTop: make_ones sends 40 ones ten times a second, and * turns them into forty copies of the growth rate, 1.05. t array array sends those to pack 2 first (its right outlet), then to np.cumprod, whose running product completes the pack. The plot shows the flat input line and its cumprod: 1.05, then 1.05 times 1.05, ... - compound growth, a curve that bends upward ever faster and reaches about 7 after 40 steps. Change the * value on the node: 1.02 grows slowly, 0.95 decays towards 0, 1 stays flat. Above about 1.055 the curve runs off the top of the plot (0 to 8).\n\nBottom: 1 2 3 4 5 6 multiplied out gives 1 2 6 24 120 720 - the factorials.\n\nRELATED:\nnp.cumsum adds instead of multiplying. np.diff is the reverse of cumsum, not of cumprod (for cumprod, divide each value by the one before). t.cumprod is the PyTorch version.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 900,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Replaces each value of an array with the running product up to and including it: the first value, then the first two multiplied, then the first three, and so on.\n\nIt is cumsum with multiplying instead of adding. Use it for anything that compounds: growth by a rate per step (interest, a population, a pitch rising by a fixed ratio per note), decay by a factor per step (an echo fading), or a chain of gains or scale factors applied one after another.\n\nSYNTAX:\nnp.cumprod <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumprod\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is multiplied out and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumprod:\nThe running products, the same shape as the input. A single 0 anywhere makes every value after it 0. Whole numbers stay whole numbers (int64), which silently overflow past about 9 x 10 to the 18th - beyond 20 factorial.\n\nREADING THE DEMO:\nTop: make_ones sends 40 ones ten times a second, and * turns them into forty copies of the growth rate, 1.05. t array array sends those to pack 2 first (its right outlet), then to np.cumprod, whose running product completes the pack. The plot shows the flat input line and its cumprod: 1.05, then 1.05 times 1.05, ... - compound growth, a curve that bends upward ever faster and reaches about 7 after 40 steps. Change the * value on the node: 1.02 grows slowly, 0.95 decays towards 0, 1 stays flat. Above about 1.055 the curve runs off the top of the plot (0 to 8).\n\nBottom: 1 2 3 4 5 6 multiplied out gives 1 2 6 24 120 720 - the factorials.\n\nRELATED:\nnp.cumsum adds instead of multiplying. np.diff is the reverse of cumsum, not of cumprod (for cumprod, divide each value by the one before). t.cumprod is the PyTorch version."
+                },
+                "3": {
+                    "init": "comment 40 ones",
+                    "name": "comment",
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 49,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "40 ones",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "40 ones"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 100,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_ones",
+                    "patcher id": 1273
+                },
+                "5": {
+                    "init": "comment the growth rate: change it",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 160,
+                    "position_y": 53,
+                    "width": 182,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the growth rate: change it",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the growth rate: change it"
+                },
+                "6": {
+                    "name": "*",
+                    "id": 459,
+                    "position_x": 160,
+                    "position_y": 92,
+                    "width": 120,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 1.05,
+                            "value_type": "float"
+                        }
+                    },
+                    "init": "* 1.05"
+                },
+                "7": {
+                    "init": "comment the rate first, then",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 380,
+                    "position_y": 53,
+                    "width": 140,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the rate first, then",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the rate first, then"
+                },
+                "8": {
+                    "name": "t",
+                    "id": 533,
+                    "position_x": 380,
+                    "position_y": 92,
+                    "width": 140,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t array array"
+                },
+                "9": {
+                    "init": "comment the running product",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 560,
+                    "position_y": 53,
+                    "width": 133,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the running product",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the running product"
+                },
+                "10": {
+                    "name": "np.cumprod",
+                    "id": 607,
+                    "position_x": 560,
+                    "position_y": 92,
+                    "width": 150,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": -1,
+                            "value_type": "int"
+                        }
+                    },
+                    "highlight": true
+                },
+                "11": {
+                    "init": "comment both into one plot",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 740,
+                    "position_y": 53,
+                    "width": 126,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "both into one plot",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "both into one plot"
+                },
+                "12": {
+                    "name": "pack",
+                    "id": 681,
+                    "position_x": 740,
+                    "position_y": 92,
+                    "width": 130,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pack 2"
+                },
+                "13": {
+                    "init": "comment the flat line is the input (1.05 forty times); the curve is its cumprod: compound growth",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 28,
+                    "position_y": 225,
+                    "width": 616,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the flat line is the input (1.05 forty times); the curve is its cumprod: compound growth",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the flat line is the input (1.05 forty times); the curve is its cumprod: compound growth"
+                },
+                "14": {
+                    "name": "plot",
+                    "id": 755,
+                    "position_x": 28,
+                    "position_y": 260,
+                    "width": 800,
+                    "height": 300,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 780,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 240,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 40,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 40.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 8.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "comment 1 to 6",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 140,
+                    "position_y": 595,
+                    "width": 42,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "1 to 6",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "1 to 6"
+                },
+                "16": {
+                    "name": "load_bang",
+                    "id": 829,
+                    "position_x": 28,
+                    "position_y": 630,
+                    "width": 88,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "17": {
+                    "name": "message",
+                    "id": 866,
+                    "position_x": 140,
+                    "position_y": 630,
+                    "width": 200,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "1 2 3 4 5 6",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "18": {
+                    "init": "comment multiplied out",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 380,
+                    "position_y": 595,
+                    "width": 98,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "multiplied out",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "multiplied out"
+                },
+                "19": {
+                    "name": "np.cumprod",
+                    "id": 940,
+                    "position_x": 380,
+                    "position_y": 630,
+                    "width": 150,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": -1,
+                            "value_type": "int"
+                        }
+                    },
+                    "highlight": true
+                },
+                "20": {
+                    "init": "comment 1 x 2 x 3 ...: the factorials",
+                    "name": "comment",
+                    "id": 977,
+                    "position_x": 560,
+                    "position_y": 595,
+                    "width": 203,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "1 x 2 x 3 ...: the factorials",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "1 x 2 x 3 ...: the factorials"
+                },
+                "21": {
+                    "name": "list",
+                    "id": 1014,
+                    "position_x": 560,
+                    "position_y": 635,
+                    "width": 300,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "22": {
+                    "name": "help_link",
+                    "id": 1051,
+                    "position_x": 30,
+                    "position_y": 774,
+                    "width": 73,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.cumsum"
+                },
+                "23": {
+                    "name": "help_link",
+                    "id": 1088,
+                    "position_x": 119,
+                    "position_y": 774,
+                    "width": 60,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.diff"
+                },
+                "24": {
+                    "name": "help_link",
+                    "id": 1125,
+                    "position_x": 195,
+                    "position_y": 774,
+                    "width": 73,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.cumprod"
+                },
+                "25": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1162,
+                    "position_x": 30,
+                    "position_y": 740,
+                    "width": 168,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "26": {
+                    "name": "close",
+                    "id": 1199,
+                    "position_x": 24,
+                    "position_y": 884,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "ones",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "1": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "array",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "3": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "cumprod",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "5": {
+                    "source_node": 681,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "6": {
+                    "source_node": 829,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 866,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "7": {
+                    "source_node": 866,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 940,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 940,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "cumprod",
+                    "dest_node": 1014,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

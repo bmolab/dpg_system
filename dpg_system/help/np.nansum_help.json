@@ -1,0 +1,1245 @@
+{
+    "name": "np.nansum_help",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/nansum/out/np.nansum_help.json",
+    "patches": {
+        "0": {
+            "height": 850,
+            "width": 867,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1310,
+            "name": "make_hole",
+            "parent_node_uuid": 533,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1347,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "in",
+                    "init": "in array",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "in",
+                    "init": "in hole",
+                    "id": 1421,
+                    "position_x": 240,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "3": {
+                    "name": "load_bang",
+                    "init": "load_bang",
+                    "id": 1458,
+                    "position_x": 440,
+                    "position_y": 40,
+                    "width": 88,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1495,
+                    "position_x": 440,
+                    "position_y": 110,
+                    "width": 100,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "nan",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 80,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "comment",
+                    "init": "comment the NaN that fills the hole",
+                    "id": 1532,
+                    "position_x": 560,
+                    "position_y": 115,
+                    "width": 227,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the NaN that fills the hole",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the NaN that fills the hole"
+                },
+                "6": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1569,
+                    "position_x": 40,
+                    "position_y": 150,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "7": {
+                    "name": "np.zeros",
+                    "init": "np.zeros 6 8",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 240,
+                    "width": 170,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dim 0",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "dim 1",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "8": {
+                    "name": "np.edit",
+                    "init": "np.edit 2,3",
+                    "id": 1643,
+                    "position_x": 40,
+                    "position_y": 370,
+                    "width": 170,
+                    "height": 90,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "indices",
+                            "value": "2,3",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "values",
+                            "value": "1",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "comment",
+                    "init": "comment a 1 at row 2, column 3: where the hole goes",
+                    "id": 1680,
+                    "position_x": 230,
+                    "position_y": 375,
+                    "width": 351,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a 1 at row 2, column 3: where the hole goes",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a 1 at row 2, column 3: where the hole goes"
+                },
+                "10": {
+                    "name": "*",
+                    "init": "*",
+                    "id": 1717,
+                    "position_x": 40,
+                    "position_y": 480,
+                    "width": 130,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "comment",
+                    "init": "comment times the toggle: no hole when it is off",
+                    "id": 1754,
+                    "position_x": 230,
+                    "position_y": 485,
+                    "width": 328,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "times the toggle: no hole when it is off",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "times the toggle: no hole when it is off"
+                },
+                "12": {
+                    "name": "np.where",
+                    "init": "np.where",
+                    "id": 1791,
+                    "position_x": 40,
+                    "position_y": 570,
+                    "width": 150,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "13": {
+                    "name": "comment",
+                    "init": "comment NaN at the hole, the array everywhere else",
+                    "id": 1828,
+                    "position_x": 230,
+                    "position_y": 575,
+                    "width": 343,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "NaN at the hole, the array everywhere else",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "NaN at the hole, the array everywhere else"
+                },
+                "14": {
+                    "name": "out",
+                    "init": "out holed",
+                    "id": 1865,
+                    "position_x": 40,
+                    "position_y": 690,
+                    "width": 160,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "if true"
+                },
+                "2": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "if false"
+                },
+                "3": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "hole",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "4": {
+                    "source_node": 1569,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array of zeros",
+                    "dest_node": 1643,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "array in"
+                },
+                "6": {
+                    "source_node": 1643,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "7": {
+                    "source_node": 1717,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "condition"
+                },
+                "8": {
+                    "source_node": 1791,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "selected",
+                    "dest_node": 1865,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "holed"
+                }
+            }
+        },
+        "1": {
+            "height": 1248,
+            "width": 1605,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1273,
+            "name": "np.nansum_help",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/nansum/out/np.nansum_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.nansum - add up, skipping NaN",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 384,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.nansum - add up, skipping NaN",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.nansum - add up, skipping NaN"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 805,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1120,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Adds up the values in an array as np.sum does, but skips any NaN (not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost tracking, a division by zero upstream - and those often arrive as NaN. NaN plus anything is NaN, so ONE missing value turns an np.sum total into NaN. np.nansum treats each NaN as 0 and adds up what is actually there. Reach for it whenever an array might contain gaps you would rather ignore than pass on.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data at all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into an array. An empty array sums to 0. With no NaN in it, the answer is exactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.nansum 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per row or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in the cells; click its button for new ones. The page opens with a hole: load_bang switches the toggle on, and make_hole puts a NaN into the cell at row 2, column 3 (third row down, fourth column across), where the heat_map writes nan. Click the toggle off to fill the hole again. At the top right np.sum and np.nansum each add up all 48 cells. With the hole, np.sum gives nan and np.nansum gives the total of the other 47; with the toggle off they agree.\nnp.nansum 1 adds along each ROW: the 6 totals stand in the column to the right, each beside its row (np.expand_dims only turns them into a column). np.nansum 0 adds down each COLUMN: the 8 totals in the strip underneath, each under its column. The row and the column that run through the hole drop by the value that was there, but neither total turns into nan - with np.sum, both would be nan.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the same way for the average and the middle value; np.mean and np.median do not. np.where can replace NaNs (or anything else) with a chosen value before an ordinary reduction.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1104,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Adds up the values in an array as np.sum does, but skips any NaN (not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost tracking, a division by zero upstream - and those often arrive as NaN. NaN plus anything is NaN, so ONE missing value turns an np.sum total into NaN. np.nansum treats each NaN as 0 and adds up what is actually there. Reach for it whenever an array might contain gaps you would rather ignore than pass on.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data at all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into an array. An empty array sums to 0. With no NaN in it, the answer is exactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.nansum 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per row or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in the cells; click its button for new ones. The page opens with a hole: load_bang switches the toggle on, and make_hole puts a NaN into the cell at row 2, column 3 (third row down, fourth column across), where the heat_map writes nan. Click the toggle off to fill the hole again. At the top right np.sum and np.nansum each add up all 48 cells. With the hole, np.sum gives nan and np.nansum gives the total of the other 47; with the toggle off they agree.\nnp.nansum 1 adds along each ROW: the 6 totals stand in the column to the right, each beside its row (np.expand_dims only turns them into a column). np.nansum 0 adds down each COLUMN: the 8 totals in the strip underneath, each under its column. The row and the column that run through the hole drop by the value that was there, but neither total turns into nan - with np.sum, both would be nan.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the same way for the average and the middle value; np.mean and np.median do not. np.where can replace NaNs (or anything else) with a chosen value before an ordinary reduction."
+                },
+                "3": {
+                    "init": "comment an array of whole numbers 0 to 3 - click to refresh",
+                    "name": "comment",
+                    "id": 348,
+                    "position_x": 24,
+                    "position_y": 53,
+                    "width": 357,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "an array of whole numbers 0 to 3 - click to refresh",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "an array of whole numbers 0 to 3 - click to refresh"
+                },
+                "4": {
+                    "name": "load_bang",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 88,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "5": {
+                    "name": "np.rand",
+                    "id": 422,
+                    "position_x": 138,
+                    "position_y": 91,
+                    "width": 123,
+                    "height": 98,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 3.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "dim 0",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "dim 1",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "dtype",
+                            "value": "int64",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "np.rand 6 8"
+                },
+                "6": {
+                    "init": "comment a NaN at row 2, column 3 - toggle it off",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 24,
+                    "position_y": 205,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a NaN at row 2, column 3 - toggle it off",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a NaN at row 2, column 3 - toggle it off"
+                },
+                "7": {
+                    "name": "toggle",
+                    "id": 496,
+                    "position_x": 28,
+                    "position_y": 244,
+                    "width": 45,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "8": {
+                    "name": "p",
+                    "id": 533,
+                    "position_x": 138,
+                    "position_y": 238,
+                    "width": 72,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_hole",
+                    "patcher id": 1310
+                },
+                "9": {
+                    "name": "heat_map",
+                    "id": 570,
+                    "position_x": 29,
+                    "position_y": 330,
+                    "width": 360,
+                    "height": 230,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 352,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 3.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "10": {
+                    "init": "comment axis None: np.sum turns to nan, np.nansum does not",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 408,
+                    "position_y": 52,
+                    "width": 350,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "axis None: np.sum turns to nan, np.nansum does not",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "axis None: np.sum turns to nan, np.nansum does not"
+                },
+                "11": {
+                    "name": "np.sum",
+                    "id": 644,
+                    "position_x": 411,
+                    "position_y": 90,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "None",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "float",
+                    "id": 681,
+                    "position_x": 550,
+                    "position_y": 94,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "13": {
+                    "name": "np.nansum",
+                    "id": 718,
+                    "position_x": 411,
+                    "position_y": 150,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "None",
+                            "value_type": "str"
+                        }
+                    },
+                    "highlight": true
+                },
+                "14": {
+                    "name": "float",
+                    "id": 755,
+                    "position_x": 550,
+                    "position_y": 154,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "comment axis 1: one total per row",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 409,
+                    "position_y": 232,
+                    "width": 175,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "axis 1: one total per row",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "axis 1: one total per row"
+                },
+                "16": {
+                    "name": "np.nansum",
+                    "id": 829,
+                    "position_x": 412,
+                    "position_y": 265,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "1",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "np.nansum 1",
+                    "highlight": true
+                },
+                "17": {
+                    "name": "np.expand_dims",
+                    "id": 866,
+                    "position_x": 548,
+                    "position_y": 265,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    },
+                    "init": "np.expand_dims 1"
+                },
+                "18": {
+                    "name": "heat_map",
+                    "id": 903,
+                    "position_x": 410,
+                    "position_y": 330,
+                    "width": 68,
+                    "height": 230,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 24.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "19": {
+                    "init": "comment axis 0: one total per column",
+                    "name": "comment",
+                    "id": 940,
+                    "position_x": 29,
+                    "position_y": 580,
+                    "width": 196,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "axis 0: one total per column",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "axis 0: one total per column"
+                },
+                "20": {
+                    "name": "np.nansum",
+                    "id": 977,
+                    "position_x": 33,
+                    "position_y": 614,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "0",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "np.nansum 0",
+                    "highlight": true
+                },
+                "21": {
+                    "name": "heat_map",
+                    "id": 1014,
+                    "position_x": 29,
+                    "position_y": 684,
+                    "width": 360,
+                    "height": 95,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 352,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 45,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 18.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "22": {
+                    "name": "help_link",
+                    "id": 1051,
+                    "position_x": 30,
+                    "position_y": 842,
+                    "width": 54,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.sum"
+                },
+                "23": {
+                    "name": "help_link",
+                    "id": 1088,
+                    "position_x": 100,
+                    "position_y": 842,
+                    "width": 79,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.nanmean"
+                },
+                "24": {
+                    "name": "help_link",
+                    "id": 1125,
+                    "position_x": 195,
+                    "position_y": 842,
+                    "width": 92,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.nanmedian"
+                },
+                "25": {
+                    "name": "help_link",
+                    "id": 1162,
+                    "position_x": 303,
+                    "position_y": 842,
+                    "width": 66,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.where"
+                },
+                "26": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1199,
+                    "position_x": 30,
+                    "position_y": 808,
+                    "width": 168,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "27": {
+                    "name": "close",
+                    "id": 1236,
+                    "position_x": 24,
+                    "position_y": 952,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random array",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "array"
+                },
+                "3": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "hole"
+                },
+                "4": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "5": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "sum",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "7": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "nansum",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "9": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "10": {
+                    "source_node": 829,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "nansum",
+                    "dest_node": 866,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "11": {
+                    "source_node": 866,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array out",
+                    "dest_node": 903,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "12": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 977,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "13": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "nansum",
+                    "dest_node": 1014,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

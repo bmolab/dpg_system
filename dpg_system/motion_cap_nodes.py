@@ -1030,6 +1030,9 @@ class PoseNode(MoCapNode):
                 if t == torch.Tensor:
                     incoming = tensor_to_array(incoming)
                     t = np.ndarray
+                elif t == list:
+                    incoming = any_to_array(incoming)
+                    t = np.ndarray
                 if t == np.ndarray:
                     offset = self.joint_offsets[index]
                     pose[offset] = incoming
@@ -1040,6 +1043,9 @@ class PoseNode(MoCapNode):
                 t = type(incoming)
                 if t == torch.Tensor:
                     incoming = tensor_to_array(incoming)
+                    t = np.ndarray
+                elif t == list:
+                    incoming = any_to_array(incoming)
                     t = np.ndarray
                 if t == np.ndarray:
                     pose[index] = incoming
@@ -1476,13 +1482,35 @@ class CheckBurstNode(Node):
         self.threshold_L_input = self.add_input('threshold low', widget_type='drag_float', default_value=0.01, min=0.0, max=1.0)
         self.jerk_threshold = self.add_input('jerk threshold pct', widget_type='drag_float', default_value=0.5, min=0.0, max=5.0)
         self.save_button = self.add_input('save burst files', widget_type='button', callback=self.save_result)
+        self.clear_button = self.add_input('clear', widget_type='button', callback=self.clear)
         # add timestamp--node for date and time sting (Datetime node)
         # chack burst date and timestamp begining num (file name, check burst Nov...)
         # take dict: save a temp file--
         # 'date_time'--combine object
-        self.save_path_input = self.add_input('save path', widget_type='text_input', default_value='/home/bmolab/Projects/AMASS_2/burst_files.json')
+        self.save_path_input = self.add_input('save path', widget_type='text_input', default_value='~/burst_files.json')
         self.file_dict_out = self.add_output('file_dict')
         self.file_dict = {}
+
+    def clear(self):
+        self.file_dict = {}
+        if not getattr(self, 'in_loading_process', False):
+            self.file_dict_out.send(self.file_dict)
+
+    def frame(self):
+        # None when unconnected; a clicked message sends a one-element list
+        frame = self.frame_input()
+        if isinstance(frame, (list, tuple, np.ndarray)):
+            if len(frame) != 1:
+                return None
+            frame = frame[0]
+        try:
+            return int(float(frame))
+        except (TypeError, ValueError):
+            return None
+
+    def file_name(self):
+        # a clicked message sends a list: join it into one name
+        return any_to_string(self.file_input())
 
     def receive_prev(self):
         pass
@@ -1495,7 +1523,7 @@ class CheckBurstNode(Node):
         prev_vel = np.asarray(self.input2())
         prev_acc = np.asarray(self.prev_diff_input())
 
-        if self.frame_input() == 0:
+        if self.frame() == 0:
             return
 
         self.detect_sudden_burst(acc, prev_vel, prev_acc)
@@ -1520,9 +1548,11 @@ class CheckBurstNode(Node):
             diff_max_i = np.argmax(acc)
             prev_v = prev_vel[diff_max_i]
 
-            if prev_v < self.threshold2_input() or (self.frame_input() > 1 and jerk_mask.any()):
-                print(self.file_input())
-                print('frame', self.frame_input())
+            frame = self.frame()
+            # without a frame number, trust the caller that the previous arrays are valid
+            if prev_v < self.threshold2_input() or ((frame is None or frame > 1) and jerk_mask.any()):
+                print(self.file_name())
+                print('frame', frame)
                 print('acc', acc)
                 print('prev_vel', prev_vel)
                 print('prev_v', prev_v)
@@ -1540,7 +1570,7 @@ class CheckBurstNode(Node):
                 # print('avg_mag_diff', avg_mag_diff)
                 # print('diff_acceleration', diff_acceleration)
 
-                event = {'frame': self.frame_input(),
+                event = {'frame': frame,
                          'prev_vel': prev_vel,
                          'prev_v': prev_v,
                          'acc': acc,
@@ -1550,11 +1580,11 @@ class CheckBurstNode(Node):
                          'jerk_indices': i_jerk,
                          'jerk_values': values,
                 }
-                self.file_dict.setdefault(self.file_input(), []).append(event)
+                self.file_dict.setdefault(self.file_name(), []).append(event)
 
 
     def save_result(self):
-        path = self.save_path_input()
+        path = os.path.expanduser(self.save_path_input())
 
         try:
             with open(path, 'w', encoding='utf-8') as f:
@@ -2726,9 +2756,11 @@ class TargetPoseNode(MoCapNode):
         self.axis_distances_out = self.add_output('axis distances out')
 
     def capture(self):
+        # a number or bool (a toggle sends 0 / 1) switches continuous capture
+        # on or off; anything else (a bang, a button click) captures once
         data = self.capture_in()
-        if type(data) is bool:
-            self.capturing = data
+        if isinstance(data, (bool, int, float, np.integer, np.floating)):
+            self.capturing = bool(data)
         else:
             self.capture_once = True
 
@@ -3374,6 +3406,8 @@ class CadenceFilterNode(MoCapNode):
                 pose = np.array(pose, dtype=np.float64)
                 if enabled and win >= 2:
                     pose = self._smooth(pose, win, 'pose')
+                if pose.ndim == 0:
+                    pose = float(pose)   # a single number goes out as a number
                 self.pose_output.send(pose)
         
         if self.trans_input.fresh_input:
@@ -3382,6 +3416,8 @@ class CadenceFilterNode(MoCapNode):
                 trans = np.array(trans, dtype=np.float64)
                 if enabled and win >= 2:
                     trans = self._smooth(trans, win, 'trans')
+                if trans.ndim == 0:
+                    trans = float(trans)   # a single number goes out as a number
                 self.trans_output.send(trans)
 
     def _smooth(self, data, win, kind):
@@ -4154,7 +4190,12 @@ class ShadowArmCorrectNode(MoCapNode):
 
     def do_export(self):
         """Apply the current fit + dials to the whole take file and save _armfix.npz."""
-        path = self.take_path() or self.fit_path()
+        path = self.take_path()
+        if not path:
+            # a fit npz holds only the corrections (cl/cr/hy), never quats, so it cannot stand in
+            print("shadow_arm_correct: export needs a 'take file' (the Shadow take npz to correct); "
+                  "'load fit npz' only supplies the correction")
+            return
         try:
             d = np.load(path, allow_pickle=True)
             Q = d['quats'].astype(np.float64)

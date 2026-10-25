@@ -1,337 +1,927 @@
 {
-    "height": 1219,
-    "width": 1391,
-    "position": [
-        100,
-        100
-    ],
-    "id": 644,
     "name": "t.filter_bank_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.filter_bank_help.json",
-    "nodes": {
+    "patches": {
         "0": {
-            "name": "",
-            "id": 237,
-            "position_x": 0,
-            "position_y": 0,
-            "width": 9,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "protected": true,
-            "presentation_state": "hidden",
-            "properties": {
+            "height": 510,
+            "width": 609,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1014,
+            "name": "make_mix",
+            "parent_node_uuid": 348,
+            "nodes": {
                 "0": {
                     "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "1": {
-            "init": "comment t.filter_bank - movement split by timescale",
-            "name": "comment",
-            "id": 274,
-            "position_x": 24,
-            "position_y": -4,
-            "width": 537,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "t.filter_bank - movement split by timescale",
-                    "value_type": "str"
+                    "id": 1051,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "48",
-                    "value_type": "str"
-                }
-            },
-            "comment": "t.filter_bank - movement split by timescale"
-        },
-        "2": {
-            "name": "text_block",
-            "id": 311,
-            "position_x": 543,
-            "position_y": 45,
-            "width": 808,
-            "height": 776,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "These split motion into frequency bands - what is happening slowly, and what quickly.\n\nTHE NODES:\n\nt.filter_bank         a bank of filters across a frequency range\nt.rotation_band_diff  the same idea applied to rotations, per joint\n\nWHY BANDS RATHER THAN ONE FILTER:\nA body does several things at once at different rates: a slow shift of weight, a\ngesture over a second, a tremor, and sensor noise on top. A single filter forces\nyou to choose one boundary and throw away everything on the wrong side of it.\n\nA bank keeps them all, separated. Then you can ask which band the movement is\nin, rather than only how much movement there is - and \"this person is trembling\"\nand \"this person is swaying\" become different numbers instead of the same one.\n\nt.rotation_band_diff IS THE ONE BUILT FOR BODIES:\nIt takes per-joint rotations and returns the rotation DIFFERENCE in each band,\nshaped [joints, bands, 3]. So for every joint you get its movement broken down\nby timescale, all in one tensor.\n\nThat shape is the point. A single node turns a pose stream into a\njoint-by-timescale picture that numpy and torch operations can then work on\ndirectly - sum over bands for total effort, take one band for a tremor measure,\ncompare bands to ask whether a joint is doing something slow or something fast.\n\nSAMPLE FREQUENCY MUST BE RIGHT:\nBoth take a sample frequency, and the band edges mean nothing without it. Data\narriving at 100 Hz through a node configured for 60 puts every band in the wrong\nplace while producing entirely plausible-looking numbers.\n\nIf your source has been upsampled or delivered at a different rate than it was\ncaptured, that is worth checking before anything else - see the cadence_filter\nhelp patch, which is about exactly that problem in Shadow data.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nSYNTAX:\nt.filter_bank\nt.rotation_band_diff\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nsignal / rotations:\nThe streams.\n\ninput format (t.rotation_band_diff):\nWhether the rotations arrive as axis-angle or quaternions.\n\nsample freq:\nHow many frames a second. Get this right first.\n\nnumber of bands:\nHow finely to divide the range.\n\nfilter type / filter design / order (t.filter_bank):\nBandpass, lowpass and so on; butter or chebyshev; and how steeply each band cuts.\n\nreset:\nClear the filter state.\n\nOUTPUTS: \n\nfiltered:\nOne filtered signal per band.\n\nbanded rotation diffs:\nShaped [joints, bands, 3] - every joint's movement, broken down by timescale.\n\nRELATED:\ndiff_filter does a cheaper version of this with one-pole filters at several\ndegrees, separating by timescale rather than by frequency proper.\nband_pass and spectrum do it for a single signal.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "signal",
+                    "init": "signal 2.0 sin",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 2.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
                 },
                 "2": {
-                    "name": "width",
-                    "value": 800,
-                    "value_type": "int"
+                    "name": "signal",
+                    "init": "signal 0.6 sin",
+                    "id": 1125,
+                    "position_x": 220,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 0.6,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 0.5,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
                 },
                 "3": {
-                    "name": "height",
-                    "value": 760,
-                    "value_type": "int"
+                    "name": "signal",
+                    "init": "signal 0.1667 sin",
+                    "id": 1162,
+                    "position_x": 400,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 0.16667,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 0.3,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
                 },
                 "4": {
-                    "name": "text_size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "text": "These split motion into frequency bands - what is happening slowly, and what quickly.\n\nTHE NODES:\n\nt.filter_bank         a bank of filters across a frequency range\nt.rotation_band_diff  the same idea applied to rotations, per joint\n\nWHY BANDS RATHER THAN ONE FILTER:\nA body does several things at once at different rates: a slow shift of weight, a\ngesture over a second, a tremor, and sensor noise on top. A single filter forces\nyou to choose one boundary and throw away everything on the wrong side of it.\n\nA bank keeps them all, separated. Then you can ask which band the movement is\nin, rather than only how much movement there is - and \"this person is trembling\"\nand \"this person is swaying\" become different numbers instead of the same one.\n\nt.rotation_band_diff IS THE ONE BUILT FOR BODIES:\nIt takes per-joint rotations and returns the rotation DIFFERENCE in each band,\nshaped [joints, bands, 3]. So for every joint you get its movement broken down\nby timescale, all in one tensor.\n\nThat shape is the point. A single node turns a pose stream into a\njoint-by-timescale picture that numpy and torch operations can then work on\ndirectly - sum over bands for total effort, take one band for a tremor measure,\ncompare bands to ask whether a joint is doing something slow or something fast.\n\nSAMPLE FREQUENCY MUST BE RIGHT:\nBoth take a sample frequency, and the band edges mean nothing without it. Data\narriving at 100 Hz through a node configured for 60 puts every band in the wrong\nplace while producing entirely plausible-looking numbers.\n\nIf your source has been upsampled or delivered at a different rate than it was\ncaptured, that is worth checking before anything else - see the cadence_filter\nhelp patch, which is about exactly that problem in Shadow data.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nSYNTAX:\nt.filter_bank\nt.rotation_band_diff\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nsignal / rotations:\nThe streams.\n\ninput format (t.rotation_band_diff):\nWhether the rotations arrive as axis-angle or quaternions.\n\nsample freq:\nHow many frames a second. Get this right first.\n\nnumber of bands:\nHow finely to divide the range.\n\nfilter type / filter design / order (t.filter_bank):\nBandpass, lowpass and so on; butter or chebyshev; and how steeply each band cuts.\n\nreset:\nClear the filter state.\n\nOUTPUTS: \n\nfiltered:\nOne filtered signal per band.\n\nbanded rotation diffs:\nShaped [joints, bands, 3] - every joint's movement, broken down by timescale.\n\nRELATED:\ndiff_filter does a cheaper version of this with one-pole filters at several\ndegrees, separating by timescale rather than by frequency proper.\nband_pass and spectrum do it for a single signal."
-        },
-        "3": {
-            "name": "shadow",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 119,
-            "height": 168,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "active_joints",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 400,
-            "width": 144,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "t.rotation_band_diff",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 505,
-            "width": 191,
-            "height": 168,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "name": "text_block",
-            "id": 459,
-            "annotation": true,
-            "position_x": 264,
-            "position_y": 760,
-            "width": 249,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "set sample freq to match the source\nout: [joints, bands, 3]",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 241,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "set sample freq to match the source\nout: [joints, bands, 3]"
-        },
-        "7": {
-            "name": "np.linalg.norm",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 830,
-            "width": 117,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
-            "name": "heat_map",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 935,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 8,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "name": "comment",
+                    "init": "comment 0.5 Hz size 1, 1.7 Hz size 0.5, 6 Hz size 0.3",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 140,
+                    "width": 460,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "0.5 Hz size 1, 1.7 Hz size 0.5, 6 Hz size 0.3",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "0.5 Hz size 1, 1.7 Hz size 0.5, 6 Hz size 0.3"
                 },
                 "5": {
-                    "name": "max y",
-                    "value": 0.2,
-                    "value_type": "float"
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 200,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 270,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "7": {
-                    "name": "number format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "9": {
-            "name": "text_block",
-            "id": 570,
-            "annotation": true,
-            "position_x": 264,
-            "position_y": 1095,
-            "width": 249,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "how much movement in each band -\nswaying and trembling become\ndifferent numbers, not the same one",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 241,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
+                    "name": "out",
+                    "init": "out mix",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 350,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
                 }
             },
-            "text": "how much movement in each band -\nswaying and trembling become\ndifferent numbers, not the same one"
-        },
-        "10": {
-            "name": "close",
-            "id": 607,
-            "position_x": 24,
-            "position_y": 1115,
-            "width": 88,
-            "height": 44,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
+            "links": {
                 "0": {
-                    "name": "close patch",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "1": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "2": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "3": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "mix"
                 }
             }
-        }
-    },
-    "links": {
-        "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "body 1 quaternions",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "full pose quats in"
         },
         "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "active joint quats out",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "rotations"
-        },
-        "2": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "banded rotation diffs",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "input"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "norm",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
+            "height": 1730,
+            "width": 1930,
+            "position": [
+                100,
+                100
+            ],
+            "id": 977,
+            "name": "t.filter_bank_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.filter_bank_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.filter_bank - split streams into frequency bands",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 623,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.filter_bank - split streams into frequency bands",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.filter_bank - split streams into frequency bands"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1122,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1591,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Splits each incoming stream into frequency bands with a bank of IIR filters (Butterworth or Chebyshev), sample by sample - slow movement in one band, fast in another.\n\nUse it to ask WHICH timescale a movement is on, not just how much there is: a slow sway and a fast tremor become separate numbers instead of one. Feed it one sample per frame; every value in the input gets its own complete bank.\n\nTHE BANDS:\nlow and high bound the range; 'number of bands' is the number of band EDGES spread between them, so it makes one band FEWER: the default 8 makes 7 bands. With log scaling (the default) the edges are evenly spaced in octaves; with linear, evenly in Hz. The output lists the bands from the HIGHEST down. 'overlap fraction' widens each band past its edges by that fraction of a band's width. Send the message report_bands to print each band's low, centre and high frequency in the console.\n\nWhat each band passes depends on filter type:\n   bandpass   between its two edges (the default)\n   bandstop   everything but its two edges' span\n   lowpass    everything below its upper edge\n   highpass   everything above its lower edge\n\nSAMPLE FREQ MUST BE RIGHT:\nThe bands are in Hz only if 'sample freq' is the rate the samples really arrive at. The demo assumes the patch runs at 60 frames a second; at another rate every band lands in the wrong place, with no warning. high is held below half the sample frequency.\n\nSYNTAX:\nt.filter_bank\nNo arguments.\n\nEXAMPLE:\nt.filter_bank\n\nINPUTS and PARAMETERS:\n\nsignal:\nA 2-D tensor (or array or list), [rows, columns]: one frame of values. A single value must be shaped [1, 1]; a 1-D input prints an error in the console and sends nothing. Each arrival is one sample for every value.\n\nreset (button):\nOn the next frame, fills all the filters' memory with that frame's values, as if the signal had always been there. Use it to avoid the start-up surge when a stream begins far from zero.\n\nfilter type (menu): bandpass, lowpass, highpass, bandstop. See above.\n\nfilter design (menu): butter (flat, the default), cheby1 (steeper, with 1 dB of ripple in the passband), cheby2 (steeper, with ripple in the stopband, which is held at least 40 dB down - a hundredth of the size;\nfor cheby2 the band edges are where that rejection starts, so a band passes less of its own range than with butter).\n\norder (int, 1 to 8, default 1):\nHow steeply each band cuts off. Higher separates the bands more cleanly and takes longer to settle.\n\nlow / high (Hz, defaults 0.01 and 12):\nThe range the bands cover. low must be above 0.\n\nnumber of bands (int, default 8): the number of band edges - one more than the number of bands.\n\nband scaling (menu): log or linear.\n\noverlap fraction (float, default 0).\n\nsample freq (Hz, default 60).\n\nChanging any setting rebuilds the filters (their memory starts empty).\n\ndevice / dtype / requires_grad (options):\nWhere the filters run and their number type (float32).\n\nOUTPUTS:\n\nfiltered:\n[rows, columns, bands] - every value, once per band, highest band first.\n\nREADING THE DEMO:\nThe input is three sines added together: 0.5 Hz, 1.7 Hz and 6 Hz. With low 0.3, high 12, 4 band edges (3 bands) and order 2 the bands are about 3.5 to 12 Hz, 1 to 3.5 Hz and 0.3 to 1 Hz, and each picks out one sine: measured, line 1 swings at 6 Hz, line 2 at 1.7 Hz, line 3 at 0.5 Hz, with a seventh to a fifth of the neighbouring sines leaking in. Change filter type to lowpass and each line becomes everything below its band's top: line 1 is then nearly the whole input. With highpass each line is everything above its band's bottom, so it is line 3 that carries nearly the whole input and line 1 only the 6 Hz sine. Change filter design to cheby2 and the separation is much cleaner - the other sines are held to about 1 percent - but the band edges then mark where that rejection begins, so at order 2 each band passes its own sine at only about 0.6 of its size.\n\nRELATED:\nspectrum and band_pass do this for plain numbers; t.rotation_band_diff applies the same banding to joint rotations; t.rfft analyses a whole block at once instead of sample by sample.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1575,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Splits each incoming stream into frequency bands with a bank of IIR filters (Butterworth or Chebyshev), sample by sample - slow movement in one band, fast in another.\n\nUse it to ask WHICH timescale a movement is on, not just how much there is: a slow sway and a fast tremor become separate numbers instead of one. Feed it one sample per frame; every value in the input gets its own complete bank.\n\nTHE BANDS:\nlow and high bound the range; 'number of bands' is the number of band EDGES spread between them, so it makes one band FEWER: the default 8 makes 7 bands. With log scaling (the default) the edges are evenly spaced in octaves; with linear, evenly in Hz. The output lists the bands from the HIGHEST down. 'overlap fraction' widens each band past its edges by that fraction of a band's width. Send the message report_bands to print each band's low, centre and high frequency in the console.\n\nWhat each band passes depends on filter type:\n   bandpass   between its two edges (the default)\n   bandstop   everything but its two edges' span\n   lowpass    everything below its upper edge\n   highpass   everything above its lower edge\n\nSAMPLE FREQ MUST BE RIGHT:\nThe bands are in Hz only if 'sample freq' is the rate the samples really arrive at. The demo assumes the patch runs at 60 frames a second; at another rate every band lands in the wrong place, with no warning. high is held below half the sample frequency.\n\nSYNTAX:\nt.filter_bank\nNo arguments.\n\nEXAMPLE:\nt.filter_bank\n\nINPUTS and PARAMETERS:\n\nsignal:\nA 2-D tensor (or array or list), [rows, columns]: one frame of values. A single value must be shaped [1, 1]; a 1-D input prints an error in the console and sends nothing. Each arrival is one sample for every value.\n\nreset (button):\nOn the next frame, fills all the filters' memory with that frame's values, as if the signal had always been there. Use it to avoid the start-up surge when a stream begins far from zero.\n\nfilter type (menu): bandpass, lowpass, highpass, bandstop. See above.\n\nfilter design (menu): butter (flat, the default), cheby1 (steeper, with 1 dB of ripple in the passband), cheby2 (steeper, with ripple in the stopband, which is held at least 40 dB down - a hundredth of the size;\nfor cheby2 the band edges are where that rejection starts, so a band passes less of its own range than with butter).\n\norder (int, 1 to 8, default 1):\nHow steeply each band cuts off. Higher separates the bands more cleanly and takes longer to settle.\n\nlow / high (Hz, defaults 0.01 and 12):\nThe range the bands cover. low must be above 0.\n\nnumber of bands (int, default 8): the number of band edges - one more than the number of bands.\n\nband scaling (menu): log or linear.\n\noverlap fraction (float, default 0).\n\nsample freq (Hz, default 60).\n\nChanging any setting rebuilds the filters (their memory starts empty).\n\ndevice / dtype / requires_grad (options):\nWhere the filters run and their number type (float32).\n\nOUTPUTS:\n\nfiltered:\n[rows, columns, bands] - every value, once per band, highest band first.\n\nREADING THE DEMO:\nThe input is three sines added together: 0.5 Hz, 1.7 Hz and 6 Hz. With low 0.3, high 12, 4 band edges (3 bands) and order 2 the bands are about 3.5 to 12 Hz, 1 to 3.5 Hz and 0.3 to 1 Hz, and each picks out one sine: measured, line 1 swings at 6 Hz, line 2 at 1.7 Hz, line 3 at 0.5 Hz, with a seventh to a fifth of the neighbouring sines leaking in. Change filter type to lowpass and each line becomes everything below its band's top: line 1 is then nearly the whole input. With highpass each line is everything above its band's bottom, so it is line 3 that carries nearly the whole input and line 1 only the 6 Hz sine. Change filter design to cheby2 and the separation is much cleaner - the other sines are held to about 1 percent - but the band edges then mark where that rejection begins, so at order 2 each band passes its own sine at only about 0.6 of its size.\n\nRELATED:\nspectrum and band_pass do this for plain numbers; t.rotation_band_diff applies the same banding to joint rotations; t.rfft analyses a whole block at once instead of sample by sample."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 66,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_mix",
+                    "patcher id": 1014
+                },
+                "4": {
+                    "name": "text_block",
+                    "id": 385,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 62,
+                    "width": 255,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "three sines added: 0.5, 1.7 and 6 Hz\n(at 60 frames a second) - open it",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 247,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "three sines added: 0.5, 1.7 and 6 Hz\n(at 60 frames a second) - open it"
+                },
+                "5": {
+                    "name": "plot",
+                    "id": 422,
+                    "position_x": 380,
+                    "position_y": 62,
+                    "width": 388,
+                    "height": 180,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 130,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 300.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -2.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 2.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "6": {
+                    "init": "comment the input",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 794,
+                    "position_y": 240,
+                    "width": 64,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the input",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the input"
+                },
+                "7": {
+                    "name": "t.reshape",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 160,
+                    "width": 243,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "1 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "t.reshape 1 1"
+                },
+                "8": {
+                    "init": "comment one value: a [1, 1] tensor",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 794,
+                    "position_y": 175,
+                    "width": 168,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one value: a [1, 1] tensor",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one value: a [1, 1] tensor"
+                },
+                "9": {
+                    "name": "t.filter_bank",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 280,
+                    "width": 191,
+                    "height": 182,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "requires_grad",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "3": {
+                            "name": "filter type",
+                            "value": "bandpass",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "filter design",
+                            "value": "butter",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "order",
+                            "value": 2,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "low",
+                            "value": 0.3,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "high",
+                            "value": 12.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "number of bands",
+                            "value": 4,
+                            "value_type": "int"
+                        },
+                        "9": {
+                            "name": "band scaling",
+                            "value": "log",
+                            "value_type": "str"
+                        },
+                        "10": {
+                            "name": "overlap fraction",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "11": {
+                            "name": "sample freq",
+                            "value": 60.0,
+                            "value_type": "float"
+                        }
+                    },
+                    "highlight": true
+                },
+                "10": {
+                    "init": "comment try filter type, order, number of bands",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 794,
+                    "position_y": 290,
+                    "width": 248,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "try filter type, order, number of bands",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "try filter type, order, number of bands"
+                },
+                "11": {
+                    "name": "plot",
+                    "id": 644,
+                    "position_x": 380,
+                    "position_y": 330,
+                    "width": 388,
+                    "height": 210,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 160,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 300.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -2.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 2.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "text_block",
+                    "id": 681,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 540,
+                    "width": 298,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "the bands: 1 fastest (3.5-12 Hz), 2 middle,\n3 slowest (0.3-1 Hz)",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 290,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "the bands: 1 fastest (3.5-12 Hz), 2 middle,\n3 slowest (0.3-1 Hz)"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 694,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link spectrum"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 112,
+                    "position_y": 694,
+                    "width": 73,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link band_pass"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 201,
+                    "position_y": 694,
+                    "width": 142,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.rotation_band_diff"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 359,
+                    "position_y": 694,
+                    "width": 54,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.rfft"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 30,
+                    "position_y": 738,
+                    "width": 84,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link filter_bank"
+                },
+                "18": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 660,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "19": {
+                    "name": "close",
+                    "id": 940,
+                    "position_x": 24,
+                    "position_y": 812,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mix",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mix",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "signal"
+                },
+                "3": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "filtered",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
         }
     }
 }

@@ -1,0 +1,814 @@
+{
+    "height": 1192,
+    "width": 1794,
+    "position": [
+        20,
+        74
+    ],
+    "id": 1424,
+    "name": "np.[]_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1452,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.[] - take part of an array by index",
+            "name": "comment",
+            "id": 1470,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 475,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.[] - take part of an array by index",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "np.[] - take part of an array by index"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1481,
+            "sid": 3,
+            "position_x": 995,
+            "position_y": 23,
+            "width": 768,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Takes part of an array by position, written the way you would slice it in Python.\n\nUse it whenever you want a row, a column, a block, every other element, or a few chosen entries - one joint out of a list of joints, the x column out of a list of points, the middle of a frame, the last value of a buffer.\n\nTHE INDEX STRING:\nThe Indices field holds the part to take, one entry per dimension, separated by commas. The first entry picks rows, the second columns, and so on. Each entry is one of:\n\n  3        one position. Counting starts at 0; -1 is the last. That\n           dimension is REMOVED - 3 on a 10 x 10 array gives a 1-D row of\n           10, and 3,7 gives a single number.\n  2:5      positions 2, 3 and 4 - the stop is NOT included. Leave out the\n           start or the stop to run from the beginning or to the end;\n           : alone is the whole dimension. The dimension is kept.\n  ::2      a step: every second position. 1::2 the odd ones, ::-1 the\n           whole dimension reversed.\n  [0 3 7]  a list of positions, taken in the order given. Inside a\n           longer string any separator works (:,[0,3,7] is columns 0, 3\n           and 7). On its own, use spaces or semicolons - [0 3 7] or\n           [0;3;7] - because [0,3,7] with commas reads as brackets around\n           three single positions (0,3,7), which a 2-D array cannot take.\n  ...      every remaining dimension: ...,0 takes the first entry of the\n           LAST dimension, whatever the array's shape.\n\nFewer entries than dimensions leave the rest whole, so 2 on a 10 x 10 array is the same as 2,:. Square brackets around the whole string are optional: [2:5, 4:8] and 2:5, 4:8 mean the same.\n\nSYNTAX:\nnp.[] <index string>\nDefault ':', the whole array. The arguments are joined back together\nwith spaces, so np.[] 2:5, 4:8 and np.[] [0 3 7] both work as typed.\n\nEXAMPLE:\nnp.[] 2:5,4:8\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe array (a list is converted). Sends the selection on arrival.\n\nIndices (text field, also an inlet):\nThe index string. Changing it - typing, or a string or radio choice arriving at the inlet - re-slices the LAST array received and sends at once, so the demo needs no metro. An array of whole numbers sent here (np.argsort's indices, say) picks those positions along the first axis, in that order - see the np.argsort page, which sorts with it.\n\nindices field width (option):\nThe field resizes to fit what you type; this records the width.\n\nOUTPUTS:\n\noutput:\nThe selected part. Its number of dimensions follows the rules above:\neach single-number entry removes one. Selecting every dimension with a single number gives a plain number rather than an array.\n\nWhen the string asks for more dimensions than the array has, nothing is sent and nothing is said. A position past the end (12 on a 10-row array) prints an error in the console and sends nothing. A RANGE past the end is not an error: 8:20 gives rows 8 and 9.\n\nREADING THE DEMO:\nThe left heat_map is the source, every cell printing its own number - the tens digit is the row, the units digit the column. Pick an index in the radio and the right heat_map shows exactly the cells taken, still numbered; np.shape gives the shape of the result. Or type your own into the field on np.[].\n\nWatch :,3 against :,3:4. Both take column 3, but :,3 removes the column dimension, leaving a 1-D array of 10 - which a heat_map draws lying down, as one row. :,3:4 keeps it as 10 rows of 1, standing up.\n\nRELATED:\nnp.crop cuts a rectangle out by its edges, which is easier to drive from sliders. np.where and np.argwhere select by a condition rather than by position. np.edit WRITES into a part of an array named the same way. t[] is the PyTorch version (on the t.index_select page).",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "Takes part of an array by position, written the way you would slice it in Python.\n\nUse it whenever you want a row, a column, a block, every other element, or a few chosen entries - one joint out of a list of joints, the x column out of a list of points, the middle of a frame, the last value of a buffer.\n\nTHE INDEX STRING:\nThe Indices field holds the part to take, one entry per dimension, separated by commas. The first entry picks rows, the second columns, and so on. Each entry is one of:\n\n  3        one position. Counting starts at 0; -1 is the last. That\n           dimension is REMOVED - 3 on a 10 x 10 array gives a 1-D row of\n           10, and 3,7 gives a single number.\n  2:5      positions 2, 3 and 4 - the stop is NOT included. Leave out the\n           start or the stop to run from the beginning or to the end;\n           : alone is the whole dimension. The dimension is kept.\n  ::2      a step: every second position. 1::2 the odd ones, ::-1 the\n           whole dimension reversed.\n  [0 3 7]  a list of positions, taken in the order given. Inside a\n           longer string any separator works (:,[0,3,7] is columns 0, 3\n           and 7). On its own, use spaces or semicolons - [0 3 7] or\n           [0;3;7] - because [0,3,7] with commas reads as brackets around\n           three single positions (0,3,7), which a 2-D array cannot take.\n  ...      every remaining dimension: ...,0 takes the first entry of the\n           LAST dimension, whatever the array's shape.\n\nFewer entries than dimensions leave the rest whole, so 2 on a 10 x 10 array is the same as 2,:. Square brackets around the whole string are optional: [2:5, 4:8] and 2:5, 4:8 mean the same.\n\nSYNTAX:\nnp.[] <index string>\nDefault ':', the whole array. The arguments are joined back together\nwith spaces, so np.[] 2:5, 4:8 and np.[] [0 3 7] both work as typed.\n\nEXAMPLE:\nnp.[] 2:5,4:8\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe array (a list is converted). Sends the selection on arrival.\n\nIndices (text field, also an inlet):\nThe index string. Changing it - typing, or a string or radio choice arriving at the inlet - re-slices the LAST array received and sends at once, so the demo needs no metro. An array of whole numbers sent here (np.argsort's indices, say) picks those positions along the first axis, in that order - see the np.argsort page, which sorts with it.\n\nindices field width (option):\nThe field resizes to fit what you type; this records the width.\n\nOUTPUTS:\n\noutput:\nThe selected part. Its number of dimensions follows the rules above:\neach single-number entry removes one. Selecting every dimension with a single number gives a plain number rather than an array.\n\nWhen the string asks for more dimensions than the array has, nothing is sent and nothing is said. A position past the end (12 on a 10-row array) prints an error in the console and sends nothing. A RANGE past the end is not an error: 8:20 gives rows 8 and 9.\n\nREADING THE DEMO:\nThe left heat_map is the source, every cell printing its own number - the tens digit is the row, the units digit the column. Pick an index in the radio and the right heat_map shows exactly the cells taken, still numbered; np.shape gives the shape of the result. Or type your own into the field on np.[].\n\nWatch :,3 against :,3:4. Both take column 3, but :,3 removes the column dimension, leaving a 1-D array of 10 - which a heat_map draws lying down, as one row. :,3:4 keeps it as 10 rows of 1, standing up.\n\nRELATED:\nnp.crop cuts a rectangle out by its edges, which is easier to drive from sliders. np.where and np.argwhere select by a condition rather than by position. np.edit WRITES into a part of an array named the same way. t[] is the PyTorch version (on the t.index_select page)."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 1498,
+            "sid": 4,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "4": {
+            "init": "np.linspace 0 99 100",
+            "name": "np.linspace",
+            "id": 1505,
+            "sid": 5,
+            "position_x": 151,
+            "position_y": 65,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "stop",
+                    "value": 99.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "steps",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "np.reshape 10 10",
+            "name": "np.reshape",
+            "id": 1524,
+            "sid": 6,
+            "position_x": 303,
+            "position_y": 67,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "[10, 10]",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 1534,
+            "sid": 7,
+            "position_x": 554,
+            "position_y": 67,
+            "width": 408,
+            "height": 310,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 400,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 99.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "init": "radio : 2 -1 :,3 :,3:4 2:5,4:8 ::2,::2 ::-1 [0;3;7] [3,7]",
+            "name": "radio",
+            "id": 1604,
+            "sid": 10,
+            "position_x": 45,
+            "position_y": 231,
+            "width": 68,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": "2:5,4:8",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "prefix",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "prefix_as_label",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "init": "comment pick an index string",
+            "name": "comment",
+            "id": 1628,
+            "sid": 11,
+            "position_x": 24,
+            "position_y": 200,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pick an index string",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "pick an index string"
+        },
+        "9": {
+            "init": "np.[] 2:5,4:8",
+            "name": "np.[]",
+            "id": 1639,
+            "sid": 12,
+            "position_x": 155,
+            "position_y": 301,
+            "width": 116,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "Indices",
+                    "value": "2:5,4:8",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "indices field width",
+                    "value": 60,
+                    "value_type": "int"
+                }
+            },
+            "highlight": true
+        },
+        "10": {
+            "init": "comment or type one into the field here",
+            "name": "comment",
+            "id": 1652,
+            "sid": 13,
+            "position_x": 124,
+            "position_y": 258,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "or type one into the field here",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "or type one into the field here"
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 1663,
+            "sid": 14,
+            "position_x": 555,
+            "position_y": 428,
+            "width": 408,
+            "height": 310,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 400,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 99.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the cells taken, still numbered",
+            "name": "comment",
+            "id": 1700,
+            "sid": 15,
+            "position_x": 656,
+            "position_y": 395,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the cells extracted",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "the cells extracted"
+        },
+        "13": {
+            "name": "np.shape",
+            "id": 1711,
+            "sid": 16,
+            "position_x": 301,
+            "position_y": 300,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "list",
+            "id": 1718,
+            "sid": 17,
+            "position_x": 379,
+            "position_y": 301,
+            "width": 80,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[3, 4]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "15": {
+            "init": "comment shape of the selection",
+            "name": "comment",
+            "id": 1742,
+            "sid": 18,
+            "position_x": 373,
+            "position_y": 261,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shape of the selection",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "shape of the selection"
+        },
+        "16": {
+            "init": "help_link np.crop",
+            "name": "help_link",
+            "id": 1753,
+            "sid": 19,
+            "position_x": 46,
+            "position_y": 614,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.crop",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "help_link np.where",
+            "name": "help_link",
+            "id": 1764,
+            "sid": 20,
+            "position_x": 122,
+            "position_y": 614,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.where",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "init": "help_link np.edit",
+            "name": "help_link",
+            "id": 1775,
+            "sid": 21,
+            "position_x": 204,
+            "position_y": 614,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.edit",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "init": "help_link np.argsort",
+            "name": "help_link",
+            "id": 1786,
+            "sid": 22,
+            "position_x": 280,
+            "position_y": 614,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.argsort",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "20": {
+            "init": "help_link t.index_select",
+            "name": "help_link",
+            "id": 1797,
+            "sid": 23,
+            "position_x": 375,
+            "position_y": 614,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "t.index_select",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "21": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1808,
+            "sid": 24,
+            "position_x": 46,
+            "position_y": 580,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "22": {
+            "name": "close",
+            "id": 1819,
+            "sid": 25,
+            "position_x": 40,
+            "position_y": 688,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "23": {
+            "init": "comment the 10 x 10 array",
+            "name": "comment",
+            "id": 1860,
+            "sid": 27,
+            "position_x": 675,
+            "position_y": 32,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the 10 x 10 array",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "the 10 x 10 array"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1498,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1505,
+            "dest_node_name": "np.linspace",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 1505,
+            "source_node_name": "np.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 1524,
+            "dest_node_name": "np.reshape",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 1524,
+            "source_node_name": "np.reshape",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1534,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 1524,
+            "source_node_name": "np.reshape",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1639,
+            "dest_node_name": "np.[]",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 1604,
+            "source_node_name": "radio",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1639,
+            "dest_node_name": "np.[]",
+            "dest_input_index": 1,
+            "dest_input_name": "Indices"
+        },
+        "5": {
+            "source_node": 1639,
+            "source_node_name": "np.[]",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1663,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 1639,
+            "source_node_name": "np.[]",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1711,
+            "dest_node_name": "np.shape",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "7": {
+            "source_node": 1711,
+            "source_node_name": "np.shape",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 1718,
+            "dest_node_name": "list",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

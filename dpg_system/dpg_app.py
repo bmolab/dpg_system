@@ -8,6 +8,7 @@ import time
 import numpy as np
 from importlib import import_module
 import dpg_system.dpg_app
+from dpg_system import portable_paths
 from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNameNode
 from dpg_system.node_editor import *
 from dpg_system.node import *
@@ -41,6 +42,7 @@ to_import = [
     'plot_nodes',
     'quaternion_nodes',
     'numpy_nodes',
+    'scipy_nodes',
     'matrix_nodes',
     'osc_nodes',
     'text_nodes'
@@ -87,6 +89,7 @@ optional_import = [
     'gemma_4_node',
     'nvx_nodes',
     'erae_nodes',
+    'atem_nodes',
     'bonsai_2_node',
     'qwen_moe_node',
     'neuronpedia_node',
@@ -162,6 +165,14 @@ for import_name in to_be_imported:
             _skipped.append('No module named ' + import_name)
         else:
             _skipped.append(f'Skipped {import_name}: missing dependency {e.name!r}')
+    except Exception as e:
+        # An optional module whose dependency is installed but can't work on
+        # this platform (a native library that won't load, say) is skipped
+        # like a missing one rather than stopping the app. Core modules still
+        # fail loudly.
+        if import_name not in optional_import:
+            raise
+        _skipped.append(f'Skipped {import_name}: {type(e).__name__}: {e}')
 if _line_started:
     sys.stdout.write('\n')
     sys.stdout.flush()
@@ -327,6 +338,7 @@ class App:
         self.easy_mode = False
         with open('dpg_system_config.json', 'r') as f:
             self.config = json.load(f)
+            portable_paths.configure(self.config.get('path_roots', {}))
             if 'easy' in config:
                 self.easy_mode = config['easy']
         self.torch_available = False
@@ -944,6 +956,19 @@ class App:
         self._node_core_styles.append((item, list(values)))
         return item
 
+    highlight_background = (72, 60, 22, 255)
+    highlight_outline = (255, 190, 0, 255)
+    highlight_border = 3
+
+    def highlight_colors(self):
+        background = self.highlight_background
+        lifted = tuple(min(255, c + 18) for c in background[:3]) + (255,)
+        dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, background, category=dpg.mvThemeCat_Nodes)
+        dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, lifted, category=dpg.mvThemeCat_Nodes)
+        dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, lifted, category=dpg.mvThemeCat_Nodes)
+        dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, self.highlight_outline, category=dpg.mvThemeCat_Nodes)
+        dpg.add_theme_style(dpg.mvNodeStyleVar_NodeBorderThickness, self.highlight_border, category=dpg.mvThemeCat_Nodes)
+
     def core_styles(self, scaling=True):
         """The spacing and padding a node is laid out with.
 
@@ -1018,6 +1043,17 @@ class App:
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+
+        # a help page's featured node: global_theme plus a tinted background
+        # and a bright, thicker outline
+        with dpg.theme() as self.highlight_theme:
+            with dpg.theme_component(dpg.mvAll):
+                self.core_styles()
+                dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                self.highlight_colors()
 
         with dpg.theme() as self.invisible_theme:
             with dpg.theme_component(dpg.mvAll):
@@ -1338,10 +1374,9 @@ class App:
                         current_editor.set_path(save_path)
                         file_container = {}
                         file_container['name'] = self.patches_name
-                        file_container['path'] = self.patches_path
                         file_container['patches'] = self.containerize_patch(current_editor)
 
-                        json.dump(file_container, f, indent=4)
+                        json.dump(portable_paths.contract(file_container), f, indent=4)
                         self.add_to_recent(self.patches_name, self.patches_path)
             if current_editor.patcher_node is not None:
                 current_editor.patcher_node.name_option.set(self.patches_name)
@@ -1368,14 +1403,13 @@ class App:
 
                 file_container = {}
                 file_container['name'] = self.patches_name
-                file_container['path'] = self.patches_path
 
                 patches_container = {}
                 for index, node_editor in enumerate(self.node_editors):
                     patches_container = self.containerize_patch(node_editor, patches_container)
 
                 file_container['patches'] = patches_container
-                json.dump(file_container, f, indent=4)
+                json.dump(portable_paths.contract(file_container), f, indent=4)
                 self.add_to_recent(self.patches_name, self.patches_path)
 
     def recent_1_callback(self):
@@ -1488,11 +1522,13 @@ class App:
                 dpg.add_menu_item(label="Toggle Lock Position for Selected", callback=self.lock_position_for_selected)
                 dpg.add_menu_item(label="Show / Hide Options for Selected", callback=self.options_for_selected)
                 dpg.add_menu_item(label='Toggle Do Not Delete for Selected', callback=self.protect_selected)
+                dpg.add_menu_item(label='Toggle Highlight for Selected', callback=self.highlight_selected)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Set As Presentation", callback=self.set_presentation)
                 self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", check=True, callback=self.toggle_presentation)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Home: 100%, origin top left (H)", callback=self.home_current_editor)
+                dpg.add_menu_item(label="Set Home to Current View (Option-H)", callback=self.set_home_current_editor)
                 dpg.add_menu_item(label="Fit Patch to Window (Shift-H)", callback=self.fit_current_editor)
                 dpg.add_menu_item(label="Fit Window to Patch (Cmd-Shift-H)", callback=self.fit_window_to_patch)
                 dpg.add_separator()
@@ -1829,7 +1865,7 @@ class App:
     def vector_handler(self):
         if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = interface_nodes.VectorNode.factory("vector", None, args=['4'])
+                node = interface_nodes.Vector2DNode.factory("vector", None, args=['4'])
                 self.place_node(node)
                 self.set_widget_focus(node.uuid)
 
@@ -1969,6 +2005,19 @@ class App:
                 node.do_not_delete = not node.do_not_delete
                 node.set_visibility(node.visibility)
 
+    def highlight_selected(self):
+        editor = self.get_current_editor()
+        if editor is None:
+            return
+        nodes = [dpg.get_item_user_data(uuid) for uuid in dpg.get_selected_nodes(editor.uuid)]
+        nodes = [node for node in nodes if node is not None]
+        if not nodes:
+            return
+        self.snapshot_for_undo()
+        for node in nodes:
+            node.set_highlight(not node.highlighted)
+        editor.modified = True
+
     def options_for_selected(self):
         if self.get_current_editor() is not None:
             selected_nodes_uuids = dpg.get_selected_nodes(self.get_current_editor().uuid)
@@ -2069,9 +2118,12 @@ class App:
     def H_handler(self):
         # H: back to the view the patch opened with. Shift-H: the whole patch
         # in the window. Cmd-Shift-H: the window around the whole patch.
+        # Option-H: the present view becomes home (Cmd-H is macOS's Hide).
         if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                if self.shift_down() and self.control_or_command_down():
+                if self.alt_down() and not self.shift_down() and not self.control_or_command_down():
+                    self.get_current_editor().set_home_here()
+                elif self.shift_down() and self.control_or_command_down():
                     self.fit_window_to_patch()
                 elif self.shift_down():
                     self.get_current_editor().fit_nodes()
@@ -2193,6 +2245,10 @@ class App:
     def home_current_editor(self):
         if self.get_current_editor() is not None:
             self.get_current_editor().home_nodes()
+
+    def set_home_current_editor(self):
+        if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+            self.get_current_editor().set_home_here()
 
     def fit_current_editor(self):
         if self.get_current_editor() is not None:
@@ -2749,7 +2805,7 @@ class App:
                 #     if len(parts) == 2:
                 #         if parts[1] == 'json':
                 #             patch_name = parts[0]
-                file_container = json.load(f)
+                file_container = portable_paths.expand(json.load(f))
 
                 patch_count = 0
                 if 'patches' in file_container:
@@ -2787,6 +2843,8 @@ class App:
                             self.current_node_editor = editor_index
                             editor.load_(nodes_container)
                             if editor.loaded_parent_node_uuid == -1:
+                                # the top-level patch saves back to this file
+                                editor.file_path = path
                                 if main_editor is None:
                                     main_editor = self.current_node_editor
 
@@ -3159,12 +3217,12 @@ class App:
                 default_patcher_dict = {}
                 default_patcher_dict['path'] = default_patcher_path
                 with open(self.project_name + '_default_patcher.json', 'w') as f:
-                    json.dump(default_patcher_dict, f, indent=4)
+                    json.dump(portable_paths.contract(default_patcher_dict), f, indent=4)
 
     def open_default_patch(self):
         if os.path.exists(self.project_name + '_default_patcher.json'):
             with open(self.project_name + '_default_patcher.json', 'r') as f:
-                default_patcher_dict = json.load(f)
+                default_patcher_dict = portable_paths.expand(json.load(f))
                 if 'path' in default_patcher_dict:
                     default_patcher_path = default_patcher_dict['path']
                     if default_patcher_path != '' and default_patcher_path is not None:

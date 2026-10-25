@@ -1,11 +1,11 @@
 {
-    "height": 861,
-    "width": 1572,
+    "height": 1160,
+    "width": 1580,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 977,
     "name": "t.histc_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.histc_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.histc - the shape of the values",
+            "init": "comment t.histc - a histogram: how many values in each bin",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 414,
+            "width": 623,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.histc - the shape of the values",
+                    "value": "t.histc - a histogram: how many values in each bin",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.histc - the shape of the values"
+            "comment": "t.histc - a histogram: how many values in each bin"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 724,
+            "position_x": 772,
             "position_y": 45,
-            "width": 808,
-            "height": 756,
+            "width": 768,
+            "height": 1021,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These describe how a tensor's values are DISTRIBUTED, rather than what they are.\n\nA mean says where the middle is. A distribution says what the whole spread \nlooks like - whether the values cluster, whether there are two groups, whether \nthe tail is long. For anything measured rather than computed, that shape is \nusually the interesting thing.\n\nTHE NODES:\n\nt.histc      a histogram: how many values fall in each of N equal bins\nt.bincount   how many times each integer occurs\nt.bucketize  which bin each value belongs to, given boundaries you choose\n\nt.histc IS THE ORDINARY HISTOGRAM:\nGive it a bin count and a range and it counts how many values land in each bin. \nThe range matters: values outside min and max are not counted at all, so a \nhistogram that seems to be missing data usually has its limits set too narrow.\n\nt.bincount IS FOR INTEGERS AND COUNTS EXACTLY:\nNo bins, no range - it counts occurrences of each whole number. That is the \nright node for labels, indices, note numbers, joint ids - anything where the \nvalues ARE categories rather than measurements, and where putting them in bins \nwould be a mistake.\n\nt.bucketize ASSIGNS RATHER THAN COUNTS:\nGiven a set of boundaries it tells you which interval each value falls into, \none answer per input value. That is quantisation with boundaries you choose, \nand it is what you want when the bins are meaningful rather than even - \n'still', 'moving', 'fast' at thresholds that mean something, rather than three \nequal slices of the range.\n\nIts output can then go into t.bincount to count how much time was spent in \neach band, which is the two nodes doing what a histogram cannot: a histogram of \nunequal, meaningful bins.\n\nSYNTAX:\nt.histc <bins>\nt.bincount\nt.bucketize\n\nEXAMPLE:\nt.histc\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values.\n\nbin count / min / max (t.histc):\nHow many bins, and the range they span. Values outside are dropped.\n\nint tensor in (t.bincount):\nWhole numbers. Non-integers are not what this node is for.\n\nboundaries tensor in (t.bucketize):\nThe edges of the intervals, in increasing order.\n\nright (t.bucketize):\nWhether a value exactly on a boundary belongs to the interval above or below.\n\nint32 indices:\nReturn the bin indices as 32-bit rather than 64-bit integers.\n\nOUTPUTS: \n\nhistogram tensor out / bin count tensor out:\nThe counts, or the per-value bin assignment.\n\nA NOTE ON WATCHING A DISTRIBUTION MOVE:\nA histogram of one frame is noise. A histogram accumulated over a window - \nnp.rolling_buffer into t.histc - is a picture of what the movement has actually \nbeen doing, and it changes in ways a running mean does not show: a mean stays \nput while a single peak splits into two.",
+                    "value": "Counts how many values of a tensor fall into each of a number of equal bins between min and max: a histogram.\n\nA mean says where the middle is; a histogram shows the whole spread - whether the values cluster, whether there are two groups, how long the tails are. For anything measured rather than computed, that shape is usually the interesting thing. Feed it a window of recent values (from np.rolling_buffer, say) and it becomes a picture of what a movement has actually been doing: a mean stays put while a single peak splits in two.\n\nSYNTAX:\nt.histc\nNo arguments: set the bins and the range on the node.\n\nEXAMPLE:\nt.histc\n\nINPUTS and PARAMETERS:\n\n(first inlet):\nThe values, any shape - they are all counted together. A list or NumPy array is turned into a float32 tensor. Every input is counted and sent - the only inlet that makes the node send. The values must be floating point: an integer tensor (t.rand with dtype int64, say) is refused with an error. Send it through t.to float32 first.\n\nbin count (drag int):\nHow many bins. Default 100, at least 1.\n\nmin / max (drag floats):\nThe range the bins span, cut into equal widths. Values below min or above max are NOT counted at all - a histogram that seems to be missing data usually has its range set too narrow. A value exactly at max goes in the last bin. Defaults 0 and 0: when min and max are equal the node uses the lowest and highest values of each input instead, so the range follows the data and two histograms are no longer comparable bin for bin.\n\nChanging any of these does not send by itself; the next input uses it. In the demo a metro sends fresh values four times a second, so the bars follow your drags.\n\nOUTPUTS:\n\nhistogram tensor out:\nThe counts, one per bin, lowest bin first, as a 1-D float32 tensor of length bin count. They add up to the number of values inside the range.\n\nREADING THE DEMO:\nt.dist.normal draws 1000 values from a bell curve centred on loc (0) with spread scale (1). The upper plot shows them one after another as dots: noise, with no visible shape. t.histc puts them in 32 bins from -4 to 4, each a quarter wide, and the lower plot shows the count in each bin as a bar: the bell appears, about 100 values high in the middle bins.\n\nDrag scale on t.dist.normal up to 2 and the bell spreads out and gets lower (the same 1000 values over more bins); past about 2, the tails run off the edges and are no longer counted. Drag loc to 2 and the bell slides right. Drag bin count down to 8: coarser bars, each counting more. Set min and max both to 0 and the bins stretch to fit whatever came in.\n\nRELATED:\nt.bincount counts whole numbers exactly, one bin per value, with no range to set. t.bucketize says WHICH bin each value falls in, with boundaries you choose. np.rolling_buffer collects a window of a stream to count. t.cumsum of a histogram gives the cumulative distribution.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 800,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 740,
+                    "value": 1005,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,40 +90,44 @@
                     "value_type": "str"
                 }
             },
-            "text": "These describe how a tensor's values are DISTRIBUTED, rather than what they are.\n\nA mean says where the middle is. A distribution says what the whole spread \nlooks like - whether the values cluster, whether there are two groups, whether \nthe tail is long. For anything measured rather than computed, that shape is \nusually the interesting thing.\n\nTHE NODES:\n\nt.histc      a histogram: how many values fall in each of N equal bins\nt.bincount   how many times each integer occurs\nt.bucketize  which bin each value belongs to, given boundaries you choose\n\nt.histc IS THE ORDINARY HISTOGRAM:\nGive it a bin count and a range and it counts how many values land in each bin. \nThe range matters: values outside min and max are not counted at all, so a \nhistogram that seems to be missing data usually has its limits set too narrow.\n\nt.bincount IS FOR INTEGERS AND COUNTS EXACTLY:\nNo bins, no range - it counts occurrences of each whole number. That is the \nright node for labels, indices, note numbers, joint ids - anything where the \nvalues ARE categories rather than measurements, and where putting them in bins \nwould be a mistake.\n\nt.bucketize ASSIGNS RATHER THAN COUNTS:\nGiven a set of boundaries it tells you which interval each value falls into, \none answer per input value. That is quantisation with boundaries you choose, \nand it is what you want when the bins are meaningful rather than even - \n'still', 'moving', 'fast' at thresholds that mean something, rather than three \nequal slices of the range.\n\nIts output can then go into t.bincount to count how much time was spent in \neach band, which is the two nodes doing what a histogram cannot: a histogram of \nunequal, meaningful bins.\n\nSYNTAX:\nt.histc <bins>\nt.bincount\nt.bucketize\n\nEXAMPLE:\nt.histc\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values.\n\nbin count / min / max (t.histc):\nHow many bins, and the range they span. Values outside are dropped.\n\nint tensor in (t.bincount):\nWhole numbers. Non-integers are not what this node is for.\n\nboundaries tensor in (t.bucketize):\nThe edges of the intervals, in increasing order.\n\nright (t.bucketize):\nWhether a value exactly on a boundary belongs to the interval above or below.\n\nint32 indices:\nReturn the bin indices as 32-bit rather than 64-bit integers.\n\nOUTPUTS: \n\nhistogram tensor out / bin count tensor out:\nThe counts, or the per-value bin assignment.\n\nA NOTE ON WATCHING A DISTRIBUTION MOVE:\nA histogram of one frame is noise. A histogram accumulated over a window - \nnp.rolling_buffer into t.histc - is a picture of what the movement has actually \nbeen doing, and it changes in ways a running mean does not show: a mean stays \nput while a single peak splits into two."
+            "text": "Counts how many values of a tensor fall into each of a number of equal bins between min and max: a histogram.\n\nA mean says where the middle is; a histogram shows the whole spread - whether the values cluster, whether there are two groups, how long the tails are. For anything measured rather than computed, that shape is usually the interesting thing. Feed it a window of recent values (from np.rolling_buffer, say) and it becomes a picture of what a movement has actually been doing: a mean stays put while a single peak splits in two.\n\nSYNTAX:\nt.histc\nNo arguments: set the bins and the range on the node.\n\nEXAMPLE:\nt.histc\n\nINPUTS and PARAMETERS:\n\n(first inlet):\nThe values, any shape - they are all counted together. A list or NumPy array is turned into a float32 tensor. Every input is counted and sent - the only inlet that makes the node send. The values must be floating point: an integer tensor (t.rand with dtype int64, say) is refused with an error. Send it through t.to float32 first.\n\nbin count (drag int):\nHow many bins. Default 100, at least 1.\n\nmin / max (drag floats):\nThe range the bins span, cut into equal widths. Values below min or above max are NOT counted at all - a histogram that seems to be missing data usually has its range set too narrow. A value exactly at max goes in the last bin. Defaults 0 and 0: when min and max are equal the node uses the lowest and highest values of each input instead, so the range follows the data and two histograms are no longer comparable bin for bin.\n\nChanging any of these does not send by itself; the next input uses it. In the demo a metro sends fresh values four times a second, so the bars follow your drags.\n\nOUTPUTS:\n\nhistogram tensor out:\nThe counts, one per bin, lowest bin first, as a 1-D float32 tensor of length bin count. They add up to the number of values inside the range.\n\nREADING THE DEMO:\nt.dist.normal draws 1000 values from a bell curve centred on loc (0) with spread scale (1). The upper plot shows them one after another as dots: noise, with no visible shape. t.histc puts them in 32 bins from -4 to 4, each a quarter wide, and the lower plot shows the count in each bin as a bar: the bell appears, about 100 values high in the middle bins.\n\nDrag scale on t.dist.normal up to 2 and the bell spreads out and gets lower (the same 1000 values over more bins); past about 2, the tails run off the edges and are no longer counted. Drag loc to 2 and the bell slides right. Drag bin count down to 8: coarser bars, each counting more. Set min and max both to 0 and the bins stretch to fit whatever came in.\n\nRELATED:\nt.bincount counts whole numbers exactly, one bin per value, with no range to set. t.bucketize says WHICH bin each value falls in, with boundaries you choose. np.rolling_buffer collects a window of a stream to count. t.cumsum of a histogram gives the cumulative distribution."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 250.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 250"
         },
         "4": {
-            "name": "t.dist.normal",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 123,
-            "height": 84,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.dist.normal 256"
-        },
-        "5": {
-            "init": "comment a bell curve, 256 samples",
+            "init": "comment fresh values four times a second",
             "name": "comment",
-            "id": 422,
-            "position_x": 457,
-            "position_y": 330,
-            "width": 162,
+            "id": 385,
+            "position_x": 426,
+            "position_y": 70,
+            "width": 205,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -131,7 +135,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "a bell curve, 256 samples",
+                    "value": "fresh values four times a second",
                     "value_type": "str"
                 },
                 "1": {
@@ -140,170 +144,387 @@
                     "value_type": "str"
                 }
             },
-            "comment": "a bell curve, 256 samples"
+            "comment": "fresh values four times a second"
         },
-        "6": {
-            "name": "t.histc",
-            "id": 459,
+        "5": {
+            "name": "t.dist.normal",
+            "id": 422,
             "position_x": 30,
-            "position_y": 370,
-            "width": 148,
+            "position_y": 150,
+            "width": 123,
             "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "shape",
+                    "value": "[1000]",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "loc",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "scale",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.dist.normal 1000"
+        },
+        "6": {
+            "init": "comment 1000 values from a bell curve - drag scale and loc",
+            "name": "comment",
+            "id": 459,
+            "position_x": 426,
+            "position_y": 155,
+            "width": 316,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "1000 values from a bell curve - drag scale and loc",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "1000 values from a bell curve - drag scale and loc"
         },
         "7": {
-            "name": "heat_map",
+            "name": "plot",
             "id": 496,
             "position_x": 30,
-            "position_y": 545,
-            "width": 208,
-            "height": 150,
+            "position_y": 330,
+            "width": 308,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "color",
-                    "value": "viridis",
+                    "value": "none",
                     "value_type": "str"
                 },
                 "1": {
                     "name": "width",
-                    "value": 200,
+                    "value": 300,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 100,
+                    "value": 128,
                     "value_type": "int"
                 },
                 "3": {
-                    "name": "sample count",
-                    "value": 16,
-                    "value_type": "int"
+                    "name": "style",
+                    "value": "scatter",
+                    "value_type": "str"
                 },
                 "4": {
-                    "name": "min y",
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "5": {
-                    "name": "max y",
-                    "value": 60.0,
+                "7": {
+                    "name": "max x",
+                    "value": 1000.0,
                     "value_type": "float"
                 },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
+                "8": {
+                    "name": "min y",
+                    "value": -4.0,
+                    "value_type": "float"
                 },
-                "7": {
-                    "name": "number format",
-                    "value": "%.0f",
-                    "value_type": "str"
+                "9": {
+                    "name": "max y",
+                    "value": 4.0,
+                    "value_type": "float"
                 }
             }
         },
         "8": {
-            "name": "text_block",
+            "init": "comment the values one by one: no shape to see (-4 to 4)",
+            "name": "comment",
             "id": 533,
-            "annotation": true,
-            "position_x": 457,
-            "position_y": 705,
-            "width": 237,
-            "height": 52,
+            "position_x": 426,
+            "position_y": 335,
+            "width": 303,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "the shape, not the middle\nset min and max too narrow and\nvalues outside are simply dropped",
+                    "name": "text",
+                    "value": "the values one by one: no shape to see (-4 to 4)",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 229,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "the shape, not the middle\nset min and max too narrow and\nvalues outside are simply dropped"
+            "comment": "the values one by one: no shape to see (-4 to 4)"
         },
         "9": {
-            "name": "t.bucketize",
+            "name": "t.histc",
             "id": 570,
-            "position_x": 300,
-            "position_y": 370,
-            "width": 131,
+            "position_x": 30,
+            "position_y": 530,
+            "width": 148,
             "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "bin count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": -4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 4.0,
+                    "value_type": "float"
+                }
+            },
+            "highlight": true
         },
         "10": {
-            "name": "text_block",
+            "init": "comment 32 bins from -4 to 4 - drag bin count, min, max",
+            "name": "comment",
             "id": 607,
-            "annotation": true,
-            "position_x": 457,
-            "position_y": 545,
-            "width": 231,
-            "height": 40,
+            "position_x": 426,
+            "position_y": 535,
+            "width": 297,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "assigns each value to a band -\nbands you choose, not equal ones",
+                    "name": "text",
+                    "value": "32 bins from -4 to 4 - drag bin count, min, max",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 223,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "assigns each value to a band -\nbands you choose, not equal ones"
+            "comment": "32 bins from -4 to 4 - drag bin count, min, max"
         },
         "11": {
-            "name": "close",
+            "name": "plot",
             "id": 644,
+            "position_x": 30,
+            "position_y": 680,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "bar",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 32.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 150.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the count in each bin: the bell (0 to 150)",
+            "name": "comment",
+            "id": 681,
+            "position_x": 426,
+            "position_y": 685,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the count in each bin: the bell (0 to 150)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the count in each bin: the bell (0 to 150)"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 924,
+            "width": 79,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.bincount"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 125,
+            "position_y": 924,
+            "width": 85,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.bucketize"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 226,
+            "position_y": 924,
+            "width": 123,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.rolling_buffer"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 968,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.normal"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 174,
+            "position_y": 968,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.cumsum"
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 890,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
             "position_x": 24,
-            "position_y": 725,
+            "position_y": 1042,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -324,40 +545,40 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###input"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "2": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "histogram tensor out",
+            "source_output_name": "random tensor",
             "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "3": {
-            "source_node": 385,
+        "2": {
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "random tensor",
             "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "tensor in"
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "histogram tensor out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         }
     }
 }

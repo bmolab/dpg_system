@@ -1,11 +1,11 @@
 {
-    "height": 1678,
-    "width": 1625,
+    "height": 1421,
+    "width": 1474,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 792,
     "name": "mag_offset_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mag_offset_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment mag_offset - measuring and correcting the field",
+            "init": "comment mag_offset - how far off the field is",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 586,
+            "width": 463,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "mag_offset - measuring and correcting the field",
+                    "value": "mag_offset - how far off the field is",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "mag_offset - measuring and correcting the field"
+            "comment": "mag_offset - how far off the field is"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 757,
+            "position_x": 606,
             "position_y": 45,
             "width": 828,
-            "height": 836,
+            "height": 1316,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These measure and correct magnetometer errors - the main source of yaw drift \nin an inertial suit.\n\nWHY THIS MATTERS:\nAn IMU works out which way is down from gravity, and that is reliable. \nWhich way is NORTH it takes from the magnetic field, and that is not: any steel \nnear the sensor distorts the field, and the sensor reads a heading that is \nwrong by an amount depending on where it is and which way it is facing.\n\nThe result is a yaw error - a limb rotated about the vertical - that no \ndownstream filtering will remove, because it is not noise. It is a consistent \nwrong answer, and it has to be measured and subtracted.\n\nTHE NODES:\n\nmag_offset          measure a sensor's field, by fitting a sphere to it\nmag_yaw_correct     correct yaw errors per sensor\nshadow_arm_correct  the interactive version of the upper-arm offset fit\n\nmag_offset AND WHAT THE SPHERE MEANS:\nTurn a sensor through every orientation and its magnetometer readings should \ntrace a sphere centred on the origin, with a radius equal to the field \nstrength. What you actually get is a sphere displaced from the origin - and \nthat displacement is the hard-iron offset, the steel travelling with the sensor.\n\nSo the fit gives you three things:\n  'center'    the hard-iron offset - what to subtract\n  'radius'    the field strength the sensor is seeing\n  'residual'  how well a sphere fits at all - a large residual means the \n              distortion is not a simple offset and cannot be corrected this way\n\nFor reference, a clean sensor in this studio reads about 54.6 microtesla with \na centre offset near 1.5 and a residual around 0.42. A centre offset that is a \nlarge fraction of the radius is a sensor that needs recalibrating, not \ncorrecting in software.\n\nmag_yaw_correct HAS TWO CORRECTIONS, AND THEY ARE DIFFERENT:\n'Global yaw' is pre-multiplied around world vertical, and addresses ongoing \nmagnetometer error - the sensor's heading being wrong in the room.\n'Local yaw' is post-multiplied in the sensor's own frame, and addresses \ncalibration error baked into the T-pose identity - the sensor being mounted \nrotated on the limb.\n\nThey look similar and are not interchangeable. A global error changes as the \nperformer moves around the room; a local one is fixed to the limb. If a \ncorrection holds in one part of the room and fails in another, it is the global \none; if it holds everywhere but only for one limb, it is the local one.\n\nshadow_arm_correct:\nThe live version of the offline upper-arm fit. Lowered arms hang biased, and \nthe cause is a constant per-upper-arm offset at the shoulder. This applies the \nsame per-arm fit plus anatomical dials - twist, abduction, flex, elbow, wrist, \nhand twist - with sliders, so you tune while watching the render rather than \ngenerating files and reloading.\n\nSYNTAX:\nmag_offset\nmag_yaw_correct\n\nEXAMPLE:\nmag_offset\n\nINPUTS and PARAMETERS:\n\nmagnetometer (mag_offset):\nThe raw field readings, from shadow_sensor.\n\nclear:\nDiscard the accumulated cloud and start the fit again.\n\npose in:\nThe pose to correct.\n\nsymmetric / sync local-global (mag_yaw_correct):\nMirror the correction left to right, and tie the two corrections together.\n\nfit / load fit npz / take file (shadow_arm_correct):\nRun the fit, load a saved one, and the take to fit against.\n\nOUTPUTS: \n\ncloud / centered cloud (mag_offset):\nThe readings as measured, and after the offset is removed - the second should \nbe centred on the origin.\n\ncenter / radius / residual:\nThe fit. See above for what each means.\n\npose out:\nThe corrected pose.\n\nHOW TO MEASURE A SENSOR:\nHold the sensor still in a fixed orientation and read the field; then another \norientation; and so on. Do NOT sweep it continuously - a sweep through a \ngradient in the room mixes the room's variation into the sensor's, and the fit \nthen describes neither.",
+                    "value": "mag_offset measures a magnetometer: it collects the field readings as the sensor is turned, fits a sphere to them, and tells you how far that sphere sits from the origin.\n\nWHY THIS MATTERS:\nAn inertial sensor works out which way is down from gravity, and that is reliable. Which way is NORTH it takes from the magnetic field, and that is not: a bit of magnetised metal travelling with the sensor adds its own field to the earth's, and the sensor reads a heading that is wrong by an amount that depends on which way it is facing. The result is a limb turned about the vertical, which no downstream filtering will remove, because it is not noise.\n\nWHAT THE SPHERE MEANS:\nTurn a clean sensor through every orientation and its readings trace a sphere centred on the origin, with a radius equal to the strength of the field. A magnetised sensor traces the same sphere, moved off the origin - and that displacement is the hard-iron offset, the field the sensor carries with it.\n\nSo the fit gives you three things:\n  centre     the hard-iron offset, x y z - what the sensor adds to every reading\n  radius     the strength of the field the sensor is in\n  residual   how far, on average, the readings sit from the fitted sphere - a\n             measure of how well a sphere fits at all\n\nREADING THE NUMBERS:\nJudge the offset by its length as a percentage of the radius. As a reference, a clean chest sensor in the 2026 studio assessments read a radius of 54.6 microtesla, an offset about 1.5 microtesla long (under 3 percent of the radius) and a residual of 0.42 microtesla. Clean sensors there ran from about 0.3 to 3 percent; the sensors that needed recalibrating carried 7 to 33 percent.\n\nThe radius should match the local earth field - about 54.5 microtesla in Toronto. A low radius usually means the sensor was not turned through enough orientations, not that the sensor's scale is wrong. A high residual with a small offset means either too little coverage again, or a distortion that is not a simple offset (soft iron).\n\nA sensor with a large offset needs recalibrating in Shadow, not correcting in software.\n\nHOW TO MEASURE A SENSOR:\nStay in one spot, waist height or higher, and turn the sensor slowly through as many orientations as you can - every face pointing every way. Do not walk around while you turn it, and do not do it near the floor: the field of the room itself varies from place to place, and moving through that variation while turning mixes it into a fit that assumes one field. (To map the room itself, do the opposite: keep one sensor in a fixed orientation and move it.)\n\nCOLLECTING:\nEach reading arriving at 'magnetometer' is kept if it is at least 'min point spacing' away from the last one kept, so holding the sensor still does not pile up points in one place. Readings of exactly zero are ignored. Only the newest 'max points' are kept. The fit starts once there are 8 points, and every kept reading refits and sends everything again.\n\nThe units are whatever comes in; from shadow_sensor they are microtesla.\n\nSYNTAX:\nmag_offset\n\nEXAMPLE:\nmag_offset\n\nINPUTS and PARAMETERS:\n\nmagnetometer:\nOne reading, three numbers x y z - an array or a list.\n\nclear:\nDiscard the collected readings and start again. Sends the empty result.\n\nmax points:\nHow many readings to keep, newest first. Default 2000.\n\noffset (uT) / radius (uT) / fit residual / samples:\nThe current fit, and how many readings it is based on.\n\nOPTIONS:\n\nmin point spacing:\nHow far a reading must be from the last one kept, in the units of the readings. Default 1.\n\nOUTPUTS:\n\ncloud:\nAll the kept readings, one row each.\n\ncentered cloud:\nThe same readings with the offset taken away - they should now sit on a sphere around the origin.\n\ncenter:\nThe offset, x y z.\n\nradius / residual:\nThe fit, as above.\n\nRELATED:\nshadow_sensor supplies the readings from a suit.\nmgl_point_cloud can draw 'cloud' or 'centered cloud' in 3-D.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 820,
+                    "value": 1300,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,39 +90,44 @@
                     "value_type": "str"
                 }
             },
-            "text": "These measure and correct magnetometer errors - the main source of yaw drift \nin an inertial suit.\n\nWHY THIS MATTERS:\nAn IMU works out which way is down from gravity, and that is reliable. \nWhich way is NORTH it takes from the magnetic field, and that is not: any steel \nnear the sensor distorts the field, and the sensor reads a heading that is \nwrong by an amount depending on where it is and which way it is facing.\n\nThe result is a yaw error - a limb rotated about the vertical - that no \ndownstream filtering will remove, because it is not noise. It is a consistent \nwrong answer, and it has to be measured and subtracted.\n\nTHE NODES:\n\nmag_offset          measure a sensor's field, by fitting a sphere to it\nmag_yaw_correct     correct yaw errors per sensor\nshadow_arm_correct  the interactive version of the upper-arm offset fit\n\nmag_offset AND WHAT THE SPHERE MEANS:\nTurn a sensor through every orientation and its magnetometer readings should \ntrace a sphere centred on the origin, with a radius equal to the field \nstrength. What you actually get is a sphere displaced from the origin - and \nthat displacement is the hard-iron offset, the steel travelling with the sensor.\n\nSo the fit gives you three things:\n  'center'    the hard-iron offset - what to subtract\n  'radius'    the field strength the sensor is seeing\n  'residual'  how well a sphere fits at all - a large residual means the \n              distortion is not a simple offset and cannot be corrected this way\n\nFor reference, a clean sensor in this studio reads about 54.6 microtesla with \na centre offset near 1.5 and a residual around 0.42. A centre offset that is a \nlarge fraction of the radius is a sensor that needs recalibrating, not \ncorrecting in software.\n\nmag_yaw_correct HAS TWO CORRECTIONS, AND THEY ARE DIFFERENT:\n'Global yaw' is pre-multiplied around world vertical, and addresses ongoing \nmagnetometer error - the sensor's heading being wrong in the room.\n'Local yaw' is post-multiplied in the sensor's own frame, and addresses \ncalibration error baked into the T-pose identity - the sensor being mounted \nrotated on the limb.\n\nThey look similar and are not interchangeable. A global error changes as the \nperformer moves around the room; a local one is fixed to the limb. If a \ncorrection holds in one part of the room and fails in another, it is the global \none; if it holds everywhere but only for one limb, it is the local one.\n\nshadow_arm_correct:\nThe live version of the offline upper-arm fit. Lowered arms hang biased, and \nthe cause is a constant per-upper-arm offset at the shoulder. This applies the \nsame per-arm fit plus anatomical dials - twist, abduction, flex, elbow, wrist, \nhand twist - with sliders, so you tune while watching the render rather than \ngenerating files and reloading.\n\nSYNTAX:\nmag_offset\nmag_yaw_correct\n\nEXAMPLE:\nmag_offset\n\nINPUTS and PARAMETERS:\n\nmagnetometer (mag_offset):\nThe raw field readings, from shadow_sensor.\n\nclear:\nDiscard the accumulated cloud and start the fit again.\n\npose in:\nThe pose to correct.\n\nsymmetric / sync local-global (mag_yaw_correct):\nMirror the correction left to right, and tie the two corrections together.\n\nfit / load fit npz / take file (shadow_arm_correct):\nRun the fit, load a saved one, and the take to fit against.\n\nOUTPUTS: \n\ncloud / centered cloud (mag_offset):\nThe readings as measured, and after the offset is removed - the second should \nbe centred on the origin.\n\ncenter / radius / residual:\nThe fit. See above for what each means.\n\npose out:\nThe corrected pose.\n\nHOW TO MEASURE A SENSOR:\nHold the sensor still in a fixed orientation and read the field; then another \norientation; and so on. Do NOT sweep it continuously - a sweep through a \ngradient in the room mixes the room's variation into the sensor's, and the fit \nthen describes neither."
+            "text": "mag_offset measures a magnetometer: it collects the field readings as the sensor is turned, fits a sphere to them, and tells you how far that sphere sits from the origin.\n\nWHY THIS MATTERS:\nAn inertial sensor works out which way is down from gravity, and that is reliable. Which way is NORTH it takes from the magnetic field, and that is not: a bit of magnetised metal travelling with the sensor adds its own field to the earth's, and the sensor reads a heading that is wrong by an amount that depends on which way it is facing. The result is a limb turned about the vertical, which no downstream filtering will remove, because it is not noise.\n\nWHAT THE SPHERE MEANS:\nTurn a clean sensor through every orientation and its readings trace a sphere centred on the origin, with a radius equal to the strength of the field. A magnetised sensor traces the same sphere, moved off the origin - and that displacement is the hard-iron offset, the field the sensor carries with it.\n\nSo the fit gives you three things:\n  centre     the hard-iron offset, x y z - what the sensor adds to every reading\n  radius     the strength of the field the sensor is in\n  residual   how far, on average, the readings sit from the fitted sphere - a\n             measure of how well a sphere fits at all\n\nREADING THE NUMBERS:\nJudge the offset by its length as a percentage of the radius. As a reference, a clean chest sensor in the 2026 studio assessments read a radius of 54.6 microtesla, an offset about 1.5 microtesla long (under 3 percent of the radius) and a residual of 0.42 microtesla. Clean sensors there ran from about 0.3 to 3 percent; the sensors that needed recalibrating carried 7 to 33 percent.\n\nThe radius should match the local earth field - about 54.5 microtesla in Toronto. A low radius usually means the sensor was not turned through enough orientations, not that the sensor's scale is wrong. A high residual with a small offset means either too little coverage again, or a distortion that is not a simple offset (soft iron).\n\nA sensor with a large offset needs recalibrating in Shadow, not correcting in software.\n\nHOW TO MEASURE A SENSOR:\nStay in one spot, waist height or higher, and turn the sensor slowly through as many orientations as you can - every face pointing every way. Do not walk around while you turn it, and do not do it near the floor: the field of the room itself varies from place to place, and moving through that variation while turning mixes it into a fit that assumes one field. (To map the room itself, do the opposite: keep one sensor in a fixed orientation and move it.)\n\nCOLLECTING:\nEach reading arriving at 'magnetometer' is kept if it is at least 'min point spacing' away from the last one kept, so holding the sensor still does not pile up points in one place. Readings of exactly zero are ignored. Only the newest 'max points' are kept. The fit starts once there are 8 points, and every kept reading refits and sends everything again.\n\nThe units are whatever comes in; from shadow_sensor they are microtesla.\n\nSYNTAX:\nmag_offset\n\nEXAMPLE:\nmag_offset\n\nINPUTS and PARAMETERS:\n\nmagnetometer:\nOne reading, three numbers x y z - an array or a list.\n\nclear:\nDiscard the collected readings and start again. Sends the empty result.\n\nmax points:\nHow many readings to keep, newest first. Default 2000.\n\noffset (uT) / radius (uT) / fit residual / samples:\nThe current fit, and how many readings it is based on.\n\nOPTIONS:\n\nmin point spacing:\nHow far a reading must be from the last one kept, in the units of the readings. Default 1.\n\nOUTPUTS:\n\ncloud:\nAll the kept readings, one row each.\n\ncentered cloud:\nThe same readings with the offset taken away - they should now sit on a sphere around the origin.\n\ncenter:\nThe offset, x y z.\n\nradius / residual:\nThe fit, as above.\n\nRELATED:\nshadow_sensor supplies the readings from a suit.\nmgl_point_cloud can draw 'cloud' or 'centered cloud' in 3-D."
         },
         "3": {
-            "name": "shadow_sensor",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
             "width": 129,
-            "height": 112,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 50.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 50"
         },
         "4": {
-            "name": "mag_offset",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 260,
-            "width": 246,
-            "height": 182,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "init": "comment turn the sensor through many orientations",
+            "init": "comment a new reading every 50 milliseconds",
             "name": "comment",
-            "id": 422,
-            "position_x": 466,
-            "position_y": 515,
-            "width": 260,
+            "id": 385,
+            "position_x": 302,
+            "position_y": 62,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -130,7 +135,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "turn the sensor through many orientations",
+                    "value": "a new reading every 50 milliseconds",
                     "value_type": "str"
                 },
                 "1": {
@@ -139,163 +144,127 @@
                     "value_type": "str"
                 }
             },
-            "comment": "turn the sensor through many orientations"
+            "comment": "a new reading every 50 milliseconds"
+        },
+        "5": {
+            "name": "np.rand",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "np.rand 3"
         },
         "6": {
-            "name": "float",
+            "name": "norm",
             "id": 459,
-            "position_x": 310,
-            "position_y": 260,
-            "width": 130,
+            "position_x": 30,
+            "position_y": 270,
+            "width": 45,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
+            "properties": {}
         },
         "7": {
-            "name": "float",
+            "init": "comment a random direction, one unit long",
+            "name": "comment",
             "id": 496,
-            "position_x": 310,
-            "position_y": 315,
-            "width": 130,
-            "height": 42,
+            "position_x": 302,
+            "position_y": 270,
+            "width": 211,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%.3f",
+                    "name": "text",
+                    "value": "a random direction, one unit long",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
                     "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
-            }
+            },
+            "comment": "a random direction, one unit long"
         },
         "8": {
-            "name": "float",
+            "name": "*",
             "id": 533,
-            "position_x": 310,
-            "position_y": 370,
-            "width": 130,
-            "height": 42,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "* 54.6"
+        },
+        "9": {
+            "init": "comment scaled to the strength of the field",
+            "name": "comment",
+            "id": 570,
+            "position_x": 302,
+            "position_y": 330,
+            "width": 224,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%.3f",
+                    "name": "text",
+                    "value": "scaled to the strength of the field",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
                     "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
-            }
-        },
-        "9": {
-            "name": "text_block",
-            "id": 570,
-            "annotation": true,
-            "position_x": 466,
-            "position_y": 420,
-            "width": 255,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "centre, radius, residual\na clean sensor here reads about 54.6",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 247,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
             },
-            "text": "centre, radius, residual\na clean sensor here reads about 54.6"
+            "comment": "scaled to the strength of the field"
         },
         "10": {
-            "name": "shadow",
+            "name": "+",
             "id": 607,
             "position_x": 30,
-            "position_y": 560,
-            "width": 119,
-            "height": 168,
+            "position_y": 390,
+            "width": 88,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "init": "+ 3."
         },
         "11": {
-            "name": "mag_yaw_correct",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 900,
-            "width": 144,
-            "height": 644,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "12": {
             "name": "text_block",
-            "id": 681,
+            "id": 644,
             "annotation": true,
-            "position_x": 466,
-            "position_y": 1155,
-            "width": 261,
+            "position_x": 302,
+            "position_y": 390,
+            "width": 274,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -303,7 +272,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "global yaw: wrong heading in the room\nlocal yaw: sensor mounted rotated",
+                    "value": "a magnetised sensor: 3 microtesla added\nto x, y and z - drag it to change",
                     "value_type": "str"
                 },
                 "1": {
@@ -313,7 +282,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 253,
+                    "value": 266,
                     "value_type": "int"
                 },
                 "3": {
@@ -327,13 +296,66 @@
                     "value_type": "str"
                 }
             },
-            "text": "global yaw: wrong heading in the room\nlocal yaw: sensor mounted rotated"
+            "text": "a magnetised sensor: 3 microtesla added\nto x, y and z - drag it to change"
+        },
+        "12": {
+            "name": "mag_offset",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 450,
+            "width": 246,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
         },
         "13": {
-            "name": "close",
+            "name": "text_block",
             "id": 718,
+            "annotation": true,
+            "position_x": 302,
+            "position_y": 450,
+            "width": 231,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "offset 3, 3, 3 and radius 54.6\nresidual near zero: these points\nlie exactly on a sphere",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "offset 3, 3, 3 and radius 54.6\nresidual near zero: these points\nlie exactly on a sphere"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
             "position_x": 24,
-            "position_y": 1574,
+            "position_y": 662,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -353,51 +375,51 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "magnetometer",
-            "dest_node": 385,
+            "source_output_name": "",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "magnetometer"
+            "dest_input_name": ""
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "center",
+            "source_output_name": "random array",
             "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "in"
         },
         "2": {
-            "source_node": 385,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "radius",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "3": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "residual",
+            "source_output_name": "result",
             "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
         },
         "4": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "body 1 quaternions",
-            "dest_node": 644,
+            "source_output_name": "result",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "pose in"
+            "dest_input_name": "magnetometer"
         }
     }
 }

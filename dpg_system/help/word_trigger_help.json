@@ -1,11 +1,11 @@
 {
-    "height": 801,
-    "width": 1720,
+    "height": 761,
+    "width": 1627,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 792,
     "name": "word_trigger_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/word_trigger_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 872,
+            "position_x": 779,
             "position_y": 45,
             "width": 808,
-            "height": 696,
+            "height": 656,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These watch text going past and react to particular words.\n\nTHE NODES:\n\nword_trigger          an outlet per word you name; fires when that word appears\nfirst_letter_trigger  an outlet per letter; fires on the word's first letter\nword_gate             pass only words that are in a dictionary\nfuzzy_match           find the closest match rather than an exact one\n\nword_trigger IS route FOR LANGUAGE:\nName the words as arguments and each gets an outlet. A stream of text - from \nspeech recognition, from a chat, from a file - then drives the patch directly: \nsay a word, something happens. It is the same shape as osc_route or the select \nnode, applied to language.\n\nfuzzy_match EXISTS BECAUSE EXACT MATCHING FAILS ON SPEECH:\nRecognised speech is approximate. It gives you \"recognise\" for \"recognize\", \n\"there\" for \"their\", and words that are simply wrong but close. Exact matching \nagainst a list therefore misses most of what was actually said.\n\nfuzzy_match reports the closest entry and a SCORE for how close, so you can \ndecide what counts. The 'threshold' sets how far off is acceptable. Watch the \nscore outlet while tuning - a threshold set without looking at real scores is \na guess, and the useful range is usually narrower than you would expect.\n\nword_gate FILTERS BY VOCABULARY:\nGive it a dictionary and only words in it get through. That is how you keep a \ntext stream to a known vocabulary - useful when the words are going to drive \nsomething that only understands certain ones, and as a way of ignoring the \nnoise in a recognition stream without having to enumerate what to reject.\n\nSYNTAX:\nword_trigger <word> <word> ...\nfirst_letter_trigger\nword_gate\nfuzzy_match\n\nEXAMPLE:\nword_trigger stop start faster\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe text to watch. Receiving it triggers the node.\n\ndictionary in / load dictionary / include word (word_gate):\nThe vocabulary, and a way to add to it.\n\nthreshold (fuzzy_match):\nHow close a match has to be.\n\nOUTPUTS: \n\n<one outlet per word or letter>:\nFires when that word or letter appears.\n\ngated string out:\nOnly the words that passed.\n\nstring out / score out / replacement out (fuzzy_match):\nWhat was matched, how close it was, and what to substitute.\n\nRELATED:\nThe spacy nodes do grammatical analysis where these do matching. \nselect and route do the same job for messages rather than words.",
+                    "value": "These watch text going past and fire when particular words, or words beginning with particular letters, appear in it.\n\nTHE NODES:\n\nword_trigger          an outlet per word you name; fires when that word appears\nfirst_letter_trigger  an outlet per letter; fires when a word begins with it\n\nword_trigger IS route FOR LANGUAGE:\nName the words as arguments and each gets an outlet. A stream of text - from speech recognition, from a chat, from a file - then drives the patch directly: say a word, something happens. It is the same shape as route or select, applied to language.\n\nEach message is checked for every word. A word's outlet sends a bang when the word appears anywhere in the message as a whole word - \"faster\" does not fire on \"fasterer\" - and it fires once however many times the word appears. Several words in one message each fire.\n\nCapitals are ignored: the text and the arguments are both lowered to small letters before matching, so \"word_trigger Stop\" fires on \"stop\" and on \"STOP\".\n\nfirst_letter_trigger LISTENS FOR INITIALS:\nName single letters as arguments. A letter's outlet sends a bang when any word in the message begins with it - once per message, however many words do. Capitals are ignored, as for word_trigger.\n\nSYNTAX:\nword_trigger <word> <word> ...\nfirst_letter_trigger <letter> <letter> ...\n\nEXAMPLE:\nword_trigger stop start faster\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe text to watch. Receiving it triggers the node. A list is read as its words joined by spaces.\n\nOUTPUTS:\n\n<one outlet per word or letter>:\nA bang when that word, or a word beginning with that letter, appears.\n\nRELATED:\nword_gate passes only the words in a vocabulary, instead of firing on them. fuzzy_match corrects a name that was spelled or heard slightly wrong. select and route do the same job for messages rather than words.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 680,
+                    "value": 640,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,25 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "These watch text going past and react to particular words.\n\nTHE NODES:\n\nword_trigger          an outlet per word you name; fires when that word appears\nfirst_letter_trigger  an outlet per letter; fires on the word's first letter\nword_gate             pass only words that are in a dictionary\nfuzzy_match           find the closest match rather than an exact one\n\nword_trigger IS route FOR LANGUAGE:\nName the words as arguments and each gets an outlet. A stream of text - from \nspeech recognition, from a chat, from a file - then drives the patch directly: \nsay a word, something happens. It is the same shape as osc_route or the select \nnode, applied to language.\n\nfuzzy_match EXISTS BECAUSE EXACT MATCHING FAILS ON SPEECH:\nRecognised speech is approximate. It gives you \"recognise\" for \"recognize\", \n\"there\" for \"their\", and words that are simply wrong but close. Exact matching \nagainst a list therefore misses most of what was actually said.\n\nfuzzy_match reports the closest entry and a SCORE for how close, so you can \ndecide what counts. The 'threshold' sets how far off is acceptable. Watch the \nscore outlet while tuning - a threshold set without looking at real scores is \na guess, and the useful range is usually narrower than you would expect.\n\nword_gate FILTERS BY VOCABULARY:\nGive it a dictionary and only words in it get through. That is how you keep a \ntext stream to a known vocabulary - useful when the words are going to drive \nsomething that only understands certain ones, and as a way of ignoring the \nnoise in a recognition stream without having to enumerate what to reject.\n\nSYNTAX:\nword_trigger <word> <word> ...\nfirst_letter_trigger\nword_gate\nfuzzy_match\n\nEXAMPLE:\nword_trigger stop start faster\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe text to watch. Receiving it triggers the node.\n\ndictionary in / load dictionary / include word (word_gate):\nThe vocabulary, and a way to add to it.\n\nthreshold (fuzzy_match):\nHow close a match has to be.\n\nOUTPUTS: \n\n<one outlet per word or letter>:\nFires when that word or letter appears.\n\ngated string out:\nOnly the words that passed.\n\nstring out / score out / replacement out (fuzzy_match):\nWhat was matched, how close it was, and what to substitute.\n\nRELATED:\nThe spacy nodes do grammatical analysis where these do matching. \nselect and route do the same job for messages rather than words."
+            "text": "These watch text going past and fire when particular words, or words beginning with particular letters, appear in it.\n\nTHE NODES:\n\nword_trigger          an outlet per word you name; fires when that word appears\nfirst_letter_trigger  an outlet per letter; fires when a word begins with it\n\nword_trigger IS route FOR LANGUAGE:\nName the words as arguments and each gets an outlet. A stream of text - from speech recognition, from a chat, from a file - then drives the patch directly: say a word, something happens. It is the same shape as route or select, applied to language.\n\nEach message is checked for every word. A word's outlet sends a bang when the word appears anywhere in the message as a whole word - \"faster\" does not fire on \"fasterer\" - and it fires once however many times the word appears. Several words in one message each fire.\n\nCapitals are ignored: the text and the arguments are both lowered to small letters before matching, so \"word_trigger Stop\" fires on \"stop\" and on \"STOP\".\n\nfirst_letter_trigger LISTENS FOR INITIALS:\nName single letters as arguments. A letter's outlet sends a bang when any word in the message begins with it - once per message, however many words do. Capitals are ignored, as for word_trigger.\n\nSYNTAX:\nword_trigger <word> <word> ...\nfirst_letter_trigger <letter> <letter> ...\n\nEXAMPLE:\nword_trigger stop start faster\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe text to watch. Receiving it triggers the node. A list is read as its words joined by spaces.\n\nOUTPUTS:\n\n<one outlet per word or letter>:\nA bang when that word, or a word beginning with that letter, appears.\n\nRELATED:\nword_gate passes only the words in a vocabulary, instead of firing on them. fuzzy_match corrects a name that was spelled or heard slightly wrong. select and route do the same job for messages rather than words."
         },
         "3": {
-            "name": "button",
+            "name": "string",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "message",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 118,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -127,25 +115,51 @@
                 }
             }
         },
+        "4": {
+            "init": "comment click to send the text",
+            "name": "comment",
+            "id": 385,
+            "position_x": 537,
+            "position_y": 112,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send the text",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send the text"
+        },
         "5": {
             "name": "word_trigger",
             "id": 422,
             "position_x": 30,
-            "position_y": 180,
+            "position_y": 150,
             "width": 82,
             "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "word_trigger stop faster slower"
+            "init": "word_trigger stop faster slower",
+            "highlight": true
         },
         "6": {
             "init": "comment an outlet per word you name",
             "name": "comment",
             "id": 459,
-            "position_x": 574,
-            "position_y": 335,
+            "position_x": 537,
+            "position_y": 320,
             "width": 174,
             "height": 30,
             "visibility": "show_all",
@@ -169,7 +183,7 @@
             "name": "counter",
             "id": 496,
             "position_x": 30,
-            "position_y": 375,
+            "position_y": 345,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -181,7 +195,7 @@
             "name": "int",
             "id": 533,
             "position_x": 30,
-            "position_y": 470,
+            "position_y": 440,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -209,8 +223,8 @@
             "init": "comment counts how often faster was said",
             "name": "comment",
             "id": 570,
-            "position_x": 574,
-            "position_y": 520,
+            "position_x": 537,
+            "position_y": 490,
             "width": 205,
             "height": 30,
             "visibility": "show_all",
@@ -231,22 +245,76 @@
             "comment": "counts how often faster was said"
         },
         "10": {
-            "name": "fuzzy_match",
+            "name": "first_letter_trigger",
             "id": 607,
-            "position_x": 400,
-            "position_y": 375,
-            "width": 148,
-            "height": 112,
+            "position_x": 380,
+            "position_y": 150,
+            "width": 131,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "first_letter_trigger g s",
+            "highlight": true
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 537,
+            "position_y": 270,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "an outlet per letter - go\nbegins with g, nothing with s",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "an outlet per letter - go\nbegins with g, nothing with s"
+        },
+        "12": {
+            "name": "counter",
+            "id": 681,
+            "position_x": 380,
+            "position_y": 345,
+            "width": 123,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
-            "name": "float",
-            "id": 644,
-            "position_x": 400,
-            "position_y": 570,
+        "13": {
+            "name": "int",
+            "id": 718,
+            "position_x": 380,
+            "position_y": 440,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -255,7 +323,7 @@
             "properties": {
                 "0": {
                     "name": "format",
-                    "value": "%.3f",
+                    "value": "%d",
                     "value_type": "str"
                 },
                 "1": {
@@ -270,51 +338,11 @@
                 }
             }
         },
-        "12": {
-            "name": "text_block",
-            "id": 681,
-            "annotation": true,
-            "position_x": 574,
-            "position_y": 620,
-            "width": 268,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "watch the score before setting\na threshold - guessing it rarely works",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 260,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "watch the score before setting\na threshold - guessing it rarely works"
-        },
-        "13": {
+        "14": {
             "name": "close",
-            "id": 718,
+            "id": 755,
             "position_x": 24,
-            "position_y": 642,
+            "position_y": 512,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -334,23 +362,13 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
+            "source_output_name": "string out",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "string in"
         },
-        "2": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -360,7 +378,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "3": {
+        "2": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
@@ -370,22 +388,32 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "4": {
-            "source_node": 385,
+        "3": {
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
+            "source_output_name": "string out",
             "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "string in"
         },
-        "5": {
+        "4": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "score out",
-            "dest_node": 644,
+            "source_output_name": "g",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

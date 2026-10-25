@@ -10,18 +10,20 @@ class TorchNode(Node):
         self.input = None
         self.output = None
 
-    def input_to_tensor(self):
+    def input_to_tensor(self, allow_empty=False):
         if self.input is not None:
             input_tensor = self.input()
             if input_tensor is None:
                 return input_tensor
+            if allow_empty and isinstance(input_tensor, (list, tuple)) and len(input_tensor) == 0:
+                return torch.zeros(0)   # any_to_tensor turns an empty list into None
             if not isinstance(input_tensor, torch.Tensor):
                 input_tensor = any_to_tensor(input_tensor, validate=True)
             # Treat empty tensors as "no data" — most downstream nodes call
             # shape-dependent ops that don't handle 0-element inputs gracefully.
             # Callers that need to distinguish empty from missing should access
-            # self.input() directly.
-            if input_tensor is not None and input_tensor.numel() > 0:
+            # self.input() directly, or pass allow_empty.
+            if input_tensor is not None and (allow_empty or input_tensor.numel() > 0):
                 return input_tensor
         return None
 
@@ -137,7 +139,9 @@ class TorchDeviceDtypeNode(TorchNode):
         self.device = torch.device(device_name)
 
     def requires_grad_changed(self):
-        self.requires_grad = self.grad_input()
+        # a toggle sends 1 / 0, and torch refuses requires_grad=1 (TypeError),
+        # so the node stopped sending; torch wants a real bool
+        self.requires_grad = any_to_bool(self.grad_input())
 
     def dtype_changed(self):
         dtype = self.dtype_input()
@@ -204,9 +208,14 @@ class TorchInfoNode(TorchNode):
         self.dtype_output = self.add_output('dtype')
         self.device_output = self.add_output('device')
         self.requires_grad_output = self.add_output('grad')
+        # the labels show the readings, so links save by the outlets' names
+        for output in self.outputs:
+            output.save_name = output.get_label()
 
     def execute(self):
-        in_data = self.input_to_tensor()
+        # an empty tensor is still a tensor with a shape to report; dropping
+        # it left the previous input's shape showing
+        in_data = self.input_to_tensor(allow_empty=True)
         if in_data is not None:
             rg = 'inference'
             if in_data.requires_grad:

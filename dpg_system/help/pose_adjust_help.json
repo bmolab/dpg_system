@@ -1,0 +1,437 @@
+{
+    "height": 1740,
+    "width": 1484,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "pose_adjust_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pose_adjust_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment pose_adjust - fixed corrections, joint by joint",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 586,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pose_adjust - fixed corrections, joint by joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pose_adjust - fixed corrections, joint by joint"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 626,
+            "position_y": 45,
+            "width": 818,
+            "height": 1206,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pose_adjust applies a fixed rotation to chosen joints of a 20-joint pose - for a pose that is right in shape but wrong in detail, such as a sensor that sits a little off on one limb.\n\nWHAT IT TAKES:\nA 20-joint active pose: 20 rows of w x y z, or a flat list of 80 numbers. A pose of any other size produces nothing - reduce a 37-row Shadow pose with active_joints first.\n\nTHE CORRECTIONS:\nOne row of four numbers per joint, a quaternion w x y z. 1 0 0 0, the identity, means no correction. Keep each row unit length - its four squares adding to one - because nothing normalises it, and a longer or shorter row scales the joint's quaternion as well as turning it.\n\nThe rows have short names, in the same order as the active joints:\n\nhead     base of skull         l_hip ... l_ankle      left leg\nneck     upper vertebrae       r_hip ... r_ankle      right leg\nspine3   mid vertebrae         l_collar ... l_wrist   left arm, from the\nspine2   lower vertebrae                              shoulder blade out\nspine1   spine pelvis          r_collar ... r_wrist   right arm\npelvis   pelvis anchor\n\nChanging a correction does not send anything; the next pose to arrive is corrected with it.\n\nWHICH FRAME A CORRECTION IS IN:\nThe frame the rotation is applied in decides whether the correction holds as the body moves.\n\nThe pelvis correction is always in the body's own frame. Every other joint's correction is, by default, in its PARENT bone's frame. The 'child frame' checkbox switches them all to the joint's OWN frame.\n\nA sensor mounted on the child side of a joint produces an error in the child's frame, and correcting it in the parent's will drift as the joint bends. If a correction looks right in one posture and wrong in another, this is the setting.\n\nIn the example the left elbow swings about x and is corrected by a quarter turn about z. Tick 'child frame' and the corrected angles change, because the two frames differ once the elbow has turned.\n\nSYNTAX:\npose_adjust\n\nEXAMPLE:\npose_adjust\n\nINPUTS:\n\npose in:\nThe 20-joint pose.\n\nchild frame:\nOff: corrections in the parent bone's frame. On: in the joint's own frame.\n\nreset:\nSet every correction back to the identity.\n\nhead ... r_wrist:\nThe correction for each joint. Saved with the patch and with presets.\n\nOUTPUT:\n\npose out:\nThe corrected pose, 20 rows. Joints without a correction come out exactly as they went in.\n\nRELATED:\nsmpl_pose_adjust does the same for an SMPL pose, with the corrections in axis-angle form.\ncalibrate_pose works out a correction from a captured pose rather than taking one you set.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1190,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "pose_adjust applies a fixed rotation to chosen joints of a 20-joint pose - for a pose that is right in shape but wrong in detail, such as a sensor that sits a little off on one limb.\n\nWHAT IT TAKES:\nA 20-joint active pose: 20 rows of w x y z, or a flat list of 80 numbers. A pose of any other size produces nothing - reduce a 37-row Shadow pose with active_joints first.\n\nTHE CORRECTIONS:\nOne row of four numbers per joint, a quaternion w x y z. 1 0 0 0, the identity, means no correction. Keep each row unit length - its four squares adding to one - because nothing normalises it, and a longer or shorter row scales the joint's quaternion as well as turning it.\n\nThe rows have short names, in the same order as the active joints:\n\nhead     base of skull         l_hip ... l_ankle      left leg\nneck     upper vertebrae       r_hip ... r_ankle      right leg\nspine3   mid vertebrae         l_collar ... l_wrist   left arm, from the\nspine2   lower vertebrae                              shoulder blade out\nspine1   spine pelvis          r_collar ... r_wrist   right arm\npelvis   pelvis anchor\n\nChanging a correction does not send anything; the next pose to arrive is corrected with it.\n\nWHICH FRAME A CORRECTION IS IN:\nThe frame the rotation is applied in decides whether the correction holds as the body moves.\n\nThe pelvis correction is always in the body's own frame. Every other joint's correction is, by default, in its PARENT bone's frame. The 'child frame' checkbox switches them all to the joint's OWN frame.\n\nA sensor mounted on the child side of a joint produces an error in the child's frame, and correcting it in the parent's will drift as the joint bends. If a correction looks right in one posture and wrong in another, this is the setting.\n\nIn the example the left elbow swings about x and is corrected by a quarter turn about z. Tick 'child frame' and the corrected angles change, because the two frames differ once the elbow has turned.\n\nSYNTAX:\npose_adjust\n\nEXAMPLE:\npose_adjust\n\nINPUTS:\n\npose in:\nThe 20-joint pose.\n\nchild frame:\nOff: corrections in the parent bone's frame. On: in the joint's own frame.\n\nreset:\nSet every correction back to the identity.\n\nhead ... r_wrist:\nThe correction for each joint. Saved with the patch and with presets.\n\nOUTPUT:\n\npose out:\nThe corrected pose, 20 rows. Joints without a correction come out exactly as they went in.\n\nRELATED:\nsmpl_pose_adjust does the same for an SMPL pose, with the corrections in axis-angle form.\ncalibrate_pose works out a correction from a captured pose rather than taking one you set."
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 90.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "4": {
+            "name": "pack",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 162,
+            "width": 33,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 3"
+        },
+        "5": {
+            "name": "euler_to_quaternion",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 277,
+            "width": 125,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 316,
+            "position_y": 277,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one joint swinging 90 degrees\neach way about x",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one joint swinging 90 degrees\neach way about x"
+        },
+        "7": {
+            "name": "pose",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 131,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "pose_adjust",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 260,
+            "height": 350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "l_elbow",
+                    "value": [
+                        0.7071,
+                        0.0,
+                        0.0,
+                        0.7071
+                    ],
+                    "value_type": "list"
+                }
+            },
+            "highlight": true
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 316,
+            "position_y": 720,
+            "width": 280,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "l_elbow: a quarter turn about z\ntick child frame and watch row 14 change",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "l_elbow: a quarter turn about z\ntick child frame and watch row 14 change"
+        },
+        "10": {
+            "name": "quaternion_to_euler",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 1300,
+            "width": 125,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "vector",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 1480,
+            "width": 160,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 316,
+            "position_y": 1480,
+            "width": 206,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the corrected pose, as x y z\nangles in degrees",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 198,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the corrected pose, as x y z\nangles in degrees"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 1636,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xyz rotation"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left elbow"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "euler angles",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

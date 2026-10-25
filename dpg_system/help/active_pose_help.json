@@ -1,0 +1,317 @@
+{
+    "height": 1110,
+    "width": 1483,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "active_pose_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/active_pose_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment active_pose - see and edit a 20-joint pose",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "active_pose - see and edit a 20-joint pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "active_pose - see and edit a 20-joint pose"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 625,
+            "position_y": 45,
+            "width": 818,
+            "height": 936,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "active_pose shows a 20-joint pose one row per joint, and lets you edit it.\n\nWHAT IT SHOWS:\nTwenty rows, labelled base_of_skull through right_wrist in the order active_joints and pose use. Each row is one joint's rotation as a quaternion, w x y z with the real part first. Every joint starts at the identity, 1 0 0 0, which is no rotation.\n\nEDITING:\nChange any number in a row and the whole pose goes out of 'out'. The numbers go out exactly as typed - nothing normalises them - so keep each row a unit quaternion, its four squares adding up to one. 0.707 0.707 0 0 is a quarter turn about x; 1 1 0 0 is not a rotation at all.\n\nA POSE ARRIVING:\nA pose sent into 'in' replaces the rows and goes straight out, so active_pose also works as a readout of a live pose. While a stream is arriving, it overwrites your edits on the next frame. A bang into 'in' sends the rows as they are.\n\nSend it 20 rows. It shows whatever shape arrives, but the joint labels belong to the first 20 rows, so a pose of another size is labelled wrongly.\n\nThe rows are saved with the patch.\n\nSYNTAX:\nactive_pose\n\nEXAMPLE:\nactive_pose\n\nINPUTS:\n\nin:\nA 20-joint pose, or a bang to send the current rows.\n\nbase_of_skull ... right_wrist:\nThe rows themselves.\n\nreset:\nSet every joint back to the identity, and send the pose.\n\noutput type:\nnumpy (the default), torch or list.\n\nOPTIONS:\nsave and load write the rows to a .npy file and read them back.\n\nOUTPUT:\n\nout:\nThe pose, 20 rows of four.\n\nRELATED:\npose builds a pose from single joints.\npose_adjust applies fixed corrections to a pose, joint by joint. quaternion_to_euler shows the rows as angles, as in the example.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 920,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "active_pose shows a 20-joint pose one row per joint, and lets you edit it.\n\nWHAT IT SHOWS:\nTwenty rows, labelled base_of_skull through right_wrist in the order active_joints and pose use. Each row is one joint's rotation as a quaternion, w x y z with the real part first. Every joint starts at the identity, 1 0 0 0, which is no rotation.\n\nEDITING:\nChange any number in a row and the whole pose goes out of 'out'. The numbers go out exactly as typed - nothing normalises them - so keep each row a unit quaternion, its four squares adding up to one. 0.707 0.707 0 0 is a quarter turn about x; 1 1 0 0 is not a rotation at all.\n\nA POSE ARRIVING:\nA pose sent into 'in' replaces the rows and goes straight out, so active_pose also works as a readout of a live pose. While a stream is arriving, it overwrites your edits on the next frame. A bang into 'in' sends the rows as they are.\n\nSend it 20 rows. It shows whatever shape arrives, but the joint labels belong to the first 20 rows, so a pose of another size is labelled wrongly.\n\nThe rows are saved with the patch.\n\nSYNTAX:\nactive_pose\n\nEXAMPLE:\nactive_pose\n\nINPUTS:\n\nin:\nA 20-joint pose, or a bang to send the current rows.\n\nbase_of_skull ... right_wrist:\nThe rows themselves.\n\nreset:\nSet every joint back to the identity, and send the pose.\n\noutput type:\nnumpy (the default), torch or list.\n\nOPTIONS:\nsave and load write the rows to a .npy file and read them back.\n\nOUTPUT:\n\nout:\nThe pose, 20 rows of four.\n\nRELATED:\npose builds a pose from single joints.\npose_adjust applies fixed corrections to a pose, joint by joint. quaternion_to_euler shows the rows as angles, as in the example."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click to send the pose",
+            "name": "comment",
+            "id": 385,
+            "position_x": 377,
+            "position_y": 62,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send the pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send the pose"
+        },
+        "5": {
+            "name": "active_pose",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 321,
+            "height": 350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "[14]",
+                    "value": [
+                        0.7071,
+                        0.7071,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                }
+            },
+            "highlight": true
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 130,
+            "width": 218,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "left_elbow is set to a quarter\nturn about x - edit any row\nand the pose goes out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "left_elbow is set to a quarter\nturn about x - edit any row\nand the pose goes out"
+        },
+        "7": {
+            "name": "quaternion_to_euler",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 670,
+            "width": 125,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "vector",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 850,
+            "width": 160,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 850,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the same pose as x y z angles\nin degrees, one row per joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the same pose as x y z angles\nin degrees, one row per joint"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 1006,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "euler angles",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

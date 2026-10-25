@@ -1,5 +1,6 @@
 name: dpg_system_2026
 channels:
+  - defaults
   - conda-forge
 dependencies:
   - cairo
@@ -8,7 +9,6 @@ dependencies:
   - glfw
   - pkg-config
   - portaudio
-  - pycairo
   - pyglfw
   - pyopengl
   - python==3.10
@@ -37,6 +37,7 @@ dependencies:
     # 3D / Graphics
     - freetype-py
     - moderngl
+    - pycairo
     - pyglet
     - smplx
     - trimesh
@@ -66,6 +67,7 @@ dependencies:
     # Networking & OSC
     - ndi-python
     - netifaces
+    - PyATEMMax==1.0b9
     - python-osc
     - simplepyble
     - websockets
@@ -84,4 +86,4 @@ dependencies:
     - ssqueezepy
     - sympy
     - word2number
-
+prefix: dpg_system_2026

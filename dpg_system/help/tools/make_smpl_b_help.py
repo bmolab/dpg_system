@@ -85,6 +85,13 @@ every torque scales with it.
 reset_state / reset_noise_stats / reset_floor:
 Clear the running estimates.
 
+worker_process:
+On by default. The calculation runs in a process of its own, so it does not 
+compete with the render loop for Python's one-at-a-time lock - which, with a 
+100 Hz capture delivered on its own thread (shadow in direct mode), is what 
+made the output lag further and further behind. The results are the same 
+either way. Turning it off, or a worker that cannot start, runs it in the app.
+
 OUTPUTS: 
 
 See above. All the vector outlets are per joint.
@@ -205,6 +212,13 @@ How strongly a partly-released joint is still driven.
 substeps / substep_rate:
 Simulation accuracy. More is stabler and slower - raise it if limbs jitter or 
 pass through each other.
+
+worker_process:
+On by default. The physics runs in a process of its own, so it does not 
+compete with the render loop for Python's one-at-a-time lock - with a 100 Hz 
+capture on its own thread (shadow in direct mode) that competition made the 
+output lag further and further behind. The results are the same either way. 
+Toggling it restarts the simulation.
 
 up_axis / axis_permutation / quat_format:
 As on smpl_torque, and with the same warning: this node does the conversion 

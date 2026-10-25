@@ -1,0 +1,636 @@
+{
+    "height": 1292,
+    "width": 1568,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "t.bincount_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.bincount_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.bincount - how many of each whole number",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.bincount - how many of each whole number",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.bincount - how many of each whole number"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 760,
+            "position_y": 45,
+            "width": 768,
+            "height": 931,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Counts how many times each whole number occurs: the first value of the output is how many 0s there were, the next how many 1s, and so on up to the largest value in the input.\n\nUse it when the values ARE categories rather than measurements - labels, joint ids, note numbers, states, the band numbers t.bucketize gives - and you want exact counts with no bins or range to choose. It is the histogram for whole numbers.\n\nSYNTAX:\nt.bincount\nNo arguments.\n\nEXAMPLE:\nt.bincount\n\nINPUTS and PARAMETERS:\n\nint tensor in:\nThe whole numbers, any shape - a 2-D tensor is flattened and all its values counted together. Every input is counted and sent - the only inlet that makes the node send. Values that are not whole numbers are cut toward zero first (2.7 counts as a 2). Lists arrive as floats and are cut the same way.\n\nNEGATIVE VALUES ARE COUNTED AS 0:\ntorch.bincount refuses negative numbers, so the node raises them to 0 before counting - every negative value adds one to the count of 0s, silently. Shift the values up first (+ 5, say) if the input can go below 0 and you want it counted honestly.\n\nOUTPUTS:\n\nbin count tensor out:\nThe counts, as int64, one per whole number from 0 to the largest value in the input - so the output is as long as the largest value plus one, and its length changes when the largest value does. Numbers that never occur get 0.\n\nREADING THE DEMO:\nTop: 0 1 1 3 3 3 5 holds one 0, two 1s, no 2s, three 3s, no 4s and one 5, and t.bincount sends exactly that: 1 2 0 3 0 1. Edit the message and click it.\n\nBottom: t.rand (dtype int64) makes 2 rows of 2000 whole numbers from 0 to 9 - two throws of a ten-sided die, 2000 times over, a new set four times a second. (For whole numbers t.rand's max is never reached.) t.sum 0 adds the two rows: 2000 totals from 0 to 18. The plot shows how often each total came up, as a bar per number: a triangle peaking at 9, about 200 times, falling to about 20 at 0 and 18 - there are ten ways to throw 9 and only one to throw 0. Drag max on t.rand down to 4 and the output gets SHORTER (totals 0 to 6 only): its length follows the largest value that occurs.\n\nRELATED:\nt.histc counts measurements in equal bins over a range you set. t.bucketize turns measurements into band numbers you can then count here. t.argmax of the counts is the most common value. t.rand makes random whole numbers when its dtype is int64.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 915,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Counts how many times each whole number occurs: the first value of the output is how many 0s there were, the next how many 1s, and so on up to the largest value in the input.\n\nUse it when the values ARE categories rather than measurements - labels, joint ids, note numbers, states, the band numbers t.bucketize gives - and you want exact counts with no bins or range to choose. It is the histogram for whole numbers.\n\nSYNTAX:\nt.bincount\nNo arguments.\n\nEXAMPLE:\nt.bincount\n\nINPUTS and PARAMETERS:\n\nint tensor in:\nThe whole numbers, any shape - a 2-D tensor is flattened and all its values counted together. Every input is counted and sent - the only inlet that makes the node send. Values that are not whole numbers are cut toward zero first (2.7 counts as a 2). Lists arrive as floats and are cut the same way.\n\nNEGATIVE VALUES ARE COUNTED AS 0:\ntorch.bincount refuses negative numbers, so the node raises them to 0 before counting - every negative value adds one to the count of 0s, silently. Shift the values up first (+ 5, say) if the input can go below 0 and you want it counted honestly.\n\nOUTPUTS:\n\nbin count tensor out:\nThe counts, as int64, one per whole number from 0 to the largest value in the input - so the output is as long as the largest value plus one, and its length changes when the largest value does. Numbers that never occur get 0.\n\nREADING THE DEMO:\nTop: 0 1 1 3 3 3 5 holds one 0, two 1s, no 2s, three 3s, no 4s and one 5, and t.bincount sends exactly that: 1 2 0 3 0 1. Edit the message and click it.\n\nBottom: t.rand (dtype int64) makes 2 rows of 2000 whole numbers from 0 to 9 - two throws of a ten-sided die, 2000 times over, a new set four times a second. (For whole numbers t.rand's max is never reached.) t.sum 0 adds the two rows: 2000 totals from 0 to 18. The plot shows how often each total came up, as a bar per number: a triangle peaking at 9, about 200 times, falling to about 20 at 0 and 18 - there are ten ways to throw 9 and only one to throw 0. Drag max on t.rand down to 4 and the output gets SHORTER (totals 0 to 6 only): its length follows the largest value that occurs.\n\nRELATED:\nt.histc counts measurements in equal bins over a range you set. t.bucketize turns measurements into band numbers you can then count here. t.argmax of the counts is the most common value. t.rand makes random whole numbers when its dtype is int64."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 1 3 3 3 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment whole numbers - edit and click",
+            "name": "comment",
+            "id": 422,
+            "position_x": 439,
+            "position_y": 135,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "whole numbers - edit and click",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "whole numbers - edit and click"
+        },
+        "6": {
+            "name": "t.bincount",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 131,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "7": {
+            "name": "list",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment how many 0s, 1s, 2s ... 5s",
+            "name": "comment",
+            "id": 533,
+            "position_x": 439,
+            "position_y": 295,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many 0s, 1s, 2s ... 5s",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how many 0s, 1s, 2s ... 5s"
+        },
+        "9": {
+            "name": "metro",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 250.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 250"
+        },
+        "10": {
+            "init": "comment new throws four times a second",
+            "name": "comment",
+            "id": 607,
+            "position_x": 439,
+            "position_y": 385,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "new throws four times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "new throws four times a second"
+        },
+        "11": {
+            "name": "t.rand",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "shape",
+                    "value": "[2, 2000]",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "int64",
+                    "value_type": "str"
+                }
+            },
+            "init": "t.rand 2 2000 int64"
+        },
+        "12": {
+            "init": "comment two dice, 0 to 9, thrown 2000 times - drag max",
+            "name": "comment",
+            "id": 681,
+            "position_x": 439,
+            "position_y": 475,
+            "width": 291,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two dice, 0 to 9, thrown 2000 times - drag max",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two dice, 0 to 9, thrown 2000 times - drag max"
+        },
+        "13": {
+            "name": "t.sum",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.sum 0"
+        },
+        "14": {
+            "init": "comment the two throws added: totals 0 to 18",
+            "name": "comment",
+            "id": 755,
+            "position_x": 439,
+            "position_y": 655,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the two throws added: totals 0 to 18",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the two throws added: totals 0 to 18"
+        },
+        "15": {
+            "name": "t.bincount",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 780,
+            "width": 131,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "16": {
+            "name": "plot",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 870,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "bar",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 19,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 19.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 300.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "init": "comment how often each total came up (0 to 300)",
+            "name": "comment",
+            "id": 866,
+            "position_x": 439,
+            "position_y": 875,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how often each total came up (0 to 300)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how often each total came up (0 to 300)"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1114,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.histc"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 106,
+            "position_y": 1114,
+            "width": 85,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.bucketize"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 207,
+            "position_y": 1114,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.argmax"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 289,
+            "position_y": 1114,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand"
+        },
+        "22": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 30,
+            "position_y": 1080,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 1188,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "int tensor in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bin count tensor out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "int tensor in"
+        },
+        "6": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bin count tensor out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

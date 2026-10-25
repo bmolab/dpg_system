@@ -1,11 +1,11 @@
 {
-    "height": 861,
-    "width": 1632,
+    "height": 1532,
+    "width": 1661,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 1236,
     "name": "t.cumsum_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cumsum_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.cumsum and t.diff - the running story",
+            "init": "comment t.cumsum - the running total",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 488,
+            "width": 353,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.cumsum and t.diff - the running story",
+                    "value": "t.cumsum - the running total",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.cumsum and t.diff - the running story"
+            "comment": "t.cumsum - the running total"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 774,
+            "position_x": 853,
             "position_y": 45,
-            "width": 818,
-            "height": 756,
+            "width": 768,
+            "height": 826,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These look ALONG a tensor and report how it develops, rather than summarising it.\n\nA sum gives you the total. A cumulative sum gives you the total so far at every \nposition - the running story rather than the ending. Anything with an order to \nit, which is anything indexed by time or by position along a body, has a \ndevelopment worth seeing.\n\nTHE NODES:\n\nt.cumsum         the running total\nt.cumprod        the running product\nt.cummax         the largest value seen so far - a running high-water mark\nt.cummin         the smallest so far\nt.logcumsumexp   a running sum done in the log domain\nt.diff           the difference between neighbouring elements\n\nt.cumsum AND t.diff UNDO EACH OTHER:\ndiff turns positions into steps; cumsum turns steps back into positions. \nReach for diff when a tensor holds where something WAS and you want how far it \nMOVED, and cumsum when you have the movements and want the path.\n\nt.cummax IS A DECAY-FREE PEAK HOLD:\nRunning it along a time axis gives you, at every instant, the largest value \nthat has occurred up to then. That is the shape of a peak meter that never \nfalls back, and it is a cheap way to ask \"has this ever exceeded X, and when \ndid it first do so\".\n\nWHY logcumsumexp EXISTS:\nAdding up many small probabilities directly underflows to zero. Working in the \nlog domain keeps them representable, but you cannot simply add logs when you \nwant a sum of the underlying values. This node does that correctly, and it is \nthe node you want whenever you are accumulating likelihoods.\n\nSYNTAX:\nt.cumsum\nt.diff <n>\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nWhich axis to run along. This matters more here than on a reduction - the \ndirection IS the ordering you are claiming exists, so getting it wrong gives a \nrunning total across the wrong thing entirely.\n\nn (t.diff):\nHow many times to difference. 1 gives the change, 2 the change in the change - \nso from positions, 1 is velocity and 2 is acceleration.\n\nOUTPUTS: \n\noutput:\nThe running result.\n\nindices (t.cummax, t.cummin):\nWHERE each running maximum or minimum came from - the position of the value, \nnot just its size.\n\nA NOTE ON LENGTH:\nt.diff returns a tensor one element shorter along the differenced axis, \nbecause there is one fewer gap than there are values. Anything expecting the \noriginal length will refuse it.",
+                    "value": "Replaces each value of a tensor with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nt.cumsum <dim: int>\nDefault dim 0, the FIRST axis. For a 1-D tensor that is the only axis;\nfor a 2-D tensor it runs DOWN each column - unlike np.cumsum, which runs\nalong each row by default. Give an axis - t.cumsum 1, or -1 for the last\n- and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is summed and sent - the only inlet that makes the node send. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end. Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe running totals, the same shape as the input. The last value is the total of the whole run (what t.sum would give for a 1-D tensor).\n\nREADING THE DEMO:\nTop: t.rand makes 200 random steps between -1 and 1, a new set every half second. The upper plot shows them - noise, with no shape. The lower plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag t.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.cumsum is the NumPy version. t.diff is the reverse: it turns a path back into its steps. t.cumprod multiplies instead of adding. t.sum gives only the final total. accumulate keeps a running total of a STREAM, one number at a time.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 810,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 740,
+                    "value": 810,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,272 +90,97 @@
                     "value_type": "str"
                 }
             },
-            "text": "These look ALONG a tensor and report how it develops, rather than summarising it.\n\nA sum gives you the total. A cumulative sum gives you the total so far at every \nposition - the running story rather than the ending. Anything with an order to \nit, which is anything indexed by time or by position along a body, has a \ndevelopment worth seeing.\n\nTHE NODES:\n\nt.cumsum         the running total\nt.cumprod        the running product\nt.cummax         the largest value seen so far - a running high-water mark\nt.cummin         the smallest so far\nt.logcumsumexp   a running sum done in the log domain\nt.diff           the difference between neighbouring elements\n\nt.cumsum AND t.diff UNDO EACH OTHER:\ndiff turns positions into steps; cumsum turns steps back into positions. \nReach for diff when a tensor holds where something WAS and you want how far it \nMOVED, and cumsum when you have the movements and want the path.\n\nt.cummax IS A DECAY-FREE PEAK HOLD:\nRunning it along a time axis gives you, at every instant, the largest value \nthat has occurred up to then. That is the shape of a peak meter that never \nfalls back, and it is a cheap way to ask \"has this ever exceeded X, and when \ndid it first do so\".\n\nWHY logcumsumexp EXISTS:\nAdding up many small probabilities directly underflows to zero. Working in the \nlog domain keeps them representable, but you cannot simply add logs when you \nwant a sum of the underlying values. This node does that correctly, and it is \nthe node you want whenever you are accumulating likelihoods.\n\nSYNTAX:\nt.cumsum\nt.diff <n>\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nWhich axis to run along. This matters more here than on a reduction - the \ndirection IS the ordering you are claiming exists, so getting it wrong gives a \nrunning total across the wrong thing entirely.\n\nn (t.diff):\nHow many times to difference. 1 gives the change, 2 the change in the change - \nso from positions, 1 is velocity and 2 is acceleration.\n\nOUTPUTS: \n\noutput:\nThe running result.\n\nindices (t.cummax, t.cummin):\nWHERE each running maximum or minimum came from - the position of the value, \nnot just its size.\n\nA NOTE ON LENGTH:\nt.diff returns a tensor one element shorter along the differenced axis, \nbecause there is one fewer gap than there are values. Anything expecting the \noriginal length will refuse it."
+            "text": "Replaces each value of a tensor with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nt.cumsum <dim: int>\nDefault dim 0, the FIRST axis. For a 1-D tensor that is the only axis;\nfor a 2-D tensor it runs DOWN each column - unlike np.cumsum, which runs\nalong each row by default. Give an axis - t.cumsum 1, or -1 for the last\n- and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is summed and sent - the only inlet that makes the node send. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end. Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe running totals, the same shape as the input. The last value is the total of the whole run (what t.sum would give for a 1-D tensor).\n\nREADING THE DEMO:\nTop: t.rand makes 200 random steps between -1 and 1, a new set every half second. The upper plot shows them - noise, with no shape. The lower plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag t.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.cumsum is the NumPy version. t.diff is the reverse: it turns a path back into its steps. t.cumprod multiplies instead of adding. t.sum gives only the final total. accumulate keeps a running total of a STREAM, one number at a time."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
         },
         "4": {
-            "name": "t.rand",
+            "init": "comment new steps twice a second",
+            "name": "comment",
             "id": 385,
+            "position_x": 532,
+            "position_y": 70,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "new steps twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "new steps twice a second"
+        },
+        "5": {
+            "name": "t.rand",
+            "id": 422,
             "position_x": 30,
-            "position_y": 120,
+            "position_y": 150,
             "width": 163,
             "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.rand 8"
-        },
-        "5": {
-            "name": "heat_map",
-            "id": 422,
-            "position_x": 250,
-            "position_y": 120,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "color",
-                    "value": "viridis",
+                    "name": "shape",
+                    "value": "[200]",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 8,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "6": {
-            "init": "comment eight values in a row",
-            "name": "comment",
-            "id": 459,
-            "position_x": 484,
-            "position_y": 310,
-            "width": 138,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "eight values in a row",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "eight values in a row"
-        },
-        "7": {
-            "name": "t.cumsum",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 350,
-            "width": 64,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
-            "name": "heat_map",
-            "id": 533,
-            "position_x": 250,
-            "position_y": 350,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 8,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 5.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "9": {
-            "init": "comment the running total: it only climbs",
-            "name": "comment",
-            "id": 570,
-            "position_x": 484,
-            "position_y": 465,
-            "width": 211,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the running total: it only climbs",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the running total: it only climbs"
-        },
-        "10": {
-            "name": "t.diff",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 510,
-            "width": 99,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "11": {
-            "name": "heat_map",
-            "id": 644,
-            "position_x": 250,
-            "position_y": 530,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 7,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
+                    "name": "min",
                     "value": -1.0,
                     "value_type": "float"
                 },
-                "5": {
-                    "name": "max y",
+                "2": {
+                    "name": "max",
                     "value": 1.0,
                     "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
                 }
-            }
+            },
+            "init": "t.rand 200"
         },
-        "12": {
-            "init": "comment the steps between them - seven, not eight",
+        "6": {
+            "init": "comment 200 steps between min and max - drag them",
             "name": "comment",
-            "id": 681,
-            "position_x": 484,
-            "position_y": 645,
+            "id": 459,
+            "position_x": 532,
+            "position_y": 155,
             "width": 260,
             "height": 30,
             "visibility": "show_all",
@@ -364,7 +189,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "the steps between them - seven, not eight",
+                    "value": "200 steps between min and max - drag them",
                     "value_type": "str"
                 },
                 "1": {
@@ -373,13 +198,521 @@
                     "value_type": "str"
                 }
             },
-            "comment": "the steps between them - seven, not eight"
+            "comment": "200 steps between min and max - drag them"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "init": "comment the steps: noise",
+            "name": "comment",
+            "id": 533,
+            "position_x": 532,
+            "position_y": 335,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the steps: noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the steps: noise"
+        },
+        "9": {
+            "name": "t.cumsum",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 530,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 620,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -30.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 30.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment their running total: a random walk (-30 to 30)",
+            "name": "comment",
+            "id": 644,
+            "position_x": 532,
+            "position_y": 625,
+            "width": 291,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "their running total: a random walk (-30 to 30)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "their running total: a random walk (-30 to 30)"
+        },
+        "12": {
+            "name": "load_bang",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 840,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
         },
         "13": {
-            "name": "close",
+            "name": "message",
             "id": 718,
+            "position_x": 30,
+            "position_y": 900,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 1 1 1 1 1 1 1 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment ten 1s - edit and click",
+            "name": "comment",
+            "id": 755,
+            "position_x": 532,
+            "position_y": 905,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ten 1s - edit and click",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ten 1s - edit and click"
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 960,
+            "width": 468,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 460,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment in: ten 1s",
+            "name": "comment",
+            "id": 829,
+            "position_x": 532,
+            "position_y": 965,
+            "width": 70,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: ten 1s",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: ten 1s"
+        },
+        "17": {
+            "name": "t.cumsum",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 1090,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "18": {
+            "name": "heat_map",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1180,
+            "width": 468,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 460,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment out: 1 to 10, a ramp",
+            "name": "comment",
+            "id": 940,
+            "position_x": 532,
+            "position_y": 1185,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "out: 1 to 10, a ramp",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "out: 1 to 10, a ramp"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 1354,
+            "width": 73,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.cumsum"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 119,
+            "position_y": 1354,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.diff"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 189,
+            "position_y": 1354,
+            "width": 73,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.cumprod"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 278,
+            "position_y": 1354,
+            "width": 48,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.sum"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 342,
+            "position_y": 1354,
+            "width": 79,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link accumulate"
+        },
+        "25": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1162,
+            "position_x": 30,
+            "position_y": 1320,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "26": {
+            "name": "close",
+            "id": 1199,
             "position_x": 24,
-            "position_y": 710,
+            "position_y": 1428,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -400,57 +733,77 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###input"
         },
         "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "2": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "random tensor",
             "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "3": {
-            "source_node": 496,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 533,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "4": {
-            "source_node": 385,
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 607,
+            "source_output_name": "out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 866,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "5": {
-            "source_node": 607,
+        "7": {
+            "source_node": 866,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 644,
+            "source_output_name": "output",
+            "dest_node": 903,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

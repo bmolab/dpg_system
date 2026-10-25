@@ -41,10 +41,12 @@ class CVImageNode(Node):
         if type(path) == list:
             path = list_to_string(path)
         if type(path) == str and path != '':
-            self.image = cv2.imread(path, cv2.IMREAD_COLOR)
-            if self.image is None:
+            image = cv2.imread(path, cv2.IMREAD_COLOR)
+            if image is None:
                 print(f"CVImageNode: failed to read image: {path}")
                 return
+            # RGB, like cv_camera and movie_player (OpenCV reads BGR)
+            self.image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             self.execute()
 
     def execute(self):
@@ -91,6 +93,13 @@ class CVVideoCaptureNode(Node):
         dpg.configure_item(self.source_selector.widget.uuid, items=camera_names)
 
     def change_source(self):
+        # The camera is only held open while streaming: switching sources
+        # while off just records the choice for the next switch-on.
+        self.release_camera()
+        if self.streaming:
+            self.open_camera()
+
+    def open_camera(self):
         idx_str = self.source_selector()
         if idx_str is None or idx_str == '':
             return
@@ -99,14 +108,18 @@ class CVVideoCaptureNode(Node):
         except (ValueError, TypeError):
             return
 
-        # Release existing capture
-        if self.cap is not None:
-            self.cap.release()
-            self.cap = None
-
+        self.release_camera()
         self.cap = cv2.VideoCapture(idx)
         if not self.cap.isOpened():
             print(f"Cannot open camera {idx}")
+            self.cap = None
+
+    def release_camera(self):
+        if self.cap is not None:
+            try:
+                self.cap.release()
+            except cv2.error:
+                pass
             self.cap = None
 
     def turn_on_off(self):
@@ -115,7 +128,7 @@ class CVVideoCaptureNode(Node):
             if on:
                 # If no camera is open yet, try to open the selected source
                 if self.cap is None or not self.cap.isOpened():
-                    self.change_source()
+                    self.open_camera()
                 if self.cap is not None and self.cap.isOpened():
                     self.add_frame_task()
                 else:
@@ -123,16 +136,14 @@ class CVVideoCaptureNode(Node):
                     return
             else:
                 self.remove_frame_tasks()
+                # Let the camera go (its light goes off, other apps can
+                # have it); switching back on reopens it.
+                self.release_camera()
             self.streaming = on
 
     def cleanup(self):
         self.remove_frame_tasks()
-        if self.cap is not None:
-            try:
-                self.cap.release()
-            except cv2.error:
-                pass
-            self.cap = None
+        self.release_camera()
 
     def frame_task(self):
         if self.cap is None:

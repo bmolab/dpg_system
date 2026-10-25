@@ -1,0 +1,366 @@
+{
+    "height": 1101,
+    "width": 1645,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "mgl_point_cloud_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_point_cloud_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_point_cloud - drawing points",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 402,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_point_cloud - drawing points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_point_cloud - drawing points"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 787,
+            "position_y": 45,
+            "width": 818,
+            "height": 996,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mgl_point_cloud draws a set of points.\n\nWHAT IT TAKES:\n'points' takes an n by 3 array, or a flat list of x y z triples. It also takes a cloud frame from the point cloud nodes: a dictionary whose 'point_cloud' entry holds the points, and which may carry a 'weights' entry (one value per point, 0 to 1) and a 'voxel_size'. Points that are not finite numbers are dropped, with a note in the console. An empty cloud clears the picture.\n\nPoints can arrive as often as you like and on any thread; they are built into what is drawn on the next render.\n\nPOINT SIZE:\nEach point is 'point_size' pixels across at one unit from the camera, and smaller further off. With 'draw at voxel size' ticked (the default) and a voxel size in the frame, each point is drawn instead about one voxel wide in the scene.\n\nWEIGHTS:\nWhen the frame carries weights, 'weights' chooses what they do: make low-weight points smaller ('size'), dim them ('brightness'), both (the default), or neither ('off').\n\nBLEND:\n'additive' (the default) adds the points' light together, so dense regions glow rather than the nearest point hiding the rest. 'normal' draws them as ordinary opaque dots.\n\nKEEP IT IN POINTS MODE:\nA new node starts in points mode with 'cull' off; a saved one keeps the 'mode' and 'cull' it was saved with. In solid or wireframe mode the points are joined three at a time, in order, into meaningless triangles. Each point is lit as if it faced straight up, so with 'cull' ticked the points above the camera disappear.\n\nSYNTAX:\nmgl_point_cloud\n\nIt takes no arguments.\n\nEXAMPLE:\nmgl_point_cloud\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\npoints:\nThe points, as above.\n\nweights:\noff, size, brightness, or size + brightness.\n\nblend:\nadditive or normal.\n\ndraw at voxel size:\nUse the frame's voxel size for the point size. On by default.\n\nmode / cull / point_size / round / texture:\nAs for the other mgl shapes: drawn solid, as wireframe or as points;\nwhether back faces are skipped; the size of points in pixels; whether points are round; an image mapped onto the surface.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nThe point cloud nodes (pc_voxel and others) produce cloud frames. mgl_mesh also draws bare corners as points. gl_vertex_buffer is the older system's way to draw points.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 980,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mgl_point_cloud draws a set of points.\n\nWHAT IT TAKES:\n'points' takes an n by 3 array, or a flat list of x y z triples. It also takes a cloud frame from the point cloud nodes: a dictionary whose 'point_cloud' entry holds the points, and which may carry a 'weights' entry (one value per point, 0 to 1) and a 'voxel_size'. Points that are not finite numbers are dropped, with a note in the console. An empty cloud clears the picture.\n\nPoints can arrive as often as you like and on any thread; they are built into what is drawn on the next render.\n\nPOINT SIZE:\nEach point is 'point_size' pixels across at one unit from the camera, and smaller further off. With 'draw at voxel size' ticked (the default) and a voxel size in the frame, each point is drawn instead about one voxel wide in the scene.\n\nWEIGHTS:\nWhen the frame carries weights, 'weights' chooses what they do: make low-weight points smaller ('size'), dim them ('brightness'), both (the default), or neither ('off').\n\nBLEND:\n'additive' (the default) adds the points' light together, so dense regions glow rather than the nearest point hiding the rest. 'normal' draws them as ordinary opaque dots.\n\nKEEP IT IN POINTS MODE:\nA new node starts in points mode with 'cull' off; a saved one keeps the 'mode' and 'cull' it was saved with. In solid or wireframe mode the points are joined three at a time, in order, into meaningless triangles. Each point is lit as if it faced straight up, so with 'cull' ticked the points above the camera disappear.\n\nSYNTAX:\nmgl_point_cloud\n\nIt takes no arguments.\n\nEXAMPLE:\nmgl_point_cloud\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\npoints:\nThe points, as above.\n\nweights:\noff, size, brightness, or size + brightness.\n\nblend:\nadditive or normal.\n\ndraw at voxel size:\nUse the frame's voxel size for the point size. On by default.\n\nmode / cull / point_size / round / texture:\nAs for the other mgl shapes: drawn solid, as wireframe or as points;\nwhether back faces are skipped; the size of points in pixels; whether points are round; an image mapped onto the surface.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nThe point cloud nodes (pc_voxel and others) produce cloud frames. mgl_mesh also draws bare corners as points. gl_vertex_buffer is the older system's way to draw points."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
+            "id": 385,
+            "position_x": 489,
+            "position_y": 120,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 340,
+            "position_y": 440,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "np.rand",
+            "id": 496,
+            "position_x": 340,
+            "position_y": 500,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -0.6,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.6,
+                    "value_type": "float"
+                }
+            },
+            "init": "np.rand 500 3"
+        },
+        "8": {
+            "init": "comment 500 points in a cube",
+            "name": "comment",
+            "id": 533,
+            "position_x": 489,
+            "position_y": 500,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "500 points in a cube",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "500 points in a cube"
+        },
+        "9": {
+            "name": "mgl_point_cloud",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 136,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "mode",
+                    "value": "points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "cull",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "point_size",
+                    "value": 12.0,
+                    "value_type": "float"
+                }
+            },
+            "highlight": true
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 489,
+            "position_y": 960,
+            "width": 268,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drag point_size; orbit to see\nnear points drawn larger than far ones",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drag point_size; orbit to see\nnear points drawn larger than far ones"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 838,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "points"
+        }
+    }
+}

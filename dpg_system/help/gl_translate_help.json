@@ -1,11 +1,11 @@
 {
-    "height": 1456,
+    "height": 1176,
     "width": 1571,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "gl_translate_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_translate_help.json",
     "nodes": {
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These move, turn and resize everything that comes AFTER them in the chain.\n\nA transform draws nothing. It changes where the drawing happens for every node \ndownstream, then puts things back - so its position in the chain is its scope, \nand transforms accumulate down a branch. An arm on a body, a hand on the arm: \nthe hierarchy falls out of the chain order without any extra syntax.\n\nTHE NODES:\n\ngl_translate          move\ngl_rotate             turn, as three angles\ngl_quaternion_rotate  turn, given a quaternion\ngl_axis_angle_rotate  turn, given an axis and an angle\ngl_scale              resize\ngl_align              turn so that a given direction points a given way\n\ngl_align IS THE ONE WORTH KNOWING:\nGive it a direction and it orients whatever follows to point along it. That is \nwhat you want for drawing a vector quantity in place - a velocity, a force, a \nbone direction, a surface normal. Working out the rotation that achieves that \nby hand is fiddly and easy to get wrong near the poles; this does it.\n\nWHICH ROTATION NODE:\nThree angles are readable and gimbal-lock. For anything driven by real \norientation data use gl_quaternion_rotate - the sensors produce quaternions, \nand converting them to angles to feed gl_rotate throws away exactly the \nproperty that makes them safe. See the rotation conversions help patch.\n\ngl_axis_angle_rotate is for rotations with a natural axis - a joint's own axis, \na spin, a torque direction.\n\nORDER MATTERS, AND NOT THE WAY IT READS:\nRotate then translate turns the object on the spot and then moves it. \nTranslate then rotate moves it away and then swings it about the origin, \nwhich is an orbit. If something orbits when you wanted it to spin, that is the \ntwo the wrong way round.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_translate <x> <y> <z>\ngl_rotate <x> <y> <z>\n\nEXAMPLE:\ngl_translate 0 1 0\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nx / y / z:\nThe amounts. All accept a stream, so a transform can be driven continuously.\n\nquaternion / rotation vector:\nThe rotation, for those nodes.\n\n\nOUTPUTS: \n\ngl chain out:\nThe chain, with the transform in force downstream.",
+                    "value": "These move, turn and resize everything that comes AFTER them in the chain.\n\nA transform draws nothing. It changes where the drawing happens for every node  downstream, then puts things back - so its position in the chain is its scope,  and transforms accumulate down a branch. An arm on a body, a hand on the arm:  the hierarchy falls out of the chain order without any extra syntax.\n\nTHE NODES:\n\ngl_translate          move\ngl_rotate             turn, as three angles\ngl_quaternion_rotate  turn, given a quaternion\ngl_axis_angle_rotate  turn, given an axis and an angle\ngl_scale              resize\ngl_align              turn so that a given direction points a given way\n\ngl_align IS THE ONE WORTH KNOWING:\nGive it a direction and it orients whatever follows to point along it. That is  what you want for drawing a vector quantity in place - a velocity, a force, a  bone direction, a surface normal. Working out the rotation that achieves that  by hand is fiddly and easy to get wrong near the poles; this does it.\n\nWHICH ROTATION NODE:\nThree angles are readable and gimbal-lock. For anything driven by real  orientation data use gl_quaternion_rotate - the sensors produce quaternions,  and converting them to angles to feed gl_rotate throws away exactly the  property that makes them safe. See the rotation conversions help patch.\n\ngl_axis_angle_rotate is for rotations with a natural axis - a joint's own axis,  a spin, a torque direction.\n\nORDER MATTERS, AND NOT THE WAY IT READS:\nRotate then translate turns the object on the spot and then moves it.  Translate then rotate moves it away and then swings it about the origin,  which is an orbit. If something orbits when you wanted it to spin, that is the  two the wrong way round.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_translate <x> <y> <z>\ngl_rotate <x> <y> <z>\n\nEXAMPLE:\ngl_translate 0 1 0\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nx / y / z:\nThe amounts. All accept a stream, so a transform can be driven continuously.\n\nquaternion / rotation vector:\nThe rotation, for those nodes.\n\n\nOUTPUTS: \n\ngl chain out:\nThe chain, with the transform in force downstream.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These move, turn and resize everything that comes AFTER them in the chain.\n\nA transform draws nothing. It changes where the drawing happens for every node \ndownstream, then puts things back - so its position in the chain is its scope, \nand transforms accumulate down a branch. An arm on a body, a hand on the arm: \nthe hierarchy falls out of the chain order without any extra syntax.\n\nTHE NODES:\n\ngl_translate          move\ngl_rotate             turn, as three angles\ngl_quaternion_rotate  turn, given a quaternion\ngl_axis_angle_rotate  turn, given an axis and an angle\ngl_scale              resize\ngl_align              turn so that a given direction points a given way\n\ngl_align IS THE ONE WORTH KNOWING:\nGive it a direction and it orients whatever follows to point along it. That is \nwhat you want for drawing a vector quantity in place - a velocity, a force, a \nbone direction, a surface normal. Working out the rotation that achieves that \nby hand is fiddly and easy to get wrong near the poles; this does it.\n\nWHICH ROTATION NODE:\nThree angles are readable and gimbal-lock. For anything driven by real \norientation data use gl_quaternion_rotate - the sensors produce quaternions, \nand converting them to angles to feed gl_rotate throws away exactly the \nproperty that makes them safe. See the rotation conversions help patch.\n\ngl_axis_angle_rotate is for rotations with a natural axis - a joint's own axis, \na spin, a torque direction.\n\nORDER MATTERS, AND NOT THE WAY IT READS:\nRotate then translate turns the object on the spot and then moves it. \nTranslate then rotate moves it away and then swings it about the origin, \nwhich is an orbit. If something orbits when you wanted it to spin, that is the \ntwo the wrong way round.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_translate <x> <y> <z>\ngl_rotate <x> <y> <z>\n\nEXAMPLE:\ngl_translate 0 1 0\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nx / y / z:\nThe amounts. All accept a stream, so a transform can be driven continuously.\n\nquaternion / rotation vector:\nThe rotation, for those nodes.\n\n\nOUTPUTS: \n\ngl chain out:\nThe chain, with the transform in force downstream."
+            "text": "These move, turn and resize everything that comes AFTER them in the chain.\n\nA transform draws nothing. It changes where the drawing happens for every node  downstream, then puts things back - so its position in the chain is its scope,  and transforms accumulate down a branch. An arm on a body, a hand on the arm:  the hierarchy falls out of the chain order without any extra syntax.\n\nTHE NODES:\n\ngl_translate          move\ngl_rotate             turn, as three angles\ngl_quaternion_rotate  turn, given a quaternion\ngl_axis_angle_rotate  turn, given an axis and an angle\ngl_scale              resize\ngl_align              turn so that a given direction points a given way\n\ngl_align IS THE ONE WORTH KNOWING:\nGive it a direction and it orients whatever follows to point along it. That is  what you want for drawing a vector quantity in place - a velocity, a force, a  bone direction, a surface normal. Working out the rotation that achieves that  by hand is fiddly and easy to get wrong near the poles; this does it.\n\nWHICH ROTATION NODE:\nThree angles are readable and gimbal-lock. For anything driven by real  orientation data use gl_quaternion_rotate - the sensors produce quaternions,  and converting them to angles to feed gl_rotate throws away exactly the  property that makes them safe. See the rotation conversions help patch.\n\ngl_axis_angle_rotate is for rotations with a natural axis - a joint's own axis,  a spin, a torque direction.\n\nORDER MATTERS, AND NOT THE WAY IT READS:\nRotate then translate turns the object on the spot and then moves it.  Translate then rotate moves it away and then swings it about the origin,  which is an orbit. If something orbits when you wanted it to spin, that is the  two the wrong way round.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_translate <x> <y> <z>\ngl_rotate <x> <y> <z>\n\nEXAMPLE:\ngl_translate 0 1 0\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nx / y / z:\nThe amounts. All accept a stream, so a transform can be driven continuously.\n\nquaternion / rotation vector:\nThe rotation, for those nodes.\n\n\nOUTPUTS: \n\ngl chain out:\nThe chain, with the transform in force downstream."
         },
         "3": {
             "name": "gl_context",
@@ -105,34 +105,23 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "gl_translate",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "gl_translate",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 516,
+            "position_y": 236,
             "width": 99,
             "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
-        "6": {
+        "5": {
             "name": "gl_sphere",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 696,
+            "position_y": 416,
             "width": 129,
             "height": 98,
             "visibility": "show_all",
@@ -140,12 +129,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "6": {
             "init": "comment moved by the first translate",
             "name": "comment",
-            "id": 496,
+            "id": 459,
             "position_x": 435,
-            "position_y": 911,
+            "position_y": 631,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -165,23 +154,24 @@
             },
             "comment": "moved by the first translate"
         },
-        "8": {
+        "7": {
             "name": "gl_translate",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 951,
+            "position_y": 671,
             "width": 99,
             "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
-        "9": {
+        "8": {
             "name": "gl_cylinder",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
-            "position_y": 1131,
+            "position_y": 851,
             "width": 160,
             "height": 126,
             "visibility": "show_all",
@@ -189,12 +179,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "init": "comment by BOTH: they accumulate down the chain",
             "name": "comment",
-            "id": 607,
+            "id": 570,
             "position_x": 435,
-            "position_y": 1366,
+            "position_y": 1086,
             "width": 248,
             "height": 30,
             "visibility": "show_all",
@@ -214,24 +204,25 @@
             },
             "comment": "by BOTH: they accumulate down the chain"
         },
-        "11": {
+        "10": {
             "name": "gl_align",
-            "id": 644,
+            "id": 607,
             "position_x": 310,
-            "position_y": 951,
+            "position_y": 671,
             "width": 99,
             "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
-        "12": {
+        "11": {
             "init": "comment points what follows along a direction",
             "name": "comment",
-            "id": 681,
+            "id": 644,
             "position_x": 435,
-            "position_y": 1126,
+            "position_y": 846,
             "width": 236,
             "height": 30,
             "visibility": "show_all",
@@ -251,11 +242,11 @@
             },
             "comment": "points what follows along a direction"
         },
-        "13": {
+        "12": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
-            "position_y": 1287,
+            "position_y": 1007,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -296,27 +287,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 459,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "3": {
-            "source_node": 459,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
             "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
-        },
-        "4": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"

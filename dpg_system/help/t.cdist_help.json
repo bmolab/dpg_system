@@ -1,0 +1,1072 @@
+{
+    "name": "t.cdist_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cdist_help.json",
+    "patches": {
+        "0": {
+            "height": 490,
+            "width": 650,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1384,
+            "name": "make_points",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1421,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1458,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends it ten times a second",
+                    "id": 1495,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends it ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends it ten times a second"
+                },
+                "3": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1532,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 420,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "0.0 0.0  0.5 0.2  0.2 0.6  0.6 0.5  3.0 3.0  3.4 2.8  2.8 3.5  3.3 3.4",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 16 numbers: 8 points, two groups of four",
+                    "id": 1569,
+                    "position_x": 40,
+                    "position_y": 185,
+                    "width": 480,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "16 numbers: 8 points, two groups of four",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "16 numbers: 8 points, two groups of four"
+                },
+                "5": {
+                    "name": "np.reshape",
+                    "init": "np.reshape 8 2",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into 8 rows of 2",
+                    "id": 1643,
+                    "position_x": 290,
+                    "position_y": 245,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into 8 rows of 2",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into 8 rows of 2"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out points",
+                    "id": 1680,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1532,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1532,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1680,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "points"
+                }
+            }
+        },
+        "1": {
+            "height": 1856,
+            "width": 1932,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1347,
+            "name": "t.cdist_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cdist_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.cdist - the distances between points",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 475,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.cdist - the distances between points",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.cdist - the distances between points"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1124,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1116,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Measures how far apart points are: every row of the input is one point, and the answer is a table of the distance from each point to each other point - or to each of a second set of points you hold.\n\nA table of distances is the starting point for anything that asks \"which are near which\": finding the nearest of a set of targets to a tracked hand, grouping poses that are alike, spotting the one point that sits apart from the rest. The distance is the ordinary straight line distance (square root of the sum of the squared differences).\n\nTHREE CASES:\nA 2-D input (N rows of points) with nothing in points 2: an N x N table, row i column j the distance from point i to point j. It is symmetric and its diagonal is 0 (each point is 0 from itself). Anything with points 2 held (M points): an N x M table, row i column j the distance from input point i to held point j. A 1-D input counts as one point here, giving 1 x M.\nA 1-D input (a list, one vector) with nothing in points 2: its length - the distance from zero - as a plain float, the same number t.length gives.\n\nSYNTAX:\nt.cdist\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nThe points, one per row (a list, a list of lists or a NumPy array is turned into a float32 tensor). Receiving it measures and sends.\n\npoints 2:\nA second set of points, one per row, with the same number of columns as the input. It is only stored: send it before the input, and it is then used for every input that follows. A 1-D list is one point. 'clear' (or an empty list) empties it, and the input goes back to the all-pairs table. Points with a different\nnumber of columns print an error and send nothing.\n\nOUTPUTS:\n\noutput:\nThe table of distances as a tensor (rows = input points, columns = the points they are measured to), or one float for the length of a single vector.\n\nREADING THE DEMO:\nmake_points sends 8 points in 2-D ten times a second: four close together near [0.3 0.3] and four near [3.1 3.2]. The top picture shows them column by column (x on top, y below).\nMiddle: t.cdist with nothing in points 2 gives the 8 x 8 table. The two dark squares on the diagonal are the two groups - their points are close to each other - and the bright squares off it are the distances between the groups, 3.5 to 4.7. The diagonal is 0.\nBottom: the same 8 points, measured against one point held in points 2 (the sliders, starting at [3 3]). The answer is 8 x 1, one distance per point; t.t lays it out as one row, so each cell sits under its point's column in the top picture. Drag the sliders towards [0 0] and the dark end moves from the right half to the left.\n\nRELATED:\nt.dist gives the one distance between two whole tensors. t.length is the distance from zero. np.distance_from_target measures one or several points against stored targets. np.linalg.norm with an axis gives one length per row. t.cosine_similarity compares directions instead of positions.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1100,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Measures how far apart points are: every row of the input is one point, and the answer is a table of the distance from each point to each other point - or to each of a second set of points you hold.\n\nA table of distances is the starting point for anything that asks \"which are near which\": finding the nearest of a set of targets to a tracked hand, grouping poses that are alike, spotting the one point that sits apart from the rest. The distance is the ordinary straight line distance (square root of the sum of the squared differences).\n\nTHREE CASES:\nA 2-D input (N rows of points) with nothing in points 2: an N x N table, row i column j the distance from point i to point j. It is symmetric and its diagonal is 0 (each point is 0 from itself). Anything with points 2 held (M points): an N x M table, row i column j the distance from input point i to held point j. A 1-D input counts as one point here, giving 1 x M.\nA 1-D input (a list, one vector) with nothing in points 2: its length - the distance from zero - as a plain float, the same number t.length gives.\n\nSYNTAX:\nt.cdist\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nThe points, one per row (a list, a list of lists or a NumPy array is turned into a float32 tensor). Receiving it measures and sends.\n\npoints 2:\nA second set of points, one per row, with the same number of columns as the input. It is only stored: send it before the input, and it is then used for every input that follows. A 1-D list is one point. 'clear' (or an empty list) empties it, and the input goes back to the all-pairs table. Points with a different\nnumber of columns print an error and send nothing.\n\nOUTPUTS:\n\noutput:\nThe table of distances as a tensor (rows = input points, columns = the points they are measured to), or one float for the length of a single vector.\n\nREADING THE DEMO:\nmake_points sends 8 points in 2-D ten times a second: four close together near [0.3 0.3] and four near [3.1 3.2]. The top picture shows them column by column (x on top, y below).\nMiddle: t.cdist with nothing in points 2 gives the 8 x 8 table. The two dark squares on the diagonal are the two groups - their points are close to each other - and the bright squares off it are the distances between the groups, 3.5 to 4.7. The diagonal is 0.\nBottom: the same 8 points, measured against one point held in points 2 (the sliders, starting at [3 3]). The answer is 8 x 1, one distance per point; t.t lays it out as one row, so each cell sits under its point's column in the top picture. Drag the sliders towards [0 0] and the dark end moves from the right half to the left.\n\nRELATED:\nt.dist gives the one distance between two whole tensors. t.length is the distance from zero. np.distance_from_target measures one or several points against stored targets. np.linalg.norm with an axis gives one length per row. t.cosine_similarity compares directions instead of positions."
+                },
+                "3": {
+                    "name": "load_bang",
+                    "id": 348,
+                    "position_x": 560,
+                    "position_y": 62,
+                    "width": 88,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 84,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_points",
+                    "patcher id": 1384
+                },
+                "5": {
+                    "init": "comment 8 points in 2-D: two groups of four",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 674,
+                    "position_y": 77,
+                    "width": 224,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "8 points in 2-D: two groups of four",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "8 points in 2-D: two groups of four"
+                },
+                "6": {
+                    "name": "t.t",
+                    "id": 459,
+                    "position_x": 30,
+                    "position_y": 150,
+                    "width": 70,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "heat_map",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 240,
+                    "width": 488,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 480,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 2,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.1f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "8": {
+                    "init": "comment the 8 points, one per column: x on top, y below",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 674,
+                    "position_y": 360,
+                    "width": 297,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the 8 points, one per column: x on top, y below",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the 8 points, one per column: x on top, y below"
+                },
+                "9": {
+                    "name": "t.cdist",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 410,
+                    "width": 58,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "10": {
+                    "init": "comment nothing in points 2: every point to every point",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 674,
+                    "position_y": 430,
+                    "width": 297,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "nothing in points 2: every point to every point",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "nothing in points 2: every point to every point"
+                },
+                "11": {
+                    "name": "heat_map",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 520,
+                    "width": 388,
+                    "height": 430,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.1f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment row i, column j: how far point i is from point j",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 674,
+                    "position_y": 930,
+                    "width": 303,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "row i, column j: how far point i is from point j",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "row i, column j: how far point i is from point j"
+                },
+                "13": {
+                    "name": "slider",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 990,
+                    "width": 210,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "",
+                            "value": 3.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "14": {
+                    "name": "slider",
+                    "id": 755,
+                    "position_x": 30,
+                    "position_y": 1060,
+                    "width": 210,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "",
+                            "value": 3.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "comment a point held in points 2: x and y",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 674,
+                    "position_y": 1005,
+                    "width": 211,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a point held in points 2: x and y",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a point held in points 2: x and y"
+                },
+                "16": {
+                    "name": "pak",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 1140,
+                    "width": 39,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pak f f"
+                },
+                "17": {
+                    "name": "list",
+                    "id": 866,
+                    "position_x": 210,
+                    "position_y": 1170,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "18": {
+                    "name": "t.cdist",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 1260,
+                    "width": 58,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "19": {
+                    "init": "comment the 8 points against the held point: 8 x 1",
+                    "name": "comment",
+                    "id": 940,
+                    "position_x": 674,
+                    "position_y": 1280,
+                    "width": 267,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the 8 points against the held point: 8 x 1",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the 8 points against the held point: 8 x 1"
+                },
+                "20": {
+                    "name": "t.t",
+                    "id": 977,
+                    "position_x": 30,
+                    "position_y": 1370,
+                    "width": 70,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "21": {
+                    "name": "heat_map",
+                    "id": 1014,
+                    "position_x": 30,
+                    "position_y": 1460,
+                    "width": 488,
+                    "height": 90,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 480,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 40,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.1f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "22": {
+                    "init": "comment how far each point (same columns as the top) is from the held point",
+                    "name": "comment",
+                    "id": 1051,
+                    "position_x": 674,
+                    "position_y": 1550,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "how far each point (same columns as the top) is from the held point",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "how far each point (same columns as the top) is from the held point"
+                },
+                "23": {
+                    "name": "help_link",
+                    "id": 1088,
+                    "position_x": 30,
+                    "position_y": 1634,
+                    "width": 54,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.dist"
+                },
+                "24": {
+                    "name": "help_link",
+                    "id": 1125,
+                    "position_x": 100,
+                    "position_y": 1634,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.length"
+                },
+                "25": {
+                    "name": "help_link",
+                    "id": 1162,
+                    "position_x": 182,
+                    "position_y": 1634,
+                    "width": 161,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.distance_from_target"
+                },
+                "26": {
+                    "name": "help_link",
+                    "id": 1199,
+                    "position_x": 359,
+                    "position_y": 1634,
+                    "width": 104,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.linalg.norm"
+                },
+                "27": {
+                    "name": "help_link",
+                    "id": 1236,
+                    "position_x": 30,
+                    "position_y": 1678,
+                    "width": 133,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.cosine_similarity"
+                },
+                "28": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1273,
+                    "position_x": 30,
+                    "position_y": 1600,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "29": {
+                    "name": "close",
+                    "id": 1310,
+                    "position_x": 24,
+                    "position_y": 1752,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 755,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float out",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 1,
+                    "dest_input_name": "float"
+                },
+                "3": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float out",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "float"
+                },
+                "4": {
+                    "source_node": 829,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 866,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "points",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "6": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor out",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "7": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "points",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "8": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "9": {
+                    "source_node": 829,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 903,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "points 2"
+                },
+                "10": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "points",
+                    "dest_node": 903,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "11": {
+                    "source_node": 903,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 977,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "12": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor out",
+                    "dest_node": 1014,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

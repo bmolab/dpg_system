@@ -1,11 +1,11 @@
 {
-    "height": 536,
-    "width": 897,
+    "height": 468,
+    "width": 669,
     "position": [
         100,
         100
     ],
-    "id": 1166,
+    "id": 1092,
     "name": "nodes_torch_shape",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_shape.json",
     "nodes": {
@@ -136,27 +136,22 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "help_link t.reshape t reshaping",
+            "init": "help_link nodes_torch_shape_reshaping Reshaping",
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 200,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t reshaping",
+                    "name": "Reshaping",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 153,
                     "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
                 }
             },
             "id": 722,
@@ -167,14 +162,14 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 207,
             "position_y": 154,
-            "width": 619,
-            "height": 52,
+            "width": 422,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "the same numbers, arranged differently\n(t.adjoint, t.flatten, t.permute, t.ravel, t.reshape, t.squeeze, t.t, t.transpose, t.unsqueeze,\n t.view)",
+                    "value": "t.reshape, t.view, t.flatten / t.ravel, t.squeeze, t.unsqueeze,\nt.permute, t.transpose, t.t, t.adjoint",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,12 +179,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 611,
+                    "value": 414,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -198,34 +193,29 @@
                     "value_type": "str"
                 }
             },
-            "text": "the same numbers, arranged differently\n(t.adjoint, t.flatten, t.permute, t.ravel, t.reshape, t.squeeze, t.t, t.transpose, t.unsqueeze,\n t.view)",
+            "text": "t.reshape, t.view, t.flatten / t.ravel, t.squeeze, t.unsqueeze,\nt.permute, t.transpose, t.t, t.adjoint",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link t.cat t.cat / stack / split",
+            "init": "help_link nodes_torch_shape_joining_and_splitting Joining and splitting",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 210,
-            "width": 200,
+            "position_y": 202,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.cat / stack / split",
+                    "name": "Joining and splitting",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 153,
                     "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
                 }
             },
             "id": 796,
@@ -236,14 +226,14 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 214,
-            "width": 588,
-            "height": 52,
+            "position_x": 207,
+            "position_y": 206,
+            "width": 397,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "extend an axis, or add one\n(t.cat, t.chunk, t.column_stack, t.dstack, t.hstack, t.row_stack, t.stack, t.tensor_split,\n t.vstack)",
+                    "value": "t.cat, t.stack, t.hstack, t.vstack / t.row_stack, t.dstack,\nt.column_stack, t.chunk, t.tensor_split",
                     "value_type": "str"
                 },
                 "1": {
@@ -253,12 +243,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 580,
+                    "value": 389,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -267,34 +257,29 @@
                     "value_type": "str"
                 }
             },
-            "text": "extend an axis, or add one\n(t.cat, t.chunk, t.column_stack, t.dstack, t.hstack, t.row_stack, t.stack, t.tensor_split,\n t.vstack)",
+            "text": "t.cat, t.stack, t.hstack, t.vstack / t.row_stack, t.dstack,\nt.column_stack, t.chunk, t.tensor_split",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link t.roll t.roll / flip / repeat",
+            "init": "help_link nodes_torch_shape_selecting Selecting",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 270,
-            "width": 200,
+            "position_y": 254,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.roll / flip / repeat",
+                    "name": "Selecting",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 153,
                     "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
                 }
             },
             "id": 870,
@@ -305,14 +290,14 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 274,
-            "width": 243,
+            "position_x": 207,
+            "position_y": 258,
+            "width": 372,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "moving contents about\n(t.flip, t.repeat, t.roll, t.tile)",
+                    "value": "t[], t.select, t.index_select, t.masked_select, t.take,\nt.take_along_dim, t.narrow",
                     "value_type": "str"
                 },
                 "1": {
@@ -322,7 +307,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 235,
+                    "value": 364,
                     "value_type": "int"
                 },
                 "3": {
@@ -336,34 +321,29 @@
                     "value_type": "str"
                 }
             },
-            "text": "moving contents about\n(t.flip, t.repeat, t.roll, t.tile)",
+            "text": "t[], t.select, t.index_select, t.masked_select, t.take,\nt.take_along_dim, t.narrow",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link t.diag t.diag / t.tril / t.triu",
+            "init": "help_link nodes_torch_shape_writing_into Writing into",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 322,
-            "width": 200,
+            "position_y": 306,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.diag / t.tril / t.triu",
+                    "name": "Writing into",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 153,
                     "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
                 }
             },
             "id": 944,
@@ -374,14 +354,14 @@
         "12": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 326,
-            "width": 181,
-            "height": 40,
+            "position_x": 207,
+            "position_y": 310,
+            "width": 188,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "diagonals and triangles\n(t.diag, t.tril, t.triu)",
+                    "value": "t.scatter, t.scatter_hold",
                     "value_type": "str"
                 },
                 "1": {
@@ -391,12 +371,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 173,
+                    "value": 180,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -405,34 +385,29 @@
                     "value_type": "str"
                 }
             },
-            "text": "diagonals and triangles\n(t.diag, t.tril, t.triu)",
+            "text": "t.scatter, t.scatter_hold",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "13": {
-            "init": "help_link t.index_select t selecting",
+            "init": "help_link nodes_torch_shape_rearranging Rearranging",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 374,
-            "width": 200,
+            "position_y": 358,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t selecting",
+                    "name": "Rearranging",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 153,
                     "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
                 }
             },
             "id": 1018,
@@ -443,14 +418,14 @@
         "14": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 378,
-            "width": 551,
-            "height": 40,
+            "position_x": 207,
+            "position_y": 362,
+            "width": 378,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "which part, and what shape survives\n(t.index_select, t.masked_select, t.narrow, t.select, t.take, t.take_along_dim, t[])",
+                    "value": "t.roll, t.flip, t.repeat, t.tile, t.diag, t.tril, t.triu",
                     "value_type": "str"
                 },
                 "1": {
@@ -460,12 +435,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 543,
+                    "value": 370,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -474,77 +449,8 @@
                     "value_type": "str"
                 }
             },
-            "text": "which part, and what shape survives\n(t.index_select, t.masked_select, t.narrow, t.select, t.take, t.take_along_dim, t[])",
+            "text": "t.roll, t.flip, t.repeat, t.tile, t.diag, t.tril, t.triu",
             "id": 1055,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "15": {
-            "init": "help_link t.scatter t.scatter / t.scatter_hold",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 426,
-            "width": 200,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "t.scatter / t.scatter_hold",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 184,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
-            "id": 1092,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "16": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 238,
-            "position_y": 430,
-            "width": 212,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "assemble a tensor from pieces\n(t.scatter, t.scatter_hold)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 204,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "assemble a tensor from pieces\n(t.scatter, t.scatter_hold)",
-            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

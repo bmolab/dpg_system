@@ -77,25 +77,21 @@ class TorchNNThresholdNode(TorchNode):
         threshold = 0
         replace = 0
         if len(args) > 0:
-            threshold = any_to_int(args[0])
+            threshold = any_to_float(args[0])
         if len(args) > 1:
-            replace = any_to_int(args[1])
+            replace = any_to_float(args[1])
 
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.threshold = self.add_input('threshold', widget_type='drag_float', default_value=threshold, callback=self.params_changed)
-        self.replace = self.add_input('replacement', widget_type='drag_float', default_value=replace, callback=self.params_changed)
-        # Call the NodeInputs to read their numeric values — torch.nn.Threshold
-        # stores its args verbatim and would otherwise hold NodeInput objects.
-        self.op = torch.nn.Threshold(self.threshold(), self.replace())
+        self.threshold = self.add_input('threshold', widget_type='drag_float', default_value=threshold)
+        self.replace = self.add_input('replacement', widget_type='drag_float', default_value=replace)
         self.output = self.add_output('output')
 
-    def params_changed(self):
-        self.op = torch.nn.Threshold(self.threshold(), self.replace())
-
     def execute(self):
+        # read the values here: an op built in __init__ got None (widgets have
+        # no value until created), so the node sent nothing until one changed
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(self.op(input_tensor))
+            self.output.send(torch.nn.functional.threshold(input_tensor, self.threshold(), self.replace()))
 
 
 class TorchActivationNode(TorchNode):
@@ -179,7 +175,12 @@ class TorchActivationTwoParamNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(self.op(input_tensor, self.parameter_1(), self.parameter_2()))
+            if self.label == 't.nn.rrelu':
+                # training=True draws a random slope per element between lower
+                # and upper; without it rrelu is a fixed leaky relu at their mean
+                self.output.send(self.op(input_tensor, self.parameter_1(), self.parameter_2(), training=True))
+            else:
+                self.output.send(self.op(input_tensor, self.parameter_1(), self.parameter_2()))
 
 
 class TorchActivationThreeParamNode(TorchNode):
@@ -213,7 +214,10 @@ class TorchActivationThreeParamNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            self.output.send(self.op(input_tensor, self.parameter_1(), self.parameter_2(), self.parameter_3()))
+            # by keyword: gumbel_softmax's third positional argument is eps, so
+            # dim used to land there and the softmax always ran on the last axis
+            self.output.send(self.op(input_tensor, tau=self.parameter_1(), hard=bool(self.parameter_2()),
+                                     dim=self.parameter_3()))
 
 
 class TorchSoftmaxNode(TorchNode):
@@ -335,7 +339,6 @@ class TorchSpecialNode(TorchNode):
             self.op = self.op_dict[self.label]
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.special_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -397,7 +400,7 @@ class TorchSpecialLogitNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        eps = 1e-8
+        eps = 1e-6
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.eps = self.add_input('eps', widget_type='drag_float', default_value=eps)
 

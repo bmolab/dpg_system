@@ -107,7 +107,14 @@ class BasePlotNode(Node):
             if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
                 data = data.real
             if data.dtype not in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
-                return None
+                # other number types (int32 from scipy, int16 audio, uint16 depth)
+                # were dropped without a word; draw them as floats instead
+                if not np.issubdtype(data.dtype, np.number):
+                    return None
+                data = data.astype(np.float64)
+            # a 0-d array is a single number: give it the shape a float gets
+            if data.ndim == 0:
+                data = data.reshape(1)
             return data
         # If we couldn't convert, return None
         return None
@@ -166,7 +173,13 @@ class BasePlotNode(Node):
     # --- End of Refactored Section ---
 
     def reallocate_buffer(self):
-        self.y_data = RollingBuffer((self.sample_count, self.rows), roll_along_x=False)
+        if self.update_style == 'buffer holds one sample of input':
+            # a fill holds the array itself, (curves, samples); RollingBuffer
+            # reads a fill shape that way round, so a plot of several rows
+            # gets one curve per row (heat_map passes its array shape as is)
+            self.y_data = RollingBuffer((self.rows, self.sample_count), roll_along_x=False)
+        else:
+            self.y_data = RollingBuffer((self.sample_count, self.rows), roll_along_x=False)
         self.y_data.owner = self
         self.y_data.buffer_changed_callback = self.buffer_changed
         self.y_data.set_update_style(self.update_style)
@@ -251,33 +264,35 @@ class BasePlotNode(Node):
 
     def change_sample_count(self):
         self.lock.acquire(blocking=True)
-        if self.sample_count_option is not None:
-            self.sample_count = self.sample_count_option()
-        if self.sample_count < 1:
-            self.sample_count = 1
+        try:
             if self.sample_count_option is not None:
-                self.sample_count_option.set(self.sample_count)
-        del self.x_data
-        del self.y_data
-        self.x_data = np.linspace(0, self.sample_count, self.sample_count)
-        self.reallocate_buffer()
+                self.sample_count = self.sample_count_option()
+            if self.sample_count < 1:
+                self.sample_count = 1
+                if self.sample_count_option is not None:
+                    self.sample_count_option.set(self.sample_count)
+            del self.x_data
+            del self.y_data
+            self.x_data = np.linspace(0, self.sample_count, self.sample_count)
+            self.reallocate_buffer()
 
-        if self.min_x_option is not None:
-            self.min_x_option.set(0)
-        self.min_x = 0
-        if self.max_x_option is not None:
-            self.max_x_option.set(self.sample_count)
-        self.max_x = self.sample_count
+            if self.min_x_option is not None:
+                self.min_x_option.set(0)
+            self.min_x = 0
+            if self.max_x_option is not None:
+                self.max_x_option.set(self.sample_count)
+            self.max_x = self.sample_count
 
-        for i in range(len(self.plot_data_tag)):
-            if dpg.does_item_exist(self.plot_data_tag[i]):
-                dpg.delete_item(self.plot_data_tag[i])
+            for i in range(len(self.plot_data_tag)):
+                if dpg.does_item_exist(self.plot_data_tag[i]):
+                    dpg.delete_item(self.plot_data_tag[i])
 
-        self.adjust_to_sample_count_change()
+            self.adjust_to_sample_count_change()
 
-        self.pending_sample_count = self.sample_count
-        self.change_range()
-        self.lock.release()
+            self.pending_sample_count = self.sample_count
+            self.change_range()
+        finally:
+            self.lock.release()
 
     def adjust_to_sample_count_change(self):
         pass
@@ -395,76 +410,92 @@ class PlotNode(BasePlotNode):
             self.pending_breadth = 0
 
         self.lock.acquire(blocking=True)
-        if self.input.fresh_input:   # standard plot
-            data = self.input()
-            # 'dump' hands the collected history out of the outlet. HeatMapNode
-            # and ProfileNode both answered it; PlotNode did not, so plot's
-            # outlet could never fire at all. Same three lines as its siblings.
-            if isinstance(data, str) and data == 'dump':
-                # block: a non-blocking get_buffer returns None while a frame
-                # task is drawing from the buffer
-                buffer = self.y_data.get_buffer(block=True)
-                if buffer is not None:
-                    self.output.send(buffer[0])
-                    self.y_data.release_buffer()
-                self.lock.release()
-                return
-            data_array = self._process_input_to_array(data)
+        # every exit releases the lock: an exception in here used to leave it
+        # held, and the next frame's acquire froze the app
+        try:
+            if self.input.fresh_input:   # standard plot
+                data = self.input()
+                # 'dump' hands the collected history out of the outlet. HeatMapNode
+                # and ProfileNode both answered it; PlotNode did not, so plot's
+                # outlet could never fire at all. Same three lines as its siblings.
+                if isinstance(data, str) and data == 'dump':
+                    # block: a non-blocking get_buffer returns None while a frame
+                    # task is drawing from the buffer
+                    buffer = self.y_data.get_buffer(block=True)
+                    if buffer is not None:
+                        self.output.send(buffer[0])
+                        self.y_data.release_buffer()
+                    return
+                data_array = self._process_input_to_array(data)
 
-            if data_array is not None:
-                if self.update_style == 'input is stream of samples':
-                    if self.rows > 1:
-                        self.rows = 1
-                        self.pending_breadth = self.rows
-                    if self.rows != self.y_data.breadth:
-                        self.lock.release()
-                        return
+                if data_array is not None:
+                    if self.update_style == 'input is stream of samples':
+                        if self.rows > 1:
+                            self.rows = 1
+                            self.pending_breadth = self.rows
+                        if self.rows != self.y_data.breadth:
+                            return
 
-                    if len(data_array.shape) == 1 and data_array.shape[0] > self.sample_count:
-                        self.pending_sample_count = data_array.shape[0]
-                    else:
+                        if len(data_array.shape) == 1 and data_array.shape[0] > self.sample_count:
+                            self.pending_sample_count = data_array.shape[0]
+                        else:
+                            self.y_data.update(data_array)
+
+                    elif self.update_style == 'input is multi-channel sample':
+                        rows = data_array.size
+                        sample_count = self.sample_count
+                        if len(data_array.shape) == 2 and data_array.shape[0] > 1 and data_array.shape[1] > 1:
+                            rows = data_array.shape[0]
+                            sample_count = data_array.shape[1]
+                            self.pending_sample_count = sample_count
+
+                        if rows != self.rows:
+                            self.rows = rows
+                            self.pending_breadth = self.rows
+
+                        if len(self.plot_data_tag) < self.rows:
+                            for i in range(len(self.plot_data_tag), rows):
+                                self.plot_data_tag.append(dpg.generate_uuid())
+
+                        if self.rows != self.y_data.breadth or self.sample_count != sample_count:
+                            return
+
+                        self.y_data.update(data_array.reshape((rows, -1)))
+
+                    elif self.update_style == 'buffer holds one sample of input' and len(data_array.shape) > 0:
+                        if len(data_array.shape) == 1 and data_array.shape[0] != 1:
+                            if self.sample_count != data_array.shape[0]:
+                                self.pending_sample_count = data_array.shape[0]
+                                return
+                            if self.rows != 1:   # back to one curve: drop the others
+                                self.rows = 1
+                                self.pending_breadth = 1
+                                return
+                        elif len(data_array.shape) == 2 and data_array.shape[0] > 1:
+                            # several rows: one curve each. Resize first (the
+                            # next frame rebuilds the series), as for one row.
+                            rows, sample_count = data_array.shape
+                            if rows != self.rows or sample_count != self.sample_count:
+                                self.rows = rows
+                                self.pending_breadth = rows
+                                self.pending_sample_count = sample_count
+                                return
                         self.y_data.update(data_array)
 
-                elif self.update_style == 'input is multi-channel sample':
-                    rows = data_array.size
-                    sample_count = self.sample_count
-                    if len(data_array.shape) == 2 and data_array.shape[0] > 1 and data_array.shape[1] > 1:
-                        rows = data_array.shape[0]
-                        sample_count = data_array.shape[1]
-                        self.pending_sample_count = sample_count
-
-                    if rows != self.rows:
-                        self.rows = rows
-                        self.pending_breadth = self.rows
-
-                    if len(self.plot_data_tag) < self.rows:
-                        for i in range(len(self.plot_data_tag), rows):
-                            self.plot_data_tag.append(dpg.generate_uuid())
-
-                    if self.rows != self.y_data.breadth or self.sample_count != sample_count:
-                        self.lock.release()
-                        return
-
-                    self.y_data.update(data_array.reshape((rows, -1)))
-
-                elif self.update_style == 'buffer holds one sample of input' and len(data_array.shape) > 0:
-                    if len(data_array.shape) == 1 and data_array.shape[0] != 1:
-                        if self.sample_count != data_array.shape[0]:
-                            self.pending_sample_count = data_array.shape[0]
-                            self.lock.release()
-                            return
-                    self.y_data.update(data_array)
-
-        buffer = self.y_data.get_buffer()
-        if buffer is not None:
-            if self.y_data.breadth > 1:
-                for i in range(self.y_data.breadth):
-                    if dpg.does_item_exist(self.plot_data_tag[i]):
-                        dpg.set_value(self.plot_data_tag[i], [self.x_data, buffer[i].ravel()])
-            else:
-                dpg.set_value(self.plot_data_tag[0], [self.x_data, buffer.ravel()])
-            self.y_data.release_buffer()
-        self.lock.release()
+            buffer = self.y_data.get_buffer()
+            if buffer is not None:
+                try:
+                    if self.y_data.breadth > 1:
+                        for i in range(self.y_data.breadth):
+                            # a fill can bring more rows than there are series yet
+                            if i < len(self.plot_data_tag) and dpg.does_item_exist(self.plot_data_tag[i]):
+                                dpg.set_value(self.plot_data_tag[i], [self.x_data, buffer[i].ravel()])
+                    else:
+                        dpg.set_value(self.plot_data_tag[0], [self.x_data, buffer.ravel()])
+                finally:
+                    self.y_data.release_buffer()
+        finally:
+            self.lock.release()
         self.send_all()
 
     def update_plot(self):
@@ -590,7 +621,12 @@ class HeatMapNode(BasePlotNode):
 
     def change_format(self):
         self.format = self.format_option()
-        if self.format != '':
+        if self.format.strip().lower() == 'none':
+            # numbers off for good: '' alone is what the auto-hide below
+            # writes, and it puts the held format back once cells are big
+            self.format = ''
+            self.hold_format = ''
+        elif self.format != '':
             self.hold_format = self.format
         dpg.configure_item(self.plot_data_tag[0], format=self.format)
 
@@ -627,10 +663,19 @@ class HeatMapNode(BasePlotNode):
                 return
 
             data_array = self._process_input_to_array(data)
+            if data_array is not None and data_array.size == 0:
+                # nothing to draw - and a zero dimension would divide by zero
+                # below while both locks are held, hanging the next input
+                self.lock.release()
+                return
             if data_array is not None:
                 mode = self.update_mode_option()
 
                 if mode == 'heat_map':
+                    # A 1-D array is one row: its values run left to right.
+                    # (As (N,) it was drawn as N one-cell rows, top to bottom.)
+                    if data_array.ndim == 1:
+                        data_array = data_array.reshape(1, -1)
                     # Logic from the original HeatMapNode
                     rows = 1
                     sample_count = data_array.shape[0]
@@ -667,7 +712,14 @@ class HeatMapNode(BasePlotNode):
             changed_format = False
             hide_format = False
 
-            if self.width / self.sample_count < 40 or (len(buffer.shape) > 1 and self.height / self.rows < 16):
+            # in heat_map mode the array's rows are sample_count and its
+            # columns are self.rows, so a cell is width/rows wide and
+            # height/sample_count tall
+            if self.update_mode_option() == 'heat_map':
+                cell_w, cell_h = self.width / max(self.rows, 1), self.height / max(self.sample_count, 1)
+            else:
+                cell_w, cell_h = self.width / max(self.sample_count, 1), self.height / max(self.rows, 1)
+            if cell_w < 40 or (len(buffer.shape) > 1 and cell_h < 16):
                 hide_format = True
                 if self.format != '':
                     self.hold_format = self.format
@@ -735,35 +787,37 @@ class ProfileNode(BasePlotNode):
     def change_sample_count(self):
         """Override base class to use integer x positions for bar centering."""
         self.lock.acquire(blocking=True)
-        if self.sample_count_option is not None:
-            self.sample_count = self.sample_count_option()
-        if self.sample_count < 1:
-            self.sample_count = 1
+        try:
             if self.sample_count_option is not None:
-                self.sample_count_option.set(self.sample_count)
-        del self.x_data
-        del self.y_data
-        # Use integer positions so bars are centered on 0, 1, 2, ..., N-1
-        self.x_data = np.arange(self.sample_count, dtype=float)
-        self.reallocate_buffer()
+                self.sample_count = self.sample_count_option()
+            if self.sample_count < 1:
+                self.sample_count = 1
+                if self.sample_count_option is not None:
+                    self.sample_count_option.set(self.sample_count)
+            del self.x_data
+            del self.y_data
+            # Use integer positions so bars are centered on 0, 1, 2, ..., N-1
+            self.x_data = np.arange(self.sample_count, dtype=float)
+            self.reallocate_buffer()
 
-        # Pad axis limits by 0.5 so first and last bars are fully visible
-        if self.min_x_option is not None:
-            self.min_x_option.set(-0.5)
-        self.min_x = -0.5
-        if self.max_x_option is not None:
-            self.max_x_option.set(self.sample_count - 0.5)
-        self.max_x = self.sample_count - 0.5
+            # Pad axis limits by 0.5 so first and last bars are fully visible
+            if self.min_x_option is not None:
+                self.min_x_option.set(-0.5)
+            self.min_x = -0.5
+            if self.max_x_option is not None:
+                self.max_x_option.set(self.sample_count - 0.5)
+            self.max_x = self.sample_count - 0.5
 
-        for i in range(len(self.plot_data_tag)):
-            if dpg.does_item_exist(self.plot_data_tag[i]):
-                dpg.delete_item(self.plot_data_tag[i])
+            for i in range(len(self.plot_data_tag)):
+                if dpg.does_item_exist(self.plot_data_tag[i]):
+                    dpg.delete_item(self.plot_data_tag[i])
 
-        self.adjust_to_sample_count_change()
+            self.adjust_to_sample_count_change()
 
-        self.pending_sample_count = self.sample_count
-        self.change_range()
-        self.lock.release()
+            self.pending_sample_count = self.sample_count
+            self.change_range()
+        finally:
+            self.lock.release()
 
     def custom_create(self, from_file):
         self.reallocate_buffer()

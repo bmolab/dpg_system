@@ -1,0 +1,733 @@
+{
+    "height": 704,
+    "width": 1448,
+    "position": [
+        351,
+        81
+    ],
+    "id": 1416,
+    "name": "degrees_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1444,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment degrees (radians to degrees)",
+            "name": "comment",
+            "id": 1462,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 353,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "degrees (radians to degrees)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "degrees (radians to degrees)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1473,
+            "sid": 3,
+            "position_x": 729,
+            "position_y": 45,
+            "width": 679,
+            "height": 496,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "degrees converts angles in radians to degrees: it multiplies by 180 / pi (57.2958).\n\npi (3.14159) comes out as 180, pi / 2 as 90, 1 as 57.3. A full turn is 2 pi radians\nand 360 degrees.\n\nUse it to read an angle from a node that works in radians - quaternion and rotation\nconversions, np.linalg and torch nodes, atan2 with its degrees box off - or to feed\none into something that expects degrees.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\ndegrees cell by cell (right).\n\nSYNTAX:\ndegrees\n\nEXAMPLES:\ndegrees    read a rotation angle that arrives in radians\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe angle in degrees.\n\nSEE ALSO:\nradians    the other way, degrees to radians\nsin, cos   take degrees by default (a checkbox switches to radians)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 671,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 480,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "degrees converts angles in radians to degrees: it multiplies by 180 / pi (57.2958).\n\npi (3.14159) comes out as 180, pi / 2 as 90, 1 as 57.3. A full turn is 2 pi radians\nand 360 degrees.\n\nUse it to read an angle from a node that works in radians - quaternion and rotation\nconversions, np.linalg and torch nodes, atan2 with its degrees box off - or to feed\none into something that expects degrees.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\ndegrees cell by cell (right).\n\nSYNTAX:\ndegrees\n\nEXAMPLES:\ndegrees    read a rotation angle that arrives in radians\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe angle in degrees.\n\nSEE ALSO:\nradians    the other way, degrees to radians\nsin, cos   take degrees by default (a checkbox switches to radians)"
+        },
+        "3": {
+            "name": "signal",
+            "id": 1507,
+            "sid": 6,
+            "position_x": 176,
+            "position_y": 101,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 3.141592653589793,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "degrees",
+            "name": "degrees",
+            "id": 1529,
+            "sid": 7,
+            "position_x": 333,
+            "position_y": 152,
+            "width": 52,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "5": {
+            "name": "plot",
+            "id": 1539,
+            "sid": 8,
+            "position_x": 452,
+            "position_y": 110,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -200.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 200.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "text_block",
+            "id": 1590,
+            "sid": 9,
+            "position_x": 246,
+            "position_y": 49,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a sine wave from -pi to pi, in degrees:\n-180 to 180",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "text": "a sine wave from -pi to pi, in degrees:\n-180 to 180"
+        },
+        "7": {
+            "name": "float",
+            "id": 1607,
+            "sid": 10,
+            "position_x": 29,
+            "position_y": 301,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 3.14159,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.01,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "init": "degrees",
+            "name": "degrees",
+            "id": 1643,
+            "sid": 11,
+            "position_x": 190,
+            "position_y": 297,
+            "width": 52,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "float",
+            "id": 1653,
+            "sid": 12,
+            "position_x": 310,
+            "position_y": 304,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 179.9998479605043,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.01,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "init": "comment drag this number",
+            "name": "comment",
+            "id": 1686,
+            "sid": 13,
+            "position_x": 42,
+            "position_y": 260,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag this number",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "drag this number"
+        },
+        "11": {
+            "name": "close",
+            "id": 1697,
+            "sid": 14,
+            "position_x": 24,
+            "position_y": 600,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "12": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 1783,
+            "sid": 20,
+            "position_x": 25,
+            "position_y": 462,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 6.283,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "heat_map",
+            "id": 2002,
+            "sid": 28,
+            "position_x": 170,
+            "position_y": 440,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 6.283,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 2116,
+            "sid": 31,
+            "position_x": 485,
+            "position_y": 440,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "load_bang",
+            "id": 2162,
+            "sid": 33,
+            "position_x": 25,
+            "position_y": 409,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "16": {
+            "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
+            "name": "comment",
+            "id": 2198,
+            "sid": 37,
+            "position_x": 61,
+            "position_y": 366,
+            "width": 561,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "arrays and tensors go through cell by cell: the input on the left, the result on the right",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
+        },
+        "17": {
+            "name": "degrees",
+            "id": 2217,
+            "sid": 39,
+            "position_x": 375,
+            "position_y": 486,
+            "width": 52,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1507,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1529,
+            "dest_node_name": "degrees",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 1529,
+            "source_node_name": "degrees",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1539,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 1607,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1643,
+            "dest_node_name": "degrees",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 1643,
+            "source_node_name": "degrees",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1653,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2002,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2217,
+            "dest_node_name": "degrees",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 2217,
+            "source_node_name": "degrees",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 2116,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 2162,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1783,
+            "dest_node_name": "np.rand",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

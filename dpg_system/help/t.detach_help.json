@@ -1,0 +1,702 @@
+{
+    "height": 793,
+    "width": 1624,
+    "position": [
+        100,
+        67
+    ],
+    "id": 1968,
+    "name": "t.detach_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1996,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.detach - the same numbers, without the gradient history",
+            "name": "comment",
+            "id": 2014,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 709,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.detach - the same numbers, without the gradient history",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "t.detach - the same numbers, without the gradient history"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 2025,
+            "sid": 3,
+            "position_x": 850,
+            "position_y": 45,
+            "width": 768,
+            "height": 686,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Passes a tensor through with its gradient history cut off: the same numbers, no longer connected to whatever computed them.\n\nWhen a tensor has requires_grad set, every operation done to it is recorded, so that gradients can later be worked back through the chain (this is how training works). The result of each of those operations carries the record with it - and so does anything computed from it, all the way down the patch. That record costs memory and time, and some operations refuse a tensor that is carrying one. Put t.detach where a result leaves the gradient-tracked part of a patch and goes on to be drawn, stored, sent or used as ordinary data.\n\nThe output shares its numbers with the input rather than copying them:\nit is cheap at any size. (If the input is later changed in place, the detached tensor sees the change too.)\n\nSYNTAX:\nt.detach\n\nEXAMPLE:\nt.detach\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is detached and sent. A list or NumPy array is turned into a float32 tensor first (which has no history anyway); an empty one is ignored.\n\nOUTPUTS:\n\ntensor out:\nThe same values, with requires_grad off and no history.\n\nREADING THE DEMO:\nt.linspace makes 8 values from -2 to 2 and t.nn.tanh bends them into an S-curve. requires_grad is ticked on t.linspace, so everything computed from it is tracked: the upper t.info reports True. After t.detach the lower t.info reports False, and the two strips show the numbers are untouched. Untick it and both read False.\n\nRELATED:\ntensor (t.to) sets requires_grad when making a tensor. t.info shows whether a tensor is tracked. t.contiguous is the other \"same numbers, different bookkeeping\" node.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 670,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "Passes a tensor through with its gradient history cut off: the same numbers, no longer connected to whatever computed them.\n\nWhen a tensor has requires_grad set, every operation done to it is recorded, so that gradients can later be worked back through the chain (this is how training works). The result of each of those operations carries the record with it - and so does anything computed from it, all the way down the patch. That record costs memory and time, and some operations refuse a tensor that is carrying one. Put t.detach where a result leaves the gradient-tracked part of a patch and goes on to be drawn, stored, sent or used as ordinary data.\n\nThe output shares its numbers with the input rather than copying them:\nit is cheap at any size. (If the input is later changed in place, the detached tensor sees the change too.)\n\nSYNTAX:\nt.detach\n\nEXAMPLE:\nt.detach\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is detached and sent. A list or NumPy array is turned into a float32 tensor first (which has no history anyway); an empty one is ignored.\n\nOUTPUTS:\n\ntensor out:\nThe same values, with requires_grad off and no history.\n\nREADING THE DEMO:\nt.linspace makes 8 values from -2 to 2 and t.nn.tanh bends them into an S-curve. requires_grad is ticked on t.linspace, so everything computed from it is tracked: the upper t.info reports True. After t.detach the lower t.info reports False, and the two strips show the numbers are untouched. Untick it and both read False.\n\nRELATED:\ntensor (t.to) sets requires_grad when making a tensor. t.info shows whether a tensor is tracked. t.contiguous is the other \"same numbers, different bookkeeping\" node."
+        },
+        "3": {
+            "init": "metro 200",
+            "name": "metro",
+            "id": 2042,
+            "sid": 4,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "init": "comment requires_grad on t.linspace",
+            "name": "comment",
+            "id": 2079,
+            "sid": 6,
+            "position_x": 180,
+            "position_y": 115,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "requires_grad on t.linspace",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "requires_grad on t.linspace"
+        },
+        "5": {
+            "init": "t.linspace -2 2 8",
+            "name": "t.linspace",
+            "id": 2090,
+            "sid": 7,
+            "position_x": 113,
+            "position_y": 155,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "requires_grad",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "start",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "stop",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "steps",
+                    "value": 8,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "t.nn.tanh",
+            "id": 2115,
+            "sid": 8,
+            "position_x": 307,
+            "position_y": 207,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "comment an operation, recorded if tracking is on",
+            "name": "comment",
+            "id": 2122,
+            "sid": 9,
+            "position_x": 479,
+            "position_y": 373,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "an operation, recorded if tracking is on",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "an operation, recorded if tracking is on"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 2133,
+            "sid": 10,
+            "position_x": 427,
+            "position_y": 207,
+            "width": 348,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 40,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "t.info",
+            "id": 2170,
+            "sid": 11,
+            "position_x": 307,
+            "position_y": 267,
+            "width": 88,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "t.detach",
+            "id": 2218,
+            "sid": 14,
+            "position_x": 310,
+            "position_y": 401,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "highlight": true
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 2225,
+            "sid": 15,
+            "position_x": 431,
+            "position_y": 411,
+            "width": 348,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 40,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "t.info",
+            "id": 2273,
+            "sid": 17,
+            "position_x": 305,
+            "position_y": 491,
+            "width": 88,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "string",
+            "id": 2286,
+            "sid": 18,
+            "position_x": 421,
+            "position_y": 548,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "False",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "14": {
+            "init": "help_link tensor",
+            "name": "help_link",
+            "id": 2321,
+            "sid": 20,
+            "position_x": 37,
+            "position_y": 654,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "tensor",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "init": "help_link t.info",
+            "name": "help_link",
+            "id": 2332,
+            "sid": 21,
+            "position_x": 107,
+            "position_y": 654,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "t.info",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "init": "help_link t.contiguous",
+            "name": "help_link",
+            "id": 2343,
+            "sid": 22,
+            "position_x": 177,
+            "position_y": 654,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "t.contiguous",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 2354,
+            "sid": 23,
+            "position_x": 37,
+            "position_y": 620,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "close",
+            "id": 2365,
+            "sid": 24,
+            "position_x": 31,
+            "position_y": 728,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "19": {
+            "name": "string",
+            "id": 2464,
+            "sid": 29,
+            "position_x": 436,
+            "position_y": 323,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "True",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 2042,
+            "source_node_name": "metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 2090,
+            "dest_node_name": "t.linspace",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 2090,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2115,
+            "dest_node_name": "t.nn.tanh",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 2090,
+            "source_node_name": "t.linspace",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 2170,
+            "dest_node_name": "t.info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 2115,
+            "source_node_name": "t.nn.tanh",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 2133,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 2115,
+            "source_node_name": "t.nn.tanh",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 2218,
+            "dest_node_name": "t.detach",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 2170,
+            "source_node_name": "t.info",
+            "source_output_index": 3,
+            "source_output_name": "grad",
+            "dest_node": 2464,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "6": {
+            "source_node": 2218,
+            "source_node_name": "t.detach",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2225,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 2218,
+            "source_node_name": "t.detach",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 2273,
+            "dest_node_name": "t.info",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 2273,
+            "source_node_name": "t.info",
+            "source_output_index": 3,
+            "source_output_name": "grad",
+            "dest_node": 2286,
+            "dest_node_name": "string",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

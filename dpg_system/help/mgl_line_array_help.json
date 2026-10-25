@@ -1,0 +1,361 @@
+{
+    "height": 1201,
+    "width": 1608,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "mgl_line_array_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_line_array_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_line_array - many lines from one array",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_line_array - many lines from one array",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_line_array - many lines from one array"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 750,
+            "position_y": 45,
+            "width": 818,
+            "height": 1096,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mgl_line_array draws many lines at once, from one array - built for trails of motion.\n\nWHAT IT TAKES:\n'array' takes points by lines by 3: each line is one column of the array, its points in order. A points by 3 array is a single line. An empty array clears the picture. Point 0 is taken to be the newest - the head of the trail - which is how a rolling buffer of positions arrives.\n\nDrawing a set of trails as separate line nodes does not scale; this draws the whole array in one go. The lines are drawn in the current colour, alpha included, without lighting, so mgl_color sets them and mgl_light does not touch them.\n\nMAKING MOTION LEGIBLE:\n'alpha_fade' fades each line from its head to its tail, so a trail dies away behind the moving point. 'fade_rate' bends that fade: above 1 the bright part is shorter, below 1 it holds longer.\n\n'accent_motion' measures how far each point moved since the previous array and lets that speed show, each in its own way and with its own scale: 'accent_brightness' (on by default) makes the lines only as bright as the movement times 'accent_scale', so a still trail disappears and a fast one shines. 'accent_colour' colours them by speed along a dark-purple to yellow scale, set by 'accent_colour_scale'; 'white_hot' carries the top of that scale on into white. 'accent_width' thickens fast parts, by the movement (raised to 'accent_width_curve') times 'accent_width_scale', up to 'accent_width_max' pixels.\n\nA trail drawn at constant width and brightness tells you where something went; one that brightens where it moved fast tells you how. The movement is only measured while 'accent_motion' is ticked, and starts afresh when the number of lines changes.\n\nWIDTH:\n'line_width' is in pixels. With 'perspective_width' ticked it is the width at one unit from the camera, and lines thin with distance.\n\nWHICH LINES, AND THEIR COLOURS:\n'selected_lines' lists line numbers to draw, separated by spaces; empty draws them all. With 'use_line_colors' ticked each line has its own colour instead of the current one: set 'color index' to a line number and pick its colour with 'color_control'. Index -1 recolours every line. Lines start white.\n\nSYNTAX:\nmgl_line_array\n\nIt takes no arguments.\n\nEXAMPLE:\nmgl_line_array\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\narray:\nThe lines, as above.\n\nline_width / perspective_width:\nWidth in pixels, 1 by default, and whether it shrinks with distance.\n\nalpha_fade / fade_rate:\nThe fade along each line. Off, and 1, by default.\n\naccent_motion / accent_brightness / accent_scale / accent_colour / accent_colour_scale / white_hot / accent_width / accent_width_scale / accent_width_curve / accent_width_max:\nWhether speed shows, and how, as above.\n\nselected_lines:\nLine numbers to draw.\n\nuse_line_colors / color index / color_control:\nPer-line colours, as above.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nnp.rolling_buffer builds trails from a stream. gl_line_array is the older equivalent. mgl_line draws a single line.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1080,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mgl_line_array draws many lines at once, from one array - built for trails of motion.\n\nWHAT IT TAKES:\n'array' takes points by lines by 3: each line is one column of the array, its points in order. A points by 3 array is a single line. An empty array clears the picture. Point 0 is taken to be the newest - the head of the trail - which is how a rolling buffer of positions arrives.\n\nDrawing a set of trails as separate line nodes does not scale; this draws the whole array in one go. The lines are drawn in the current colour, alpha included, without lighting, so mgl_color sets them and mgl_light does not touch them.\n\nMAKING MOTION LEGIBLE:\n'alpha_fade' fades each line from its head to its tail, so a trail dies away behind the moving point. 'fade_rate' bends that fade: above 1 the bright part is shorter, below 1 it holds longer.\n\n'accent_motion' measures how far each point moved since the previous array and lets that speed show, each in its own way and with its own scale: 'accent_brightness' (on by default) makes the lines only as bright as the movement times 'accent_scale', so a still trail disappears and a fast one shines. 'accent_colour' colours them by speed along a dark-purple to yellow scale, set by 'accent_colour_scale'; 'white_hot' carries the top of that scale on into white. 'accent_width' thickens fast parts, by the movement (raised to 'accent_width_curve') times 'accent_width_scale', up to 'accent_width_max' pixels.\n\nA trail drawn at constant width and brightness tells you where something went; one that brightens where it moved fast tells you how. The movement is only measured while 'accent_motion' is ticked, and starts afresh when the number of lines changes.\n\nWIDTH:\n'line_width' is in pixels. With 'perspective_width' ticked it is the width at one unit from the camera, and lines thin with distance.\n\nWHICH LINES, AND THEIR COLOURS:\n'selected_lines' lists line numbers to draw, separated by spaces; empty draws them all. With 'use_line_colors' ticked each line has its own colour instead of the current one: set 'color index' to a line number and pick its colour with 'color_control'. Index -1 recolours every line. Lines start white.\n\nSYNTAX:\nmgl_line_array\n\nIt takes no arguments.\n\nEXAMPLE:\nmgl_line_array\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\narray:\nThe lines, as above.\n\nline_width / perspective_width:\nWidth in pixels, 1 by default, and whether it shrinks with distance.\n\nalpha_fade / fade_rate:\nThe fade along each line. Off, and 1, by default.\n\naccent_motion / accent_brightness / accent_scale / accent_colour / accent_colour_scale / white_hot / accent_width / accent_width_scale / accent_width_curve / accent_width_max:\nWhether speed shows, and how, as above.\n\nselected_lines:\nLine numbers to draw.\n\nuse_line_colors / color index / color_control:\nPer-line colours, as above.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nnp.rolling_buffer builds trails from a stream. gl_line_array is the older equivalent. mgl_line draws a single line."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
+            "id": 385,
+            "position_x": 489,
+            "position_y": 120,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 340,
+            "position_y": 440,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "np.rand",
+            "id": 496,
+            "position_x": 340,
+            "position_y": 500,
+            "width": 123,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "np.rand 40 3 3"
+        },
+        "8": {
+            "init": "comment 40 points on each of 3 lines",
+            "name": "comment",
+            "id": 533,
+            "position_x": 489,
+            "position_y": 500,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "40 points on each of 3 lines",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "40 points on each of 3 lines"
+        },
+        "9": {
+            "name": "mgl_line_array",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 179,
+            "height": 360,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "alpha_fade",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "line_width",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            },
+            "highlight": true
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 489,
+            "position_y": 640,
+            "width": 231,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "alpha_fade: each line fades from\nits first point to its last",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "alpha_fade: each line fades from\nits first point to its last"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 1030,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "array"
+        }
+    }
+}

@@ -1,0 +1,772 @@
+{
+    "name": "np.rot90_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.rot90_help.json",
+    "patches": {
+        "0": {
+            "height": 490,
+            "width": 630,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1014,
+            "name": "make_F",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1051,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends the F ten times a second",
+                    "id": 1125,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends the F ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends the F ten times a second"
+                },
+                "3": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 290,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "1 1 1 1 1 1  1 1 0 0 0 0  1 1 0 0 0 0  1 1 1 1 0 0  1 1 0 0 0 0  1 1 0 0 0 0  1 1 0 0 0 0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 260,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment the letter F as 42 numbers, 1 = letter, 0 = background",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 185,
+                    "width": 480,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the letter F as 42 numbers, 1 = letter, 0 = background",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the letter F as 42 numbers, 1 = letter, 0 = background"
+                },
+                "5": {
+                    "name": "np.reshape",
+                    "init": "np.reshape 7 6",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into 7 rows of 6",
+                    "id": 1273,
+                    "position_x": 290,
+                    "position_y": 245,
+                    "width": 260,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into 7 rows of 6",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into 7 rows of 6"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out F",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "F"
+                }
+            }
+        },
+        "1": {
+            "height": 1015,
+            "width": 1725,
+            "position": [
+                100,
+                100
+            ],
+            "id": 977,
+            "name": "np.rot90_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.rot90_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.rot90 / np.rotate - turn an array by quarter turns",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 660,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.rot90 / np.rotate - turn an array by quarter turns",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.rot90 / np.rotate - turn an array by quarter turns"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 917,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 876,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Turns an array by quarter turns, like rotating a picture.\n\nnp.rot90 and np.rotate are two names for the same node.\n\nUse it to turn an image or a grid on its side, or to change which way a pattern faces. One quarter turn swaps the number of rows and columns: a 7 by 6 array becomes 6 by 7.\n\nWHICH WAY:\nWith the default axes, a positive k turns ANTICLOCKWISE as a heat_map draws the array (row 0 at the top): the top row becomes the left column. A negative k turns clockwise. k 2 is a half turn (the same as flipping both axes), k 4 is back where you started, and k 5 is the same as k 1.\n\nSYNTAX:\nnp.rot90 <k: int> <axis 1: int> <axis 2: int>\nnp.rotate <k: int> <axis 1: int> <axis 2: int>\nDefaults: k 1, axis 1 0, axis 2 1.\n\nEXAMPLE:\nnp.rot90 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Each array that arrives is turned and sent; only this inlet makes the node send. A 1-D array is treated as a single row, so one quarter turn makes it a column (N rows of 1).\n\nk (int box, also an inlet):\nHow many quarter turns. Changing it does NOT send by itself - in the demo a metro inside make_F re-sends the F ten times a second.\n\naxis 1 / axis 2 (int boxes, also inlets):\nThe plane to turn in: the turn goes FROM axis 1 TOWARDS axis 2. Swapping them reverses the direction. For a 2-D array leave them at 0 and 1; they matter for 3-D arrays, where they choose which pair of axes turns. A negative axis counts from the end (-1 is the last), one past the last is treated as the last; if the two end up the same, nothing is sent (a message says so).\n\nOUTPUTS:\n\nrotated array:\nThe turned array. With an odd k its first two dimensions have swapped.\n\nREADING THE DEMO:\nThe F (7 by 6) turned once anticlockwise lies on its back, 6 by 7, its top bar now down the left side. np.shape shows the shapes swap. Step k and it keeps turning; set k to 2 and it stands on its head; type 1 into axis 1 and 0 into axis 2 and the same k turns it clockwise.\n\nRELATED:\nnp.flip mirrors along one axis. np.transpose swaps rows and columns, which is a flip across the diagonal rather than a turn. np.roll shifts with wrap-around. np.reshape changes the shape without moving anything.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 860,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Turns an array by quarter turns, like rotating a picture.\n\nnp.rot90 and np.rotate are two names for the same node.\n\nUse it to turn an image or a grid on its side, or to change which way a pattern faces. One quarter turn swaps the number of rows and columns: a 7 by 6 array becomes 6 by 7.\n\nWHICH WAY:\nWith the default axes, a positive k turns ANTICLOCKWISE as a heat_map draws the array (row 0 at the top): the top row becomes the left column. A negative k turns clockwise. k 2 is a half turn (the same as flipping both axes), k 4 is back where you started, and k 5 is the same as k 1.\n\nSYNTAX:\nnp.rot90 <k: int> <axis 1: int> <axis 2: int>\nnp.rotate <k: int> <axis 1: int> <axis 2: int>\nDefaults: k 1, axis 1 0, axis 2 1.\n\nEXAMPLE:\nnp.rot90 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Each array that arrives is turned and sent; only this inlet makes the node send. A 1-D array is treated as a single row, so one quarter turn makes it a column (N rows of 1).\n\nk (int box, also an inlet):\nHow many quarter turns. Changing it does NOT send by itself - in the demo a metro inside make_F re-sends the F ten times a second.\n\naxis 1 / axis 2 (int boxes, also inlets):\nThe plane to turn in: the turn goes FROM axis 1 TOWARDS axis 2. Swapping them reverses the direction. For a 2-D array leave them at 0 and 1; they matter for 3-D arrays, where they choose which pair of axes turns. A negative axis counts from the end (-1 is the last), one past the last is treated as the last; if the two end up the same, nothing is sent (a message says so).\n\nOUTPUTS:\n\nrotated array:\nThe turned array. With an odd k its first two dimensions have swapped.\n\nREADING THE DEMO:\nThe F (7 by 6) turned once anticlockwise lies on its back, 6 by 7, its top bar now down the left side. np.shape shows the shapes swap. Step k and it keeps turning; set k to 2 and it stands on its head; type 1 into axis 1 and 0 into axis 2 and the same k turns it clockwise.\n\nRELATED:\nnp.flip mirrors along one axis. np.transpose swaps rows and columns, which is a flip across the diagonal rather than a turn. np.roll shifts with wrap-around. np.reshape changes the shape without moving anything."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 53,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_F",
+                    "patcher id": 1014
+                },
+                "4": {
+                    "init": "comment the F, 7 x 6 - open make_F to see how it is made",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 584,
+                    "position_y": 160,
+                    "width": 303,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the F, 7 x 6 - open make_F to see how it is made",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the F, 7 x 6 - open make_F to see how it is made"
+                },
+                "5": {
+                    "name": "heat_map",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 300,
+                    "width": 218,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "np.rot90",
+                    "id": 459,
+                    "position_x": 340,
+                    "position_y": 170,
+                    "width": 129,
+                    "height": 84,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "k",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "axis 1",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "axis 2",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    },
+                    "init": "np.rot90 1",
+                    "highlight": true
+                },
+                "7": {
+                    "init": "comment step k: one quarter turn each",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 584,
+                    "position_y": 200,
+                    "width": 187,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "step k: one quarter turn each",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "step k: one quarter turn each"
+                },
+                "8": {
+                    "name": "heat_map",
+                    "id": 533,
+                    "position_x": 340,
+                    "position_y": 320,
+                    "width": 218,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "np.shape",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 600,
+                    "width": 58,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "np.shape",
+                    "id": 607,
+                    "position_x": 340,
+                    "position_y": 600,
+                    "width": 58,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "list",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 690,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "list",
+                    "id": 681,
+                    "position_x": 340,
+                    "position_y": 690,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "13": {
+                    "init": "comment the shapes: rows and columns swap",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 584,
+                    "position_y": 695,
+                    "width": 211,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the shapes: rows and columns swap",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the shapes: rows and columns swap"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 30,
+                    "position_y": 804,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.flip"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 106,
+                    "position_y": 804,
+                    "width": 92,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.transpose"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 214,
+                    "position_y": 804,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.roll"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 290,
+                    "position_y": 804,
+                    "width": 79,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.reshape"
+                },
+                "18": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 770,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "19": {
+                    "name": "close",
+                    "id": 940,
+                    "position_x": 24,
+                    "position_y": 878,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "rotated array",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "3": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "np in"
+                },
+                "4": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "rotated array",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "np in"
+                },
+                "5": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "shape",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "6": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "shape",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

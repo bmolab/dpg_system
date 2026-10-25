@@ -1,0 +1,1201 @@
+{
+    "name": "t.rotation_band_diff_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.rotation_band_diff_help.json",
+    "patches": {
+        "0": {
+            "height": 1180,
+            "width": 1060,
+            "position": [
+                160,
+                160
+            ],
+            "id": 866,
+            "name": "make_orientation",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 903,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "signal",
+                    "init": "signal 6.0 sin",
+                    "id": 940,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 6.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 60.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment the turn: 60 degrees each way, one cycle in 6 seconds",
+                    "id": 977,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 500,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the turn: 60 degrees each way, one cycle in 6 seconds",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the turn: 60 degrees each way, one cycle in 6 seconds"
+                },
+                "3": {
+                    "name": "tick",
+                    "init": "tick",
+                    "id": 1014,
+                    "position_x": 460,
+                    "position_y": 110,
+                    "width": 33,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment every frame",
+                    "id": 1051,
+                    "position_x": 510,
+                    "position_y": 115,
+                    "width": 160,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "every frame",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "every frame"
+                },
+                "5": {
+                    "name": "random.gauss",
+                    "init": "random.gauss 0.0 1.0",
+                    "id": 1088,
+                    "position_x": 240,
+                    "position_y": 170,
+                    "width": 175,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment a degree of jitter",
+                    "id": 1125,
+                    "position_x": 240,
+                    "position_y": 280,
+                    "width": 220,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a degree of jitter",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a degree of jitter"
+                },
+                "7": {
+                    "name": "random",
+                    "init": "random 1.0",
+                    "id": 1162,
+                    "position_x": 460,
+                    "position_y": 170,
+                    "width": 140,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "8": {
+                    "name": ">",
+                    "init": "> 0.985",
+                    "id": 1199,
+                    "position_x": 460,
+                    "position_y": 270,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.985,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "output_type",
+                            "value": "float",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "*",
+                    "init": "* 45.0",
+                    "id": 1236,
+                    "position_x": 460,
+                    "position_y": 340,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 45.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "10": {
+                    "name": "comment",
+                    "init": "comment about one frame in 70: a 45 degree glitch",
+                    "id": 1273,
+                    "position_x": 460,
+                    "position_y": 400,
+                    "width": 400,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "about one frame in 70: a 45 degree glitch",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "about one frame in 70: a 45 degree glitch"
+                },
+                "11": {
+                    "name": "signal",
+                    "init": "signal 5.0 square",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 170,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "square",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 15.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "comment",
+                    "init": "comment a quick 30 degree turn that stays",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 260,
+                    "width": 180,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a quick 30 degree turn that stays",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a quick 30 degree turn that stays"
+                },
+                "13": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "14": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 380,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "15": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1458,
+                    "position_x": 40,
+                    "position_y": 450,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "16": {
+                    "name": "random.gauss",
+                    "init": "random.gauss 0.0 1.0",
+                    "id": 1495,
+                    "position_x": 240,
+                    "position_y": 520,
+                    "width": 175,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "17": {
+                    "name": "random.gauss",
+                    "init": "random.gauss 0.0 1.0",
+                    "id": 1532,
+                    "position_x": 440,
+                    "position_y": 520,
+                    "width": 175,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "18": {
+                    "name": "comment",
+                    "init": "comment and jitter on the other two axes",
+                    "id": 1569,
+                    "position_x": 640,
+                    "position_y": 540,
+                    "width": 340,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "and jitter on the other two axes",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "and jitter on the other two axes"
+                },
+                "19": {
+                    "name": "pack",
+                    "init": "pack 3",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 650,
+                    "width": 160,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "20": {
+                    "name": "euler_to_quaternion",
+                    "init": "euler_to_quaternion",
+                    "id": 1643,
+                    "position_x": 40,
+                    "position_y": 790,
+                    "width": 220,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "order",
+                            "value": "zxy",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "21": {
+                    "name": "comment",
+                    "init": "comment angles in degrees -> a quaternion, w first",
+                    "id": 1680,
+                    "position_x": 280,
+                    "position_y": 805,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "angles in degrees -> a quaternion, w first",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "angles in degrees -> a quaternion, w first"
+                },
+                "22": {
+                    "name": "t.reshape",
+                    "init": "t.reshape 1 4",
+                    "id": 1717,
+                    "position_x": 40,
+                    "position_y": 900,
+                    "width": 180,
+                    "height": 90,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "1 4",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "23": {
+                    "name": "comment",
+                    "init": "comment one stream: a [1, 4] tensor",
+                    "id": 1754,
+                    "position_x": 240,
+                    "position_y": 915,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one stream: a [1, 4] tensor",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one stream: a [1, 4] tensor"
+                },
+                "24": {
+                    "name": "out",
+                    "init": "out quaternion",
+                    "id": 1791,
+                    "position_x": 40,
+                    "position_y": 1020,
+                    "width": 170,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1088,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
+                },
+                "1": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
+                },
+                "2": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
+                },
+                "3": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1532,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
+                },
+                "4": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "5": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "7": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "8": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "9": {
+                    "source_node": 1532,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 3"
+                },
+                "10": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "11": {
+                    "source_node": 940,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "12": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "13": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "14": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "15": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1643,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "xyz rotation"
+                },
+                "16": {
+                    "source_node": 1643,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "quaternion rotation",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "17": {
+                    "source_node": 1717,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "quaternion"
+                }
+            }
+        },
+        "1": {
+            "height": 1445,
+            "width": 1949,
+            "position": [
+                100,
+                100
+            ],
+            "id": 829,
+            "name": "t.rotation_band_diff_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.rotation_band_diff_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.rotation_band_diff - joint turning by timescale",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 611,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.rotation_band_diff - joint turning by timescale",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.rotation_band_diff - joint turning by timescale"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1141,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1306,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Breaks each joint's movement into timescales: for every joint and every band, how much that joint turned this frame once the turning is smoothed down to that band.\n\nUse it on a whole pose stream to tell slow movement from fast in one step - the swing of an arm and the tremor in it come out as different numbers. One frame in gives [joints, bands, 3] out.\n\nHOW IT WORKS:\nEach joint's rotation is turned into a form that can be filtered (the first two rows of its rotation matrix) and passed through a bank of LOWPASS filters, one per band, each cutting off at its band's upper edge. So band 1 keeps everything below about 8 Hz (nearly the raw movement) and the last keeps only the slowest drift. Each filtered copy is turned back into a rotation, and the node reports the rotation from last frame's copy to this frame's, as an axis-angle vector (its length is the angle in radians), multiplied by that band's GAIN. Because the bands are lowpass, a fast tremor shows only in the first bands, while a slow sway shows in all of them.\n\nThe gains make the slow bands, which move very little per frame, big enough to see: by default 2.25, 2.25, 3.375, 5.06, 7.59, 11.39, 17.09 from the fastest band to the slowest (1.5 times more per band). Send the message band_gains followed by one number per band to set your own. The band edges follow t.filter_bank's rules: 'number of bands' counts edges, so the default 8 gives 7 bands, highest first; report_bands prints them.\n\nSYNTAX:\nt.rotation_band_diff\nNo arguments.\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nrotations:\n[joints, 3] axis-angle or [joints, 4] quaternions (w first). A flat list of joints is split by 'input format'. Each arrival is one frame. The first frame (and the first after reset) sends nothing: there is no previous frame to compare with.\n\nreset (button):\nEmpties the filters and forgets the previous frame. Unlike t.filter_bank's reset it does not pre-fill the filters.\n\ninput format (menu: auto, axis-angle, quaternion):\nHow a FLAT input is split into joints: every 3 or every 4 numbers. auto decides from the length, and gives up (with a console message) when the length divides by both 3 and 4 - set it explicitly for SMPL poses of 72 values.\n\nsample freq (Hz, default 60): the rate frames really arrive at.\n\nnumber of bands (default 8): band edges, one more than the bands.\n\nlow / high (Hz, defaults 0.01 and 8): the range of the band edges.\n\norder (1 to 8, default 1): how steeply each lowpass cuts.\n\nband scaling (log or linear), overlap fraction (default 0): as on t.filter_bank.\n\nChanging a setting rebuilds the bank (and the gains return to default if the number of bands no longer matches them).\n\nOUTPUTS:\n\nbanded rotation diffs:\n[joints, bands, 3]: per joint and band, this frame's turn as an axis-angle vector, times the band's gain.\n\nREADING THE DEMO:\nnp.linalg.norm (axis 2) turns each vector into its length - how much the joint turned in that band this frame - and heat_scroll draws the 7 bands as 7 rows scrolling left, the fastest band at the top. The jitter and the glitches light up the top rows; the slow turning back and forth glows in every row and fades where the turn reverses; the quick turns flash through all of them.\n\nRELATED:\nt.filter_bank is the general band splitter for ordinary values. quaternion_diff_and_axis measures frame-to-frame rotation without bands.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1290,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Breaks each joint's movement into timescales: for every joint and every band, how much that joint turned this frame once the turning is smoothed down to that band.\n\nUse it on a whole pose stream to tell slow movement from fast in one step - the swing of an arm and the tremor in it come out as different numbers. One frame in gives [joints, bands, 3] out.\n\nHOW IT WORKS:\nEach joint's rotation is turned into a form that can be filtered (the first two rows of its rotation matrix) and passed through a bank of LOWPASS filters, one per band, each cutting off at its band's upper edge. So band 1 keeps everything below about 8 Hz (nearly the raw movement) and the last keeps only the slowest drift. Each filtered copy is turned back into a rotation, and the node reports the rotation from last frame's copy to this frame's, as an axis-angle vector (its length is the angle in radians), multiplied by that band's GAIN. Because the bands are lowpass, a fast tremor shows only in the first bands, while a slow sway shows in all of them.\n\nThe gains make the slow bands, which move very little per frame, big enough to see: by default 2.25, 2.25, 3.375, 5.06, 7.59, 11.39, 17.09 from the fastest band to the slowest (1.5 times more per band). Send the message band_gains followed by one number per band to set your own. The band edges follow t.filter_bank's rules: 'number of bands' counts edges, so the default 8 gives 7 bands, highest first; report_bands prints them.\n\nSYNTAX:\nt.rotation_band_diff\nNo arguments.\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nrotations:\n[joints, 3] axis-angle or [joints, 4] quaternions (w first). A flat list of joints is split by 'input format'. Each arrival is one frame. The first frame (and the first after reset) sends nothing: there is no previous frame to compare with.\n\nreset (button):\nEmpties the filters and forgets the previous frame. Unlike t.filter_bank's reset it does not pre-fill the filters.\n\ninput format (menu: auto, axis-angle, quaternion):\nHow a FLAT input is split into joints: every 3 or every 4 numbers. auto decides from the length, and gives up (with a console message) when the length divides by both 3 and 4 - set it explicitly for SMPL poses of 72 values.\n\nsample freq (Hz, default 60): the rate frames really arrive at.\n\nnumber of bands (default 8): band edges, one more than the bands.\n\nlow / high (Hz, defaults 0.01 and 8): the range of the band edges.\n\norder (1 to 8, default 1): how steeply each lowpass cuts.\n\nband scaling (log or linear), overlap fraction (default 0): as on t.filter_bank.\n\nChanging a setting rebuilds the bank (and the gains return to default if the number of bands no longer matches them).\n\nOUTPUTS:\n\nbanded rotation diffs:\n[joints, bands, 3]: per joint and band, this frame's turn as an axis-angle vector, times the band's gain.\n\nREADING THE DEMO:\nnp.linalg.norm (axis 2) turns each vector into its length - how much the joint turned in that band this frame - and heat_scroll draws the 7 bands as 7 rows scrolling left, the fastest band at the top. The jitter and the glitches light up the top rows; the slow turning back and forth glows in every row and fades where the turn reverses; the quick turns flash through all of them.\n\nRELATED:\nt.filter_bank is the general band splitter for ordinary values. quaternion_diff_and_axis measures frame-to-frame rotation without bands."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 115,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_orientation",
+                    "patcher id": 866
+                },
+                "4": {
+                    "name": "text_block",
+                    "id": 385,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 62,
+                    "width": 317,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "one joint turning back and forth, with jitter,\nquick turns and glitches",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 309,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "one joint turning back and forth, with jitter,\nquick turns and glitches"
+                },
+                "5": {
+                    "name": "t.rotation_band_diff",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 160,
+                    "width": 191,
+                    "height": 168,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "requires_grad",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "3": {
+                            "name": "input format",
+                            "value": "auto",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "sample freq",
+                            "value": 60.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "number of bands",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "low",
+                            "value": 0.01,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "high",
+                            "value": 8.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "order",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "9": {
+                            "name": "band scaling",
+                            "value": "log",
+                            "value_type": "str"
+                        },
+                        "10": {
+                            "name": "overlap fraction",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    },
+                    "highlight": true
+                },
+                "6": {
+                    "name": "np.linalg.norm",
+                    "id": 459,
+                    "position_x": 380,
+                    "position_y": 160,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "2",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "7": {
+                    "name": "text_block",
+                    "id": 496,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 170,
+                    "width": 194,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "axis 2: the length of each\nvector - [1, 7]",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 186,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "axis 2: the length of each\nvector - [1, 7]"
+                },
+                "8": {
+                    "name": "heat_scroll",
+                    "id": 533,
+                    "position_x": 380,
+                    "position_y": 290,
+                    "width": 388,
+                    "height": 210,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 160,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 0.2,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_scroll",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment 7 bands, fastest at the top; time scrolls left",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 794,
+                    "position_y": 500,
+                    "width": 291,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "7 bands, fastest at the top; time scrolls left",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "7 bands, fastest at the top; time scrolls left"
+                },
+                "10": {
+                    "name": "help_link",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 594,
+                    "width": 98,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.filter_bank"
+                },
+                "11": {
+                    "name": "help_link",
+                    "id": 644,
+                    "position_x": 144,
+                    "position_y": 594,
+                    "width": 167,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link quaternion_diff_and_axis"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 327,
+                    "position_y": 594,
+                    "width": 92,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.quat_ESEKF"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 638,
+                    "width": 84,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link diff_filter"
+                },
+                "14": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 30,
+                    "position_y": 560,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "15": {
+                    "name": "close",
+                    "id": 792,
+                    "position_x": 24,
+                    "position_y": 712,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "quaternion",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "rotations"
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "banded rotation diffs",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "norm",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

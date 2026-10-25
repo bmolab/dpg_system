@@ -1,0 +1,490 @@
+{
+    "height": 1460,
+    "width": 1662,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "gl_material_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_material_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gl_material - how surfaces answer light",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 488,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gl_material - how surfaces answer light",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gl_material - how surfaces answer light"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 814,
+            "position_y": 45,
+            "width": 808,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "gl_material sets how surfaces answer light, for everything drawn after it.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nA material applies from where it sits onward and is restored at the end of its branch. A material placed before three shapes gives all three that material; a second material on one branch changes only what follows it there.\n\nBefore any gl_material, OpenGL's own material is in force: 0.2 grey ambient, 0.8 grey diffuse, no highlight, no glow - the same as this node's defaults, so a fresh gl_material changes nothing until it is set.\n\nWHAT THE CONTEXT ALREADY SETS UP:\ngl_context switches lighting on when its window opens, with two lights of its own (light 0 and light 1, grey, from the upper left) and a scene-wide ambient glow. So shapes are lit before any gl_light is added - a scene with no gl_light is not dark.\n\nTHE COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light, 'specular' the colour of the highlight, and 'shininess' how tight that highlight is - high is a small hard glint, low a broad sheen. Each multiplies the matching part of every light, so a highlight needs a light with a specular colour as well. (The context's light 0 has one; a gl_light starts without.)\n\n'emission' is light the surface seems to give out by itself. It is added on top of the lighting, so the surface reads as glowing even where no light reaches it - though it lights nothing else.\n\n'alpha' is the surface's transparency. The context has blending on already, so it works as it is - but transparent things have to be drawn after what shows through them, so if one hides what it should reveal, that is the chain order rather than the alpha.\n\nPRESETS:\n'presets' is a menu of named materials - gold, brass, chrome, copper, pearl, jade, ruby, plastics and rubbers in several colours, and more. Choosing one sets all five components at once.\n\nNOT FOR UNLIT DRAWING:\nA material only matters while lighting is on. With lighting switched off (gl_enable GL_LIGHTING, unticked), shapes are drawn in the plain colour from gl_color instead.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_material\n\nIt takes no arguments.\n\nEXAMPLE:\ngl_material\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nambient / diffuse / specular / emission:\nEach as red green blue alpha, red green blue (alpha 1), or one number for a grey, 0 to 1.\n\nshininess:\nHow tight the highlight is, 0 to 128. 0 by default. Drag it, send it, or save it in the patch; choosing a preset sets it too.\n\nalpha:\nTransparency, 0 to 1, applied to all four components. 1 by default.\n\npresets:\nA named material, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, with this material in force downstream.\n\nRELATED:\ngl_light for the light it answers; gl_color for unlit colour. mgl_material is the newer equivalent.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "gl_material sets how surfaces answer light, for everything drawn after it.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nA material applies from where it sits onward and is restored at the end of its branch. A material placed before three shapes gives all three that material; a second material on one branch changes only what follows it there.\n\nBefore any gl_material, OpenGL's own material is in force: 0.2 grey ambient, 0.8 grey diffuse, no highlight, no glow - the same as this node's defaults, so a fresh gl_material changes nothing until it is set.\n\nWHAT THE CONTEXT ALREADY SETS UP:\ngl_context switches lighting on when its window opens, with two lights of its own (light 0 and light 1, grey, from the upper left) and a scene-wide ambient glow. So shapes are lit before any gl_light is added - a scene with no gl_light is not dark.\n\nTHE COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light, 'specular' the colour of the highlight, and 'shininess' how tight that highlight is - high is a small hard glint, low a broad sheen. Each multiplies the matching part of every light, so a highlight needs a light with a specular colour as well. (The context's light 0 has one; a gl_light starts without.)\n\n'emission' is light the surface seems to give out by itself. It is added on top of the lighting, so the surface reads as glowing even where no light reaches it - though it lights nothing else.\n\n'alpha' is the surface's transparency. The context has blending on already, so it works as it is - but transparent things have to be drawn after what shows through them, so if one hides what it should reveal, that is the chain order rather than the alpha.\n\nPRESETS:\n'presets' is a menu of named materials - gold, brass, chrome, copper, pearl, jade, ruby, plastics and rubbers in several colours, and more. Choosing one sets all five components at once.\n\nNOT FOR UNLIT DRAWING:\nA material only matters while lighting is on. With lighting switched off (gl_enable GL_LIGHTING, unticked), shapes are drawn in the plain colour from gl_color instead.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_material\n\nIt takes no arguments.\n\nEXAMPLE:\ngl_material\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nambient / diffuse / specular / emission:\nEach as red green blue alpha, red green blue (alpha 1), or one number for a grey, 0 to 1.\n\nshininess:\nHow tight the highlight is, 0 to 128. 0 by default. Drag it, send it, or save it in the patch; choosing a preset sets it too.\n\nalpha:\nTransparency, 0 to 1, applied to all four components. 1 by default.\n\npresets:\nA named material, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, with this material in force downstream.\n\nRELATED:\ngl_light for the light it answers; gl_color for unlit colour. mgl_material is the newer equivalent."
+        },
+        "3": {
+            "name": "gl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 70,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment the picture opens in its own window",
+            "name": "comment",
+            "id": 385,
+            "position_x": 504,
+            "position_y": 190,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the picture opens in its own window",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the picture opens in its own window"
+        },
+        "5": {
+            "name": "gl_material",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 148,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "presets",
+                    "value": "gold",
+                    "value_type": "str"
+                }
+            },
+            "highlight": true
+        },
+        "6": {
+            "init": "comment gold, for both spheres",
+            "name": "comment",
+            "id": 459,
+            "position_x": 504,
+            "position_y": 500,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gold, for both spheres",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gold, for both spheres"
+        },
+        "7": {
+            "name": "gl_translate",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 99,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": -0.3,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "gl_translate -0.3 0 0"
+        },
+        "8": {
+            "name": "gl_sphere",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "name": "gl_translate",
+            "id": 570,
+            "position_x": 330,
+            "position_y": 540,
+            "width": 99,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "gl_translate 0.3 0 0"
+        },
+        "10": {
+            "name": "load_bang",
+            "id": 607,
+            "position_x": 330,
+            "position_y": 720,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 330,
+            "position_y": 780,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.5 0.1 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment an orange glow",
+            "name": "comment",
+            "id": 681,
+            "position_x": 504,
+            "position_y": 840,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "an orange glow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "an orange glow"
+        },
+        "13": {
+            "name": "gl_material",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 880,
+            "width": 148,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "presets",
+                    "value": "gold",
+                    "value_type": "str"
+                }
+            },
+            "highlight": true
+        },
+        "14": {
+            "name": "gl_sphere",
+            "id": 755,
+            "position_x": 330,
+            "position_y": 1140,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 504,
+            "position_y": 1360,
+            "width": 280,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "gold plus emission, on this branch only:\nit glows even on its shadowed side",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "gold plus emission, on this branch only:\nit glows even on its shadowed side"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 1268,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "emission"
+        }
+    }
+}

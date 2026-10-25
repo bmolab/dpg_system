@@ -8,6 +8,11 @@ buttons: a blue button opens a further page IN PLACE of the current one, a
 green button opens a help patch (closing the help patch opened before it), so
 browsing never piles up tabs.
 
+A page in TREE with two or more groups of help links is split when the script
+runs (split_groups): each group becomes a subpage <page>_<group>, and the page
+keeps one blue link per group, described by the node names it holds. So a new
+help patch is still added to its group in TREE, never to a subpage by hand.
+
 Every help patch must be reachable. The script refuses to write anything if a
 help patch is missing from the tree, or if the tree names a help patch that is
 not there -- so after adding a help patch, add its stem to a section here.
@@ -57,7 +62,7 @@ TREE = {
         ('Seeing what happens', ['print', 'info', 'start_trace']),
         ('Lists and messages', ['pack', 'unpack', 'append', 'prepend', 'concat', 'slice_list', 'stream_list', 'length',
                                 'array', 'replace']),
-        ('Dictionaries and files', ['dict', 'dict_search', 'directory_iterator']),
+        ('Dictionaries and files', ['dict', 'construct_dict', 'dict_extract', 'dict_keys', 'dict_retrieve', 'dict_stream', 'dict_search', 'directory_iterator']),
     ]),
     'nodes_flow': ('Control flow', 'When things happen, and where messages go.', [
         ('Timing', ['metro', 'micro_metro', 'tick', 'delay', 'defer', 'timer', 'time_between', 'date_time',
@@ -74,59 +79,82 @@ TREE = {
         ('Curves and plots', ['envelope', 'shape_sequencer', 'profile', 'plot', 'heat_map']),
     ]),
     'nodes_math': ('Math', 'Numbers, lists and arrays in; results out.', [
-        ('Arithmetic', ['arithmetic', 'math_single', 'trig', 'comparison', 'clamp', 'accumulate', 'change',
-                        'crossfade', 'continuous_rotation', 'color_convert']),
+        ('Arithmetic', ['arithmetic', 'add', 'subtract', 'multiply', 'divide', 'floor_divide', 'modulo',
+                        'power', 'min', 'max', 'reverse_subtract', 'reverse_divide', 'perm', 'combination']),
+        ('Comparison', ['comparison', 'greater', 'greater_equal', 'less', 'less_equal', 'equal', 'not_equal']),
+        ('Single-input math', ['math_single', 'abs', 'sqrt', 'exp', 'log', 'log1p', 'log2', 'log10', 'sign', 'inverse', 'norm',
+                               'round', 'floor', 'ceil', 'trunc']),
+        ('Trigonometry', ['trig', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2', 'hypot', 'degrees', 'radians',
+                          'tanh', 'sinh', 'cosh']),
+        ('Functions', ['clamp', 'accumulate', 'change', 'increasing', 'decreasing', 'pass', 'crossfade']),
+        ('Colour', ['color_convert', 'rgb_to_cmy', 'rgb_to_hsl', 'rgb_to_hsv', 'cmy_to_rgb', 'cmy_to_hsl',
+                    'cmy_to_hsv', 'hsl_to_rgb', 'hsl_to_cmy', 'hsl_to_hsv', 'hsv_to_rgb', 'hsv_to_cmy',
+                    'hsv_to_hsl']),
         ('Rotations', ['quaternion_to_euler', 'quaternion_to_6d', 'quaternion_diff', 'quaternion_norm',
-                       'tracker_align', 'swing_twist']),
+                       'tracker_align', 'swing_twist', 'continuous_rotation',
+                       'scipy.slerp', 'scipy.rotation_mean', 'scipy.align_vectors', 'scipy.rotation_apply']),
     ]),
     'nodes_signal': ('Signals and filters', 'Streams of values: making them, smoothing them, reacting to them.', [
-        ('Sources and streams', ['signal', 'random', 'stream', 'sample_hold', 'register']),
+        ('Sources and streams', ['signal', 'random', 'stream', 'subsample', 'sample_hold', 'register']),
         ('Events and ranges', ['togedge', 'trigger', 'diff', 'ranger', 'noise_gate']),
-        ('Filters', ['filter', 'multi_filter', 'band_pass', 'adaptive_filter', 'one_euro_filter',
-                     'kalman_filter', 'physics_filter']),
+        ('Filters', ['filter', 'multi_filter', 'diff_filter', 'band_pass', 'adaptive_filter', 'one_euro_filter',
+                     'kalman_filter']),
         ('History and analysis', ['buffer', 'spectrum', 'cwt', 'confusion']),
     ]),
     'nodes_text': ('Text and language', 'Characters, words and sentences.', [
-        ('Text', ['ascii', 'combine', 'gather_sentence', 'text_change', 'string_replace', 'text_file',
-                  'word_trigger']),
-        ('Language', ['rephrase', 'spacy_vector', 'translate', 'context_tracker', 'weighted_prompt',
-                      'prompt_composer', 'cairo_layout']),
+        ('Text', ['ascii', 'combine', 'gather_sentence', 'string_builder', 'fifo_string', 'text_change', 'string_replace', 'unescape_text', 'printable', 'text_file',
+                  'word_trigger', 'word_gate', 'fuzzy_match']),
+        ('Language', ['rephrase', 'lemma', 'spacy_vector', 'translate', 'context_tracker', 'weighted_prompt',
+                      'prompt_composer', 'cairo_layout', 'llm_layout']),
     ]),
     'nodes_sound': ('Sound', 'Nodes ending in ~ pass sound between them as a signal.', [
-        ('Sources', ['vco~', 'additive~', 'adc~', 'record~', 't.audio_source']),
+        ('Sources', ['vco~', 'noise~', 'sig~', 'sampler_osc~', 'additive~', 'adc~', 'record~', 't.audio_source']),
         ('Time', ['adsr~', 'clock~']),
-        ('Shaping', ['vcf~', 'fold~', 'shaper~', 'delay~', 'clean~', 'vst~']),
+        ('Shaping', ['vcf~', 'formant~', 'vocoder~', 'fold~', 'shaper~', 'delay~', 'clean~', 'one_euro~', 'vst~']),
         ('Physical models', ['modal~', 'bow~', 'wind~']),
         ('Levels and output', ['vca~', 'vu~', 'scope~', 'place~', 'audio_out~']),
         ('Between sound and data', ['stream~', 'capture~', 'snapshot~']),
-        ('Samplers', ['polyphonic_sampler', 'sampler_engine', 'effort_fader']),
+        ('Samplers', ['polyphonic_sampler', 'sampler_engine', 'effort_fader', 'crossfade_scanner']),
         ('Speech analysis', ['speech_envelope', 'speech_pitch', 'speech_spectral']),
     ]),
     'nodes_body': ('Body and motion', 'Capturing a moving body, cleaning it up, and asking what it is doing.', [
-        ('Sensors', ['shadow', 'movesense', 'pipo_motion', 'vive_tracker']),
-        ('Cleaning and correcting', ['mag_offset', 'cadence_filter', 'sensor_to_root', 'tracker_align',
+        ('Sensors', ['shadow', 'shadow_sensor', 'movesense', 'pipo_motion', 'vive_tracker']),
+        ('Cleaning and correcting', ['mag_offset', 'mag_yaw_correct', 'shadow_arm_correct', 'cadence_filter', 'check_burst', 'sensor_to_root', 'tracker_align',
                                      'noise_review', 'json_npz_frame_picker']),
-        ('Poses and joints', ['pose', 'body_to_joints', 'quaternion_diff_and_axis', 'take']),
-        ('SMPL bodies', ['shadow_to_smpl', 'smpl_pose', 'smpl_pose_adjust', 'smpl_pose_to_joints']),
+        ('Poses and joints', ['pose', 'active_pose', 'active_joints', 'target_pose', 'pose_adjust', 'calibrate_pose', 'body_to_joints', 'quaternion_diff_and_axis', 'take']),
+        ('SMPL bodies', ['shadow_to_smpl', 'smpl_pose', 'smpl_body', 'smpl_take', 'smpl_beta_editor', 'smpl_pose_adjust', 'smpl_mag_yaw_correct', 'floor_zero', 'smpl_pose_to_joints']),
         ('Effort and dynamics', ['smpl_torque', 'torque_gang', 'smpl_ragdoll', 'smpl_resist', 'pybullet_body',
-                                 'effort_fader']),
-        ('Drawing bodies', ['mgl_body', 'mgl_smpl_mesh', 'gl_body', 'limb_size']),
+                                 'effort_fader', 'crossfade_scanner']),
+        ('Drawing bodies', ['mgl_body', 'body_proportions', 'mgl_body_orientation', 'mgl_orientation_disks', 'mgl_contact_disks', 'mgl_torque_arc', 'mgl_smpl_mesh', 'gl_body', 'limb_size']),
     ]),
     'nodes_graphics': ('3D graphics', 'A scene is a chain of nodes hanging from a context.', [
-        ('ModernGL scenes', ['mgl_context', 'mgl_camera', 'mgl_transform', 'mgl_sphere', 'mgl_mesh',
-                             'mgl_texture', 'mgl_text', 'mgl_shader', 'mgl_body', 'mgl_smpl_mesh']),
-        ('Point clouds', ['femto', 'pc_background', 'pc_crop', 't.point_cloud_voxels']),
-        ('Older GL', ['gl_context', 'gl_translate', 'gl_sphere', 'gl_light', 'gl_line_array', 'gl_text',
+        ('ModernGL scenes', ['mgl_context', 'mgl_camera', 'mgl_light', 'mgl_material', 'mgl_color', 'mgl_transform', 'mgl_sphere', 'mgl_mesh', 'mgl_model', 'mgl_surface', 'mgl_point_cloud', 'mgl_line_array',
+                             'mgl_texture', 'mgl_text', 'mgl_shader', 'mgl_body', 'body_proportions', 'mgl_body_orientation', 'mgl_orientation_disks', 'mgl_contact_disks', 'mgl_torque_arc', 'mgl_smpl_mesh']),
+        ('Point clouds', ['femto', 'pc_background', 'pc_denoise', 'pc_crop', 'pc_voxel', 'pc_info', 'pc_cluster_filter', 'mgl_cluster_boxes', 't.point_cloud_voxels']),
+        ('Older GL', ['gl_context', 'gl_translate', 'gl_sphere', 'gl_light', 'gl_material', 'gl_color', 'gl_line_array', 'gl_text',
                       'gl_orientation_disks', 'gl_button_grid', 'gl_body']),
     ]),
     'nodes_video': ('Video and images', 'Pictures in, pictures changed.', [
-        ('Sources', ['cv_camera', 'movie_player', 'ndi_receiver', 'visca_camera']),
-        ('Image processing', ['k.rgb_to_grayscale', 'k.sobel', 'tv.Grayscale', 'tv.adjust_brightness']),
+        ('Sources', ['cv_camera', 'cv_image', 'movie_player', 'movie_clip_dict', 'ndi_receiver', 'visca_camera']),
+        ('Image processing', ['k.rgb_to_grayscale', 'k.sobel', 'tv.Grayscale', 'tv.gaussian_blur', 'tv.adjust_brightness']),
         ('Understanding', ['vision_describe', 'depth_anything']),
     ]),
     'nodes_numpy': ('NumPy', 'np. nodes work on numpy arrays.', [
-        ('Making and shaping', ['np_generator', 'np_reshape', 'np_rearrange', 'np_select', 'np_util']),
-        ('Calculating', ['np_clip', 'np_stats', 'np_cumulative', 'np_linalg', 'np_target']),
+        ('Making arrays', ['np.zeros', 'np.ones', 'np.rand', 'np.linspace', 'np.logspace', 'np.geomspace', 'np.arange', 'np.full', 'np.eye', 'np.meshgrid', 'np.random.normal', 'np.random.integers', 'np.random.choice', 'np.random.permutation', 'np.grid', 'np.load', 'np.loadtxt', 'np.save', 'np.savetxt', 'np.sequence']),
+        ('Reshaping and converting', ['np.reshape', 'np.shape', 'flatten', 'np.expand_dims', 'np.squeeze', 'np.transpose', 'np.astype', 'np.add_alpha']),
+        ('Rearranging and joining', ['np.flip', 'np.roll', 'np.rot90', 'np.repeat', 'np.sort', 'np.argsort', 'np.split', 'np.concatenate', 'np.stack', 'np.tile', 'np.pad', 'np.take', 'np.insert', 'np.delete', 'np.append']),
+        ('Selecting and editing', ['np.[]', 'np.crop', 'np.where', 'np.argwhere', 'np.take_along_axis', 'np.isin', 'np.intersect1d', 'np.setdiff1d', 'np.union1d', 'np.edit']),
+        ('Limiting values', ['np.clip', 'np.min', 'np.max']),
+        ('Logic and gaps', ['np.logical_and', 'np.logical_or', 'np.logical_xor', 'np.logical_not', 'np.isnan', 'np.isfinite', 'np.nan_to_num', 'np.isclose', 'np.allclose']),
+        ('Reducing to an answer', ['np.amax', 'np.amin', 'np.argmax', 'np.argmin', 'np.sum', 'np.nansum', 'np.mean', 'np.median', 'np.nanmean', 'np.nanmedian', 'np.robust_mean', 'np.std', 'np.var', 'np.nanmin', 'np.nanmax', 'np.nanstd', 'np.nanvar', 'np.average', 'np.top_k', 'np.nanargmax', 'np.nanargmin', 'np.any', 'np.all']),
+        ('Spread of values', ['np.percentile', 'np.histogram', 'np.ptp', 'np.unique', 'np.digitize', 'np.histogram2d', 'np.bincount', 'np.cov', 'np.corrcoef']),
+        ('Running totals and history', ['np.cumsum', 'np.cumprod', 'np.diff', 'np.gradient', 'np.trapezoid', 'np.cumulative_trapezoid', 'np.unwrap', 'np.maximum.accumulate', 'np.minimum.accumulate', 'np.sliding_window_view', 'np.rolling_buffer']),
+        ('Curves and filters', ['np.interp', 'np.convolve', 'np.correlate', 'np.polyfit', 'np.polyval', 'np.fft.rfft', 'np.fft.irfft', 'np.fft.fft', 'np.fft.ifft', 'np.real', 'np.imag', 'np.angle', 'np.fft.rfft2', 'np.fft.irfft2', 'np.fft.fft2', 'np.fft.ifft2']),
+        ('Linear algebra', ['np.dot', 'np.inner', 'np.outer', 'np.cross', 'np.matmul', 'np.linalg.norm', 'np.linalg.det', 'np.linalg.matrix_rank', 'np.linalg.inv', 'np.linalg.pinv', 'np.linalg.solve', 'np.linalg.lstsq', 'np.linalg.svd', 'np.linalg.eigh', 'np.linalg.eig', 'np.linalg.qr', 'np.diag', 'np.trace', 'np.tril', 'np.triu', 'np.einsum', 'np.tensordot']),
+        ('SciPy: tracking, mapping, synchrony and statistics', ['scipy.linear_sum_assignment', 'scipy.griddata', 'scipy.local_maxima', 'scipy.correlate', 'scipy.coherence', 'scipy.zscore', 'scipy.linregress', 'scipy.spearmanr', 'scipy.entropy']),
+        ('SciPy: rotations, angles, shapes and fits', ['scipy.slerp', 'scipy.rotation_mean', 'scipy.align_vectors', 'scipy.rotation_apply', 'scipy.circmean', 'scipy.circstd', 'scipy.hilbert', 'scipy.detrend', 'scipy.convex_hull', 'scipy.kmeans', 'scipy.procrustes', 'scipy.curve_fit']),
+        ('SciPy: peaks, filters, points and curves', ['scipy.find_peaks', 'scipy.filtfilt', 'scipy.median_filter', 'scipy.gaussian_filter', 'scipy.resample_poly', 'scipy.spectrogram', 'scipy.welch', 'scipy.label', 'scipy.kdtree', 'scipy.cubic_spline']),
+        ('Geometry and targets', ['np.distance_from_target', 'np.proximity_to_target', 'proximity_trigger', 'np.line_intersection', 'rotate_position']),
     ]),
     'nodes_torch': ('PyTorch', 't. nodes work on torch tensors; k. and tv. nodes are under Video and images.', [
         ('', [
@@ -138,24 +166,72 @@ TREE = {
         ]),
     ]),
     'nodes_torch_tensors': ('Tensors', 'Getting data into torch, and making tensors from nothing.', [
-        ('Tensors', ['tensor', 't.info', 't.buffer', 't.data_set']),
-        ('Making tensors', ['t.zeros', 't.linspace', 't.dist.distributions', 't.distributions']),
+        ('Tensors', ['tensor', 't.detach', 't.info', 't.numel', 't.contiguous', 't.is_contiguous']),
+        ('Buffers', ['t.buffer', 't.rolling_buffer']),
+        ('Making tensors', ['t.zeros', 't.ones', 't.full', 't.eye', 't.rand', 't.zeros_like', 't.ones_like',
+                            't.rand_like', 't.linspace', 't.logspace', 't.arange', 't.range']),
+        ('Random fills', ['t.uniform', 't.normal', 't.log_normal', 't.cauchy', 't.exponential', 't.geometric',
+                          't.bernoulli', 't.poisson']),
+        ('Distributions', ['t.dist.uniform', 't.dist.normal', 't.dist.log_normal', 't.dist.half_normal',
+                           't.dist.cauchy', 't.dist.half_cauchy', 't.dist.laplace', 't.dist.gumbel',
+                           't.dist.exponential', 't.dist.gamma', 't.dist.chi2', 't.dist.fisher_snedecor',
+                           't.dist.weibull', 't.dist.pareto', 't.dist.beta', 't.dist.kumaraswamy',
+                           't.dist.von_mises', 't.dist.bernoulli', 't.dist.continuous_bernoulli', 't.dist.poisson']),
     ]),
     'nodes_torch_calc': ('Calculation', 'Element by element, or reducing a tensor to an answer.', [
-        ('Element by element', ['t.clamp', 't.round', 't.gcd', 't.complex', 't.comparison']),
-        ('Reducing and analysing', ['t.mean', 't.max', 't.any', 't.histc', 't.cumsum']),
-        ('Distances and matrices', ['t.distance', 't.linalg.svd', 't.mse_loss']),
+        ('Limiting and rounding', ['t.clamp', 't.maximum', 't.minimum', 't.round', 't.floor', 't.ceil', 't.trunc',
+                                   't.frac']),
+        ('Comparing', ['t.eq', 't.ne', 't.gt', 't.ge', 't.lt', 't.le']),
+        ('Whole numbers, signs and complex numbers', ['t.gcd', 't.lcm', 't.copysign', 't.complex', 't.real',
+                                                      't.imag']),
+        ('Reducing to an answer', ['t.mean', 't.median', 't.nanmean', 't.nanmedian', 't.sum', 't.nansum', 't.prod',
+                                   't.max', 't.min', 't.argmax', 't.any', 't.all', 't.count_nonzero',
+                                   't.argwhere']),
+        ('Sorting and counting', ['t.argsort', 't.histc', 't.bincount', 't.bucketize']),
+        ('Running totals and differences', ['t.cumsum', 't.cumprod', 't.cummax', 't.cummin', 't.logcumsumexp',
+                                            't.diff', 't.energy']),
+        ('Distances and losses', ['t.length', 't.dist', 't.cdist', 't.cosine_similarity', 't.normalize',
+                                  't.mse_loss', 't.l1_loss', 't.cross_entropy_loss']),
+        ('Matrices', ['t.linalg.svd', 't.linalg.qr', 't.linalg.eig', 't.linalg.pca_low_rank', 't.corrcoef']),
     ]),
     'nodes_torch_shape': ('Shape and selection', 'The same numbers, arranged or picked differently.', [
-        ('', ['t.reshape', 't.cat', 't.roll', 't.diag', 't.index_select', 't.scatter']),
+        ('Reshaping', ['t.reshape', 't.view', 't.flatten', 't.squeeze', 't.unsqueeze', 't.permute', 't.transpose',
+                       't.t', 't.adjoint']),
+        ('Joining and splitting', ['t.cat', 't.stack', 't.hstack', 't.vstack', 't.dstack', 't.column_stack',
+                                   't.chunk', 't.tensor_split']),
+        ('Selecting', ['t[]', 't.select', 't.index_select', 't.masked_select', 't.take', 't.take_along_dim',
+                       't.narrow']),
+        ('Writing into', ['t.scatter', 't.scatter_hold']),
+        ('Rearranging', ['t.roll', 't.flip', 't.repeat', 't.tile', 't.diag', 't.tril', 't.triu']),
     ]),
     'nodes_torch_activation': ('Activations', 'Curves applied to every element.', [
-        ('Activations', ['t.nn.relu', 't.nn.elu', 't.nn.softmax']),
-        ('Special functions', ['t.special', 't.special.gammainc', 't.special.xlogy']),
+        ('Fixed curves', ['t.nn.relu', 't.nn.relu6', 't.nn.sigmoid', 't.nn.tanh', 't.nn.logsigmoid', 't.nn.softsign',
+                          't.nn.gelu', 't.nn.silu', 't.nn.mish', 't.nn.selu', 't.nn.hardsigmoid', 't.nn.hardswish',
+                          't.nn.tanhshrink', 't.nn.glu']),
+        ('Adjustable curves', ['t.nn.leaky_relu', 't.nn.elu', 't.nn.celu', 't.nn.hardshrink', 't.nn.softshrink',
+                               't.nn.hardtanh', 't.nn.rrelu', 't.nn.softplus', 't.nn.Threshold']),
+        ('Softmax', ['t.nn.softmax', 't.nn.softmin', 't.nn.log_softmax', 't.nn.gumbel_softmax']),
+        ('Error and normal functions', ['t.special.erf', 't.special.erfc', 't.special.erfcx', 't.special.erfinv',
+                                        't.special.ndtr', 't.special.ndtri', 't.special.logndtr']),
+        ('Gamma and zeta functions', ['t.special.gammaln', 't.special.digamma', 't.special.polygamma',
+                                      't.special.multigammaln', 't.special.gammainc', 't.special.gammaincc',
+                                      't.special.zeta']),
+        ('Bessel and Airy functions', ['t.special.bessel_j0', 't.special.bessel_j1', 't.special.spherical_bessel_j0',
+                                       't.special.i0', 't.special.i0e', 't.special.i1', 't.special.i1e',
+                                       't.special.scaled_modified_bessel_k0', 't.special.airy_ai']),
+        ('Logs and exponentials', ['t.special.exp2', 't.special.expm1', 't.special.log1p', 't.special.expit',
+                                   't.special.logits', 't.special.xlogy', 't.special.xlog1py', 't.special.entr',
+                                   't.special.sinc']),
     ]),
     'nodes_torch_signal': ('Signal processing', 'Frequency, timescale and estimation on tensors.', [
-        ('Spectra and wavelets', ['t.fft', 't.window', 't.cwt', 't.ultracwt']),
-        ('Filters', ['t.filter_bank', 't.sav_gol_filter', 't.smart_clamp_kf', 't.ESEKF']),
+        ('Spectra', ['t.fft', 't.ifft', 't.rfft', 't.irfft']),
+        ('Windows', ['t.window.hann', 't.window.hamming', 't.window.general_hamming', 't.window.blackman',
+                     't.window.nuttall', 't.window.bartlett', 't.window.cosine', 't.window.gaussian',
+                     't.window.kaiser', 't.window.exponential']),
+        ('Wavelets', ['t.cwt', 't.ultracwt']),
+        ('Kalman filters', ['t.ESEKF', 't.quat_ESEKF', 't.smart_clamp_kf', 't.smart_clamp_quat_kf',
+                            't.persistence_quat_kf', 't.hybrid_quat_kf']),
+        ('Smoothing and bands', ['t.sav_gol_filter', 't.filter_bank', 't.rotation_band_diff']),
     ]),
     'nodes_ai': ('AI models', 'Models that run in or alongside the patch.', [
         ('Language models', ['gemma_4', 'gemma', 'neuronpedia_search', 'qwen_moe', 'bonsai_2']),
@@ -184,12 +260,6 @@ TAGLINES = {
     'micro_metro': 'a metro timed in microseconds, on its own thread',
     'radio': 'one choice from a set of buttons',
     'save': 'a button that saves the patch it is in',
-    't.dist.distributions': 'random tensors drawn from a named distribution',
-    't.distributions': 'probability distributions: sample, density, entropy',
-    't.fft': 'spectrum - the frequencies in a tensor',
-    't.mean': 'reduce a tensor: mean, median, deviation and more',
-    't.special': 'special functions: erf, gamma, bessel and others',
-    't.window': 'window functions for spectra and smoothing',
     'timer': 'a running stopwatch',
     'gemma': 'unfinished prototype, not loaded - see its page',
     'route': 'deliver messages by their first word',
@@ -201,55 +271,43 @@ TAGLINES = {
 # says everything it opens and the eye does not go looking for the others.
 LABELS = {
     'additive~': 'additive~ / shape_modes',
-    'arithmetic': 'arithmetic + - * /', 'ascii': 'characters as numbers',
+    'arithmetic': 'all of the arithmetic nodes', 'ascii': 'characters as numbers',
     'body_to_joints': 'body / joints', 'bow~': 'friction models', 'button': 'button / button_set',
-    'change': 'change / increasing / decreasing', 'clean~': 'conditioning',
-    'color_convert': 'colour conversion', 'combine': 'combine / join / split',
-    'comparison': 'comparison == < >', 'dict': 'dictionaries', 'eos_console': 'Eos lighting console',
-    'fold~': 'distortion', 'gather_sentence': 'building text', 'gl_line_array': 'gl_line_array / vertex_buffer',
+    'color_convert': 'all of the colour conversions', 'combine': 'combine / join / split',
+    'comparison': 'all of the comparison nodes', 'eos_console': 'Eos lighting console',
+    'fold~': 'distortion', 'gl_line_array': 'gl_line_array / vertex_buffer',
     'gl_sphere': 'gl shapes', 'gl_translate': 'gl transforms', 'k.sobel': 'k. filters',
-    'math_single': 'single-input math', 'mgl_body': 'mgl body drawing',
-    'mgl_camera': 'mgl camera / light / material', 'mgl_mesh': 'mgl meshes and models',
+    'math_single': 'all of the single-input math nodes',
     'mgl_sphere': 'mgl shapes', 'mgl_transform': 'mgl transforms',
     'midi_control_in': 'MIDI controllers / programs', 'midi_note_in': 'MIDI notes',
     'midi_pitchbend_in': 'MIDI bend / aftertouch', 'modal~': 'struck models',
-    'momentary': 'momentary sliders', 'np_cumulative': 'np cumulative', 'np_generator': 'np generators',
-    'np_linalg': 'np linear algebra', 'np_rearrange': 'np rearranging', 'np_reshape': 'np reshaping',
-    'np_select': 'np selecting', 'np_stats': 'np statistics', 'np_target': 'np targets',
-    'np_util': 'np utilities', 'osc_float': 'OSC widgets', 'osc_source': 'OSC connections',
-    'param_widgets': 'param_ widgets', 'pc_crop': 'pc crop / voxel / info',
-    'polyphonic_sampler': 'polyphonic / granular / scratch', 'pose': 'poses',
+    'momentary': 'momentary sliders',
+    'osc_float': 'OSC widgets', 'osc_source': 'OSC connections',
+    'param_widgets': 'param_ widgets',
+    'polyphonic_sampler': 'polyphonic / granular / scratch',
     'presets': 'presets / snapshots', 'quaternion_diff': 'comparing rotations',
     'quaternion_to_6d': '6D rotations', 'quaternion_to_euler': 'rotation conversions',
     'random': 'random', 'shadow_to_smpl': 'shadow / smpl conversions', 'shaper~': 'shapers and lookups',
-    'smpl_pose': 'smpl_pose / body / take',
-    'speech_spectral': 'speech timbre', 'string_replace': 'string replacement',
-    't.any': 't.any / t.all / t.argwhere', 't.cat': 't.cat / stack / split',
-    't.comparison': 't comparisons', 't.cumsum': 't cumulative', 't.dist.distributions': 't.dist.* random tensors',
-    't.distributions': 't distributions', 't.fft': 't.fft spectra', 't.index_select': 't selecting',
-    't.info': 't.info / t.numel', 't.linalg.svd': 't decompositions', 't.linspace': 't sequences',
-    't.max': 't.max / min / argsort', 't.mean': 't reductions', 't.nn.elu': 'adjustable activations',
-    't.nn.relu': 'fixed activations', 't.nn.softmax': 'softmax', 't.reshape': 't reshaping',
-    't.roll': 't.roll / flip / repeat', 't.round': 't rounding', 't.smart_clamp_kf': 't Kalman filters',
-    't.special': 't.special functions', 't.special.gammainc': 't.special gamma',
-    't.special.xlogy': 't.special xlogy / logits', 't.window': 't.window functions',
-    't.zeros': 't tensor makers', 'tcp_numpy_send': 'tcp send / receive', 'trig': 'trigonometry',
-    'tv.adjust_brightness': 'tv adjustments', 'gl_orientation_disks': 'gl orientation / rotation disks', 'vca~': 'levels and mixing', 'vcf~': 'filters',
+    'speech_spectral': 'speech timbre',
+    'tcp_numpy_send': 'tcp send / receive', 'trig': 'all of the trigonometry nodes',
+    'tv.adjust_brightness': 'tv adjustments', 'gl_orientation_disks': 'gl orientation / rotation disks', 'vca~': 'levels and mixing',
     'vco~': 'oscillators', 'vision_describe': 'vision_describe models',
     'wind~': 'blown models', 'word_trigger': 'word triggers',
     # three names, but too long spelled out
     'replace': 'replace (any, dict, int)',
-    'shape_sequencer': 'shape / function sequencer', 'multi_filter': 'multi / diff filters',
+    'shape_sequencer': 'shape / function sequencer',
     'adaptive_filter': 'adaptive filters', 'spacy_vector': 'spacy vectors / similarity',
     'weighted_prompt': 'weighted / ambient prompts', 'sampler_engine': 'sampler engine / voices',
-    'effort_fader': 'effort / muscle faders', 'shadow': 'shadow suit',
-    'mag_offset': 'magnetometer corrections', 'sensor_to_root': 'sensor_to_root / root inference',
-    'take': 'take / take_dict', 'smpl_pose_adjust': 'smpl corrections',
+    'effort_fader': 'effort / muscle faders',
+    'sensor_to_root': 'sensor_to_root / root inference',
+    'take': 'take / take_dict',
     'smpl_pose_to_joints': 'smpl pose / quats to joints', 'torque_gang': 'torque gangs',
     'gl_body': 'gl_body (alt, simple)', 'mgl_context': 'mgl context / display / enable',
     't.point_cloud_voxels': 't point cloud voxels / crop', 'gl_text': 'gl_text / gl_korean_text',
-    'k.rgb_to_grayscale': 'k. colour', 't.mse_loss': 't losses',
-    't.filter_bank': 't.filter_bank / band diff', 'clip_embedding': 'clip_embedding (length)',
+    'k.rgb_to_grayscale': 'k. colour',
+    'np.linalg.norm': 'np.linalg.norm', 't.nn.log_softmax': 't.nn.log_softmax',
+    't.special.scaled_modified_bessel_k0': 'scaled_modified_bessel_k0',
+    'clip_embedding': 'clip_embedding (length)',
     'oscq_service': 'OSCQuery service / browse / host', 'pjlink_projector': 'pjlink projector / control',
 }
 LONG_LABEL = 34          # an automatic label longer than this wants an entry in LABELS
@@ -268,6 +326,47 @@ SECTION_GAP = 18
 MAX_COLUMN_H = 820       # past this a page splits its sections into two columns
 
 
+# A page with two or more groups of help links is split: each group becomes a
+# subpage of its own (<page>_<group>), and the page keeps one blue link per
+# group, described by the names on it. A subpage's intro is its parent's, unless
+# GROUP_INTROS gives one.
+GROUP_INTROS = {
+    ('nodes_math', 'Arithmetic'): 'One calculation on the input, using an operand.',
+    ('nodes_math', 'Comparison'): 'Test the input against an operand: true or false.',
+    ('nodes_math', 'Single-input math'): 'One function of the input, no operand.',
+    ('nodes_math', 'Trigonometry'): 'Angles in, ratios out - and back again.',
+    ('nodes_math', 'Functions'): 'Shaping, limiting and blending values.',
+    ('nodes_math', 'Rotations'): 'Converting, comparing and aligning orientations.',
+}
+GROUP_DESC_WRAP = 70     # characters per line of a group link's list of names
+
+
+def slug(heading):
+    return ''.join(c if c.isalnum() else '_' for c in heading.lower()).strip('_').replace('__', '_')
+
+
+def split_groups(names_by_stem):
+    """Give each group of help links on a crowded page a subpage of its own."""
+    for name in list(TREE):
+        title, intro, sections = TREE[name]
+        groups = [(h, e) for h, e in sections if any(not isinstance(x, tuple) for x in e)]
+        if len(groups) < 2:
+            continue
+        entries = []
+        for heading, members in sections:
+            if not any(not isinstance(x, tuple) for x in members):
+                entries += members             # links to pages stay as they are
+                continue
+            sub = f'{name}_{slug(heading)}'
+            TREE[sub] = (heading, GROUP_INTROS.get((name, heading), intro), [('', members)])
+            # name the nodes it holds; an overview page documents no name itself
+            shown = [label_for(m, sorted(names_by_stem.get(m, []))) for m in members
+                     if names_by_stem.get(m)]
+            entries.append(('page:' + sub, heading, wrap([n + ',' for n in shown[:-1]] + shown[-1:],
+                                                         GROUP_DESC_WRAP)))
+        TREE[name] = (title, intro, [('', entries)])
+
+
 def titles():
     """stem -> tagline, from each help patch's title comment."""
     out = {}
@@ -280,6 +379,9 @@ def titles():
                     t = n['properties']['0']['value'] or ''
                     if ' - ' in t:
                         out[stem] = t.split(' - ', 1)[1]
+                    elif t.endswith(')') and ' (' in t:
+                        # '+ (add)': operator names, where ' - ' would read as minus
+                        out[stem] = t[t.index(' (') + 2:-1]
     out.update(TAGLINES)
     return out
 
@@ -298,9 +400,10 @@ def wrap(words, width):
 
 
 def visible_names(stem, names):
-    """The names a reader would look for: single-character aliases (s, r, b)
-    dropped, and x / x~ folded into x(~). The stem goes first."""
-    names = [n for n in names if len(n) > 1 or n == stem]
+    """The names a reader would look for: single-letter aliases (s, r, b)
+    dropped, and x / x~ folded into x(~). The stem goes first. Operator
+    names (+, -, %) are kept - they are a node's only name, not an alias."""
+    names = [n for n in names if len(n) > 1 or not n.isalpha() or n == stem]
     names = sorted(names, key=lambda n: (n.rstrip('~') != stem.rstrip('~'), n))
     out = []
     for n in names:
@@ -314,7 +417,7 @@ def label_for(stem, names):
     if stem in LABELS:
         return LABELS[stem]
     shown = visible_names(stem, names)
-    if len(shown) > 3:
+    if len(shown) > 3 or not shown:
         return stem
     return ' / '.join(shown)
 
@@ -399,10 +502,10 @@ def build_page(name, names_by_stem, taglines):
     # every entry on the page shares one button width, so they line up
     def entry_parts(e):
         if isinstance(e, tuple):
-            return e[0][len('page:'):], e[1], [e[2]]
+            return e[0][len('page:'):], e[1], (e[2] if isinstance(e[2], list) else [e[2]])
         lines = [taglines.get(e, '')] if taglines.get(e) else []
         names = sorted(names_by_stem.get(e, []))
-        if names != [e]:
+        if names and names != [e]:    # an overview page documents no name itself
             lines += bracketed(names, NAMES_WRAP)
         label = label_for(e, names)
         if len(label) > LONG_LABEL:
@@ -412,19 +515,34 @@ def build_page(name, names_by_stem, taglines):
     parts = [[entry_parts(e) for e in entries] for _, entries in sections]
     button_w = int(max(len(label) for sec in parts for _, label, _ in sec) * G) + 24
 
+    def row_height(lines):
+        return max(44, len(lines) * LH + 16) + ROW_GAP
+
     def section_height(heading, sec):
         h = 34 if heading else 0
         for _, _, lines in sec:
-            h += max(44, len(lines) * LH + 16) + ROW_GAP
+            h += row_height(lines)
         return h + SECTION_GAP
 
-    heights = [section_height(sections[i][0], parts[i]) for i in range(len(sections))]
-    columns = [list(range(len(sections)))]
-    if sum(heights) > MAX_COLUMN_H and len(sections) > 1:
+    # blocks are what the columns are made of: normally one per section. A
+    # page with a single section whose column (title and intro included) runs
+    # past MAX_COLUMN_H - the top page - is cut into two blocks halfway down
+    # its entries, so it can still go into two columns.
+    blocks = [(i, sections[i][0], parts[i]) for i in range(len(sections))]
+    if len(sections) == 1 and y + section_height(*blocks[0][1:]) > MAX_COLUMN_H and len(parts[0]) > 1:
+        rows = [row_height(lines) for _, _, lines in parts[0]]
+        cut = min(range(1, len(rows)), key=lambda k: abs(sum(rows[:k]) - sum(rows[k:])))
+        blocks = [(0, sections[0][0], parts[0][:cut]), (0, '', parts[0][cut:])]
+
+    heights = [section_height(heading, sec) for _, heading, sec in blocks]
+    columns = [list(range(len(blocks)))]
+    if len(sections) == 1 and len(blocks) == 2:
+        columns = [[0], [1]]        # the cut section: one half per column
+    elif sum(heights) > MAX_COLUMN_H and len(blocks) > 1:
         # split where the two halves are most nearly equal
-        best = min(range(1, len(sections)),
+        best = min(range(1, len(blocks)),
                    key=lambda k: abs(sum(heights[:k]) - sum(heights[k:])))
-        columns = [list(range(best)), list(range(best, len(sections)))]
+        columns = [list(range(best)), list(range(best, len(blocks)))]
 
     top = y
     x = X0
@@ -439,12 +557,12 @@ def build_page(name, names_by_stem, taglines):
     for col in columns:
         y = top
         col_w = 0
-        for i in col:
-            heading = sections[i][0]
+        for b in col:
+            i, heading, block_parts = blocks[b]
             if heading:
                 comment(x, y, heading, '30')
                 y += 34
-            for target, label, lines in parts[i]:
+            for target, label, lines in block_parts:
                 is_page = target in TREE
                 link(x, y, target, label, button_w, None if is_page else colours.get(i))
                 row_h = 44
@@ -468,6 +586,7 @@ def main():
     names_by_stem = collections.defaultdict(list)
     for label, stem in covered.items():
         names_by_stem[stem].append(label)
+    split_groups(names_by_stem)
     taglines = titles()
 
     placed = set()
@@ -492,6 +611,10 @@ def main():
         sys.exit(1)
 
     os.makedirs(OUT, exist_ok=True)
+    for old in glob.glob(os.path.join(OUT, 'nodes*.json')):
+        if os.path.basename(old)[:-len('.json')] not in TREE:
+            os.remove(old)
+            print('removed', os.path.relpath(old, HELP))
     for name in TREE:
         path, patch = build_page(name, names_by_stem, taglines)
         json.dump(patch, open(path, 'w'), indent=4)

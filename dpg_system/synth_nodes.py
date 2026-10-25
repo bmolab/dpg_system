@@ -28,6 +28,7 @@ from dpg_system.synth_core import (
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
+    _VOWEL_FORMANTS,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit, VuUnit,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, StreamUnit, RecordUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
@@ -681,8 +682,9 @@ class PhasorNode(SynthNode):
     without working the rate out by hand.
 
     From there the position is yours: freeze it and the sound holds where it
-    stands, run the period negative and it plays backwards, narrow
-    'start'/'end' to sweep a window.
+    stands, run the frequency negative and it plays backwards (a period of 0
+    or less hands control back to the frequency), narrow 'start'/'end' to
+    sweep a window. 'phase' shifts the ramp by that fraction of a cycle.
 
     Which sampler mode you scan matters, because the two do different things:
 
@@ -952,7 +954,7 @@ class OneEuroNode(SynthNode):
     chooses per sample: at rest the cutoff drops to 'min cutoff' and the
     signal settles hard; as it moves the cutoff opens in proportion to its
     speed, so the lag falls away exactly when it would have been noticed. It
-    was made for interactive motion data (Casiello and Roussel, CHI 2012),
+    was made for interactive motion data (Casiez, Roussel and Vogel, CHI 2012),
     which is what effort data is.
 
     The two controls do separate jobs, and it is worth setting them in order.
@@ -2368,15 +2370,44 @@ class FormantNode(SynthNode):
         self.add_switch()
         self.finish_synth_node()
         self._shown = ''
+        self._heard = None
+
+    # The vowels as F2/F1 and F3/F1 log ratios, which 'shift' cannot move.
+    # The morph is linear in logs, so each step between two vowels is a
+    # straight segment here and the position can be read back exactly.
+    _vowel_ratios = None
+
+    @classmethod
+    def _ratios(cls):
+        if cls._vowel_ratios is None:
+            logs = np.log([[_VOWEL_FORMANTS[v][b] for b in range(3)]
+                           for v in FORMANT_VOWELS])
+            cls._vowel_ratios = logs[:, 1:] - logs[:, :1]
+        return cls._vowel_ratios
 
     def synth_frame_task(self):
         # What the bank is actually resonating at, which is the one thing you
-        # cannot infer from the vowel knob once shift is in play.
-        position = any_to_float(self.unit.vowel_in.base)
-        span = len(FORMANT_VOWELS) - 1
-        index = int(round(min(1.0, max(0.0, position)) * span))
+        # cannot infer from the vowel knob once shift is in play -- or once
+        # a signal is patched to 'vowel'. The letter is read back from the
+        # same frequencies, so the two always agree.
+        frequencies = tuple(self.unit.frequencies[:3])
+        if frequencies == self._heard:
+            return
+        self._heard = frequencies
+        if min(frequencies) <= 0.0:
+            return
+        logs = np.log(frequencies)
+        point = logs[1:] - logs[0]
+        ratios = FormantNode._ratios()
+        starts = ratios[:-1]
+        steps = ratios[1:] - starts
+        along = np.clip(((point - starts) * steps).sum(axis=1)
+                        / (steps * steps).sum(axis=1), 0.0, 1.0)
+        misses = ((starts + steps * along[:, None] - point) ** 2).sum(axis=1)
+        segment = int(np.argmin(misses))
+        index = int(math.floor(segment + along[segment] + 0.5))
         text = (FORMANT_VOWELS[index] + '  '
-                + ' '.join(str(int(f)) for f in self.unit.frequencies[:3]))
+                + ' '.join(str(int(f)) for f in frequencies))
         if text != self._shown:
             self._shown = text
             self.vowel_display.set(text)

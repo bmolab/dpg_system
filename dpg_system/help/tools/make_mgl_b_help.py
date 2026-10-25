@@ -108,81 +108,245 @@ print(build('mgl_sphere', 'mgl shapes - the built-in geometry', body, demo, link
             demo_width=560, text_width=810, text_height=760))
 
 # ------------------------------------------------------------ geometry from data
-body = """These draw geometry you supply, rather than a shape they already know.
+def view():
+    """A context showing its picture in the node, and an orbit camera.
+    Shapes use the context's own default light. The chain continues from
+    'cam'."""
+    nodes = [
+        {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
+         'props': {'auto_render': True, 'node_display_width': 320,
+                   'node_display_height': 240, 'node_mouse_events': True}},
+        {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
+         'pos': (30, 120)},
+        {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, 440), 'w': 240, 'h': 160},
+    ]
+    links = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
+             ('ctx', 'ui', 'cam', 'ui')]
+    return nodes, links
 
-THE NODES:
 
-mgl_mesh         a mesh handed to it down a cord: corners and triangles
-mgl_model        a mesh loaded from a file
-mgl_point_cloud  a set of points
-mgl_surface      a grid of points drawn as a continuous surface
-mgl_line_array   many lines at once, built for trails of motion
+SHAPE_INPUTS = """
+mode / cull / point_size / round / texture:
+As for the other mgl shapes: drawn solid, as wireframe or as points;
+whether back faces are skipped; the size of points in pixels; whether points
+are round; an image mapped onto the surface."""
 
-All but mgl_line_array are mgl shapes: they are lit, take the current colour 
-and material, and share the shape inputs 'mode' (solid, wireframe or 
-points), 'cull', 'point_size', 'round' and 'texture'. mgl_line_array draws 
-in the current colour without lighting.
+# -------------------------------------------------------------------- mgl_mesh
+body = """mgl_mesh draws a mesh handed to it down a cord: corners and triangles.
 
-mgl_mesh TAKES A MESH FROM THE PATCH:
-On 'mesh' it takes a dictionary with 'vertices' (n by 3), 'faces' (m by 3 
-corner indices) and optionally 'normals' - what shape_modes sends - or a 
-list of [vertices, faces], or a bare n by 3 array of corners with no faces. 
-Normals are worked out from the faces when none come with it. Faces that 
-point past the last corner are thrown away, leaving just the corners. 
-Corners without faces are drawn as points whatever 'mode' says, 
-'point_size' pixels across. They all face the viewer along z, so with 
-'cull' ticked they vanish when seen from behind. The 'holding' 
-line says what it last received - 'nothing yet', so many points, or so many 
-corners and triangles - which tells a mesh that never arrived from one drawn 
-somewhere you are not looking.
+Anything in the patch that works out a shape can be looked at this way.
+shape_modes is the node it was made for: its 'mesh' outlet sends the shape
+it has solved.
 
-mgl_model LOADS A FILE:
-Name the file in 'file_path' (anything trimesh reads: obj, stl, ply, glb...). 
-A file holding several meshes is merged into one. 'uv_mode' can replace the 
-file's own texture coordinates with a projection - sphere, cylinder, 
-plane_xy, plane_xz, or box, which puts the image once on each side of the 
-bounding box, each face taking the side it faces most - applied the 
-next time the file loads; click 'generate_uv' to reload it now. A file 
-that will not load is reported once in the console, and tried again when 
-'file_path' changes or 'generate_uv' is clicked.
+WHAT IT TAKES:
+On 'mesh':
+  a dictionary with 'vertices' (n by 3), 'faces' (m by 3 corner numbers,
+  counting from 0) and optionally 'normals' (n by 3) - what shape_modes
+  sends;
+  a list of [vertices, faces], or [vertices, faces, normals];
+  or a bare n by 3 array of corners, with no faces.
 
-mgl_point_cloud FOR POINTS:
-'points' takes an n by 3 array (or a flat list of x y z triples), or a cloud 
-frame from the point cloud nodes - a dictionary whose 'point_cloud' entry 
-holds the points and which may carry per-point 'weights' (0 to 1) and a 
-'voxel_size'. 'weights' chooses whether the weights set each point's size, 
-brightness, both, or neither; 'blend' additive (the default) lets dense 
-regions glow rather than the nearest point hiding the rest; 'draw at voxel size' draws 
-each point at the frame's voxel size in the scene rather than at 
-'point_size' pixels. Points that are not finite numbers are dropped. 
-A new node starts in points mode with culling off; a saved one keeps the 
-'mode' and 'cull' it was saved with.
+Normals are worked out from the faces when none come with it, averaged at
+each corner so a curved skin lights as a curve. Faces that are not m by 3,
+or that name a corner that is not there, are thrown away, leaving just the
+corners.
 
-mgl_surface FOR A GRID:
-'points' takes a rows by columns by 3 array of positions, and joins 
-neighbours into a smooth surface, lit on both sides. It is a grid of 3D 
-points, not a list of heights: to draw a height field, build the x and z 
-of each grid point and put the height in y.
+CORNERS WITHOUT FACES are drawn as points whatever 'mode' says,
+'point_size' pixels across at one unit from the camera and smaller further
+off. They all face the viewer along z, so with 'cull' ticked they vanish
+when seen from behind.
 
-mgl_line_array IS THE ONE BUILT FOR MOTION:
-'array' takes points by lines by 3 - each line is one column, newest point 
-first - or a points by 3 array for a single line. It draws the whole array 
-at once, and its options are about making motion legible: 'alpha_fade' and 
-'fade_rate' let older parts of a trail die away; 'accent_motion' measures 
-how far each point moved since the last array and lets that speed brighten 
-the lines ('accent_brightness'), colour them along a dark-to-yellow scale 
-('accent_colour'), and thicken them ('accent_width'), each with its own 
-scale. A trail drawn at constant width and brightness tells you where 
-something went; one that brightens where it moved fast tells you how.
+The 'holding' line says what it last built from - 'nothing yet', so many
+points, or so many corners and triangles - which tells a mesh that never
+arrived from one drawn somewhere you are not looking.
+
+SIZE AND PLACE:
+'center' moves the average corner to the origin and 'fit' then scales the
+mesh to just fit inside a box from -1 to 1 on every axis, which saves
+guessing at the units it was made in. Both are on by default, and both are
+applied when a mesh arrives - changing them shows with the next mesh.
+'scale' multiplies the size and takes effect at once.
+
+It is an mgl shape: lit, in the current colour and material. A mesh can
+arrive as often as you like and on any thread; it is built into what is
+drawn on the next render.
 
 SYNTAX:
 mgl_mesh
-mgl_model
-mgl_point_cloud
-mgl_surface
-mgl_line_array
 
-None of them takes arguments.
+It takes no arguments.
+
+EXAMPLE:
+mgl_mesh
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. This triggers the drawing.
+
+mesh:
+The mesh, as above.
+
+scale:
+Size multiplier, 1 by default.
+
+center / fit:
+As above.
+""" + SHAPE_INPUTS + """
+
+holding:
+What it is drawing, as above.
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+mgl_model loads a mesh from a file instead. mgl_point_cloud is better for
+points alone. shape_modes produces meshes for this."""
+
+demo, links = view()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (340, 440), 'w': 88, 'h': 42},
+    {'key': 'ls', 'init': 'list', 'pos': (30, 640), 'w': 740, 'h': 42,
+     'props': {'text in': '[[[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], '
+                          '[[0, 2, 1], [0, 1, 3], [0, 3, 2], [1, 2, 3]]]',
+               'font size': '24'}},
+    {'key': 'c1', 'comment': True,
+     'text': 'above: [corners, triangles],\nfour of each',
+     'pos': (340, 710)},
+    {'key': 'ms', 'init': 'mgl_mesh', 'pos': (30, 710), 'w': 240, 'h': 300},
+    {'key': 'c2', 'comment': True,
+     'text': 'a tetrahedron, centred and fitted;\nset mode to wireframe to see its edges',
+     'pos': (30, 1030)},
+]
+links += [('cam', 'mgl chain out', 'ms', 'mgl chain in'),
+          ('lb', 'out', 'ls', ''),
+          ('ls', 'list out', 'ms', 'mesh')]
+print(build('mgl_mesh', 'mgl_mesh - drawing a mesh from the patch', body, demo, links,
+            demo_width=580, text_width=810, text_height=1000))
+
+# ------------------------------------------------------------------- mgl_model
+body = """mgl_model loads a mesh from a file and draws it.
+
+THE FILE:
+Type its path into 'file_path' (a full path is safest; a short one is found
+from the folder the program runs in). Anything the trimesh library reads
+will do: obj, stl, ply, glb, off and more. A file holding several meshes is
+merged into one. The console says how many corners and faces it loaded.
+
+A file that will not load is reported once in the console, and tried again
+when 'file_path' changes or 'generate_uv' is clicked. Until a file loads the
+node draws nothing - changing 'file_path' to a bad path (or emptying it)
+drops the model it had - but it still passes the chain on, so whatever
+follows it is drawn as usual.
+
+SIZE AND PLACE:
+'center' (on by default) moves the mesh's centre of mass to the origin when
+it loads. 'scale' multiplies the size and takes effect at once.
+
+TEXTURE COORDINATES:
+To map an image onto the model through 'texture', it needs texture
+coordinates. 'uv_mode' original uses the file's own, if it has them -
+without them every point gets 0 0, and the console says so. The other
+modes make them up from the shape: sphere, cylinder, plane_xy, plane_xz,
+or box, which puts the image once on each side of the bounding box, each
+face taking the side it faces most. 'uv_scale' multiplies them, so above 1
+the image repeats.
+
+'uv_mode', 'uv_scale' and 'center' are applied when the file loads; click
+'generate_uv' to load it again with the new settings.
+
+It is an mgl shape: lit, in the current colour and material.
+
+SYNTAX:
+mgl_model
+
+It takes no arguments.
+
+EXAMPLE:
+mgl_model
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. This triggers the drawing.
+
+file_path:
+The mesh file.
+
+scale:
+Size multiplier, 1 by default.
+
+center:
+Centre of mass to the origin, on load.
+
+uv_mode / uv_scale / generate_uv:
+Texture coordinates, as above.
+""" + SHAPE_INPUTS + """
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+mgl_mesh draws a mesh sent down a cord instead. mgl_texture makes a texture
+from an image."""
+
+demo, links = view()
+demo += [
+    {'key': 'md', 'init': 'mgl_model', 'pos': (340, 440), 'w': 260, 'h': 380},
+    {'key': 'c1', 'comment': True,
+     'text': 'type the path of an obj, stl, ply or glb file\ninto file_path and press return',
+     'pos': (340, 440)},
+]
+links += [('cam', 'mgl chain out', 'md', 'mgl chain in')]
+print(build('mgl_model', 'mgl_model - a mesh from a file', body, demo, links,
+            demo_width=580, text_width=810, text_height=980))
+
+# ------------------------------------------------------------- mgl_point_cloud
+body = """mgl_point_cloud draws a set of points.
+
+WHAT IT TAKES:
+'points' takes an n by 3 array, or a flat list of x y z triples. It also
+takes a cloud frame from the point cloud nodes: a dictionary whose
+'point_cloud' entry holds the points, and which may carry a 'weights' entry
+(one value per point, 0 to 1) and a 'voxel_size'. Points that are not
+finite numbers are dropped, with a note in the console. An empty cloud
+clears the picture.
+
+Points can arrive as often as you like and on any thread; they are built
+into what is drawn on the next render.
+
+POINT SIZE:
+Each point is 'point_size' pixels across at one unit from the camera, and
+smaller further off. With 'draw at voxel size' ticked (the default) and a
+voxel size in the frame, each point is drawn instead about one voxel
+wide in the scene.
+
+WEIGHTS:
+When the frame carries weights, 'weights' chooses what they do: make
+low-weight points smaller ('size'), dim them ('brightness'), both (the
+default), or neither ('off').
+
+BLEND:
+'additive' (the default) adds the points' light together, so dense regions
+glow rather than the nearest point hiding the rest. 'normal' draws them as
+ordinary opaque dots.
+
+KEEP IT IN POINTS MODE:
+A new node starts in points mode with 'cull' off; a saved one keeps the
+'mode' and 'cull' it was saved with. In solid or wireframe mode the points
+are joined three at a time, in order, into meaningless triangles. Each
+point is lit as if it faced straight up, so with 'cull' ticked the points
+above the camera disappear.
+
+SYNTAX:
+mgl_point_cloud
+
+It takes no arguments.
 
 EXAMPLE:
 mgl_point_cloud
@@ -192,44 +356,18 @@ INPUTS and PARAMETERS:
 mgl chain in:
 The chain. This triggers the drawing.
 
-mesh / file_path / points / array:
-The geometry. Data can arrive as often as you like and on any thread: the 
-nodes store it, and build what they draw on the next render.
+points:
+The points, as above.
 
-scale / center (mgl_mesh, mgl_model):
-Scale multiplies the size. 'center' moves the middle of the mesh to the 
-origin - the average corner for mgl_mesh, the centre of mass for mgl_model.
+weights:
+off, size, brightness, or size + brightness.
 
-fit (mgl_mesh):
-Scales the mesh so its farthest corner is one unit out, which saves guessing 
-at the units it was made in.
+blend:
+additive or normal.
 
-uv_mode / uv_scale / generate_uv (mgl_model):
-Texture coordinates, as above.
-
-weights / blend / draw at voxel size (mgl_point_cloud):
-As above.
-
-line_width:
-The width in pixels. 'perspective_width' makes it shrink with distance.
-
-alpha_fade / fade_rate (mgl_line_array):
-Fade along each line from its newest point; 'fade_rate' above 1 shortens 
-the bright part, below 1 holds it longer.
-
-accent_motion / accent_brightness / accent_scale / accent_colour / 
-accent_colour_scale / white_hot / accent_width / accent_width_scale / 
-accent_width_curve / accent_width_max (mgl_line_array):
-Whether speed shows, and how: each accent has a switch and a scale, 
-'white_hot' carries the top of the colour scale on into white, and the 
-width accent has a curve and a ceiling.
-
-selected_lines (mgl_line_array):
-Line numbers to draw, separated by spaces. Empty draws them all.
-
-use_line_colors / color index / color_control (mgl_line_array):
-With 'use_line_colors' ticked each line has its own colour: set 'color 
-index' to a line number and pick its colour; index -1 recolours every line.
+draw at voxel size:
+Use the frame's voxel size for the point size. On by default.
+""" + SHAPE_INPUTS + """
 
 OUTPUTS:
 
@@ -237,45 +375,210 @@ mgl chain out:
 The chain, continuing.
 
 RELATED:
-mgl_sphere and the other built-in shapes. shape_modes and the point cloud 
-nodes produce data for these. mgl_text draws text in the scene and used to 
-share this page. gl_line_array is the older equivalent of mgl_line_array."""
+The point cloud nodes (pc_voxel and others) produce cloud frames. mgl_mesh
+also draws bare corners as points. gl_vertex_buffer is the older system's
+way to draw points."""
 
-demo = [
-    {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240, 'node_mouse_events': True}},
-    {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
-     'pos': (30, 120)},
-    {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, 440), 'w': 240, 'h': 160},
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 630), 'w': 88, 'h': 42},
-    {'key': 'nr1', 'init': 'np.rand 40 3 3', 'pos': (30, 700), 'w': 140, 'h': 160,
-     'props': {'min': -1.0, 'max': 1.0}},
-    {'key': 'c1', 'comment': True, 'text': '40 points on each of 3 lines',
-     'pos': (30, 700)},
-    {'key': 'la', 'init': 'mgl_line_array', 'pos': (30, 890), 'w': 220, 'h': 400,
-     'props': {'alpha_fade': True}},
-    {'key': 'c2', 'comment': True,
-     'text': 'alpha_fade: each line fades from\nits first point to its last',
-     'pos': (30, 890)},
-    {'key': 'nr2', 'init': 'np.rand 500 3', 'pos': (30, 1320), 'w': 140, 'h': 140,
+demo, links = view()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (340, 440), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 500 3', 'pos': (340, 500), 'w': 140, 'h': 140,
      'props': {'min': -0.6, 'max': 0.6}},
-    {'key': 'c3', 'comment': True, 'text': '500 points in a cube', 'pos': (30, 1320)},
+    {'key': 'c1', 'comment': True, 'text': '500 points in a cube', 'pos': (340, 500)},
     # mode/cull saved explicitly: custom_create only switches a NEW node to
     # points, and a node loaded from file would otherwise come up solid
-    {'key': 'pc', 'init': 'mgl_point_cloud', 'pos': (30, 1490), 'w': 240, 'h': 280,
-     'props': {'mode': 'points', 'cull': False}},
+    {'key': 'pc', 'init': 'mgl_point_cloud', 'pos': (30, 640), 'w': 240, 'h': 300,
+     'props': {'mode': 'points', 'cull': False, 'point_size': 12.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'drag point_size; orbit to see\nnear points drawn larger than far ones',
+     'pos': (30, 960)},
 ]
-links = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
-         ('ctx', 'ui', 'cam', 'ui'),
-         ('cam', 'mgl chain out', 'la', 'mgl chain in'),
-         ('lb', 'out', 'nr1', ''),
-         ('nr1', 'random array', 'la', 'array'),
-         ('la', 'mgl chain out', 'pc', 'mgl chain in'),
-         ('lb', 'out', 'nr2', ''),
-         ('nr2', 'random array', 'pc', 'points')]
-print(build('mgl_mesh', 'mgl geometry - drawing data you supply', body, demo, links,
-            demo_width=560, text_width=810, text_height=1100))
+links += [('cam', 'mgl chain out', 'pc', 'mgl chain in'),
+          ('lb', 'out', 'nr', ''),
+          ('nr', 'random array', 'pc', 'points')]
+print(build('mgl_point_cloud', 'mgl_point_cloud - drawing points', body, demo, links,
+            demo_width=580, text_width=810, text_height=980))
+
+# ----------------------------------------------------------------- mgl_surface
+body = """mgl_surface joins a grid of points into a smooth surface.
+
+WHAT IT TAKES:
+'points' takes a rows by columns by 3 array of positions: neighbours in the
+grid are joined, two triangles to each square. It needs at least two rows
+and two columns. An n by 3 array is taken as a single row, and so draws
+nothing. A cloud frame from the point cloud nodes works too, using its
+'point_cloud' entry.
+
+It is a grid of 3D points, not a list of heights: to draw a height field,
+build the x and z of each grid point and put the height in y.
+
+Points can arrive as often as you like and on any thread; the surface is
+rebuilt on the next render.
+
+HOW IT LOOKS:
+The surface is lit on both sides, with normals averaged at each point so it
+shades smoothly. It is an mgl shape: in the current colour and material. An
+image sent to 'texture' is stretched once across the whole grid.
+
+SYNTAX:
+mgl_surface
+
+It takes no arguments.
+
+EXAMPLE:
+mgl_surface
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. This triggers the drawing.
+
+points:
+The grid, as above.
+""" + SHAPE_INPUTS + """
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+np.grid makes a flat grid of points to start from. mgl_mesh draws
+triangles of any arrangement; mgl_plane is a flat subdivided rectangle."""
+
+demo, links = view()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 630), 'w': 88, 'h': 42},
+    {'key': 'tg', 'init': 't bang bang', 'pos': (30, 690), 'w': 130, 'h': 42},
+    {'key': 'gr', 'init': 'np.grid -1 1 -1 1 16 16', 'pos': (30, 760), 'w': 200, 'h': 260},
+    {'key': 'c1', 'comment': True, 'text': 'a flat 16 by 16 grid', 'pos': (30, 760)},
+    {'key': 'nr', 'init': 'np.rand 16 16 3', 'pos': (330, 760), 'w': 140, 'h': 140,
+     'props': {'min': -0.06, 'max': 0.06}},
+    {'key': 'c2', 'comment': True, 'text': 'a small random nudge\nfor every point',
+     'pos': (330, 920)},
+    {'key': 'add', 'init': '+', 'pos': (30, 1050), 'w': 120, 'h': 60},
+    {'key': 'sf', 'init': 'mgl_surface', 'pos': (30, 1140), 'w': 240, 'h': 260},
+    {'key': 'c3', 'comment': True,
+     'text': 'a crumpled sheet, lit on both sides;\nset mode to wireframe to see the grid',
+     'pos': (30, 1420)},
+]
+links += [('cam', 'mgl chain out', 'sf', 'mgl chain in'),
+          ('lb', 'out', 'tg', ''),
+          ('tg', 'bang', 'nr', '', 1, 0),
+          ('tg', 'bang', 'gr', '', 0, 0),
+          ('nr', 'random array', 'add', '###operand', 0, 1),
+          ('gr', 'grid points', 'add', 'in'),
+          ('add', 'result', 'sf', 'points')]
+print(build('mgl_surface', 'mgl_surface - a grid of points as a surface', body, demo,
+            links, demo_width=580, text_width=810, text_height=900))
+
+# -------------------------------------------------------------- mgl_line_array
+body = """mgl_line_array draws many lines at once, from one array - built for trails
+of motion.
+
+WHAT IT TAKES:
+'array' takes points by lines by 3: each line is one column of the array,
+its points in order. A points by 3 array is a single line. An empty array
+clears the picture. Point 0 is taken to be the newest - the head of the
+trail - which is how a rolling buffer of positions arrives.
+
+Drawing a set of trails as separate line nodes does not scale; this draws
+the whole array in one go. The lines are drawn in the current colour, alpha
+included, without lighting, so mgl_color sets them and mgl_light does not
+touch them.
+
+MAKING MOTION LEGIBLE:
+'alpha_fade' fades each line from its head to its tail, so a trail dies away
+behind the moving point. 'fade_rate' bends that fade: above 1 the bright
+part is shorter, below 1 it holds longer.
+
+'accent_motion' measures how far each point moved since the previous array
+and lets that speed show, each in its own way and with its own scale:
+'accent_brightness' (on by default) makes the lines only as bright as the
+movement times 'accent_scale', so a still trail disappears and a fast one
+shines. 'accent_colour' colours them by speed along a dark-purple to yellow
+scale, set by 'accent_colour_scale'; 'white_hot' carries the top of that
+scale on into white. 'accent_width' thickens fast parts, by the movement
+(raised to 'accent_width_curve') times 'accent_width_scale', up to
+'accent_width_max' pixels.
+
+A trail drawn at constant width and brightness tells you where something
+went; one that brightens where it moved fast tells you how. The movement is
+only measured while 'accent_motion' is ticked, and starts afresh when the
+number of lines changes.
+
+WIDTH:
+'line_width' is in pixels. With 'perspective_width' ticked it is the width
+at one unit from the camera, and lines thin with distance.
+
+WHICH LINES, AND THEIR COLOURS:
+'selected_lines' lists line numbers to draw, separated by spaces; empty
+draws them all. With 'use_line_colors' ticked each line has its own colour
+instead of the current one: set 'color index' to a line number and pick its
+colour with 'color_control'. Index -1 recolours every line. Lines start
+white.
+
+SYNTAX:
+mgl_line_array
+
+It takes no arguments.
+
+EXAMPLE:
+mgl_line_array
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. This triggers the drawing.
+
+array:
+The lines, as above.
+
+line_width / perspective_width:
+Width in pixels, 1 by default, and whether it shrinks with distance.
+
+alpha_fade / fade_rate:
+The fade along each line. Off, and 1, by default.
+
+accent_motion / accent_brightness / accent_scale / accent_colour /
+accent_colour_scale / white_hot / accent_width / accent_width_scale /
+accent_width_curve / accent_width_max:
+Whether speed shows, and how, as above.
+
+selected_lines:
+Line numbers to draw.
+
+use_line_colors / color index / color_control:
+Per-line colours, as above.
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+np.rolling_buffer builds trails from a stream. gl_line_array is the older
+equivalent. mgl_line draws a single line."""
+
+demo, links = view()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (340, 440), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 40 3 3', 'pos': (340, 500), 'w': 140, 'h': 160,
+     'props': {'min': -1.0, 'max': 1.0}},
+    {'key': 'c1', 'comment': True, 'text': '40 points on each of 3 lines',
+     'pos': (340, 500)},
+    {'key': 'la', 'init': 'mgl_line_array', 'pos': (30, 640), 'w': 220, 'h': 420,
+     'props': {'alpha_fade': True, 'line_width': 2.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'alpha_fade: each line fades from\nits first point to its last',
+     'pos': (30, 640)},
+]
+links += [('cam', 'mgl chain out', 'la', 'mgl chain in'),
+          ('lb', 'out', 'nr', ''),
+          ('nr', 'random array', 'la', 'array')]
+print(build('mgl_line_array', 'mgl_line_array - many lines from one array', body, demo,
+            links, demo_width=560, text_width=810, text_height=1080))
+
 
 # -------------------------------------------------------------------- mgl_text
 body = """mgl_text draws a line of text into the 3D scene.
@@ -340,8 +643,8 @@ The chain, continuing. The text does not move anything downstream.
 
 RELATED:
 mgl_billboard to keep it facing the camera; mgl_color for its colour; 
-mgl_translate to place it. mgl_mesh covers the geometry nodes and used to 
-share this page. gl_text is the older equivalent."""
+mgl_translate to place it. mgl_mesh, mgl_model, mgl_surface and 
+mgl_point_cloud draw other kinds of geometry. gl_text is the older equivalent."""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
@@ -377,40 +680,84 @@ links = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
 print(build('mgl_text', 'mgl_text - text in the scene', body, demo, links,
             demo_width=560, text_width=810, text_height=900))
 
+
+# ------------------------------------------------------------- body scene
+def scene(y=62, light=False):
+    """A context showing its picture in the node, an orbit camera and,
+    for lit drawing, a light. The chain continues from the last key."""
+    nodes = [
+        {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, y), 'w': 340, 'h': 340,
+         'props': {'auto_render': True, 'node_display_width': 320,
+                   'node_display_height': 240, 'node_mouse_events': True}},
+        {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
+         'pos': (30, y + 58)},
+        {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, y + 378), 'w': 240, 'h': 160},
+    ]
+    links = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
+             ('ctx', 'ui', 'cam', 'ui')]
+    last = 'cam'
+    if light:
+        nodes.append({'key': 'lgt', 'init': 'mgl_light', 'pos': (30, y + 568), 'w': 220, 'h': 200})
+        links.append(('cam', 'mgl chain out', 'lgt', 'mgl chain in'))
+        last = 'lgt'
+    return nodes, links, last
+
+
 # ------------------------------------------------------------------- mgl_body
-body = """These draw a moving body, and the things you want to see about how it moves.
+body = """mgl_body draws a skeleton in the scene and moves it with a stream of
+joint rotations.
 
-THE NODES:
+WHAT IT DRAWS:
+With nothing patched into 'pose' it stands in its rest pose, arms out,
+about 1.8 units tall with the pelvis at the origin of the chain's current
+coordinates (one unit is a metre, y is up). Each limb is a block running
+from one joint to the next.
 
-mgl_body              a skeleton, driven by a pose
-body_proportions      per-segment length, width and depth factors for it
-mgl_body_orientation  the same, with per-joint orientation disks
-mgl_orientation_disks the disks on their own
-mgl_contact_disks     where the body is touching the ground, sized by area
-mgl_torque_arc        a torque drawn as an arc about its own axis
+'display_mode' lines draws the edges of those blocks as plain lines in
+the current colour (set it with mgl_color), with no lighting. solid draws
+them filled and lit, so it needs an mgl_light earlier in the chain.
 
-mgl_body IS THE MAIN ONE:
-Patch a stream of quaternions into 'pose' and it draws the skeleton. It accepts 
-data as fast as it arrives and draws the latest on each render, so the frame 
-rate of the source and of the display are independent.
+THE POSE:
+'pose' takes one quaternion per joint, w first, as an array - what the
+shadow node's body quaternions outlet sends, or smpl_to_active makes from
+an SMPL pose. A plain list works too: nested, one [w x y z] per joint, or
+flat, read four numbers at a time. The
+node keeps the latest pose and draws it on each render, so the source and
+the display can run at different rates.
 
-'skeleton_mode' and 'display_mode' change what it draws - spheres at the joints, 
-limbs between them, or both.
+With 'input_order' set to smpl it takes SMPL joint order instead, as
+quaternions or as rotation vectors (axis times angle), and rearranges them
+onto its own joints; joints SMPL does not drive stay at rest. SMPL poses
+are z-up - tick 'y is up' to stand such a body upright. 'joint_data' is
+rearranged the same way.
 
-CHANGING THE PROPORTIONS:
-There are two layers, and they stack.
+SPHERES SIZED BY A MEASUREMENT:
+'joint_data' takes one value per joint, in the same joint order as the pose.
+With 'draw_spheres' ticked a sphere is drawn at each joint with a radius of
+that value times 'joint_radius' - so a per-joint measurement (effort, speed,
+noise) is seen where it happens. A row of several numbers per joint is
+reduced to its length. No spheres are drawn until joint_data has arrived.
+'color' is the colour of the spheres, and 'instanced_mode' draws them
+solid, as wireframe or as points.
 
-'limb_lengths' takes the dict smpl_beta_editor sends and sets the BASE skeleton: 
-absolute segment lengths in metres, for a body that is not the default size.
+DRAWING AT EVERY JOINT:
+With 'enable_callbacks' ticked (it is by default), on every render the node
+visits each joint in turn: it moves the chain's coordinates to that joint,
+sends the joint's number from 'joint_id', that joint's entry of joint_data
+from 'joint_data', and then 'draw' from 'joint_callback'. Anything patched to
+joint_callback is drawn once per joint, at the joint - a marker, a label,
+a shape sized by joint_data. The coordinates there keep the orientation
+of the limb leading into the joint. This is not mouse picking: nothing is
+clicked, and the outlets fire for every joint on every frame.
 
-'limb_scale' multiplies whatever the base is. Each segment has three factors - 
-length, width, depth - with 1.0 meaning unchanged. Length moves the joint at the 
-far end and stretches the drawn limb; width and depth fatten it. The pelvis bowl 
-and shoulder blades keep their drawn shape under a length factor and only move 
-what hangs off them. The factors stay put when new base lengths arrive or the 
-skeleton mode changes.
+PROPORTIONS:
+'limb_lengths' takes the dict smpl_beta_editor sends from its limb_lengths
+outlet, and resizes the base skeleton to those segment lengths. 'limb_scale'
+multiplies whatever the base is, segment by segment - see body_proportions,
+which is the hand-editing front end for it. The two stack: new base lengths
+leave the scale factors in place.
 
-Send it a dict, or a message:
+limb_scale takes a dict {segment: factors} or a message:
 
 limb_scale left_upper_arm 3.0 0.5 0.5    length, width, depth
 limb_scale upper_arm 1.2                 one value: length only, both sides
@@ -419,110 +766,580 @@ limb_scale left 0.7                      a whole side
 limb_scale all 1.0 2.0 2.0               everything
 limb_scale reset
 
-The same messages work on the 'mgl chain in' inlet. Segment names are the 
-segment that ENDS at a joint: left_upper_leg is hip to knee. The names are 
-spine_lower, spine_mid, spine_upper, spine_to_neck, neck, head, and per side 
-hip, upper_leg, lower_leg, foot, toes, heel, shoulder_blade, collar, upper_arm, 
-lower_arm, hand, fingers.
+Send these to the 'limb_scale' inlet, or as messages into 'mgl chain in'.
+A message on the chain is used here and not passed on, so it reshapes this
+body and not any body further down the chain.
 
-body_proportions IS THE HAND-EDITING FRONT END FOR THAT:
-One row per segment, three drag floats each. It sends the whole dict on every 
-edit and once when the patch loads, so mgl_body needs no priming - wire 
-'limb_scale' to 'limb_scale' and drag. mgl_smpl_mesh and mgl_smpl_heatmap take 
-the same inlet, so the one node can drive the skeleton and the skin together. 'symmetric' mirrors a left edit onto the 
-right row; untick it and the sides go their own way, which is how you get a 
-lopsided body on purpose. 'scales in' takes the same dict or message forms 
-listed above and sets the rows, so a preset or a patch can drive it. A change 
-costs nothing beyond the normal draw - the dims ride in each limb's bone matrix 
-rather than in its geometry - so animate the proportions freely, from the node 
-or with messages at frame rate.
-
-SEEING WHAT A NUMBER MEANS:
-The other four nodes exist because a value about a body is much easier to 
-understand drawn ON the body than plotted beside it.
-
-mgl_contact_disks puts a disk at each contact, scaled by the area - so the 
-weight shifting between the feet is something you watch rather than read. 
-mgl_torque_arc draws a torque as an arc around the axis it acts about, which is 
-what a torque actually is and what a number cannot show. 
-mgl_orientation_disks shows each joint's orientation as a ring, so a twist is 
-visible as a twist.
-
-THE CALLBACK OUTLETS:
-mgl_body reports which joint was clicked on - 'joint_id' and 'joint_callback' - 
-so the scene can be an interface. Tick 'enable_callbacks' and clicking a joint 
-tells the patch which one, which is how you select a joint to inspect without 
-building a list of them somewhere else.
+'skeleton_mode' smpl rebuilds the skeleton from SMPL's own bone offsets -
+from limb_lengths if it carried them, otherwise from the neutral SMPL body
+(this needs the smplx package). 's_curve_spine' bends that SMPL spine into
+a natural S curve. shadow, the default, is the motion capture suit's
+skeleton.
 
 SYNTAX:
 mgl_body
-mgl_contact_disks
+
+It takes no arguments.
 
 EXAMPLE:
 mgl_body
 
 INPUTS and PARAMETERS:
 
+mgl chain in:
+The chain. 'draw' draws the body.
+
 pose:
-The joint rotations, as quaternions. This is the data inlet.
+Joint rotations, as above.
 
-skeleton_mode / display_mode / draw_spheres:
-What to draw.
+enable_callbacks:
+Whether the per-joint outlets fire. On by default.
 
-scale / joint_radius / limb_lengths:
-The size of the body and its parts.
+draw_spheres:
+Whether joint_data is shown as spheres.
 
-limb_scale:
-Per-segment length, width and depth factors over the base. See above.
+display_mode:
+lines or solid.
 
-scales in / symmetric / reset (body_proportions):
-Set every row from a dict, mirror edits across the body, or put everything 
-back to 1.0.
+scale:
+Size of the whole body, about the chain's origin. 1 by default.
 
-joint_data / color:
-Per-joint values and colours - this is how you colour joints by a measurement.
+joint_radius:
+Sphere radius per unit of joint_data. 0.1 by default.
+
+joint_data:
+One value (or one row) per joint.
+
+limb_lengths / limb_scale:
+The base skeleton and the factors over it, as above.
+
+skeleton_mode:
+shadow or smpl.
+
+input_order:
+active (the body's own joint order) or smpl.
+
+y is up:
+Turns an SMPL pose upright. Only used with input_order smpl.
 
 s_curve_spine:
-Whether the spine is drawn as a curve rather than straight segments.
+Shapes the SMPL skeleton's spine. Only used in smpl skeleton mode.
+
+color:
+The colour of the spheres.
 
 instanced_mode:
-Draw the joints in one call rather than separately. Faster for a full skeleton.
+solid, wireframe or points, for the spheres.
 
-contacts / area_scale / min_radius / max_radius (mgl_contact_disks):
-The contact data and how its area maps to a disk size.
-
-show_disks / disk_scale / disk_orientations (mgl_body_orientation):
-The orientation rings.
-
-OUTPUTS: 
+OUTPUTS:
 
 mgl chain out:
 The chain, continuing.
 
-joint_id / joint_callback / joint_data:
-Which joint was clicked, and what it carries.
+joint_callback / joint_data / joint_id:
+Once per joint per render, as above.
 
 RELATED:
-See the smpl nodes for where pose data comes from, and the quaternion nodes for 
-working on it before it is drawn."""
+body_proportions edits limb_scale by hand. mgl_body_orientation is this
+node with orientation disks at the joints. mgl_contact_disks and
+mgl_torque_arc draw other body measurements in the scene. mgl_smpl_mesh
+draws a skin rather than a skeleton."""
 
-demo = chain() + [
-    {'key': 'bd', 'init': 'mgl_body', 'pos': (30, 660), 'w': 260, 'h': 400},
-    {'key': 'c0', 'comment': True, 'text': 'patch a stream of quaternions into pose\ntick enable_callbacks, then click a joint',
-     'pos': (30, 1075)},
-    {'key': 'i1', 'init': 'int', 'pos': (340, 660), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c2', 'comment': True, 'text': 'which joint was clicked', 'pos': (340, 710)},
-    {'key': 'bp', 'init': 'body_proportions', 'pos': (340, 760), 'w': 300, 'h': 980},
-    {'key': 'c4', 'comment': True, 'text': 'each row: length, width, depth\nuntick symmetric for a lopsided body',
-     'pos': (340, 1755)},
-    {'key': 'cd', 'init': 'mgl_contact_disks', 'pos': (30, 1150), 'w': 260, 'h': 300},
-    {'key': 'c3', 'comment': True, 'text': 'contacts drawn where they happen,\neach disk sized by its area',
-     'pos': (30, 1465)},
+demo, links, last = scene(light=True)
+demo += [
+    {'key': 'bd', 'init': 'mgl_body', 'pos': (30, 860), 'w': 260, 'h': 420},
+    {'key': 'c1', 'comment': True,
+     'text': 'nothing in pose, so it stands at rest\npatch body quaternions into pose',
+     'pos': (30, 860)},
+    {'key': 'met', 'init': 'metro 500', 'pos': (340, 640), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 500.0, 'units': 'milliseconds'}},
+    {'key': 'nr', 'init': 'np.rand 31', 'pos': (340, 730), 'w': 140, 'h': 110,
+     'props': {'min': 0.0, 'max': 0.6}},
+    {'key': 'c2', 'comment': True, 'text': 'one value per joint\nsizes the spheres',
+     'pos': (340, 730)},
+    {'key': 'bx', 'init': 'mgl_box', 'pos': (30, 1310), 'w': 220, 'h': 160,
+     'props': {'size': [0.04, 0.04, 0.04]}},
+    {'key': 'c3', 'comment': True,
+     'text': 'joint_callback draws this small box\nonce at every joint',
+     'pos': (30, 1310)},
 ]
-links = CHAIN_LINKS + [
-    ('lgt', 'mgl chain out', 'bd', 'mgl chain in'),
-    ('bd', 'joint_id', 'i1', ''),
-    ('bp', 'limb_scale', 'bd', 'limb_scale'),
-    ('bd', 'mgl chain out', 'cd', 'mgl chain in')]
-print(build('mgl_body', 'mgl_body - drawing a body, and what it is doing', body,
+links += [
+    (last, 'mgl chain out', 'bd', 'mgl chain in'),
+    ('met', '', 'nr', ''),
+    ('nr', 'random array', 'bd', 'joint_data'),
+    ('bd', 'joint_callback', 'bx', 'mgl chain in')]
+print(build('mgl_body', 'mgl_body - drawing a moving body', body,
             demo, links, demo_width=580, text_width=820, text_height=820))
+
+# ----------------------------------------------------------- body_proportions
+body = """body_proportions is a panel of sliders for reshaping a body: one row per
+segment, each with a length, a width and a depth factor.
+
+HOW IT IS USED:
+Patch its 'limb_scale' outlet to the 'limb_scale' inlet of mgl_body,
+mgl_body_orientation, mgl_smpl_mesh or mgl_smpl_heatmap - they all speak the
+same vocabulary, so one panel can drive the skeleton and the skin together.
+
+It sends the whole set of factors, as a dict, on every edit and once when
+the patch opens, so the body needs no priming: open the patch and the
+saved proportions are already applied.
+
+THE FACTORS:
+1.0 means unchanged. Length moves the joint at the far end of the segment
+and stretches the drawn limb; width and depth fatten or thin it. Each
+segment is named for the joint it ENDS at: left_upper_leg is hip to knee,
+left_hand is wrist to knuckles. The pelvis bowl and the shoulder blades
+keep their drawn shape under a length factor and only move what hangs off
+them.
+
+The rows are spine_lower, spine_mid, spine_upper, spine_to_neck, neck, head,
+and for each side hip, upper_leg, lower_leg, foot, toes, heel,
+shoulder_blade, collar, upper_arm, lower_arm, hand, fingers.
+
+Reshaping costs nothing beyond the normal draw on mgl_body, so the factors
+can be animated freely.
+
+SYMMETRY:
+With 'symmetric' ticked (the default) an edit to a left row is copied to
+the matching right row and the other way round. Untick it and each side
+keeps its own values - how you make a lopsided body on purpose. Values
+arriving at 'scales in' are not mirrored.
+
+SETTING IT FROM THE PATCH:
+'scales in' takes a dict {segment: factors}. A segment name can be a row
+name, a name without its side (upper_arm sets both sides), left, right or
+all. One number sets the length only, two set width and depth, three set
+all three. The rows update and the whole set is sent on. 'reset' puts
+every row back to 1.0 and sends.
+
+A message naming one row, such as 'left_upper_arm 1.2 1 1', sets that row as
+an edit would: mirrored to the other side if 'symmetric' is ticked, then sent.
+
+Its rows are also saved by the presets node.
+
+SYNTAX:
+body_proportions
+
+It takes no arguments.
+
+EXAMPLE:
+body_proportions
+
+INPUTS and PARAMETERS:
+
+scales in:
+A dict of factors, as above.
+
+symmetric:
+Mirror edits between left and right rows.
+
+reset:
+Back to 1.0 everywhere.
+
+spine_lower ... right_fingers:
+One row per segment: length, width, depth.
+
+OUTPUTS:
+
+limb_scale:
+A dict of every segment's three factors.
+
+RELATED:
+mgl_body, whose page lists the limb_scale messages those nodes also accept
+directly. smpl_beta_editor sets a body's base proportions from SMPL shape
+values; this scales on top of that."""
+
+demo, links, last = scene(light=True)
+demo += [
+    {'key': 'bd', 'init': 'mgl_body', 'pos': (30, 860), 'w': 260, 'h': 420,
+     'props': {'display_mode': 'solid'}},
+    {'key': 'bp', 'init': 'body_proportions', 'pos': (400, 62), 'w': 300, 'h': 980},
+    {'key': 'c1', 'comment': True,
+     'text': 'drag a row: length, width, depth\nuntick symmetric for a lopsided body',
+     'pos': (400, 1060)},
+]
+links += [
+    (last, 'mgl chain out', 'bd', 'mgl chain in'),
+    ('bp', 'limb_scale', 'bd', 'limb_scale')]
+print(build('body_proportions', 'body_proportions - reshaping a body by hand', body,
+            demo, links, demo_width=720, text_width=800, text_height=820))
+
+# ------------------------------------------------------- mgl_body_orientation
+body = """mgl_body_orientation is mgl_body with a set of orientation disks drawn at
+each joint.
+
+Everything mgl_body does, it does - the same pose, joint_data, proportions,
+callbacks and inputs (see the mgl_body page). On top of that, each joint
+can carry several rings, each turned to face along a rotation axis and
+sized by the rotation's angle. A disk lying in the plane of a turn, as large
+as the turn, is a rotation you can see: which way it faces is the axis, how
+big it is is how far.
+
+THE DISK DATA:
+'disk_orientations' takes, for each joint, one row per disk:
+
+  joints by disks by 3       rotation vectors: the direction is the axis,
+                             the length the angle in radians
+  joints by disks by 4       an axis followed by a size
+  joints by disks by 3 by 3  rotation matrices
+
+Joints are in the body's own order - 20 of them - or in SMPL order with
+'input_order' smpl. The rows are read in the frame of the limb leading
+into each joint. A disk with no rotation is not drawn, and the data stays
+until new data arrives.
+
+SIZES AND COLOURS:
+A disk's radius is its angle (or size) times 'disk_scale' times that
+disk's own factor. The factors grow by half again from disk to disk
+(2.25, 2.25, 3.375, 5.06 and so on), so for the same angle each disk
+is drawn larger than the one before.
+'disk_scales' replaces them with a list. 'disk color 0', 'disk color 1'
+and so on set each disk's colour as red green blue alpha from 0 to 1; the
+same colour is used for that disk at every joint. The colours glow
+regardless of lighting and are translucent by default.
+
+Each disk is a ring: 'disk_ring_width' is the ring's width as a fraction
+of its radius (1 fills it in). 'disk_slices' sets how round it is.
+
+SYNTAX:
+mgl_body_orientation
+mgl_body_orientation <disks per joint>
+
+7 disks per joint by default.
+
+EXAMPLE:
+mgl_body_orientation 3
+
+INPUTS and PARAMETERS:
+
+All of mgl_body's, and:
+
+show_disks:
+Whether the disks are drawn.
+
+disk_scale:
+Radius per radian (or per unit of size). 0.5 by default.
+
+disk_slices / disk_ring_width:
+Roundness, and ring width as a fraction of the radius.
+
+disk_scales:
+A list of per-disk factors.
+
+disk color 0, disk color 1 ...:
+One inlet per disk, red green blue alpha.
+
+disk_orientations:
+The rotations, as above.
+
+OUTPUTS:
+
+The same as mgl_body.
+
+RELATED:
+mgl_body without the disks. mgl_orientation_disks draws a set of disks at
+one place, wherever the chain puts it."""
+
+demo, links, last = scene()
+demo += [
+    {'key': 'met', 'init': 'metro 1000', 'pos': (340, 440), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 1000.0, 'units': 'milliseconds'}},
+    {'key': 'nr', 'init': 'np.rand 20 3 3', 'pos': (340, 530), 'w': 140, 'h': 160,
+     'props': {'min': -0.4, 'max': 0.4}},
+    {'key': 'c1', 'comment': True,
+     'text': '20 joints, 3 disks each,\na rotation vector per disk',
+     'pos': (340, 530)},
+    {'key': 'bo', 'init': 'mgl_body_orientation 3', 'pos': (30, 640), 'w': 280, 'h': 600,
+     'props': {'disk_scale': 0.2}},
+    {'key': 'c2', 'comment': True,
+     'text': 'each ring faces along its axis,\nits size is the angle',
+     'pos': (30, 1260)},
+]
+links += [
+    (last, 'mgl chain out', 'bo', 'mgl chain in'),
+    ('met', '', 'nr', ''),
+    ('nr', 'random array', 'bo', 'disk_orientations')]
+print(build('mgl_body_orientation', 'mgl_body_orientation - a body with rotation disks',
+            body, demo, links, demo_width=580, text_width=800, text_height=820))
+
+# ------------------------------------------------------ mgl_orientation_disks
+body = """mgl_orientation_disks draws rotations as rings, so an orientation can be
+seen rather than read.
+
+A rotation is three or four numbers and you cannot read it. A ring lying in
+the plane of the rotation, as large as the rotation is, you can: the
+direction it faces is the axis, and its size is how far it has turned.
+
+THE DATA:
+'axis-angle' takes one row per disk. A row of three is a rotation vector -
+its direction is the axis and its length the angle in radians - and the
+disk is drawn facing along that axis with a radius of the angle times
+'scale'. A row of four is an axis followed by a size, and the radius is
+that size times 'scale'. A disk with no rotation is not drawn. Rows beyond
+the node's disk count are ignored.
+
+A single disk can be sent as a flat row, [x y z] or [x y z size]: a flat
+list is read as one row.
+
+WHERE THEY APPEAR:
+All the disks are drawn at the same place - the origin of the chain's
+current coordinates - one over another. To put a set at a joint, use a
+transform before it, or patch it to mgl_body's joint_callback; or use
+mgl_body_orientation, which draws a set at every joint at once.
+
+COLOURS:
+Each disk has its own colour, sent to 'color 0', 'color 1' and so on as
+red green blue alpha from 0 to 1. The colours glow regardless of lighting,
+and the defaults are translucent so overlapping rings show through each
+other.
+
+'ring_width' is the ring's width as a fraction of its radius - 1 fills the
+disk in. 'slices' sets how round it is.
+
+SYNTAX:
+mgl_orientation_disks
+mgl_orientation_disks <count> <scale> <slices>
+
+All optional: 6 disks, scale 0.5, 32 slices.
+
+EXAMPLE:
+mgl_orientation_disks 3 0.25
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. 'draw' draws the disks.
+
+scale:
+Radius per radian (or per unit of size, for four-number rows).
+
+slices / ring_width:
+Roundness, and ring width as a fraction of the radius. 0.1 by default.
+
+axis-angle:
+One row per disk, as above. It is kept until new rows arrive.
+
+color 0, color 1 ...:
+One inlet per disk, red green blue alpha.
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+mgl_body_orientation draws these at every joint of a body.
+gl_orientation_disks is the older equivalent."""
+
+demo, links, last = scene()
+demo += [
+    {'key': 'met', 'init': 'metro 1000', 'pos': (340, 440), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 1000.0, 'units': 'milliseconds'}},
+    {'key': 'nr', 'init': 'np.rand 3 3', 'pos': (340, 530), 'w': 140, 'h': 110,
+     'props': {'min': -1.5, 'max': 1.5}},
+    {'key': 'c1', 'comment': True, 'text': 'three random rotation vectors,\none row per disk',
+     'pos': (340, 530)},
+    {'key': 'od', 'init': 'mgl_orientation_disks 3 0.25', 'pos': (30, 640), 'w': 220, 'h': 260},
+    {'key': 'c2', 'comment': True,
+     'text': 'each disk faces along its axis,\nits radius is the angle times scale',
+     'pos': (30, 920)},
+]
+links += [
+    (last, 'mgl chain out', 'od', 'mgl chain in'),
+    ('met', '', 'nr', ''),
+    ('nr', 'random array', 'od', 'axis-angle')]
+print(build('mgl_orientation_disks', 'mgl_orientation_disks - seeing rotations',
+            body, demo, links, demo_width=560, text_width=800, text_height=760))
+
+# ---------------------------------------------------------- mgl_contact_disks
+body = """mgl_contact_disks draws a flat disk on the floor at each place a body is
+touching the ground, with the disk's area standing for the force there.
+
+Weight moving from one foot to the other becomes something you watch rather
+than read.
+
+THE DATA:
+'contacts' takes one row per contact: x, y, z and a force - what
+smpl_torque's contact_points outlet sends, with the force in newtons. A
+flat list is read four numbers at a time, and an empty array clears the
+disks. A contact with no force (or a negative one) is not drawn.
+
+THE SIZE:
+The force times 'area_scale' is the disk's AREA, so the radius grows as
+the square root of the force - twice the force is twice the area, not
+twice the width. With the default 0.001, 500 newtons (a foot carrying
+most of a person's weight) is a disk of radius about 0.4.
+'min_radius' and 'max_radius' clamp the radius; a max_radius of 0 or less
+means no limit.
+
+THE DISKS:
+Each disk lies flat in the x-z plane - y is up - at the contact's height
+plus 'height_offset', which lifts it just clear of a floor drawn at the
+same height. For z-up data, turn the chain before this node. The disks
+are lit shapes in the current colour, so they need an mgl_light earlier in
+the chain, and they take the usual shape inputs: 'mode' (solid, wireframe
+or points), 'cull', 'point_size', 'round' and 'texture'. 'segments' sets how
+round each disk is.
+
+SYNTAX:
+mgl_contact_disks
+
+It takes no arguments.
+
+EXAMPLE:
+mgl_contact_disks
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. 'draw' draws the disks.
+
+contacts:
+x y z force, one row per contact. Kept until new contacts arrive.
+
+area_scale:
+Disk area per unit of force. 0.001 by default.
+
+min_radius / max_radius:
+Limits on the radius. 0 and 0.5 by default.
+
+height_offset:
+Lift above the contact height. 0.001 by default.
+
+segments:
+Roundness. 24 by default.
+
+mode / cull / point_size / round / texture:
+As for the other mgl shapes.
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+smpl_torque produces the contacts. mgl_body draws the body standing on
+them; mgl_torque_arc draws the joint torques."""
+
+demo, links, last = scene(light=True)
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (340, 640), 'w': 88, 'h': 42},
+    {'key': 'm1', 'init': 'message', 'pos': (340, 700), 'w': 300, 'h': 42,
+     'props': {'text in': '-0.3 0 0 450 0.3 0 0.1 150', 'font size': '24'}},
+    {'key': 'm2', 'init': 'message', 'pos': (340, 760), 'w': 300, 'h': 42,
+     'props': {'text in': '-0.3 0 0 100 0.3 0 0.1 500', 'font size': '24'}},
+    {'key': 'c1', 'comment': True,
+     'text': 'two feet: x y z force, x y z force\nclick each to shift the weight',
+     'pos': (340, 820)},
+    {'key': 'cd', 'init': 'mgl_contact_disks', 'pos': (30, 860), 'w': 260, 'h': 420},
+    {'key': 'c2', 'comment': True,
+     'text': 'disk area follows the force',
+     'pos': (30, 1300)},
+]
+links += [
+    (last, 'mgl chain out', 'cd', 'mgl chain in'),
+    ('lb', 'out', 'm1', ''),
+    ('m1', '', 'cd', 'contacts'),
+    ('m2', '', 'cd', 'contacts')]
+print(build('mgl_contact_disks', 'mgl_contact_disks - where the weight is', body,
+            demo, links, demo_width=660, text_width=800, text_height=800))
+
+# ------------------------------------------------------------- mgl_torque_arc
+body = """mgl_torque_arc draws each of a set of torques as an arc with an arrowhead,
+turning about the torque's own axis at the place it acts.
+
+A torque is a turning effort about an axis - which is exactly what a number
+cannot show and an arc can. Its size is in the arc's size; its axis is the
+axis the arc goes around.
+
+THE DATA:
+Two inputs, both one row of three per joint: 'torques' (each a torque
+vector) and 'positions' (where each is drawn). Nothing is drawn until both
+have arrived; then each keeps its last value, so positions can be sent
+once and torques streamed. Only as many arcs are drawn as there are rows
+in the shorter of the two. Rows must be n by 3 arrays - a flat list is
+ignored. The positions are in the chain's current coordinates.
+
+THE ARC:
+Its radius is the torque's size times 'scale', so 'scale' converts torque
+units into scene units - for net joint torques in newton metres, the
+default 0.01 makes 100 newton metres a radius of 1. It sweeps 'sweep'
+degrees around the axis, 270 by default, and ends in an arrowhead 'arrow
+size' times the radius long. The arc runs AGAINST the turn the torque
+vector describes (by the right-hand rule) - it shows the resisting torque,
+the way the joint is being loaded. Torques smaller than 'threshold' are
+not drawn.
+
+The arcs are plain lines in the current colour - set it with mgl_color -
+with no lighting.
+
+SYNTAX:
+mgl_torque_arc
+
+It takes no arguments.
+
+EXAMPLE:
+mgl_torque_arc
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. 'draw' draws the arcs.
+
+torques:
+One torque vector per row. Receiving it does not draw; the next render does.
+
+positions:
+One position per row.
+
+scale:
+Radius per unit of torque. 0.01 by default.
+
+threshold:
+Smallest torque drawn. 0.1 by default.
+
+sweep:
+How far round each arc goes, in degrees.
+
+segments:
+How smooth each arc is.
+
+arrow size:
+Arrowhead length as a fraction of the radius. 0.3 by default.
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+smpl_torque computes joint torques; mgl_body draws the body they act on.
+mgl_contact_disks shows the forces at the floor."""
+
+demo, links, last = scene()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (340, 440), 'w': 88, 'h': 42},
+    {'key': 'np1', 'init': 'np.rand 3 3', 'pos': (340, 500), 'w': 140, 'h': 110,
+     'props': {'min': -0.8, 'max': 0.8}},
+    {'key': 'c1', 'comment': True, 'text': 'three positions, once',
+     'pos': (340, 500)},
+    {'key': 'met', 'init': 'metro 1000', 'pos': (340, 640), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 1000.0, 'units': 'milliseconds'}},
+    {'key': 'np2', 'init': 'np.rand 3 3', 'pos': (340, 730), 'w': 140, 'h': 110,
+     'props': {'min': -1.0, 'max': 1.0}},
+    {'key': 'c2', 'comment': True, 'text': 'three torques, each second',
+     'pos': (340, 730)},
+    {'key': 'ta', 'init': 'mgl_torque_arc', 'pos': (30, 640), 'w': 240, 'h': 280,
+     'props': {'scale': 0.3}},
+    {'key': 'c3', 'comment': True,
+     'text': 'scale 0.3: radius is the torque size\ntimes 0.3',
+     'pos': (30, 940)},
+]
+links += [
+    (last, 'mgl chain out', 'ta', 'mgl chain in'),
+    ('lb', 'out', 'np1', ''),
+    ('np1', 'random array', 'ta', 'positions'),
+    ('met', '', 'np2', ''),
+    ('np2', 'random array', 'ta', 'torques')]
+print(build('mgl_torque_arc', 'mgl_torque_arc - a torque drawn as a turn', body,
+            demo, links, demo_width=560, text_width=800, text_height=800))

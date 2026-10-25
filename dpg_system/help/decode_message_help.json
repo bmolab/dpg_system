@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The decode_message node functions as a lookup table or an index selector.\n\nIt accepts an integer input and outputs the specific value defined at that index.\nThe selected value is sent out of two places simultaneously: \nthe individual output pin corresponding to that index, and a shared combined output pin.\n\nSYNTAX:\n\ndecode_message <val_0> <val_1> ...\n\nEXAMPLE:\n\ndecode_message red green blue\n\nIf the input receives 0, the node outputs \"red\" on the first pin and the combined pin.\nIf the input receives 1, the node outputs \"green\" on the second pin and the combined pin.\n\nINPUTS AND PARAMETERS:\n\ndecode: \nThe integer index to select. \nIf the number is 0, it selects the first argument. If 1, the second, and so on.\nIf the input number is out of range, nothing happens.\n\nOPTIONS:\n\ntrigger n:\nAllows you to change the value stored at a specific index.\n\nOUTPUTS: \n\nout (variable):\nA series of outputs corresponding to the creation arguments. \nOnly the output matching the input index fires.\n\ncombined:\nThe last output pin. \nIt always sends the selected value, regardless of which index was chosen.",
+                    "value": "The decode_message node functions as a lookup table or an index selector.\n\nIt accepts an integer input and outputs the specific value defined at that index. The selected value is sent out of two places simultaneously:  the individual output pin corresponding to that index, and a shared combined output pin.\n\nSYNTAX:\n\ndecode_message <val_0> <val_1> ...\n\nEXAMPLE:\n\ndecode_message red green blue\n\nIf the input receives 0, the node outputs \"red\" on the first pin and the combined pin. If the input receives 1, the node outputs \"green\" on the second pin and the combined pin.\n\nINPUTS AND PARAMETERS:\n\ndecode: \nThe integer index to select. \nIf the number is 0, it selects the first argument. If 1, the second, and so on. If the input number is out of range, nothing happens.\n\nOPTIONS:\n\ntrigger n:\nAllows you to change the value stored at a specific index.\n\nOUTPUTS: \n\nout (variable):\nA series of outputs corresponding to the creation arguments.  Only the output matching the input index fires.\n\ncombined:\nThe last output pin. \nIt always sends the selected value, regardless of which index was chosen.",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The decode_message node functions as a lookup table or an index selector.\n\nIt accepts an integer input and outputs the specific value defined at that index.\nThe selected value is sent out of two places simultaneously: \nthe individual output pin corresponding to that index, and a shared combined output pin.\n\nSYNTAX:\n\ndecode_message <val_0> <val_1> ...\n\nEXAMPLE:\n\ndecode_message red green blue\n\nIf the input receives 0, the node outputs \"red\" on the first pin and the combined pin.\nIf the input receives 1, the node outputs \"green\" on the second pin and the combined pin.\n\nINPUTS AND PARAMETERS:\n\ndecode: \nThe integer index to select. \nIf the number is 0, it selects the first argument. If 1, the second, and so on.\nIf the input number is out of range, nothing happens.\n\nOPTIONS:\n\ntrigger n:\nAllows you to change the value stored at a specific index.\n\nOUTPUTS: \n\nout (variable):\nA series of outputs corresponding to the creation arguments. \nOnly the output matching the input index fires.\n\ncombined:\nThe last output pin. \nIt always sends the selected value, regardless of which index was chosen."
+            "text": "The decode_message node functions as a lookup table or an index selector.\n\nIt accepts an integer input and outputs the specific value defined at that index. The selected value is sent out of two places simultaneously:  the individual output pin corresponding to that index, and a shared combined output pin.\n\nSYNTAX:\n\ndecode_message <val_0> <val_1> ...\n\nEXAMPLE:\n\ndecode_message red green blue\n\nIf the input receives 0, the node outputs \"red\" on the first pin and the combined pin. If the input receives 1, the node outputs \"green\" on the second pin and the combined pin.\n\nINPUTS AND PARAMETERS:\n\ndecode: \nThe integer index to select. \nIf the number is 0, it selects the first argument. If 1, the second, and so on. If the input number is out of range, nothing happens.\n\nOPTIONS:\n\ntrigger n:\nAllows you to change the value stored at a specific index.\n\nOUTPUTS: \n\nout (variable):\nA series of outputs corresponding to the creation arguments.  Only the output matching the input index fires.\n\ncombined:\nThe last output pin. \nIt always sends the selected value, regardless of which index was chosen."
         },
         "4": {
             "init": "decode_message harry sally mary dave",
@@ -147,7 +147,8 @@
                     "value": "dave",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "message",

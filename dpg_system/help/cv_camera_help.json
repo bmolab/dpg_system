@@ -5,7 +5,7 @@
         100,
         100
     ],
-    "id": 940,
+    "id": 792,
     "name": "cv_camera_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/cv_camera_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment cv_camera and cv_image - pictures in",
+            "init": "comment cv_camera - a live camera",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 451,
+            "width": 316,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "cv_camera and cv_image - pictures in",
+                    "value": "cv_camera - a live camera",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,7 +51,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "cv_camera and cv_image - pictures in"
+            "comment": "cv_camera - a live camera"
         },
         "2": {
             "name": "text_block",
@@ -59,14 +59,14 @@
             "position_x": 872,
             "position_y": 45,
             "width": 808,
-            "height": 736,
+            "height": 816,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These are where pictures come into a patch.\n\nTHE NODES:\n\ncv_camera    a live camera. 'cv_capture' is the same node\ncv_capture   the other spelling\ncv_image     a still image from a file\n\ncv_camera IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per rendered frame, as RGB arrays.\nUntick it and the camera is released - which matters, because a camera held open\nby one patch is not available to anything else.\n\n'source' lists the cameras it found. On a laptop that is usually just the built\nin one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, up to ten. There\nis no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the\nmachine - so an indicator light may flicker on a camera you are not using, and\nanother application holding one may see it disturbed. The node refreshes once\nwhen it is created, and after that only when you press the button, so this is\nnot happening continuously.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - which is a long-standing quirk of the\nlibrary and a reliable source of pictures that look wrong in an unmistakable\nway, with skin tones gone blue. These nodes convert to RGB before sending, so\nwhat leaves them is the ordinary order and everything downstream is right.\n\nWorth knowing anyway, because if you ever hand an array to an OpenCV function\nyourself, it will expect BGR and you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) - rows first. Most of the image nodes here\nexpect channels FIRST, and guess when they are handed the other order; the guess\nis right for anything camera-sized. See the k. and tv. pages for when it is not.\n\ncv_image IS A FILE, LOADED ON DEMAND:\nPut a path in 'path in' and send anything to 'show image' to load and send it.\nIt is not watching the file - it reads when triggered, so the same node can walk\nthrough a directory if something else is supplying the paths.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might\ndo with it does not need every frame or the full resolution. Anything expensive\ndownstream - a vision model, a large filter - is better fed from a subsample,\nand the vision_describe nodes will drop frames by themselves rather than fall\nbehind.\n\nSYNTAX:\ncv_camera\ncv_capture\ncv_image <path>\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether the camera is running. Off releases it.\n\nsource:\nWhich camera, by index.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nshow image (cv_image):\nAnything at all - it triggers the load.\n\npath in (cv_image):\nWhere the file is.\n\nOUTPUTS: \n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\nvision_describe to get words out of what the camera sees.\nk. and tv. nodes for filtering and adjusting the image.\nmgl_texture and the gl nodes to put it on screen.",
+                    "value": "cv_camera brings a live camera into the patch, as a stream of pictures.\n\nTHE NAMES:\ncv_camera and cv_capture are the same node.\n\nIT IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per frame of the patch as far as the camera keeps up, as RGB arrays. Untick it and the frames stop.\n\nUnticking also lets go of the camera: its light goes off and other applications can use it. Ticking again reopens it, which takes a moment. Choosing a different 'source' while on switches cameras at once; while off it just sets which camera the next tick opens.\n\n'source' lists the cameras it found. On a laptop that is usually just the built in one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, from 0 to 9. There is no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the machine - so an indicator light may flicker on a camera you are not using, and another application holding one may see it disturbed. The node refreshes once when it is created, and after that only when you press the button.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - a long-standing quirk of the library and a reliable source of pictures with skin tones gone blue. cv_camera converts to RGB before sending, so everything downstream gets the ordinary order.\n\nIf you ever hand an array to an OpenCV function yourself, it will expect BGR and you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) bytes - rows first. Most of the image nodes here expect channels FIRST, and guess when they are handed the other order; the guess is right for anything camera-sized. See the k. and tv. pages for when it is not.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might do with it does not need every frame or the full resolution. Anything expensive downstream - a vision model, a large filter - is better fed from a subsample, and the vision_describe nodes will drop frames by themselves rather than fall behind.\n\nSYNTAX:\ncv_camera\ncv_capture\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether frames are sent. On opens the camera, off releases it.\n\nsource:\nWhich camera, by index. Choosing one while on switches to it.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nOUTPUTS:\n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\ncv_image for a still picture from a file; it used to share this page. movie_player for recorded video.\nvision_describe to get words out of what the camera sees. k. and tv. nodes for filtering and adjusting the image. mgl_texture and the gl nodes to put it on screen.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 720,
+                    "value": 800,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These are where pictures come into a patch.\n\nTHE NODES:\n\ncv_camera    a live camera. 'cv_capture' is the same node\ncv_capture   the other spelling\ncv_image     a still image from a file\n\ncv_camera IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per rendered frame, as RGB arrays.\nUntick it and the camera is released - which matters, because a camera held open\nby one patch is not available to anything else.\n\n'source' lists the cameras it found. On a laptop that is usually just the built\nin one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, up to ten. There\nis no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the\nmachine - so an indicator light may flicker on a camera you are not using, and\nanother application holding one may see it disturbed. The node refreshes once\nwhen it is created, and after that only when you press the button, so this is\nnot happening continuously.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - which is a long-standing quirk of the\nlibrary and a reliable source of pictures that look wrong in an unmistakable\nway, with skin tones gone blue. These nodes convert to RGB before sending, so\nwhat leaves them is the ordinary order and everything downstream is right.\n\nWorth knowing anyway, because if you ever hand an array to an OpenCV function\nyourself, it will expect BGR and you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) - rows first. Most of the image nodes here\nexpect channels FIRST, and guess when they are handed the other order; the guess\nis right for anything camera-sized. See the k. and tv. pages for when it is not.\n\ncv_image IS A FILE, LOADED ON DEMAND:\nPut a path in 'path in' and send anything to 'show image' to load and send it.\nIt is not watching the file - it reads when triggered, so the same node can walk\nthrough a directory if something else is supplying the paths.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might\ndo with it does not need every frame or the full resolution. Anything expensive\ndownstream - a vision model, a large filter - is better fed from a subsample,\nand the vision_describe nodes will drop frames by themselves rather than fall\nbehind.\n\nSYNTAX:\ncv_camera\ncv_capture\ncv_image <path>\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether the camera is running. Off releases it.\n\nsource:\nWhich camera, by index.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nshow image (cv_image):\nAnything at all - it triggers the load.\n\npath in (cv_image):\nWhere the file is.\n\nOUTPUTS: \n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\nvision_describe to get words out of what the camera sees.\nk. and tv. nodes for filtering and adjusting the image.\nmgl_texture and the gl nodes to put it on screen."
+            "text": "cv_camera brings a live camera into the patch, as a stream of pictures.\n\nTHE NAMES:\ncv_camera and cv_capture are the same node.\n\nIT IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per frame of the patch as far as the camera keeps up, as RGB arrays. Untick it and the frames stop.\n\nUnticking also lets go of the camera: its light goes off and other applications can use it. Ticking again reopens it, which takes a moment. Choosing a different 'source' while on switches cameras at once; while off it just sets which camera the next tick opens.\n\n'source' lists the cameras it found. On a laptop that is usually just the built in one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, from 0 to 9. There is no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the machine - so an indicator light may flicker on a camera you are not using, and another application holding one may see it disturbed. The node refreshes once when it is created, and after that only when you press the button.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - a long-standing quirk of the library and a reliable source of pictures with skin tones gone blue. cv_camera converts to RGB before sending, so everything downstream gets the ordinary order.\n\nIf you ever hand an array to an OpenCV function yourself, it will expect BGR and you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) bytes - rows first. Most of the image nodes here expect channels FIRST, and guess when they are handed the other order; the guess is right for anything camera-sized. See the k. and tv. pages for when it is not.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might do with it does not need every frame or the full resolution. Anything expensive downstream - a vision model, a large filter - is better fed from a subsample, and the vision_describe nodes will drop frames by themselves rather than fall behind.\n\nSYNTAX:\ncv_camera\ncv_capture\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether frames are sent. On opens the camera, off releases it.\n\nsource:\nWhich camera, by index. Choosing one while on switches to it.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nOUTPUTS:\n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\ncv_image for a still picture from a file; it used to share this page. movie_player for recorded video.\nvision_describe to get words out of what the camera sees. k. and tv. nodes for filtering and adjusting the image. mgl_texture and the gl nodes to put it on screen."
         },
         "3": {
             "name": "toggle",
@@ -114,7 +114,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "5": {
             "name": "text_block",
@@ -130,7 +131,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "tick to start. Untick to release the\ncamera for something else to use\n'refresh' opens every camera index in\nturn to find them - it is not instant",
+                    "value": "tick to start, untick to stop and\nrelease the camera\n'refresh' opens every camera index in\nturn to find them - it is not instant",
                     "value_type": "str"
                 },
                 "1": {
@@ -154,7 +155,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "tick to start. Untick to release the\ncamera for something else to use\n'refresh' opens every camera index in\nturn to find them - it is not instant"
+            "text": "tick to start, untick to stop and\nrelease the camera\n'refresh' opens every camera index in\nturn to find them - it is not instant"
         },
         "6": {
             "name": "info",
@@ -370,84 +371,8 @@
             "comment": "the camera, as one brightness channel"
         },
         "14": {
-            "name": "cv_image",
-            "id": 755,
-            "position_x": 320,
-            "position_y": 440,
-            "width": 136,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "15": {
-            "name": "button",
-            "id": 792,
-            "position_x": 320,
-            "position_y": 380,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "16": {
-            "name": "info",
-            "id": 829,
-            "position_x": 320,
-            "position_y": 580,
-            "width": 235,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "17": {
-            "name": "text_block",
-            "id": 866,
-            "annotation": true,
-            "position_x": 581,
-            "position_y": 675,
-            "width": 255,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "a still, loaded when triggered - so\nit can walk a directory if something\nelse supplies the paths",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 247,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "a still, loaded when triggered - so\nit can walk a directory if something\nelse supplies the paths"
-        },
-        "18": {
             "name": "close",
-            "id": 903,
+            "id": 755,
             "position_x": 24,
             "position_y": 975,
             "width": 88,
@@ -524,26 +449,6 @@
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
-        },
-        "6": {
-            "source_node": 792,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 755,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "show image"
-        },
-        "7": {
-            "source_node": 755,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 829,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
         }
     }
 }

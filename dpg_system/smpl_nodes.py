@@ -11,7 +11,8 @@ from dpg_system.node import Node, SaveDialog, LoadDialog
 from dpg_system.interface_nodes import Vector2DNode
 import pickle
 from dpg_system.conversion_utils import *
-from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions
+from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions, RemoteSMPLProcessor
+from dpg_system.remote_worker import WorkerDied
 import pickle
 import chumpy as ch
 from chumpy.ch import MatVecMult
@@ -84,10 +85,11 @@ class SMPLNode(Node):
     def load_smpl_take_file(self, in_path):
         try:
             data = np.load(in_path)
-            print(list(data.keys()))
-            print(data['trans'].shape)
-            return data['poses'], data['trans']
+            # a take without 'trans' still plays: root positions are None
+            trans = data['trans'] if 'trans' in data else None
+            return data['poses'], trans
         except Exception as e:
+            print('could not load SMPL take', in_path, '-', repr(e))
             return None, None
 
     def extract_joint_data(self, pose_data):
@@ -96,19 +98,22 @@ class SMPLNode(Node):
         return joint_data
 
     def load_SMPL_R_model_file(self, in_path):
+        # Returns (model, type) or (None, None). An .npz model holds the same
+        # arrays as the .pkl, so both go through load_model and come back as
+        # the same chumpy model.
         suffix = in_path.split('.')[-1]
         try:
             if suffix == 'npz':
-                data = np.load(in_path)
-                return data, 'npz'
+                data = load_model(dict(np.load(in_path, allow_pickle=True)))
+                return data, 'pkl'
             elif suffix == 'pkl':
                 data = load_model(in_path)
                 # data = pickle.load(open(in_path, 'rb'), encoding='latin1')
                 return data, 'pkl'
+            print('smpl_body: not an SMPL model file (.pkl or .npz):', in_path)
         except Exception as e:
-            print('load_SMPL_R_model_file failed', e)
-            return None
-        return None
+            print('smpl_body: could not load SMPL model', in_path, '-', repr(e))
+        return None, None
 
 
 class SMPLPoseNode(Vector2DNode):
@@ -133,28 +138,22 @@ class SMPLPoseNode(Vector2DNode):
             self.output_vector[i - 1, 0] = 1.0
 
     def zero(self):
-        not_zeroed = True
-        if self.vector_format_input() == 'numpy':
-            if self.current_dims[0] == self.output_vector.shape[0]:
-                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
-                    self.output_vector = np.zeros(self.current_dims[0])
-                    self.output_vector[:, 0] = 1.0
-                    not_zeroed = False
-            if not_zeroed:
-                self.output_vector = np.zeros(self.current_dims)
-                self.output_vector[:, 0] = 1.0
-
-        elif self.vector_format_input() == 'torch':
-            if self.current_dims[0] == self.output_vector.shape[0]:
-                if self.current_dims[1] == 1 and len(self.output_vector.shape) == 1:
-                    self.output_vector = torch.zeros(self.current_dims[0])
-                    self.output_vector[:, 0] = 1.0
-                    not_zeroed = False
-            if not_zeroed:
-                self.output_vector = torch.zeros(self.current_dims)
-                self.output_vector[:, 0] = 1.0
+        # reset every joint to the identity quaternion: column 0 (w) = 1, rest 0.
+        # A single-column shape is 1-D, so the whole vector is that w column.
+        dims = self.current_dims
+        shape = (dims[0],) if dims[1] == 1 else tuple(dims)
+        identity = np.zeros(shape)
+        if len(shape) == 1:
+            identity[:] = 1.0
         else:
-            self.output_vector = [[1.0, 0.0, 0.0, 0.0] * self.current_dims[0]]
+            identity[:, 0] = 1.0
+        vf = self.vector_format_input()
+        if vf == 'torch':
+            self.output_vector = torch.from_numpy(identity).float()
+        elif vf == 'list':
+            self.output_vector = identity.tolist()
+        else:
+            self.output_vector = identity
         self.execute()
 
 
@@ -495,6 +494,9 @@ class ActiveToSMPLPoseNode(JointTranslator, Node):
         self.input = self.add_input('smpl pose', triggers_execution=True)
         self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='rotation_vectors')
         self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors', 'generic']
+        # Active poses are Y-up; 'Z' rotates the root +90 about X for SMPL's native Z-up frame
+        self.up_axis = self.add_property('up axis', widget_type='combo', default_value='Y')
+        self.up_axis.widget.combo_items = ['Y', 'Z']
         self.output = self.add_output('active pose')
 
     def execute(self):
@@ -523,6 +525,15 @@ class ActiveToSMPLPoseNode(JointTranslator, Node):
                     smpl_pose = rot.as_rotvec()
             else:
                 smpl_pose = JointTranslator.translate_from_bmolab_active_to_smpl(active_pose)
+
+            if self.up_axis() == 'Z' and smpl_pose.shape[1] in (3, 4):
+                R_yup_to_zup = scipy.spatial.transform.Rotation.from_euler('X', 90, degrees=True)
+                if smpl_pose.shape[1] == 4:
+                    root_rot = scipy.spatial.transform.Rotation.from_quat(smpl_pose[0], scalar_first=True)
+                    smpl_pose[0] = (R_yup_to_zup * root_rot).as_quat(scalar_first=True)
+                else:
+                    root_rot = scipy.spatial.transform.Rotation.from_rotvec(smpl_pose[0])
+                    smpl_pose[0] = (R_yup_to_zup * root_rot).as_rotvec()
         self.output.send(smpl_pose)
 
 
@@ -928,7 +939,8 @@ class SMPLBodyNode(SMPLNode):
         'left_elbow_left_wrist': 'left_forearm',
         'right_elbow_right_wrist': 'right_forearm',
         'left_wrist_left_index1': 'left_hand',
-        'right_wrist_left_index2': 'right_hand'
+        'right_wrist_left_index2': 'right_hand',   # SMPL: joint 23 is the right hand
+        'right_wrist_right_index1': 'right_hand'   # SMPL-H: wrist to first knuckle
     }
     @staticmethod
     def factory(name, data, args=None):
@@ -958,29 +970,52 @@ class SMPLBodyNode(SMPLNode):
                 self.file_name.set(in_path.split('/')[-1])
                 self.load_path.set(in_path)
                 self.process_smpl_model()
-                self.execute()
+                # on patch load the cords are not connected yet:
+                # post_load_callback sends instead
+                if not self.in_loading_process:
+                    self.execute()
+        elif in_path != '':
+            print('smpl_body: no such file', in_path)
+
+    def post_load_callback(self):
+        if self.smpl_model is not None:
+            self.execute()
 
     def process_smpl_model(self):
-        if self.model_type == 'npz':
-            self.betas.set(self.smpl_model['betas'])
-            self.kinematic_tree = self.smpl_model['kintree_table']
-            self.joint_positions = self.smpl_model['J']
-        else:
-            # print(list(self.smpl_model.keys()))
-            self.betas.set(self.smpl_model.betas)
-            self.kinematic_tree = self.smpl_model.kintree_table
-            self.joint_positions = self.smpl_model.J
+        self.betas.set(self.chumpy_to_numpy(self.smpl_model.betas))
+        self.kinematic_tree = self.smpl_model.kintree_table
+        self.joint_positions = self.chumpy_to_numpy(self.smpl_model.J)
+        self.limbs = {}
         self.update_betas()
 
+    def shaped_joints(self, betas):
+        # Rest joint positions for these betas: J = J_regressor (v_template +
+        # shapedirs . betas). Assigning smpl_model.betas only rebinds an
+        # attribute -- the model's own J does not follow it -- so recompute.
+        model = self.smpl_model
+        shapedirs = getattr(model, 'shapedirs', None)
+        if shapedirs is None:
+            return self.joint_positions
+        shapedirs = self.chumpy_to_numpy(shapedirs)
+        b = np.zeros(shapedirs.shape[-1])
+        betas = np.asarray(any_to_array(betas), dtype=float).ravel()
+        n = min(len(b), len(betas))
+        b[:n] = betas[:n]
+        v_shaped = self.chumpy_to_numpy(model.v_template) + shapedirs.dot(b)
+        return np.asarray(model.J_regressor.dot(v_shaped))
+
     def update_betas(self):
+        # SMPL-H adds finger joints; bones with no entry in limb_dict (the
+        # finger segments) are skipped -- gl_body has no bones for them.
         for index, start in enumerate(self.kinematic_tree[0]):
-            if 0 <= start <= 23:
-                end = self.kinematic_tree[1, index]
-                start_joint = self.joint_names[start]
-                end_joint = self.joint_names[end]
-                limb_name = self.limb_dict[start_joint + '_' + end_joint]
-                limb_diff = self.chumpy_to_numpy(self.joint_positions[end] - self.joint_positions[start])
-                self.limbs[limb_name] = limb_diff
+            end = self.kinematic_tree[1, index]
+            if not (0 <= start < len(self.joint_names) and 0 <= end < len(self.joint_names)):
+                continue
+            limb_name = self.limb_dict.get(self.joint_names[start] + '_' + self.joint_names[end])
+            if limb_name is None:
+                continue
+            limb_diff = self.joint_positions[end] - self.joint_positions[start]
+            self.limbs[limb_name] = limb_diff
 
     def chumpy_to_numpy(self, chumpy_array):
         numpy_array = np.array(chumpy_array.ravel()).reshape(chumpy_array.shape)
@@ -994,12 +1029,13 @@ class SMPLBodyNode(SMPLNode):
         # the same way.
         if self.smpl_model is None:
             return
-        if self.model_type == 'npz':
-            self.smpl_model['betas'] = self.betas()
-        else:
-            self.smpl_model.betas = self.betas()
+        betas = self.betas()
+        if betas is None:
+            return
+        self.joint_positions = self.shaped_joints(betas)
         self.update_betas()
-        self.execute()
+        if not self.in_loading_process:
+            self.execute()
 
     def smpl_path_changed(self):
         in_path = self.load_path()
@@ -1066,10 +1102,18 @@ class SMPLTakeNode(SMPLNode):
         self.current_frame += self.speed()
         if self.current_frame >= self.frames:
             self.current_frame = 0
+        elif self.current_frame < 0:
+            # playing backwards: wrap from the first frame to the last
+            self.current_frame = max(self.frames - 1, 0)
         self.input.set(self.current_frame)
         frame = int(self.current_frame)
         if self.joint_data is not None and frame < self.frames:
-            self.joint_data_out.send(self.joint_data[frame])
+            self.send_frame(frame)
+
+    def send_frame(self, frame):
+        self.joint_data_out.send(self.joint_data[frame])
+        # a poses-only take has no root positions and sends none
+        if self.root_positions is not None and frame < len(self.root_positions):
             self.root_position_out.send(self.root_positions[frame])
 
     def load_smpl_callback(self):
@@ -1079,7 +1123,6 @@ class SMPLTakeNode(SMPLNode):
     def load_smpl(self, in_path):
         if os.path.isfile(in_path):
             self.smpl_data, self.root_positions = self.load_smpl_take_file(in_path)
-            print(self.root_positions[0])
             if self.smpl_data is not None:
                 self.file_name.set(in_path.split('/')[-1])
                 self.load_path.set(in_path)
@@ -1091,11 +1134,10 @@ class SMPLTakeNode(SMPLNode):
 
     def frame_widget_changed(self):
         data = self.input()
-        if self.joint_data is not None and int(data) < self.frames:
+        if self.joint_data is not None and 0 <= int(data) < self.frames:
             self.current_frame = int(data)
             frame = int(self.current_frame)
-            self.joint_data_out.send(self.joint_data[frame])
-            self.root_position_out.send(self.root_positions[frame])
+            self.send_frame(frame)
 
     def execute(self):
         if self.input.fresh_input:
@@ -1104,11 +1146,10 @@ class SMPLTakeNode(SMPLNode):
             # if not handled:
             t = type(data)
             if t == int:
-                if self.joint_data is not None and int(data) < self.frames:
+                if self.joint_data is not None and 0 <= int(data) < self.frames:
                     self.current_frame = int(data)
                     frame = int(self.current_frame)
-                    self.joint_data_out.send(self.joint_data[frame])
-                    self.root_position_out.send(self.root_positions[frame])
+                    self.send_frame(frame)
 
     def load_take(self, args=None):
         LoadDialog(self, callback=self.load_npz_callback, extensions=['.npz'])
@@ -1277,6 +1318,10 @@ class FloorZeroNode(SMPLNode):
     def do_calibrate(self):
         # Defer the FK to execute(), so it runs with the freshest trans + pose.
         self._calibrate_pending = True
+        if getattr(self, 'in_loading_process', False):
+            return
+        if self.pose_input() is None:
+            print('floor_zero: no pose yet - will calibrate once a pose and trans arrive')
 
     def _up_index(self):
         return 1 if self.up_axis_prop() == 'Y' else 2
@@ -1363,10 +1408,13 @@ class FloorZeroNode(SMPLNode):
         trans = any_to_array(trans).astype(np.float64).flatten()[:3]
         up = self._up_index()
 
-        if self._calibrate_pending:
+        if self._calibrate_pending and self.pose_input() is not None:
+            # stays pending until a pose has arrived
             self._calibrate_pending = False
             pose_rots = self._pose_to_rotations(self.pose_input())
-            if pose_rots is not None:
+            if pose_rots is None:
+                print('floor_zero: calibration failed: pose is not 22x3 or 22x4')
+            else:
                 try:
                     foot_rel = self._lowest_foot_rel_root(pose_rots, up)
                     # World up-coord of the sole at calibration.
@@ -1417,6 +1465,16 @@ def ready_arguments(fname_or_dict):
         dd = fname_or_dict
 
     backwards_compatibility_replacements(dd)
+
+    # SMPL-H files (and .npz models) store these strings as bytes in 0-d arrays
+    for s in ['bs_type', 'bs_style']:
+        if s in dd:
+            v = dd[s]
+            if isinstance(v, np.ndarray) and v.ndim == 0:
+                v = v.item()
+            if isinstance(v, bytes):
+                v = v.decode('latin1')
+            dd[s] = v
 
     want_shapemodel = 'shapedirs' in dd
     nposeparms = dd['kintree_table'].shape[1] * 3
@@ -2175,11 +2233,17 @@ class SMPLTorqueNode(SMPLNode):
         
         # --- Spine Geometry ---
         self.use_s_curve_spine_prop = self.add_option('use_s_curve_spine', widget_type='checkbox', default_value=True)
+
+        # The processor in a process of its own (remote_worker), so it neither
+        # waits for nor delays the render loop.  Toggling rebuilds it.
+        self.worker_prop = self.add_option('worker_process', widget_type='checkbox', default_value=True,
+                                           callback=self._on_worker_changed)
         
         # Calibrated default for Subject_81: [0.0, -0.14, 0.05]
 
 
         self.processor = None
+        self._rebuild_processor = False
         # Default config
         self.framerate = 60.0
         self.gender = 'neutral'
@@ -2189,6 +2253,42 @@ class SMPLTorqueNode(SMPLNode):
     def _to_array(self, d):
         d = any_to_array(d)
         return d
+
+    def _make_processor(self):
+        """A new SMPLProcessor -- in a worker process if worker_process is on
+        and one can be started -- replacing (and closing) any current one."""
+        old, self.processor = self.processor, None
+        kwargs = dict(framerate=self.framerate, betas=self.betas, gender=self.gender,
+                      total_mass_kg=self.total_mass,
+                      model_path=os.path.dirname(os.path.abspath(__file__)))  # Use absolute path to dpg_system
+        if isinstance(old, RemoteSMPLProcessor):
+            if self.worker_prop() and old.alive:
+                try:
+                    old.recreate(**kwargs)
+                    return old
+                except Exception as e:
+                    print(f'SMPLTorqueNode: worker rebuild failed ({e}); starting a new one')
+            old.close()
+        if self.worker_prop():
+            remote = None
+            try:
+                remote = RemoteSMPLProcessor(**kwargs)
+                remote.wait_ready()
+                return remote
+            except Exception as e:
+                print(f'SMPLTorqueNode: worker process failed ({e}); running in-process')
+                if remote is not None:
+                    remote.close()
+        return SMPLProcessor(**kwargs)
+
+    def _on_worker_changed(self):
+        # Rebuilt on the next frame, on the thread that runs the node.
+        if self.processor is not None:
+            self._rebuild_processor = True
+
+    def custom_cleanup(self):
+        if isinstance(self.processor, RemoteSMPLProcessor):
+            self.processor.close()
 
     def _on_axis_perm_changed(self):
         if self.processor:
@@ -2252,13 +2352,7 @@ class SMPLTorqueNode(SMPLNode):
                 
                 # Re-init processor if needed
                 if changed or self.processor is None:
-                    self.processor = SMPLProcessor(
-                        framerate=self.framerate,
-                        betas=self.betas,
-                        gender=self.gender,
-                        total_mass_kg=self.total_mass,
-                        model_path=os.path.dirname(os.path.abspath(__file__)) # Use absolute path to dpg_system
-                    )
+                    self.processor = self._make_processor()
                     self._on_axis_perm_changed()
                     self._restore_max_torque_overrides()
                     
@@ -2269,14 +2363,9 @@ class SMPLTorqueNode(SMPLNode):
                          self.output_limb_lengths.send(lengths)
         
         # Ensure processor exists
-        if self.processor is None:
-             self.processor = SMPLProcessor(
-                framerate=self.framerate,
-                betas=self.betas,
-                gender=self.gender,
-                total_mass_kg=self.total_mass,
-                model_path=os.path.dirname(os.path.abspath(__file__))
-            )
+        if self.processor is None or self._rebuild_processor:
+             self._rebuild_processor = False
+             self.processor = self._make_processor()
              self._on_axis_perm_changed()
              self._restore_max_torque_overrides()
              
@@ -2593,6 +2682,10 @@ class SMPLTorqueNode(SMPLNode):
                             active.append([xyz[0], xyz[1], xyz[2], f_j])
                     self.contact_points_output.send(np.array(active) if active else np.zeros((0, 4)))
             
+            except WorkerDied as e:
+                # A new processor on the next frame (its filters start afresh).
+                print(f"SMPLTorqueNode: {e}; restarting it")
+                self._rebuild_processor = True
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)
                 print(f"SMPLTorqueNode Error: {e}")

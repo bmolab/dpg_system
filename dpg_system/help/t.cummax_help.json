@@ -1,0 +1,752 @@
+{
+    "name": "t.cummax_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cummax_help.json",
+    "patches": {
+        "0": {
+            "height": 570,
+            "width": 670,
+            "position": [
+                160,
+                160
+            ],
+            "id": 940,
+            "name": "make_walk",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 977,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 500",
+                    "id": 1014,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 500.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment a new walk twice a second",
+                    "id": 1051,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a new walk twice a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a new walk twice a second"
+                },
+                "3": {
+                    "name": "t.rand",
+                    "init": "t.rand 200",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 190,
+                    "height": 160,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "[200]",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 1.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 200 random steps between -1 and 1",
+                    "id": 1125,
+                    "position_x": 250,
+                    "position_y": 145,
+                    "width": 340,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "200 random steps between -1 and 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "200 random steps between -1 and 1"
+                },
+                "5": {
+                    "name": "t.cumsum",
+                    "init": "t.cumsum",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment added up one after another: a random walk",
+                    "id": 1199,
+                    "position_x": 180,
+                    "position_y": 325,
+                    "width": 400,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "added up one after another: a random walk",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "added up one after another: a random walk"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out walk",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 410,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1088,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random tensor",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "walk"
+                }
+            }
+        },
+        "1": {
+            "height": 1025,
+            "width": 1612,
+            "position": [
+                100,
+                100
+            ],
+            "id": 903,
+            "name": "t.cummax_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cummax_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.cummax - the running maximum",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 377,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.cummax - the running maximum",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.cummax - the running maximum"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 804,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 886,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Replaces each value of a tensor with the largest value seen so far:\na running maximum, the high-water mark.\n\nRunning it along time gives, at every instant, the largest value that has occurred up to then - a peak hold that never lets go. It answers 'has this ever exceeded X, and when did it first do so?', and its second outlet says WHERE each record was set.\n\nSYNTAX:\nt.cummax <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column.\nGive an axis as the argument - t.cummax 1, or -1 for the last - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.cummax\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is scanned and sent - the only inlet that makes the node send. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running maximum, the same shape as the input. It can only rise or stay level, never fall.\n\nindices:\nFor each position, WHERE the largest value so far was found (an int64 position along the axis), the same shape as the input. It stays put while the record stands and jumps forward each time a new one is set. With equal values it points at the later one. The indices are sent just before the output.\n\nREADING THE DEMO:\nmake_walk sends a random walk of 200 steps twice a second (open it to see how). t.stack puts t.cummax's output and the walk itself into one 2-row tensor, and the upper plot draws both: the walk wanders, and the t.cummax line climbs in a staircase - level while the walk is below its best, stepping up each time the walk sets a new high. At the start the two lines are one.\n\nThe lower plot is the indices outlet: the position, 0 to 199, of the current record. Each flat stretch is a record that stood; each jump is a new high being set.\n\nRELATED:\nt.cummin is the running minimum. t.max gives only the final largest value (and, along an axis, where it is). t.cumsum is the running total. t.logcumsumexp is a smooth version of the running maximum.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 870,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Replaces each value of a tensor with the largest value seen so far:\na running maximum, the high-water mark.\n\nRunning it along time gives, at every instant, the largest value that has occurred up to then - a peak hold that never lets go. It answers 'has this ever exceeded X, and when did it first do so?', and its second outlet says WHERE each record was set.\n\nSYNTAX:\nt.cummax <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column.\nGive an axis as the argument - t.cummax 1, or -1 for the last - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.cummax\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is scanned and sent - the only inlet that makes the node send. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running maximum, the same shape as the input. It can only rise or stay level, never fall.\n\nindices:\nFor each position, WHERE the largest value so far was found (an int64 position along the axis), the same shape as the input. It stays put while the record stands and jumps forward each time a new one is set. With equal values it points at the later one. The indices are sent just before the output.\n\nREADING THE DEMO:\nmake_walk sends a random walk of 200 steps twice a second (open it to see how). t.stack puts t.cummax's output and the walk itself into one 2-row tensor, and the upper plot draws both: the walk wanders, and the t.cummax line climbs in a staircase - level while the walk is below its best, stepping up each time the walk sets a new high. At the start the two lines are one.\n\nThe lower plot is the indices outlet: the position, 0 to 199, of the current record. Each flat stretch is a record that stood; each jump is a new high being set.\n\nRELATED:\nt.cummin is the running minimum. t.max gives only the final largest value (and, along an axis, where it is). t.cumsum is the running total. t.logcumsumexp is a smooth version of the running maximum."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 72,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_walk",
+                    "patcher id": 940
+                },
+                "4": {
+                    "init": "comment a random walk twice a second - open it to see how",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 451,
+                    "position_y": 70,
+                    "width": 310,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a random walk twice a second - open it to see how",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a random walk twice a second - open it to see how"
+                },
+                "5": {
+                    "name": "t.cummax",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 160,
+                    "width": 64,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "6": {
+                    "name": "t.stack",
+                    "id": 459,
+                    "position_x": 30,
+                    "position_y": 270,
+                    "width": 111,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "init": "comment row 0: the running high, row 1: the walk",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 451,
+                    "position_y": 275,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "row 0: the running high, row 1: the walk",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "row 0: the running high, row 1: the walk"
+                },
+                "8": {
+                    "name": "plot",
+                    "id": 533,
+                    "position_x": 30,
+                    "position_y": 400,
+                    "width": 308,
+                    "height": 178,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -20.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 20.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "text_block",
+                    "id": 570,
+                    "annotation": true,
+                    "position_x": 451,
+                    "position_y": 405,
+                    "width": 323,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "the walk, and the staircase of its highs so far\n(-20 to 20)",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 315,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "the walk, and the staircase of its highs so far\n(-20 to 20)"
+                },
+                "10": {
+                    "name": "plot",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 600,
+                    "width": 308,
+                    "height": 178,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "stair",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 200.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "11": {
+                    "name": "text_block",
+                    "id": 644,
+                    "annotation": true,
+                    "position_x": 451,
+                    "position_y": 605,
+                    "width": 286,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "indices: where the current record was set\n(0 to 200)",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 278,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "indices: where the current record was set\n(0 to 200)"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 30,
+                    "position_y": 844,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.cummin"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 112,
+                    "position_y": 844,
+                    "width": 48,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.max"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 176,
+                    "position_y": 844,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.cumsum"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 258,
+                    "position_y": 844,
+                    "width": 104,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.logcumsumexp"
+                },
+                "16": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 810,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "17": {
+                    "name": "close",
+                    "id": 866,
+                    "position_x": 24,
+                    "position_y": 918,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "walk",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor 2"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "walk",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor 1"
+                },
+                "3": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "indices",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "4": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

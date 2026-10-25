@@ -178,10 +178,8 @@ smpl_torque, which computes what a movement implies without simulating it.
 smpl_body and gl_body to draw the result."""
 
 demo = [
-    {'key': 'met', 'init': 'metro 16', 'pos': (30, 62), 'w': 129, 'h': 70,
-     'props': {'on': False, 'period': 16.0, 'units': 'milliseconds'}},
-    {'key': 'tog', 'init': 'toggle', 'pos': (30, 140), 'w': 45, 'h': 42},
-    {'key': 'c0', 'comment': True, 'text': 'step it once a frame for real time.\nNothing moves until you step it',
+    {'key': 'met', 'init': 'tick', 'pos': (30, 62), 'w': 33, 'h': 42, 'props': {'': False}},
+    {'key': 'c0', 'comment': True, 'text': 'check tick to step it once a frame, in real time.\nNothing moves until you step it',
      'pos': (100, 140)},
 
     {'key': 'pb', 'init': 'pybullet_body', 'pos': (30, 210), 'w': 320, 'h': 300},
@@ -197,8 +195,7 @@ demo = [
     {'key': 'c11', 'comment': True, 'text': 'draw what the simulation decided',
      'pos': (400, 765)},
 ]
-links = [('tog', '', 'met', 'on'),
-         ('met', '', 'pb', 'step'),
+links = [('met', '', 'pb', 'step'),
          ('take', 'root_position', 'pb', 'pelvis_position'),
          ('pb', 'pose_out', 'inf', 'in'),
          ('pb', 'pose_out', 'gb', 'pose in')]

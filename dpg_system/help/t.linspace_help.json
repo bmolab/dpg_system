@@ -1,11 +1,11 @@
 {
-    "height": 960,
-    "width": 1692,
+    "height": 975,
+    "width": 1640,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 940,
     "name": "t.linspace_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linspace_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t sequences - counts, steps and ratios",
+            "init": "comment t.linspace - evenly spaced values from start to stop",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 475,
+            "width": 647,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t sequences - counts, steps and ratios",
+                    "value": "t.linspace - evenly spaced values from start to stop",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t sequences - counts, steps and ratios"
+            "comment": "t.linspace - evenly spaced values from start to stop"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 834,
+            "position_x": 832,
             "position_y": 45,
-            "width": 818,
-            "height": 776,
+            "width": 768,
+            "height": 836,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These make a sequence: evenly spaced values from one number to another.\n\nThey differ in what you specify and in how the spacing is measured, and the \ndifference matters more than it looks.\n\nTHE NODES:\n\nt.linspace  give a start, a stop and a COUNT. Both ends are included, and the \n            spacing is worked out to fit\nt.logspace  the same, but the spacing is even in the logarithm - so each step is \n            the same RATIO rather than the same difference\nt.arange    give a start, a stop and a STEP. The stop is not included\nt.range     the same, including the stop\n\nlinspace VERSUS arange, WHICH TO REACH FOR:\nIf you know how many values you want, use linspace. If you know how far apart \nthey should be, use arange. Asking for the wrong one is how you end up with an \noff-by-one - arange from 0 to 1 in steps of 0.1 gives ten values, not eleven, \nbecause the stop is excluded.\n\nlinspace is also the safer one for floating point. arange accumulates its step, \nso rounding error builds up and the last value may not be quite where you \nexpect; linspace computes each position from the two ends, so the endpoints are \nexact.\n\nWHY logspace:\nAnything perceptual is logarithmic - frequency, loudness, brightness. \nTen evenly spaced frequencies between 20 and 20000 put almost all of them in \nthe top octave, where nobody can tell them apart, and none in the bass. \nTen logarithmically spaced ones put the same number in each octave, which is \nhow the ear actually divides the range.\n\nThe same is true of any quantity you are sampling across several orders of \nmagnitude - a threshold sweep, a decay time, a learning rate.\n\nSYNTAX:\nt.linspace <start> <stop> <steps>\nt.arange <start> <stop> <step>\n\nEXAMPLE:\nt.linspace 0.0 1.0 16\n\nINPUTS and PARAMETERS:\n\ninput:\nA button. Click it, or send anything, to produce the sequence.\n\nstart / stop:\nThe two ends.\n\nsteps (linspace, logspace):\nHow many values, both ends included.\n\nstep (arange, range):\nHow far apart, with the stop excluded on arange.\n\ndtype / device / requires_grad:\nAs on the other tensor makers.\n\nOUTPUTS: \n\nout:\nThe sequence, as a 1D tensor.\n\nWHAT A SEQUENCE IS FOR:\nMostly, it is the x axis. Evaluating a curve, sampling a function, sweeping a \nparameter to see what it does, interpolating between two states in a set number \nof steps - all of them start with a sequence, and all of them go wrong at the \nends if the endpoint handling is not what you assumed.",
+                    "value": "Makes a 1-D tensor of evenly spaced values running from start to stop.\n\nReach for it whenever you need a regular series rather than a measured one: an x axis to evaluate a function across, evenly spaced positions, the steps of a fade, or a smooth path from one state to another.\n\nBOTH ENDS ARE INCLUDED:\nsteps is the number of VALUES, so there is one gap fewer than there are values. With start 0, stop 1 and 9 steps the gap is (1 - 0) / 8 = 0.125, and you get 0, 0.125, 0.25 ... 0.875, 1. In general the gap is (stop - start) / (steps - 1). Start can be larger than stop: the values then count down.\n\nIf you know the SPACING you want rather than the count, use t.arange instead.\n\nSYNTAX:\nt.linspace <start: float> <stop: float> <steps: int> <dtype> <device>\nDefaults: 0.0, 1.0 and 50, float32 on cpu.\n\nEXAMPLE:\nt.linspace 0 1 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. This is the only thing that makes the node send. Changing start, stop or steps does NOT send by itself - in the demo a metro clicks the node 20 times a second, so the strip follows your drags.\n\nstart / stop (drag floats):\nThe first and last values.\n\nsteps (drag int):\nHow many values. 1 gives just start; 0 sends an empty tensor (the heat_map keeps its last picture); a negative count is an error and nothing is sent.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.linspace 0 1 9 int64.\nAn integer dtype cuts each value down to a whole number, so t.linspace 0 1 9 as int64 is eight 0s and a single 1.\n\nOUTPUTS:\n\nlinspace out:\nThe 1-D tensor, steps values long.\n\nREADING THE DEMO:\nThe heat_map shows the ramp as a strip of cells, start on the left and stop on the right, each coloured from the heat_map's min y (dark purple) to its max y (yellow) - here 0 and 1. Lower stop to 0.5 and the ramp only gets half way to yellow; swap start and stop and it runs the other way;\ndrag steps and the strip divides more finely. The list shows the same values as numbers.\n\nThe heat_map's min y and max y are the scale, not the data: values outside them saturate. If you change the range a lot, change them too.\n\nRELATED:\nnp.linspace is the NumPy version. t.logspace spaces the values evenly in the logarithm instead. t.arange and t.range take a step size rather than a count. t.rand gives values anywhere in a range instead of evenly spaced.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 810,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 820,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,109 +90,44 @@
                     "value_type": "str"
                 }
             },
-            "text": "These make a sequence: evenly spaced values from one number to another.\n\nThey differ in what you specify and in how the spacing is measured, and the \ndifference matters more than it looks.\n\nTHE NODES:\n\nt.linspace  give a start, a stop and a COUNT. Both ends are included, and the \n            spacing is worked out to fit\nt.logspace  the same, but the spacing is even in the logarithm - so each step is \n            the same RATIO rather than the same difference\nt.arange    give a start, a stop and a STEP. The stop is not included\nt.range     the same, including the stop\n\nlinspace VERSUS arange, WHICH TO REACH FOR:\nIf you know how many values you want, use linspace. If you know how far apart \nthey should be, use arange. Asking for the wrong one is how you end up with an \noff-by-one - arange from 0 to 1 in steps of 0.1 gives ten values, not eleven, \nbecause the stop is excluded.\n\nlinspace is also the safer one for floating point. arange accumulates its step, \nso rounding error builds up and the last value may not be quite where you \nexpect; linspace computes each position from the two ends, so the endpoints are \nexact.\n\nWHY logspace:\nAnything perceptual is logarithmic - frequency, loudness, brightness. \nTen evenly spaced frequencies between 20 and 20000 put almost all of them in \nthe top octave, where nobody can tell them apart, and none in the bass. \nTen logarithmically spaced ones put the same number in each octave, which is \nhow the ear actually divides the range.\n\nThe same is true of any quantity you are sampling across several orders of \nmagnitude - a threshold sweep, a decay time, a learning rate.\n\nSYNTAX:\nt.linspace <start> <stop> <steps>\nt.arange <start> <stop> <step>\n\nEXAMPLE:\nt.linspace 0.0 1.0 16\n\nINPUTS and PARAMETERS:\n\ninput:\nA button. Click it, or send anything, to produce the sequence.\n\nstart / stop:\nThe two ends.\n\nsteps (linspace, logspace):\nHow many values, both ends included.\n\nstep (arange, range):\nHow far apart, with the stop excluded on arange.\n\ndtype / device / requires_grad:\nAs on the other tensor makers.\n\nOUTPUTS: \n\nout:\nThe sequence, as a 1D tensor.\n\nWHAT A SEQUENCE IS FOR:\nMostly, it is the x axis. Evaluating a curve, sampling a function, sweeping a \nparameter to see what it does, interpolating between two states in a set number \nof steps - all of them start with a sequence, and all of them go wrong at the \nends if the endpoint handling is not what you assumed."
+            "text": "Makes a 1-D tensor of evenly spaced values running from start to stop.\n\nReach for it whenever you need a regular series rather than a measured one: an x axis to evaluate a function across, evenly spaced positions, the steps of a fade, or a smooth path from one state to another.\n\nBOTH ENDS ARE INCLUDED:\nsteps is the number of VALUES, so there is one gap fewer than there are values. With start 0, stop 1 and 9 steps the gap is (1 - 0) / 8 = 0.125, and you get 0, 0.125, 0.25 ... 0.875, 1. In general the gap is (stop - start) / (steps - 1). Start can be larger than stop: the values then count down.\n\nIf you know the SPACING you want rather than the count, use t.arange instead.\n\nSYNTAX:\nt.linspace <start: float> <stop: float> <steps: int> <dtype> <device>\nDefaults: 0.0, 1.0 and 50, float32 on cpu.\n\nEXAMPLE:\nt.linspace 0 1 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. This is the only thing that makes the node send. Changing start, stop or steps does NOT send by itself - in the demo a metro clicks the node 20 times a second, so the strip follows your drags.\n\nstart / stop (drag floats):\nThe first and last values.\n\nsteps (drag int):\nHow many values. 1 gives just start; 0 sends an empty tensor (the heat_map keeps its last picture); a negative count is an error and nothing is sent.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.linspace 0 1 9 int64.\nAn integer dtype cuts each value down to a whole number, so t.linspace 0 1 9 as int64 is eight 0s and a single 1.\n\nOUTPUTS:\n\nlinspace out:\nThe 1-D tensor, steps values long.\n\nREADING THE DEMO:\nThe heat_map shows the ramp as a strip of cells, start on the left and stop on the right, each coloured from the heat_map's min y (dark purple) to its max y (yellow) - here 0 and 1. Lower stop to 0.5 and the ramp only gets half way to yellow; swap start and stop and it runs the other way;\ndrag steps and the strip divides more finely. The list shows the same values as numbers.\n\nThe heat_map's min y and max y are the scale, not the data: values outside them saturate. If you change the range a lot, change them too.\n\nRELATED:\nnp.linspace is the NumPy version. t.logspace spaces the values evenly in the logarithm instead. t.arange and t.range take a step size rather than a count. t.rand gives values anywhere in a range instead of evenly spaced."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t.linspace",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 163,
-            "height": 126,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "start",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "1": {
-                    "name": "stop",
-                    "value": 1.0,
+                    "name": "period",
+                    "value": 50.0,
                     "value_type": "float"
                 },
                 "2": {
-                    "name": "steps",
-                    "value": 16,
-                    "value_type": "int"
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
                 }
             },
-            "init": "t.linspace 0.0 1.0 16"
+            "init": "metro 50"
         },
-        "5": {
-            "name": "heat_map",
-            "id": 422,
-            "position_x": 290,
-            "position_y": 120,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 16,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "6": {
-            "init": "comment evenly spaced, both ends included",
+        "4": {
+            "init": "comment clicks t.linspace 20 times a second",
             "name": "comment",
-            "id": 459,
-            "position_x": 524,
-            "position_y": 330,
-            "width": 211,
+            "id": 385,
+            "position_x": 560,
+            "position_y": 70,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -200,7 +135,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "evenly spaced, both ends included",
+                    "value": "clicks t.linspace 20 times a second",
                     "value_type": "str"
                 },
                 "1": {
@@ -209,13 +144,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "evenly spaced, both ends included"
+            "comment": "clicks t.linspace 20 times a second"
         },
-        "7": {
-            "name": "t.logspace",
-            "id": 496,
+        "5": {
+            "name": "t.linspace",
+            "id": 422,
             "position_x": 30,
-            "position_y": 375,
+            "position_y": 150,
             "width": 163,
             "height": 126,
             "visibility": "show_all",
@@ -229,198 +164,24 @@
                 },
                 "1": {
                     "name": "stop",
-                    "value": 2.0,
+                    "value": 1.0,
                     "value_type": "float"
                 },
                 "2": {
                     "name": "steps",
-                    "value": 16,
+                    "value": 9,
                     "value_type": "int"
                 }
             },
-            "init": "t.logspace 0.0 2.0 16"
+            "init": "t.linspace 0 1 9",
+            "highlight": true
         },
-        "8": {
-            "name": "heat_map",
-            "id": 533,
-            "position_x": 290,
-            "position_y": 375,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 16,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 100.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.0f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "9": {
-            "name": "text_block",
-            "id": 570,
-            "annotation": true,
-            "position_x": 524,
-            "position_y": 585,
-            "width": 280,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "even in the logarithm: equal ratios\ncrowded at the bottom, spread at the top",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 272,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "even in the logarithm: equal ratios\ncrowded at the bottom, spread at the top"
-        },
-        "10": {
-            "name": "t.arange",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 660,
-            "width": 163,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "start",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "stop",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "step",
-                    "value": 0.1,
-                    "value_type": "float"
-                }
-            },
-            "init": "t.arange 0.0 1.0 0.1"
-        },
-        "11": {
-            "name": "heat_map",
-            "id": 644,
-            "position_x": 290,
-            "position_y": 660,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 10,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "12": {
-            "init": "comment ten values, not eleven: stop excluded",
+        "6": {
+            "init": "comment drag start, stop or steps on the node",
             "name": "comment",
-            "id": 681,
-            "position_x": 524,
-            "position_y": 870,
+            "id": 459,
+            "position_x": 560,
+            "position_y": 155,
             "width": 236,
             "height": 30,
             "visibility": "show_all",
@@ -429,7 +190,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "ten values, not eleven: stop excluded",
+                    "value": "drag start, stop or steps on the node",
                     "value_type": "str"
                 },
                 "1": {
@@ -438,13 +199,254 @@
                     "value_type": "str"
                 }
             },
-            "comment": "ten values, not eleven: stop excluded"
+            "comment": "drag start, stop or steps on the node"
+        },
+        "7": {
+            "name": "heat_map",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 468,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 460,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment one cell per value, start on the left:",
+            "name": "comment",
+            "id": 533,
+            "position_x": 560,
+            "position_y": 385,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one cell per value, start on the left:",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one cell per value, start on the left:"
+        },
+        "9": {
+            "init": "comment 0 is dark purple, 1 is yellow",
+            "name": "comment",
+            "id": 570,
+            "position_x": 560,
+            "position_y": 425,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "0 is dark purple, 1 is yellow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "0 is dark purple, 1 is yellow"
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the same values as numbers",
+            "name": "comment",
+            "id": 644,
+            "position_x": 560,
+            "position_y": 515,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same values as numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same values as numbers"
+        },
+        "12": {
+            "name": "help_link",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 624,
+            "width": 85,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linspace"
         },
         "13": {
-            "name": "close",
+            "name": "help_link",
             "id": 718,
+            "position_x": 131,
+            "position_y": 624,
+            "width": 79,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.logspace"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 226,
+            "position_y": 624,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.arange"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 308,
+            "position_y": 624,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.range"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 384,
+            "position_y": 624,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand"
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 590,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
             "position_x": 24,
-            "position_y": 840,
+            "position_y": 698,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -465,60 +467,30 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###input"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 422,
+            "source_output_name": "linspace out",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "2": {
-            "source_node": 348,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "###input"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "4": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "linspace out",
             "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "###input"
-        },
-        "5": {
-            "source_node": 607,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": ""
         }
     }
 }

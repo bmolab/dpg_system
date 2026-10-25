@@ -1,0 +1,612 @@
+{
+    "height": 924,
+    "width": 1495,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "check_burst_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/check_burst_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment check_burst - flag implausible jumps",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 451,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "check_burst - flag implausible jumps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "check_burst - flag implausible jumps"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 637,
+            "position_y": 45,
+            "width": 818,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "check_burst flags frames where the data jumps in a way real movement does not, and keeps a list of them per file.\n\nIt was made for scanning recorded datasets for glitches - dropped frames, tracking failures, and the joints that teleport in some AMASS takes - by playing each file through it frame by frame.\n\nWHAT IT IS GIVEN:\nThree arrays, one value per joint, and the frame number and file name to file the result under. Typically the arrays come from quaternion_diff_and_axis and its own previous outputs:\n\ndiff array            how much each joint's motion changed this frame\nprevious frame array  how fast each joint was moving on the previous frame\nprevious diff array   how much it changed on the previous frame\n\nThe values are expected to be sizes - zero or positive - one per joint, in the same order in all three.\n\nWHEN A FRAME IS FLAGGED:\nFirst the overall change has to be big: the length of 'diff array', taken as one vector, must exceed 'threshold 1'. Then either of two things marks it as a glitch rather than a fast movement:\n\nThe joint with the biggest change was almost still on the previous frame - below 'threshold 2 previous'. Real movement builds; a glitch starts from nowhere.\n\nOr, from frame 2 on, any joint's change differs from its previous change by more than 'threshold low' AND by more than 'jerk threshold pct' times the average of the two.\nBeing relative, this test works across joints that move at very different speeds. Despite the name it is a fraction: 0.5 means half.\n\nEach flagged frame is printed to the console and added to the list for that file.\n\nSYNTAX:\ncheck_burst\n\nEXAMPLE:\ncheck_burst\n\nINPUTS:\n\ndiff array:\nThis frame's change per joint. Arriving here runs the test, so send the other inputs first.\n\nprevious frame array / previous diff array:\nThe previous frame's speed and change per joint.\n\nframe:\nThe frame number. Frame 0 is skipped, since it has no previous frame, and frame 1 gets only the first test. Left unconnected, nothing is skipped and events are filed with no frame number.\n\nfile:\nThe name the events are filed under. A list of words is joined into one name.\n\nthreshold 1 / threshold 2 previous / threshold low / jerk threshold pct:\nThe tests above.\n\nsave burst files / save path:\nWrite everything found so far to a JSON file. The default is burst_files.json in your home folder; a path starting with ~ means your home folder.\n\nclear:\nForget everything found so far, and send the empty result.\n\nOUTPUT:\n\nfile_dict:\nEverything found so far, sent on every frame: for each file name, a list of events, each with the frame number, the arrays, and which joints jumped and by how much. The list keeps growing until 'clear' is clicked.\n\nRELATED:\ncadence_filter takes out the regular stepping that would otherwise read as jerk on every frame.\njson_random_event_window reads the saved file back and steps through the events it found.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "check_burst flags frames where the data jumps in a way real movement does not, and keeps a list of them per file.\n\nIt was made for scanning recorded datasets for glitches - dropped frames, tracking failures, and the joints that teleport in some AMASS takes - by playing each file through it frame by frame.\n\nWHAT IT IS GIVEN:\nThree arrays, one value per joint, and the frame number and file name to file the result under. Typically the arrays come from quaternion_diff_and_axis and its own previous outputs:\n\ndiff array            how much each joint's motion changed this frame\nprevious frame array  how fast each joint was moving on the previous frame\nprevious diff array   how much it changed on the previous frame\n\nThe values are expected to be sizes - zero or positive - one per joint, in the same order in all three.\n\nWHEN A FRAME IS FLAGGED:\nFirst the overall change has to be big: the length of 'diff array', taken as one vector, must exceed 'threshold 1'. Then either of two things marks it as a glitch rather than a fast movement:\n\nThe joint with the biggest change was almost still on the previous frame - below 'threshold 2 previous'. Real movement builds; a glitch starts from nowhere.\n\nOr, from frame 2 on, any joint's change differs from its previous change by more than 'threshold low' AND by more than 'jerk threshold pct' times the average of the two.\nBeing relative, this test works across joints that move at very different speeds. Despite the name it is a fraction: 0.5 means half.\n\nEach flagged frame is printed to the console and added to the list for that file.\n\nSYNTAX:\ncheck_burst\n\nEXAMPLE:\ncheck_burst\n\nINPUTS:\n\ndiff array:\nThis frame's change per joint. Arriving here runs the test, so send the other inputs first.\n\nprevious frame array / previous diff array:\nThe previous frame's speed and change per joint.\n\nframe:\nThe frame number. Frame 0 is skipped, since it has no previous frame, and frame 1 gets only the first test. Left unconnected, nothing is skipped and events are filed with no frame number.\n\nfile:\nThe name the events are filed under. A list of words is joined into one name.\n\nthreshold 1 / threshold 2 previous / threshold low / jerk threshold pct:\nThe tests above.\n\nsave burst files / save path:\nWrite everything found so far to a JSON file. The default is burst_files.json in your home folder; a path starting with ~ means your home folder.\n\nclear:\nForget everything found so far, and send the empty result.\n\nOUTPUT:\n\nfile_dict:\nEverything found so far, sent on every frame: for each file name, a list of events, each with the frame number, the arrays, and which joints jumped and by how much. The list keeps growing until 'clear' is clicked.\n\nRELATED:\ncadence_filter takes out the regular stepping that would otherwise read as jerk on every frame.\njson_random_event_window reads the saved file back and steps through the events it found."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click: send one frame",
+            "name": "comment",
+            "id": 385,
+            "position_x": 346,
+            "position_y": 62,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click: send one frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click: send one frame"
+        },
+        "5": {
+            "name": "repeat_in_order",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 101,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "repeat_in_order 5"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 150,
+            "position_y": 120,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "12",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "string",
+            "id": 533,
+            "position_x": 190,
+            "position_y": 250,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "take_A",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "message",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 305,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.0 0.3 0.2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment previous speeds: joint 0 was still",
+            "name": "comment",
+            "id": 607,
+            "position_x": 346,
+            "position_y": 305,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "previous speeds: joint 0 was still",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "previous speeds: joint 0 was still"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 360,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.55 0.05 0.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment previous changes",
+            "name": "comment",
+            "id": 681,
+            "position_x": 346,
+            "position_y": 360,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "previous changes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "previous changes"
+        },
+        "13": {
+            "name": "message",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 415,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.6 0.05 0.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment this frame: joint 0 jumps",
+            "name": "comment",
+            "id": 755,
+            "position_x": 346,
+            "position_y": 415,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this frame: joint 0 jumps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this frame: joint 0 jumps"
+        },
+        "15": {
+            "name": "check_burst",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 215,
+            "height": 196,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "16": {
+            "name": "dict_keys",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 685,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 745,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "name": "text_block",
+            "id": 903,
+            "annotation": true,
+            "position_x": 346,
+            "position_y": 800,
+            "width": 261,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "take_A appears: the frame was flagged\nmake the previous speeds 0.5 0.3 0.2\nand click again: joint 0 was already\nmoving, so no new event is printed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "take_A appears: the frame was flagged\nmake the previous speeds 0.5 0.3 0.2\nand click again: joint 0 was already\nmoving, so no new event is printed"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 817,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "first",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "second",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "third",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "fourth",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "fifth",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "frame"
+        },
+        "8": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "file"
+        },
+        "9": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "previous frame array"
+        },
+        "10": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "previous diff array"
+        },
+        "11": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "diff array"
+        },
+        "12": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "file_dict",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "13": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "keys out",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

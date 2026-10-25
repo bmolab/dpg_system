@@ -171,7 +171,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "init": "comment click on the menu in the node and drag to the desired selection",
@@ -303,7 +304,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "info",

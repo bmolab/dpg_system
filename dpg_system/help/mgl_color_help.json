@@ -1,0 +1,490 @@
+{
+    "height": 1760,
+    "width": 1594,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "mgl_color_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_color_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_color - the colour of what comes after",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_color - the colour of what comes after",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_color - the colour of what comes after"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 736,
+            "position_y": 45,
+            "width": 818,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mgl_color sets the colour of everything drawn after it.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nA colour applies from where it sits onward and is restored at the end of its branch. Before any mgl_color, the colour is white.\n\nCOLOUR TINTS, LIGHT SHADES:\nThe colour multiplies the lit surface, so mgl_color sets the hue and the shading stays. The highlight is not tinted - a red sphere still has a white glint. mgl_line_array and mgl_text are not lit at all, and simply draw in the current colour.\n\nThe alpha is the shape's transparency.\n\nTHE NUMBERS:\nRed green blue alpha, either from 0 to 1 or from 0 to 255. The scale is read from red, green and blue alone: if any of them is above 1, the whole colour, alpha included, is read as 0 to 255. Three numbers take alpha as full. The colour picker stores a full alpha as 255 whatever the colour's scale, so an alpha above 1 on a 0 to 1 colour is read as 0 to 255 too, and the colour is the same when the patch is opened again.\n\nSYNTAX:\nmgl_color\n\nEXAMPLE:\nmgl_color\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\ncolor:\nThe colour, as a list of three or four numbers or from the picker.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with this colour in force downstream.\n\nRELATED:\nmgl_material for how surfaces answer light. gl_color is the gl equivalent.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mgl_color sets the colour of everything drawn after it.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nA colour applies from where it sits onward and is restored at the end of its branch. Before any mgl_color, the colour is white.\n\nCOLOUR TINTS, LIGHT SHADES:\nThe colour multiplies the lit surface, so mgl_color sets the hue and the shading stays. The highlight is not tinted - a red sphere still has a white glint. mgl_line_array and mgl_text are not lit at all, and simply draw in the current colour.\n\nThe alpha is the shape's transparency.\n\nTHE NUMBERS:\nRed green blue alpha, either from 0 to 1 or from 0 to 255. The scale is read from red, green and blue alone: if any of them is above 1, the whole colour, alpha included, is read as 0 to 255. Three numbers take alpha as full. The colour picker stores a full alpha as 255 whatever the colour's scale, so an alpha above 1 on a 0 to 1 colour is read as 0 to 255 too, and the colour is the same when the patch is opened again.\n\nSYNTAX:\nmgl_color\n\nEXAMPLE:\nmgl_color\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\ncolor:\nThe colour, as a list of three or four numbers or from the picker.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with this colour in force downstream.\n\nRELATED:\nmgl_material for how surfaces answer light. gl_color is the gl equivalent."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_color",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 128,
+            "height": 92,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": [
+                        255.0,
+                        140.0,
+                        0.0,
+                        255.0
+                    ],
+                    "value_type": "list"
+                }
+            },
+            "highlight": true
+        },
+        "5": {
+            "init": "comment orange, for both shapes",
+            "name": "comment",
+            "id": 422,
+            "position_x": 476,
+            "position_y": 440,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "orange, for both shapes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "orange, for both shapes"
+        },
+        "6": {
+            "name": "mgl_translate",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 730,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": -0.8,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "mgl_translate -0.8 0 0"
+        },
+        "7": {
+            "name": "mgl_sphere",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 124,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "mgl_translate",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 1070,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 1.6,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "mgl_translate 1.6 0 0"
+        },
+        "9": {
+            "name": "message",
+            "id": 570,
+            "position_x": 320,
+            "position_y": 1170,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.2 0.6 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 320,
+            "position_y": 1230,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 200 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 476,
+            "position_y": 1290,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click: the same blue as 0 to 1,\nor green as 0 to 255",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click: the same blue as 0 to 1,\nor green as 0 to 255"
+        },
+        "12": {
+            "name": "mgl_color",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 1210,
+            "width": 128,
+            "height": 92,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": [
+                        255.0,
+                        255.0,
+                        255.0,
+                        255.0
+                    ],
+                    "value_type": "list"
+                }
+            },
+            "highlight": true
+        },
+        "13": {
+            "init": "comment replaces the orange for the box only",
+            "name": "comment",
+            "id": 718,
+            "position_x": 476,
+            "position_y": 1210,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "replaces the orange for the box only",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "replaces the orange for the box only"
+        },
+        "14": {
+            "name": "mgl_box",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 1500,
+            "width": 176,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1656,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "color"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "color"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        }
+    }
+}

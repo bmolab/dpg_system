@@ -1,11 +1,11 @@
 {
-    "height": 781,
-    "width": 1278,
+    "height": 721,
+    "width": 1478,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 644,
     "name": "stream_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/stream_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment stream and subsample - change how often data moves",
+            "init": "comment stream - resend the latest value every frame",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 623,
+            "width": 549,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "stream and subsample - change how often data moves",
+                    "value": "stream - resend the latest value every frame",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "stream and subsample - change how often data moves"
+            "comment": "stream - resend the latest value every frame"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 440,
+            "position_x": 640,
             "position_y": 45,
             "width": 798,
-            "height": 676,
+            "height": 616,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These two nodes change how OFTEN data moves, without changing the data itself.\n\nThey solve opposite problems. stream takes a value that arrives occasionally and \nrepeats it on every frame, turning an event into a continuous supply. \nsubsample takes a value that arrives on every frame and passes on only some of \nthem, thinning a fast stream down to something slower.\n\nBetween them they let you match a source's rate to what the rest of the patch \nwants, rather than rebuilding either end.\n\nTHE NODES:\n\nstream       resend the most recent value on every frame\nsubsample    pass on only every Nth value\n\nYou use stream when something downstream needs to be fed continuously but your \nsource only speaks when it changes. You use subsample when a fast sensor is \ndriving something expensive - a network send, a model, a redraw - more often \nthan it needs.\n\nSYNTAX:\nstream\nsubsample <rate: int>\n\nEXAMPLE:\nsubsample 4\n\nINPUTS and PARAMETERS:\n\ninput:\nThe data. On subsample this triggers the node; on stream it is stored and \nresent on every frame.\n\nstream (stream only):\nWhen checked the node repeats on every frame. Unchecked, it stops entirely - \nit does not pass values through. On by default.\n\nrate (subsample only):\nHow many values arrive for each one that leaves. \n2 halves the rate, 10 sends one in ten. A rate of 1 passes everything.\n\nOUTPUTS: \n\nout:\nThe value - repeated every frame by stream, thinned by subsample.\n\nA NOTE ON SUBSAMPLE'S TIMING:\nsubsample also watches how fast values are arriving, and if the input goes quiet \nfor longer than the expected gap it sends the last value anyway. \nThat way a stream that simply stops does not leave the node holding a value \nit never passed on. Thinning a stream loses detail permanently - if what you \nwant is fewer values without losing the shape, filter first, then subsample.",
+                    "value": "stream resends the most recent value it received, on every frame.\n\nIt turns an event into a continuous supply. Something upstream that only speaks when it changes - a slider, a message, a value that arrives now and then - becomes a steady stream at the frame rate, about 60 times a second. You use it when something downstream needs to be fed continuously.\n\nIt does not change the value. Arriving at 'input' does not send anything by itself; the value is stored and goes out on the next frame, and every frame after, until a new value replaces it.\n\nUntil the first value arrives it sends nothing at all.\n\nSYNTAX:\nstream\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to repeat. It does not trigger anything.\n\nstream:\nWhen checked the node repeats on every frame. Unchecked, it stops entirely - it does not pass values through either. On by default.\n\nOUTPUTS:\n\nout:\nThe most recent value, every frame.\n\nRELATED:\nsubsample does the opposite job: it thins a fast stream down. tick fires every frame without carrying a value.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 660,
+                    "value": 600,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,80 +90,43 @@
                     "value_type": "str"
                 }
             },
-            "text": "These two nodes change how OFTEN data moves, without changing the data itself.\n\nThey solve opposite problems. stream takes a value that arrives occasionally and \nrepeats it on every frame, turning an event into a continuous supply. \nsubsample takes a value that arrives on every frame and passes on only some of \nthem, thinning a fast stream down to something slower.\n\nBetween them they let you match a source's rate to what the rest of the patch \nwants, rather than rebuilding either end.\n\nTHE NODES:\n\nstream       resend the most recent value on every frame\nsubsample    pass on only every Nth value\n\nYou use stream when something downstream needs to be fed continuously but your \nsource only speaks when it changes. You use subsample when a fast sensor is \ndriving something expensive - a network send, a model, a redraw - more often \nthan it needs.\n\nSYNTAX:\nstream\nsubsample <rate: int>\n\nEXAMPLE:\nsubsample 4\n\nINPUTS and PARAMETERS:\n\ninput:\nThe data. On subsample this triggers the node; on stream it is stored and \nresent on every frame.\n\nstream (stream only):\nWhen checked the node repeats on every frame. Unchecked, it stops entirely - \nit does not pass values through. On by default.\n\nrate (subsample only):\nHow many values arrive for each one that leaves. \n2 halves the rate, 10 sends one in ten. A rate of 1 passes everything.\n\nOUTPUTS: \n\nout:\nThe value - repeated every frame by stream, thinned by subsample.\n\nA NOTE ON SUBSAMPLE'S TIMING:\nsubsample also watches how fast values are arriving, and if the input goes quiet \nfor longer than the expected gap it sends the last value anyway. \nThat way a stream that simply stops does not leave the node holding a value \nit never passed on. Thinning a stream loses detail permanently - if what you \nwant is fewer values without losing the shape, filter first, then subsample."
+            "text": "stream resends the most recent value it received, on every frame.\n\nIt turns an event into a continuous supply. Something upstream that only speaks when it changes - a slider, a message, a value that arrives now and then - becomes a steady stream at the frame rate, about 60 times a second. You use it when something downstream needs to be fed continuously.\n\nIt does not change the value. Arriving at 'input' does not send anything by itself; the value is stored and goes out on the next frame, and every frame after, until a new value replaces it.\n\nUntil the first value arrives it sends nothing at all.\n\nSYNTAX:\nstream\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to repeat. It does not trigger anything.\n\nstream:\nWhen checked the node repeats on every frame. Unchecked, it stops entirely - it does not pass values through either. On by default.\n\nOUTPUTS:\n\nout:\nThe most recent value, every frame.\n\nRELATED:\nsubsample does the opposite job: it thins a fast stream down. tick fires every frame without carrying a value."
         },
         "3": {
-            "name": "toggle",
+            "name": "float",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
                 }
             }
         },
         "4": {
-            "name": "metro",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 112,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 30.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "units",
-                    "value": "milliseconds",
-                    "value_type": "str"
-                }
-            },
-            "init": "metro 30"
-        },
-        "5": {
-            "name": "counter",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 192,
-            "width": 123,
-            "height": 84,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "step",
-                    "value": 1,
-                    "value_type": "int"
-                }
-            }
-        },
-        "6": {
-            "init": "comment a fast counter",
+            "init": "comment drag this - nothing streams until you do",
             "name": "comment",
-            "id": 459,
-            "position_x": 186,
-            "position_y": 285,
-            "width": 95,
+            "id": 385,
+            "position_x": 356,
+            "position_y": 112,
+            "width": 254,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -171,7 +134,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "a fast counter",
+                    "value": "drag this - nothing streams until you do",
                     "value_type": "str"
                 },
                 "1": {
@@ -180,60 +143,78 @@
                     "value_type": "str"
                 }
             },
-            "comment": "a fast counter"
+            "comment": "drag this - nothing streams until you do"
         },
-        "7": {
-            "name": "int",
-            "id": 496,
+        "5": {
+            "name": "stream",
+            "id": 422,
             "position_x": 30,
-            "position_y": 320,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "8": {
-            "name": "subsample",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 380,
-            "width": 117,
+            "position_y": 150,
+            "width": 61,
             "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "6": {
+            "name": "float",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 235,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "rate",
-                    "value": 10,
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "counter",
+            "id": 496,
+            "position_x": 200,
+            "position_y": 235,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 1000000,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
                     "value_type": "int"
                 }
             },
-            "init": "subsample 10"
+            "init": "counter 1000000"
         },
-        "9": {
+        "8": {
             "name": "int",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 465,
+            "id": 533,
+            "position_x": 200,
+            "position_y": 335,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -257,21 +238,21 @@
                 }
             }
         },
-        "10": {
+        "9": {
             "name": "text_block",
-            "id": 607,
+            "id": 570,
             "annotation": true,
-            "position_x": 186,
-            "position_y": 515,
-            "width": 224,
-            "height": 40,
+            "position_x": 356,
+            "position_y": 390,
+            "width": 231,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "one value in ten gets through\ndrag rate and watch it thin out",
+                    "value": "counts sends: about 60 a second,\nhowever seldom the value changes\nuntick stream and it all stops",
                     "value_type": "str"
                 },
                 "1": {
@@ -281,12 +262,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 216,
+                    "value": 223,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -295,13 +276,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "one value in ten gets through\ndrag rate and watch it thin out"
+            "text": "counts sends: about 60 a second,\nhowever seldom the value changes\nuntick stream and it all stops"
         },
-        "11": {
+        "10": {
             "name": "close",
-            "id": 644,
+            "id": 607,
             "position_x": 24,
-            "position_y": 537,
+            "position_y": 407,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -321,48 +302,38 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "float out",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "2": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "count out",
-            "dest_node": 496,
+            "source_output_name": "out",
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "3": {
+        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "count out",
-            "dest_node": 533,
+            "source_output_name": "out",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "4": {
-            "source_node": 533,
+        "3": {
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 570,
+            "source_output_name": "count out",
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

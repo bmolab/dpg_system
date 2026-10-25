@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These convert between characters and their numeric codes.\n\nTHE NODES:\n\nascii      a character to its code\nord        the same node\nchar       a code back to its character\ncharacter  the same node\n\nWHY YOU WOULD WANT THIS:\nBecause a code is a NUMBER, and numbers can be compared, offset, sorted and \narithmetic'd where characters cannot. Testing whether a character is a digit is \na range test on its code. Shifting a letter through the alphabet is addition. \nSorting by character is sorting by code.\n\nIt is also how you reach characters that cannot be typed into a message - a \ntab, a newline, a control character. Send the code and get the character back.\n\nTHE CODES WORTH KNOWING:\n32 is space, 48 to 57 are the digits, 65 to 90 are capital A to Z, and 97 to \n122 are lower case a to z. The gap of 32 between the cases is why adding or \nsubtracting 32 changes case - which is a trick worth knowing and worth not \nrelying on, because it only holds for unaccented Latin letters.\n\nSYNTAX:\nascii\nchar\n\nEXAMPLE:\nascii\n\nINPUTS and PARAMETERS:\n\ncharacter in:\nThe character. Receiving it triggers the node.\n\nchar code in:\nThe code.\n\nOUTPUTS: \n\nascii out:\nThe numeric code.\n\ncharacter out:\nThe character.\n\nA NOTE ON WHAT 'ASCII' MEANS HERE:\nThe name is historical. Codes above 127 are not ASCII at all, and a character \noutside the Latin alphabet may not be one code but several bytes. For plain \nEnglish text these nodes behave exactly as expected; for anything else, expect \nthe relationship between characters and codes to be less simple than the name \nsuggests.",
+                    "value": "These convert between characters and their numeric codes.\n\nTHE NODES:\n\nascii      a character to its code\nord        the same node\nchar       a code back to its character\ncharacter  the same node\n\nWHY YOU WOULD WANT THIS:\nBecause a code is a NUMBER, and numbers can be compared, offset, sorted and  arithmetic'd where characters cannot. Testing whether a character is a digit is  a range test on its code. Shifting a letter through the alphabet is addition.  Sorting by character is sorting by code.\n\nIt is also how you reach characters that cannot be typed into a message - a  tab, a newline, a control character. Send the code and get the character back.\n\nTHE CODES WORTH KNOWING:\n32 is space, 48 to 57 are the digits, 65 to 90 are capital A to Z, and 97 to  122 are lower case a to z. The gap of 32 between the cases is why adding or  subtracting 32 changes case - which is a trick worth knowing and worth not  relying on, because it only holds for unaccented Latin letters.\n\nSYNTAX:\nascii\nchar\n\nEXAMPLE:\nascii\n\nINPUTS and PARAMETERS:\n\ncharacter in:\nThe character. Receiving it triggers the node.\n\nchar code in:\nThe code.\n\nOUTPUTS: \n\nascii out:\nThe numeric code.\n\ncharacter out:\nThe character.\n\nA NOTE ON WHAT 'ASCII' MEANS HERE:\nThe name is historical. Codes above 127 are not ASCII at all, and a character  outside the Latin alphabet may not be one code but several bytes. For plain  English text these nodes behave exactly as expected; for anything else, expect  the relationship between characters and codes to be less simple than the name  suggests.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These convert between characters and their numeric codes.\n\nTHE NODES:\n\nascii      a character to its code\nord        the same node\nchar       a code back to its character\ncharacter  the same node\n\nWHY YOU WOULD WANT THIS:\nBecause a code is a NUMBER, and numbers can be compared, offset, sorted and \narithmetic'd where characters cannot. Testing whether a character is a digit is \na range test on its code. Shifting a letter through the alphabet is addition. \nSorting by character is sorting by code.\n\nIt is also how you reach characters that cannot be typed into a message - a \ntab, a newline, a control character. Send the code and get the character back.\n\nTHE CODES WORTH KNOWING:\n32 is space, 48 to 57 are the digits, 65 to 90 are capital A to Z, and 97 to \n122 are lower case a to z. The gap of 32 between the cases is why adding or \nsubtracting 32 changes case - which is a trick worth knowing and worth not \nrelying on, because it only holds for unaccented Latin letters.\n\nSYNTAX:\nascii\nchar\n\nEXAMPLE:\nascii\n\nINPUTS and PARAMETERS:\n\ncharacter in:\nThe character. Receiving it triggers the node.\n\nchar code in:\nThe code.\n\nOUTPUTS: \n\nascii out:\nThe numeric code.\n\ncharacter out:\nThe character.\n\nA NOTE ON WHAT 'ASCII' MEANS HERE:\nThe name is historical. Codes above 127 are not ASCII at all, and a character \noutside the Latin alphabet may not be one code but several bytes. For plain \nEnglish text these nodes behave exactly as expected; for anything else, expect \nthe relationship between characters and codes to be less simple than the name \nsuggests."
+            "text": "These convert between characters and their numeric codes.\n\nTHE NODES:\n\nascii      a character to its code\nord        the same node\nchar       a code back to its character\ncharacter  the same node\n\nWHY YOU WOULD WANT THIS:\nBecause a code is a NUMBER, and numbers can be compared, offset, sorted and  arithmetic'd where characters cannot. Testing whether a character is a digit is  a range test on its code. Shifting a letter through the alphabet is addition.  Sorting by character is sorting by code.\n\nIt is also how you reach characters that cannot be typed into a message - a  tab, a newline, a control character. Send the code and get the character back.\n\nTHE CODES WORTH KNOWING:\n32 is space, 48 to 57 are the digits, 65 to 90 are capital A to Z, and 97 to  122 are lower case a to z. The gap of 32 between the cases is why adding or  subtracting 32 changes case - which is a trick worth knowing and worth not  relying on, because it only holds for unaccented Latin letters.\n\nSYNTAX:\nascii\nchar\n\nEXAMPLE:\nascii\n\nINPUTS and PARAMETERS:\n\ncharacter in:\nThe character. Receiving it triggers the node.\n\nchar code in:\nThe code.\n\nOUTPUTS: \n\nascii out:\nThe numeric code.\n\ncharacter out:\nThe character.\n\nA NOTE ON WHAT 'ASCII' MEANS HERE:\nThe name is historical. Codes above 127 are not ASCII at all, and a character  outside the Latin alphabet may not be one code but several bytes. For plain  English text these nodes behave exactly as expected; for anything else, expect  the relationship between characters and codes to be less simple than the name  suggests."
         },
         "3": {
             "name": "button",
@@ -137,7 +137,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "6": {
             "name": "int",
@@ -221,7 +222,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "10": {
             "name": "string",

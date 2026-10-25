@@ -1,0 +1,339 @@
+{
+    "height": 721,
+    "width": 1278,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "subsample_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/subsample_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment subsample - pass on every Nth value",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "subsample - pass on every Nth value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "subsample - pass on every Nth value"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 440,
+            "position_y": 45,
+            "width": 798,
+            "height": 616,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "subsample passes on only every Nth value it receives.\n\nIt thins a fast stream down to something slower. You use it when a fast sensor or a per-frame source is driving something expensive - a network send, a model, a redraw - more often than it needs.\n\nIt does not average or smooth: the values in between are simply dropped. If you want fewer values without losing the shape, filter first, then subsample.\n\nWHEN THE INPUT GOES QUIET:\nsubsample also watches how fast values arrive. If it is holding a value it has not passed on and the input goes quiet for longer than the usual gap times the rate, it sends that value and starts counting afresh. So a stream that stops does not leave the node sitting on its last value. A value that was already passed on is never sent again.\n\nA rate of 1 passes every value; so does 0.\n\nSYNTAX:\nsubsample <rate: int>\n\nEXAMPLE:\nsubsample 4\n\nINPUTS and PARAMETERS:\n\ninput:\nThe data. Receiving it triggers the node.\n\nrate:\nHow many values arrive for each one that leaves. 2 halves the rate, 10 sends one in ten. 0 or 1 passes everything. 2 by default.\n\nOUTPUTS:\n\nout:\nThe values that get through.\n\nRELATED:\nstream does the opposite job: it repeats a value on every frame. rate_limiter thins by time rather than by count.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 600,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "subsample passes on only every Nth value it receives.\n\nIt thins a fast stream down to something slower. You use it when a fast sensor or a per-frame source is driving something expensive - a network send, a model, a redraw - more often than it needs.\n\nIt does not average or smooth: the values in between are simply dropped. If you want fewer values without losing the shape, filter first, then subsample.\n\nWHEN THE INPUT GOES QUIET:\nsubsample also watches how fast values arrive. If it is holding a value it has not passed on and the input goes quiet for longer than the usual gap times the rate, it sends that value and starts counting afresh. So a stream that stops does not leave the node sitting on its last value. A value that was already passed on is never sent again.\n\nA rate of 1 passes every value; so does 0.\n\nSYNTAX:\nsubsample <rate: int>\n\nEXAMPLE:\nsubsample 4\n\nINPUTS and PARAMETERS:\n\ninput:\nThe data. Receiving it triggers the node.\n\nrate:\nHow many values arrive for each one that leaves. 2 halves the rate, 10 sends one in ten. 0 or 1 passes everything. 2 by default.\n\nOUTPUTS:\n\nout:\nThe values that get through.\n\nRELATED:\nstream does the opposite job: it repeats a value on every frame. rate_limiter thins by time rather than by count."
+        },
+        "3": {
+            "name": "tick",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 33,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "counter",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 115,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 1000000,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "counter 1000000"
+        },
+        "5": {
+            "init": "comment counts every frame",
+            "name": "comment",
+            "id": 422,
+            "position_x": 186,
+            "position_y": 210,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counts every frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counts every frame"
+        },
+        "6": {
+            "name": "int",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 245,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "subsample",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 305,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "rate",
+                    "value": 10,
+                    "value_type": "int"
+                }
+            },
+            "init": "subsample 10",
+            "highlight": true
+        },
+        "8": {
+            "name": "int",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 186,
+            "position_y": 440,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one value in ten gets through\ndrag rate and watch it thin out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one value in ten gets through\ndrag rate and watch it thin out"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 462,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

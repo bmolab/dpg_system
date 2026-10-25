@@ -1,0 +1,532 @@
+{
+    "height": 1015,
+    "width": 1629,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "t.ones_like_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.ones_like_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.ones_like - ones in the shape of another tensor",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 611,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.ones_like - ones in the shape of another tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.ones_like - ones in the shape of another tensor"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 821,
+            "position_y": 45,
+            "width": 768,
+            "height": 876,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Makes a tensor of ones the same shape as the tensor you send it.\n\nUse it when a neutral tensor - weights that change nothing, a mask that lets everything through - must match data you already have. Times a number, it becomes a constant of that shape. Typing the shape into t.ones breaks the moment the data changes size; t.ones_like follows it.\n\nSYNTAX:\nt.ones_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.ones_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node send - a stream of tensors gives a stream of outputs, each matching the one that came in. A list, NumPy array or number has a shape too and works the same way: a list of 5 numbers gives 5 values, a list of lists a 2-D tensor, a single number a 1-element tensor. A bang sends a new tensor in the shape last received.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.ones_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.ones_like also copies the input's dtype and device. This node does not: the output is always the dtype and device set on the node (float32 on cpu unless you change them). Feed it a float16 tensor on mps and you get float32 on cpu back. Set dtype and device here to match if the two tensors will meet later.\n\nOUTPUTS:\n\ntensor of ones:\nA tensor the same shape as the input.\n\nREADING THE DEMO:\nA metro clicks t.linspace, whose ramp (top strip) feeds t.ones_like. The bottom strip is the result: the same number of cells, all 1 (all yellow). Drag steps on t.linspace: both strips divide together, and t.info shows the shape following.\n\nRELATED:\nt.ones makes ones in a shape you type. t.zeros_like and t.rand_like copy the shape the same way with zeros or random values. t.full fills with any value.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 860,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Makes a tensor of ones the same shape as the tensor you send it.\n\nUse it when a neutral tensor - weights that change nothing, a mask that lets everything through - must match data you already have. Times a number, it becomes a constant of that shape. Typing the shape into t.ones breaks the moment the data changes size; t.ones_like follows it.\n\nSYNTAX:\nt.ones_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.ones_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node send - a stream of tensors gives a stream of outputs, each matching the one that came in. A list, NumPy array or number has a shape too and works the same way: a list of 5 numbers gives 5 values, a list of lists a 2-D tensor, a single number a 1-element tensor. A bang sends a new tensor in the shape last received.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.ones_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.ones_like also copies the input's dtype and device. This node does not: the output is always the dtype and device set on the node (float32 on cpu unless you change them). Feed it a float16 tensor on mps and you get float32 on cpu back. Set dtype and device here to match if the two tensors will meet later.\n\nOUTPUTS:\n\ntensor of ones:\nA tensor the same shape as the input.\n\nREADING THE DEMO:\nA metro clicks t.linspace, whose ramp (top strip) feeds t.ones_like. The bottom strip is the result: the same number of cells, all 1 (all yellow). Drag steps on t.linspace: both strips divide together, and t.info shows the shape following.\n\nRELATED:\nt.ones makes ones in a shape you type. t.zeros_like and t.rand_like copy the shape the same way with zeros or random values. t.full fills with any value."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "name": "t.linspace",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 12,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0 1 12"
+        },
+        "5": {
+            "init": "comment the input: drag steps to change its length",
+            "name": "comment",
+            "id": 422,
+            "position_x": 524,
+            "position_y": 155,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the input: drag steps to change its length",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the input: drag steps to change its length"
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 468,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 460,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment input: a ramp, 0 to 1",
+            "name": "comment",
+            "id": 496,
+            "position_x": 524,
+            "position_y": 385,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "input: a ramp, 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "input: a ramp, 0 to 1"
+        },
+        "8": {
+            "name": "t.ones_like",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 163,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "t.info",
+            "id": 570,
+            "position_x": 290,
+            "position_y": 500,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment shape of the output",
+            "name": "comment",
+            "id": 607,
+            "position_x": 524,
+            "position_y": 505,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shape of the output",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shape of the output"
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 468,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 460,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment output: the same length, every cell 1",
+            "name": "comment",
+            "id": 681,
+            "position_x": 524,
+            "position_y": 665,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output: the same length, every cell 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "output: the same length, every cell 1"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 824,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.ones"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 100,
+            "position_y": 824,
+            "width": 92,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.zeros_like"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 208,
+            "position_y": 824,
+            "width": 85,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand_like"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 309,
+            "position_y": 824,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.full"
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 790,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 898,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor of ones",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor of ones",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

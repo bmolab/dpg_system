@@ -1,0 +1,808 @@
+{
+    "height": 1221,
+    "width": 1806,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "diff_filter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/diff_filter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment diff_filter - how much is it moving, at this timescale",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 672,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "diff_filter - how much is it moving, at this timescale",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "diff_filter - how much is it moving, at this timescale"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 938,
+            "position_y": 45,
+            "width": 828,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "diff_filter tells you how much a signal is MOVING at a chosen timescale - and settles back to zero whenever the signal holds still.\n\nInside, it smooths the signal the way the filter node does, at two degrees: a quick one and a slow one. It sends the GAP between them. While the signal holds steady, both have caught up and the gap is zero. When the signal moves, the quick filter follows at once and the slow one lags, so the gap opens - then closes again as the slow one catches up. Rising movement gives a positive gap, falling movement a negative one.\n\nThe top demo shows exactly this. A square wave jumps between -0.7 and 0.7. \"multi_filter 0 0.8 0.97\" draws the wave itself (a degree of 0 is no smoothing), a quick smoothing and a slow one. \"diff_filter 0.8 0.97\" sends the gap between the quick and slow lines: a spike at each jump, dying away while the wave holds.\n\nSo it is a smoothed \"how fast is this changing\", with jitter taken out. It ignores WHERE the signal is and reports only how it moves, which makes it good for onsets: a hand starting to move, a sound starting to swell, a step in a sensor reading. A slow drift barely registers.\n\nBANDS IN TIME:\nGive it more than two degrees and it sends one gap for each neighbouring pair, so N degrees give N - 1 values. Each catches movement between those two timescales: anything quicker than the quick filter can follow is smoothed away, and anything slower than the slow filter's lag leaves almost no gap.\n\nIn the lower demo, a quick wobble rides on a slow swell. \"diff_filter 0.3 0.85 0.99\" pulls them apart: its first value (the 0.3 to 0.85 gap) mostly follows the wobble, its second (0.85 to 0.99) mostly the swell. The split is soft, not a brick wall - each band lets a little of the other through.\n\nAs a rough guide, at 60 values a second a degree d responds over about 1 / (1 - d)\nvalues: 0.8 over 5 (a twelfth of a second), 0.97 over 33 (half a second), 0.99 over 100 (nearly two seconds).\n\nSYNTAX:\ndiff_filter <degree> <degree> ...\n\nEXAMPLES:\ndiff_filter 0.8 0.97          one value: movement over a tenth to half a second\ndiff_filter 0.3 0.85 0.99     two values: quick movement, then slow movement\n\nINPUTS and PARAMETERS:\n\nin:\nA single number. Receiving data here triggers the node. diff_filter spreads one signal over several filters; it does not filter each element of an array.\n\nfilter 0, filter 1, ...:\nOne inlet per degree, from 0.0 to 1.0, as on the filter node: higher is smoother and slower. Give them from quickest to slowest, so that each gap is quick minus slow and rising movement comes out positive.\n\nMESSAGES:\n\nset <value> <value> ...\nSets the filters' internal values, one per filter.\n\nclear\nSets every filter back to zero.\n\nOUTPUTS:\n\nout:\nA NumPy array with one value fewer than there are degrees: each filter minus the next, slower one.\n\nSTARTING UP:\nEvery filter starts at zero, so a signal that begins far from zero looks, for a moment, as if it had just jumped there - a large first gap. Send set with the starting value for each filter to begin without it.\n\ndiff_filter_bank is the same node under another name.\n\nSEE ALSO:\nmulti_filter    the smoothed values themselves\nfilter          one smoothing\ndiff            the plain change from one value to the next, unsmoothed\nband_pass       a sharper split by speed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "diff_filter tells you how much a signal is MOVING at a chosen timescale - and settles back to zero whenever the signal holds still.\n\nInside, it smooths the signal the way the filter node does, at two degrees: a quick one and a slow one. It sends the GAP between them. While the signal holds steady, both have caught up and the gap is zero. When the signal moves, the quick filter follows at once and the slow one lags, so the gap opens - then closes again as the slow one catches up. Rising movement gives a positive gap, falling movement a negative one.\n\nThe top demo shows exactly this. A square wave jumps between -0.7 and 0.7. \"multi_filter 0 0.8 0.97\" draws the wave itself (a degree of 0 is no smoothing), a quick smoothing and a slow one. \"diff_filter 0.8 0.97\" sends the gap between the quick and slow lines: a spike at each jump, dying away while the wave holds.\n\nSo it is a smoothed \"how fast is this changing\", with jitter taken out. It ignores WHERE the signal is and reports only how it moves, which makes it good for onsets: a hand starting to move, a sound starting to swell, a step in a sensor reading. A slow drift barely registers.\n\nBANDS IN TIME:\nGive it more than two degrees and it sends one gap for each neighbouring pair, so N degrees give N - 1 values. Each catches movement between those two timescales: anything quicker than the quick filter can follow is smoothed away, and anything slower than the slow filter's lag leaves almost no gap.\n\nIn the lower demo, a quick wobble rides on a slow swell. \"diff_filter 0.3 0.85 0.99\" pulls them apart: its first value (the 0.3 to 0.85 gap) mostly follows the wobble, its second (0.85 to 0.99) mostly the swell. The split is soft, not a brick wall - each band lets a little of the other through.\n\nAs a rough guide, at 60 values a second a degree d responds over about 1 / (1 - d)\nvalues: 0.8 over 5 (a twelfth of a second), 0.97 over 33 (half a second), 0.99 over 100 (nearly two seconds).\n\nSYNTAX:\ndiff_filter <degree> <degree> ...\n\nEXAMPLES:\ndiff_filter 0.8 0.97          one value: movement over a tenth to half a second\ndiff_filter 0.3 0.85 0.99     two values: quick movement, then slow movement\n\nINPUTS and PARAMETERS:\n\nin:\nA single number. Receiving data here triggers the node. diff_filter spreads one signal over several filters; it does not filter each element of an array.\n\nfilter 0, filter 1, ...:\nOne inlet per degree, from 0.0 to 1.0, as on the filter node: higher is smoother and slower. Give them from quickest to slowest, so that each gap is quick minus slow and rising movement comes out positive.\n\nMESSAGES:\n\nset <value> <value> ...\nSets the filters' internal values, one per filter.\n\nclear\nSets every filter back to zero.\n\nOUTPUTS:\n\nout:\nA NumPy array with one value fewer than there are degrees: each filter minus the next, slower one.\n\nSTARTING UP:\nEvery filter starts at zero, so a signal that begins far from zero looks, for a moment, as if it had just jumped there - a large first gap. Send set with the starting value for each filter to begin without it.\n\ndiff_filter_bank is the same node under another name.\n\nSEE ALSO:\nmulti_filter    the smoothed values themselves\nfilter          one smoothing\ndiff            the plain change from one value to the next, unsmoothed\nband_pass       a sharper split by speed"
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "square",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 square"
+        },
+        "4": {
+            "name": "multi_filter",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 160,
+            "width": 142,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "filter 0",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "filter 1",
+                    "value": 0.8,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "filter 2",
+                    "value": 0.97,
+                    "value_type": "float"
+                }
+            },
+            "init": "multi_filter 0.0 0.8 0.97"
+        },
+        "5": {
+            "name": "plot",
+            "id": 422,
+            "position_x": 240,
+            "position_y": 62,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "init": "comment the wave, a quick smoothing and a slow one",
+            "name": "comment",
+            "id": 459,
+            "position_x": 574,
+            "position_y": 250,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the wave, a quick smoothing and a slow one",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the wave, a quick smoothing and a slow one"
+        },
+        "7": {
+            "name": "diff_filter",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 300,
+            "width": 142,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "filter 0",
+                    "value": 0.8,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "filter 1",
+                    "value": 0.97,
+                    "value_type": "float"
+                }
+            },
+            "init": "diff_filter 0.8 0.97",
+            "highlight": true
+        },
+        "8": {
+            "name": "plot",
+            "id": 533,
+            "position_x": 240,
+            "position_y": 300,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the gap between them: a spike at each jump, then zero",
+            "name": "comment",
+            "id": 570,
+            "position_x": 574,
+            "position_y": 488,
+            "width": 334,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the gap between them: a spike at each jump, then zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the gap between them: a spike at each jump, then zero"
+        },
+        "10": {
+            "name": "signal",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 0.4,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 0.4 sin"
+        },
+        "11": {
+            "name": "signal",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 8.0 sin"
+        },
+        "12": {
+            "name": "+",
+            "id": 681,
+            "position_x": 190,
+            "position_y": 600,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 0.0"
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 310,
+            "position_y": 560,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "init": "comment a quick wobble riding on a slow swell",
+            "name": "comment",
+            "id": 755,
+            "position_x": 574,
+            "position_y": 748,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a quick wobble riding on a slow swell",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a quick wobble riding on a slow swell"
+        },
+        "15": {
+            "name": "diff_filter",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 800,
+            "width": 142,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "filter 0",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "filter 1",
+                    "value": 0.85,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "filter 2",
+                    "value": 0.99,
+                    "value_type": "float"
+                }
+            },
+            "init": "diff_filter 0.3 0.85 0.99",
+            "highlight": true
+        },
+        "16": {
+            "name": "plot",
+            "id": 829,
+            "position_x": 240,
+            "position_y": 800,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 574,
+            "position_y": 988,
+            "width": 218,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "first value: mostly the wobble\nsecond value: mostly the swell",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "first value: mostly the wobble\nsecond value: mostly the swell"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 1008,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

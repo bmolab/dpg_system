@@ -1,0 +1,827 @@
+{
+    "name": "t[]_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t[]_help.json",
+    "patches": {
+        "0": {
+            "height": 560,
+            "width": 650,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1125,
+            "name": "make_numbered",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1162,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends the tensor ten times a second",
+                    "id": 1236,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 330,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends the tensor ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends the tensor ten times a second"
+                },
+                "3": {
+                    "name": "t.arange",
+                    "init": "t.arange 0 100 1",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 190,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "step",
+                            "value": 1.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 0, 1, 2 ... 99",
+                    "id": 1310,
+                    "position_x": 250,
+                    "position_y": 140,
+                    "width": 200,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "0, 1, 2 ... 99",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "0, 1, 2 ... 99"
+                },
+                "5": {
+                    "name": "t.reshape",
+                    "init": "t.reshape 10 10",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 300,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into 10 rows of 10",
+                    "id": 1384,
+                    "position_x": 290,
+                    "position_y": 315,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into 10 rows of 10",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into 10 rows of 10"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out numbered",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 400,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "numbered"
+                }
+            }
+        },
+        "1": {
+            "height": 1335,
+            "width": 2036,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1088,
+            "name": "t[]_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t[]_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t[] - take part of a tensor by index",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 451,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t[] - take part of a tensor by index",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t[] - take part of a tensor by index"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1228,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1196,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Takes part of a tensor by position, written the way you would slice it in Python.\n\nUse it for a row, a column, a block, every other element, or the last entry - one joint out of a tensor of joints, the x column out of a list of points, the middle of a frame.\n\nTHE INDEX STRING:\nThe indices field holds the part to take, one entry per dimension, separated by commas - or, when there is no comma anywhere in it, by spaces: 2:5, 4:8 and 2:5 4:8 mean the same, and so do 0, 3 and 0 3. The first entry picks rows, the second columns, and so on. Each entry is one of:\n\n  3        one position. Counting starts at 0; -1 is the last. That\n           dimension is REMOVED - 3 on a 10 x 10 tensor gives a 1-D row of\n           10, and 3,7 gives a single value (a tensor with no dimensions).\n  2:5      positions 2, 3 and 4 - the stop is NOT included. Leave out the\n           start or the stop to run from the beginning or to the end;\n           : alone is the whole dimension. The dimension is kept.\n  ::2      a step: every second position. 1::3 is every third, from 1.\n           The step must be positive - ::-1 (reverse) is refused by\n           PyTorch: the console prints an error and nothing is sent. Use\n           t.flip to reverse.\n  ...      every remaining dimension: ...,0 takes the first entry of the\n           LAST dimension, whatever the tensor's shape.\n\nFewer entries than dimensions leave the rest whole, so 2 on a 10 x 10 tensor is the same as 2,:. Square brackets around the whole string are optional: [2:5, 4:8] and 2:5, 4:8 mean the same.\n\nUnlike np.[], t[] does NOT take a list of positions: [0 3 7] is read as three entries, row 0, column 3, position 7 of a third dimension - on a 10 x 10 tensor that is one entry too many, and nothing is sent. An entry that is not a number or a slice is read as : (the whole dimension). To pick chosen rows or columns use t.index_select.\n\nWhen you separate entries with spaces, do not put spaces inside an entry: 2 : 5 would be read as three entries. With commas, spaces are ignored.\n\nSYNTAX:\nt[] <index string>\nDefault ':', the whole tensor. The arguments become the index string,\nread the same way as the field: t[] 0 3 is row 0, column 3 (one value),\nand t[] 2:5 4:8 or t[] 2:5, 4:8 a 3 by 4 block.\n\nEXAMPLE:\nt[] 2:5 4:8\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Sends the selection on arrival.\n\nindices (text field, also an inlet):\nThe index string. Changing it - typing, or a string or radio choice arriving at the inlet - re-slices the LAST tensor received and sends at once.\n\nOUTPUTS:\n\noutput:\nThe selected part, on the same device and of the same dtype as the input. Each single-number entry removes one dimension. It is a view of the input, not a copy.\n\nWhen the string has more entries than the tensor has dimensions, nothing is sent and nothing is said. A position past the end (12 on a 10-row tensor) prints an error in the console and sends nothing. A RANGE past the end is not an error: 8:20 gives rows 8 and 9.\n\nREADING THE DEMO:\nThe left heat_map is the source, every cell printing its own number - the tens digit is the row, the units digit the column. Pick an index string in the radio and the right heat_map shows exactly the cells taken, still numbered; t.info gives the shape of the result (3,7 is the single value 37, with no shape at all, so t.info's list goes blank). Or type your own into the field on t[] - with commas or with spaces (3 7 is the same as 3,7).\n\nWatch :,3 against :,3:4. Both take column 3, but :,3 removes the column dimension, leaving a 1-D tensor of 10 - which a heat_map draws lying down, as one row. :,3:4 keeps it as 10 rows of 1, standing up.\n\nRELATED:\nt.select takes one position along one dimension, chosen by numbers rather than typed. t.narrow takes a run of positions along one dimension. t.index_select picks a list of positions. t.masked_select selects by a condition. np.[] is the numpy version, and does take lists of positions.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1180,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Takes part of a tensor by position, written the way you would slice it in Python.\n\nUse it for a row, a column, a block, every other element, or the last entry - one joint out of a tensor of joints, the x column out of a list of points, the middle of a frame.\n\nTHE INDEX STRING:\nThe indices field holds the part to take, one entry per dimension, separated by commas - or, when there is no comma anywhere in it, by spaces: 2:5, 4:8 and 2:5 4:8 mean the same, and so do 0, 3 and 0 3. The first entry picks rows, the second columns, and so on. Each entry is one of:\n\n  3        one position. Counting starts at 0; -1 is the last. That\n           dimension is REMOVED - 3 on a 10 x 10 tensor gives a 1-D row of\n           10, and 3,7 gives a single value (a tensor with no dimensions).\n  2:5      positions 2, 3 and 4 - the stop is NOT included. Leave out the\n           start or the stop to run from the beginning or to the end;\n           : alone is the whole dimension. The dimension is kept.\n  ::2      a step: every second position. 1::3 is every third, from 1.\n           The step must be positive - ::-1 (reverse) is refused by\n           PyTorch: the console prints an error and nothing is sent. Use\n           t.flip to reverse.\n  ...      every remaining dimension: ...,0 takes the first entry of the\n           LAST dimension, whatever the tensor's shape.\n\nFewer entries than dimensions leave the rest whole, so 2 on a 10 x 10 tensor is the same as 2,:. Square brackets around the whole string are optional: [2:5, 4:8] and 2:5, 4:8 mean the same.\n\nUnlike np.[], t[] does NOT take a list of positions: [0 3 7] is read as three entries, row 0, column 3, position 7 of a third dimension - on a 10 x 10 tensor that is one entry too many, and nothing is sent. An entry that is not a number or a slice is read as : (the whole dimension). To pick chosen rows or columns use t.index_select.\n\nWhen you separate entries with spaces, do not put spaces inside an entry: 2 : 5 would be read as three entries. With commas, spaces are ignored.\n\nSYNTAX:\nt[] <index string>\nDefault ':', the whole tensor. The arguments become the index string,\nread the same way as the field: t[] 0 3 is row 0, column 3 (one value),\nand t[] 2:5 4:8 or t[] 2:5, 4:8 a 3 by 4 block.\n\nEXAMPLE:\nt[] 2:5 4:8\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Sends the selection on arrival.\n\nindices (text field, also an inlet):\nThe index string. Changing it - typing, or a string or radio choice arriving at the inlet - re-slices the LAST tensor received and sends at once.\n\nOUTPUTS:\n\noutput:\nThe selected part, on the same device and of the same dtype as the input. Each single-number entry removes one dimension. It is a view of the input, not a copy.\n\nWhen the string has more entries than the tensor has dimensions, nothing is sent and nothing is said. A position past the end (12 on a 10-row tensor) prints an error in the console and sends nothing. A RANGE past the end is not an error: 8:20 gives rows 8 and 9.\n\nREADING THE DEMO:\nThe left heat_map is the source, every cell printing its own number - the tens digit is the row, the units digit the column. Pick an index string in the radio and the right heat_map shows exactly the cells taken, still numbered; t.info gives the shape of the result (3,7 is the single value 37, with no shape at all, so t.info's list goes blank). Or type your own into the field on t[] - with commas or with spaces (3 7 is the same as 3,7).\n\nWatch :,3 against :,3:4. Both take column 3, but :,3 removes the column dimension, leaving a 1-D tensor of 10 - which a heat_map draws lying down, as one row. :,3:4 keeps it as 10 rows of 1, standing up.\n\nRELATED:\nt.select takes one position along one dimension, chosen by numbers rather than typed. t.narrow takes a run of positions along one dimension. t.index_select picks a list of positions. t.masked_select selects by a condition. np.[] is the numpy version, and does take lists of positions."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 96,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_numbered",
+                    "patcher id": 1125
+                },
+                "4": {
+                    "init": "comment open make_numbered to see how it is made",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 924,
+                    "position_y": 67,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "open make_numbered to see how it is made",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "open make_numbered to see how it is made"
+                },
+                "5": {
+                    "name": "heat_map",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 162,
+                    "width": 408,
+                    "height": 310,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 260,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 10,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 99.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "text_block",
+                    "id": 459,
+                    "annotation": true,
+                    "position_x": 924,
+                    "position_y": 172,
+                    "width": 274,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "the source: 10 x 10, each cell numbered\nrow then column - 37 is row 3, column 7",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 266,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "the source: 10 x 10, each cell numbered\nrow then column - 37 is row 3, column 7"
+                },
+                "7": {
+                    "name": "radio",
+                    "id": 496,
+                    "position_x": 490,
+                    "position_y": 62,
+                    "width": 68,
+                    "height": 168,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "radio : 2 -1 :,3 :,3:4 2:5,4:8 ::2,::2 1::3 ...,0 3,7"
+                },
+                "8": {
+                    "init": "comment pick an index string",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 924,
+                    "position_y": 107,
+                    "width": 131,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "pick an index string",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "pick an index string"
+                },
+                "9": {
+                    "name": "t[]",
+                    "id": 570,
+                    "position_x": 490,
+                    "position_y": 470,
+                    "width": 256,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t[] 2:5 4:8",
+                    "highlight": true
+                },
+                "10": {
+                    "init": "comment or type one into the field here",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 924,
+                    "position_y": 480,
+                    "width": 199,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "or type one into the field here",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "or type one into the field here"
+                },
+                "11": {
+                    "name": "heat_map",
+                    "id": 644,
+                    "position_x": 490,
+                    "position_y": 560,
+                    "width": 408,
+                    "height": 310,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 260,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 3,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 99.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment the cells taken, still numbered",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 924,
+                    "position_y": 570,
+                    "width": 199,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the cells taken, still numbered",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the cells taken, still numbered"
+                },
+                "13": {
+                    "name": "t.info",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 560,
+                    "width": 45,
+                    "height": 84,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "14": {
+                    "name": "list",
+                    "id": 755,
+                    "position_x": 30,
+                    "position_y": 710,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "comment shape of the selection",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 924,
+                    "position_y": 715,
+                    "width": 144,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "shape of the selection",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "shape of the selection"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 954,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.select"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 112,
+                    "position_y": 954,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.narrow"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 194,
+                    "position_y": 954,
+                    "width": 104,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.index_select"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 314,
+                    "position_y": 954,
+                    "width": 110,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.masked_select"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 440,
+                    "position_y": 954,
+                    "width": 48,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.[]"
+                },
+                "21": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1014,
+                    "position_x": 30,
+                    "position_y": 920,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "22": {
+                    "name": "close",
+                    "id": 1051,
+                    "position_x": 24,
+                    "position_y": 1028,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "numbered",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "numbered",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "indices"
+                },
+                "3": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "4": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "shape",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

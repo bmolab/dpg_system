@@ -6,6 +6,7 @@ import time
 import string
 import sys
 import os
+import pathlib
 import torch
 import copy
 import queue
@@ -269,7 +270,7 @@ class CommentNode(Node):
         self.comment_text_option.widget.adjust_to_text_width()
 
     def custom_create(self, from_file):
-        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        self.bind_chromeless_theme(CommentNode.comment_theme)
         dpg.configure_item(self.uuid, label='')
 
     def save_custom(self, container):
@@ -278,12 +279,12 @@ class CommentNode(Node):
 
     def load_custom(self, container):
         self.comment_text = container['comment']
-        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        self.bind_chromeless_theme(CommentNode.comment_theme)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        self.bind_chromeless_theme(CommentNode.comment_theme)
 
 
 class TextBlockNode(Node):
@@ -330,6 +331,9 @@ class TextBlockNode(Node):
 
     def width_changed(self):
         dpg.configure_item(self.text_block.widget.uuid, width=self.width_option())
+        # the wrap is worked out from the width: without this a narrower or
+        # wider box kept the old line breaks
+        self.text_block.widget.rewrap()
 
     def height_changed(self):
         dpg.configure_item(self.text_block.widget.uuid, height=self.height_option())
@@ -349,7 +353,7 @@ class TextBlockNode(Node):
             TextBlockNode.inited = True
 
     def custom_create(self, from_file):
-        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        self.bind_chromeless_theme(TextBlockNode.theme, frameless=True)
         dpg.configure_item(self.uuid, label='')
 
     def save_custom(self, container):
@@ -359,12 +363,12 @@ class TextBlockNode(Node):
     def load_custom(self, container):
         text = container['text']
         self.text_block.set(text)
-        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        self.bind_chromeless_theme(TextBlockNode.theme, frameless=True)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        self.bind_chromeless_theme(TextBlockNode.theme, frameless=True)
 
 
 class ClosePatchNode(Node):
@@ -395,7 +399,7 @@ class ClosePatchNode(Node):
             ClosePatchNode.inited = True
 
     def custom_create(self, from_file):
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
         self.input.widget.set_active_theme(Node.active_theme_yellow)
         dpg.set_item_height(self.input.widget.uuid, 28)
@@ -422,19 +426,20 @@ class ClosePatchNode(Node):
         container['name'] = 'close'
 
     def load_custom(self, container):
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
 
 
 class HelpLinkNode(Node):
     """A button that walks the node browser: help_link <target> [label words].
 
     <target> is either a browser page (help/browser/<target>.json) or a help
-    file stem (help/<target>_help.json). Following a page link REPLACES the
+    file stem (help/<target>_help.json), or a node name that help_index.json
+    maps to a shared page. Following a page link REPLACES the
     page holding the button, and opening a help patch closes the one the
     browser opened before -- so browsing leaves at most one page and one help
     patch open, however far you go. A tab the user has edited (editor.modified)
@@ -486,7 +491,7 @@ class HelpLinkNode(Node):
         self.colour_option.widget.combo_items = ['auto'] + list(HelpLinkNode.palette)
 
     def custom_create(self, from_file):
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
         self.colour_changed()
         dpg.set_item_height(self.input.widget.uuid, 28)
@@ -547,6 +552,13 @@ class HelpLinkNode(Node):
         name = stem + '_help'
         path = os.path.join(HelpLinkNode.help_dir(), name + '.json')
         if not os.path.exists(path):
+            # A node name documented on a shared page: look it up the same way
+            # a node's own help does, so links name nodes, not page stems.
+            indexed = Node.load_help_index(pathlib.Path(HelpLinkNode.help_dir())).get(stem)
+            if indexed is not None:
+                name = indexed + '_help'
+                path = os.path.join(HelpLinkNode.help_dir(), name + '.json')
+        if not os.path.exists(path):
             print('help_link: no help patch', path)
             return
         editor = app.find_editor(name)
@@ -563,12 +575,12 @@ class HelpLinkNode(Node):
         app.select_editor(editor)
 
     def load_custom(self, container):
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
 
 
 class SaveNode(_ViewButtonNodeMixin, Node):
@@ -1335,15 +1347,17 @@ class GateNode(Node):
             self.state = any_to_int(self.choice_input())
 
     def execute(self):
+        # Read (and so un-fresh) every arrival, open or shut: a value that
+        # arrived while shut is dropped, not re-sent when the gate reopens.
+        if not self.gated_input.fresh_input:
+            return
+        value = self.gated_input()
         if self.num_gates == 1:
             if self.bool_state:
-                if self.gated_input.fresh_input:
-                    self.outputs[0].send(self.gated_input())
+                self.outputs[0].send(value)
         else:
             if self.num_gates >= self.state > 0:
-                if self.gated_input.fresh_input:
-                    value = self.gated_input()
-                    self.outputs[self.state - 1].send(self.gated_input())
+                self.outputs[self.state - 1].send(value)
 
 
 class SwitchNode(Node):
@@ -2811,7 +2825,6 @@ class DictExtractNode(Node):
             if i < len(self.extract_keys):
                 key = self.extract_keys[i]
                 self.outputs[i].set_label(key)
-                self.outputs[i].send(received_dict[key])
                 self.extract_opt[i].set(key)
                 dpg.show_item(self.outputs[i].uuid)
             else:
@@ -2855,6 +2868,9 @@ class DictRetrieveNode(Node):
 
     def key_changed(self):
         key = self.key_input()
+        # a message box sends a list: one word is that word, more are joined with spaces
+        if isinstance(key, (list, tuple)):
+            key = key[0] if len(key) == 1 else any_to_string(key)
         self.key = key
         if self.key in self.dict:
             self.output.send(self.dict[self.key])
@@ -3144,7 +3160,12 @@ class DictNode(Node):
     def dump(self, message='', data=[]):
         for key in self.collection:
             out_list = [key]
-            out_list += self.collection[key]
+            value = self.collection[key]
+            # a list value is spread after the key; anything else is one item
+            if isinstance(value, (list, tuple)):
+                out_list += value
+            else:
+                out_list.append(value)
             self.output.send(out_list)
 
     def send_dict(self):

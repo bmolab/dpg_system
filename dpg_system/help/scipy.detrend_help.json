@@ -1,0 +1,753 @@
+{
+    "name": "scipy.detrend_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.detrend_help.json",
+    "patches": {
+        "0": {
+            "height": 710,
+            "width": 630,
+            "position": [
+                160,
+                160
+            ],
+            "id": 903,
+            "name": "make_drift",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 940,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 1000",
+                    "id": 977,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 1000.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment every second",
+                    "id": 1014,
+                    "position_x": 190,
+                    "position_y": 55,
+                    "width": 200,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "every second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "every second"
+                },
+                "3": {
+                    "name": "np.linspace",
+                    "init": "np.linspace 0 3 120",
+                    "id": 1051,
+                    "position_x": 330,
+                    "position_y": 130,
+                    "width": 190,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment the drift: 0 to 3",
+                    "id": 1088,
+                    "position_x": 330,
+                    "position_y": 290,
+                    "width": 220,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the drift: 0 to 3",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the drift: 0 to 3"
+                },
+                "5": {
+                    "name": "np.arange",
+                    "init": "np.arange 120",
+                    "id": 1125,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 150,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "*",
+                    "init": "* 9",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 270,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 360,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "8": {
+                    "name": "comment",
+                    "init": "comment 3 cycles",
+                    "id": 1236,
+                    "position_x": 190,
+                    "position_y": 375,
+                    "width": 160,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "3 cycles",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "3 cycles"
+                },
+                "9": {
+                    "name": "+",
+                    "init": "+",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 450,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "out",
+                    "init": "out drifting",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 550,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1051,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 1051,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 1,
+                    "dest_input_name": "operand"
+                },
+                "3": {
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "drifting"
+                }
+            }
+        },
+        "1": {
+            "height": 1021,
+            "width": 1670,
+            "position": [
+                100,
+                100
+            ],
+            "id": 866,
+            "name": "scipy.detrend_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.detrend_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment scipy.detrend - take away a drift",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 414,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "scipy.detrend - take away a drift",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "scipy.detrend - take away a drift"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 862,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 916,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Removes a steady drift from a recording - the best-fitting straight line through it - leaving only the movement around that line. Or, with constant, just removes the average level.\n\nSensors drift; performers walk slowly across the room while they gesture; a breathing signal rises as the sensor warms. A drift swamps everything else: it dominates a spectrum, misleads a mean, defeats a threshold. Taking it away first leaves the movement itself.\n\nSYNTAX:\nscipy.detrend <linear or constant>\nDefault: linear.\n\nINPUTS and PARAMETERS:\n\nin:\nThe recording (a list or array). Every input is detrended and sent.\n\naxis (int box, also an inlet):\nWhich way time runs: -1 along each row, 0 down each column - for a buffer of frames x joints, use 0.\n\nremove:\nAn option, under the node. linear (the default) takes away the best straight line;\nconstant takes away only the average level.\n\nOUTPUTS:\n\ndetrended:\nThe recording with the drift taken away, the same shape.\n\nREADING THE DEMO:\nThe make_drift subpatcher makes a wave of 3 cycles riding on a steady rise from 0 to 3 (left). Detrended (right), the rise is gone and the wave swings about 0.\n\nRELATED:\nscipy.filtfilt high-pass removes slow movement of any shape, not only straight lines. np.polyfit fits a curved trend. np.mean and - remove just the average.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 900,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Removes a steady drift from a recording - the best-fitting straight line through it - leaving only the movement around that line. Or, with constant, just removes the average level.\n\nSensors drift; performers walk slowly across the room while they gesture; a breathing signal rises as the sensor warms. A drift swamps everything else: it dominates a spectrum, misleads a mean, defeats a threshold. Taking it away first leaves the movement itself.\n\nSYNTAX:\nscipy.detrend <linear or constant>\nDefault: linear.\n\nINPUTS and PARAMETERS:\n\nin:\nThe recording (a list or array). Every input is detrended and sent.\n\naxis (int box, also an inlet):\nWhich way time runs: -1 along each row, 0 down each column - for a buffer of frames x joints, use 0.\n\nremove:\nAn option, under the node. linear (the default) takes away the best straight line;\nconstant takes away only the average level.\n\nOUTPUTS:\n\ndetrended:\nThe recording with the drift taken away, the same shape.\n\nREADING THE DEMO:\nThe make_drift subpatcher makes a wave of 3 cycles riding on a steady rise from 0 to 3 (left). Detrended (right), the rise is gone and the wave swings about 0.\n\nRELATED:\nscipy.filtfilt high-pass removes slow movement of any shape, not only straight lines. np.polyfit fits a curved trend. np.mean and - remove just the average."
+                },
+                "3": {
+                    "init": "comment a wave on a drift",
+                    "name": "comment",
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 113,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a wave on a drift",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a wave on a drift"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 78,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_drift",
+                    "patcher id": 903
+                },
+                "5": {
+                    "init": "comment take the drift away",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 260,
+                    "position_y": 53,
+                    "width": 125,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "take the drift away",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "take the drift away"
+                },
+                "6": {
+                    "name": "scipy.detrend",
+                    "id": 459,
+                    "position_x": 260,
+                    "position_y": 92,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "7": {
+                    "init": "comment in",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 28,
+                    "position_y": 250,
+                    "width": 21,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "in",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "in"
+                },
+                "8": {
+                    "name": "plot",
+                    "id": 533,
+                    "position_x": 28,
+                    "position_y": 285,
+                    "width": 388,
+                    "height": 180,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 130,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 120,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 120.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.5,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 4.5,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment out: the wave about 0",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 440,
+                    "position_y": 250,
+                    "width": 138,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "out: the wave about 0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "out: the wave about 0"
+                },
+                "10": {
+                    "name": "plot",
+                    "id": 607,
+                    "position_x": 440,
+                    "position_y": 285,
+                    "width": 388,
+                    "height": 180,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 130,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 120,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 120.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.5,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 4.5,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "11": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 520,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 30,
+                    "position_y": 554,
+                    "width": 103,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link scipy.filtfilt"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 181,
+                    "position_y": 554,
+                    "width": 78,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.polyfit"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 302,
+                    "position_y": 554,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.mean"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 399,
+                    "position_y": 554,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.diff"
+                },
+                "16": {
+                    "name": "close",
+                    "id": 829,
+                    "position_x": 24,
+                    "position_y": 664,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "drifting",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "1": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "drifting",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "detrended",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

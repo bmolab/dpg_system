@@ -9,7 +9,10 @@ careful one. Nothing here runs at patch time — `dpg_system` never imports it.
 Reads every `*.py` in `dpg_system/` with `ast` — no import, no GUI, no torch —
 and writes `iface.json`: for each registered node name, the class that builds it
 and every inlet, outlet, property and option it declares, with widget types,
-defaults and combo choices.
+defaults and combo choices. A base class is looked up first in the subclass's
+own file, then in the module it is imported from: MotionSDK.py has its own
+`class Node`, which once stood in for node.py's and hid every option the real
+Node adds (hide_title_bar).
 
     python3 extract_interface.py iface.json
 
@@ -25,6 +28,12 @@ the source line attached, so you can look them up by hand.
 Checks help patches against `iface.json`:
 
     python3 validate_help.py ../*.json
+
+**A text_block stores its text twice** -- a `block` property and a top-level
+`text` field -- and the app loads `text`. Edit only `block` (by script, or by
+copying a page and changing it) and the old text comes back on load. validate
+reports any text_block whose two copies differ; this caught smpl_resist showing
+smpl_ragdoll's prose.
 
 It catches node names that are not registered, links naming an inlet or outlet
 the node does not have, properties matching nothing on the node, and links
@@ -168,6 +177,11 @@ to show anything. It found three real node bugs the first time it ran — see th
 note at the end of this file. Outlets that only fire on a click (toggle, button)
 are skipped; "never sent" on a counter's carry outlet is normal.
 
+`--click` runs the same 220 frames as a plain run. It used to stop after 40
+(under a second), and every demo driven by a metro of a second or more then
+read "metro never sent": the metro's first bang goes out during load, before
+smoke's taps exist, and its next tick came after the run had ended.
+
 ### test_node_fixes.py  (needs the conda env)
 Regression tests for the node bugs listed at the end of this file. Each was
 silent — the patch loaded, validated and looked right, and the demo sat at zero.
@@ -184,6 +198,28 @@ Runs the whole pipeline in the right order:
 generate -> relayout -> validate -> coverage. Order matters: the generators
 write provisional positions, so relayout has to run after them. Use this rather
 than running the generators by hand.
+
+### reflow_prose.py and compact_see_also.py
+Two passes over saved pages, both also run inside build() so regenerated
+pages come out the same:
+
+    python3 dpg_system/help/tools/reflow_prose.py dpg_system/help/*_help.json
+    python3 dpg_system/help/tools/compact_see_also.py dpg_system/help/*_help.json
+
+`reflow_prose.py` stores the main prose block one line per paragraph. The
+generators hard-wrap at about 72 columns, and a text_block wraps its text to
+its own width, so a narrower box or a bigger font broke every line twice.
+It keeps headings, SYNTAX/EXAMPLE lines, lists, aligned tables and any line
+under 50 characters (a line its author ended on purpose).
+
+`compact_see_also.py` restyles the SEE ALSO row: the label on its own line,
+the help_link buttons 16 px apart under it, everything below moved down one
+line. A row already laid out that way (by hand) is left alone.
+
+The text_block itself (TextEditor in node.py) re-wraps when its width
+changes, and keeps the breaks it inserts for display out of the text when
+it is edited. Help pages save it locked (read-only); untick 'lock' in its
+options to edit it.
 
 ### build_help.py
 Builds a help patch from a compact spec — title, prose, a list of demo nodes with
@@ -227,6 +263,21 @@ its members, rather than a `help_file_name` line scattered through 900 classes.
 Keys are help file stems, so `"trig"` means `trig_help.json`. Keys starting with
 `_` are comments and are ignored.
 
+Because `help_file_name` wins over everything, never set it on a class that
+serves several node names: when the family page is later split, every name
+keeps opening the old page (or nothing, once it is deleted). The torch split
+(2026-10-18) removed nine such lines (t.mean_help, t.special_help,
+t.distributions_help, t.dist.distributions_help, t.window_help, t.fft_help).
+
+## numpy and torch: one page per node (2026-10-17/18)
+
+Every np. and t. node has its own page; only true aliases share one (t.ravel on
+t.flatten, t.row_stack on t.vstack, t.non_zero on t.argwhere, t.to on tensor,
+t.dist.gumble on t.dist.gumbel, t.special.softmax / log_softmax on the t.nn
+pages). The torch pages come from make_torch_{make,random,tensor,shape,select,
+elementwise,reduce,stats,linalg,nn,special,signal}_help.py; the old family
+generators (make_torch_calc_a ... make_butterworth_help.py) are gone.
+
 ## adding a family
 
 1. `python3 extract_interface.py iface.json` if any node changed
@@ -236,6 +287,225 @@ Keys are help file stems, so `"trig"` means `trig_help.json`. Keys starting with
 5. `python3 rebuild.py` to regenerate, relayout and validate everything
 6. `python3 smoke.py ../<family>_help.json` to confirm the demo actually moves
 7. `python3 check_coverage.py <module>.py` to see what is left
+
+## The featured node is highlighted
+
+Every page highlights the node it is about, wherever it appears, including
+inside subpatches: `"highlight": true` on the node, which the app draws with a
+tinted background and a thick amber outline (Visibility > Toggle Highlight
+for Selected). `highlight_featured.py` works out a page's featured names (its
+stem plus whatever resolves to it through check_coverage, so the tensor page
+highlights t.to too) and marks them. `build()` and every `derive_*_help.py`
+script call it before writing, so regenerated pages keep their highlights. Run
+it on its own after making a page by hand. On the comment, text_block,
+help_link and close pages, the page's own title, prose, SEE ALSO row and close
+button are skipped. Nodes drawn without chrome (comment, text_block,
+help_link, close, a hidden title bar) take a highlighted chromeless theme, so
+their highlight shows too.
+
+## Hand-made pages taken out of their generators
+
+`np.sequence_help.json` is laid out by hand: its picture-making chain lives in
+a `make_roving_circle` subpatcher so the page shows np.sequence itself.
+build_help.py does not write subpatchers, so `make_numpy_b_help.py` no longer
+builds it. `np.add_alpha_help.json` is hand-made too (an mgl_sphere behind
+each image shows the transparency), and `make_numpy_c_help.py` no longer
+builds it. `np.sum_help.json` was redesigned by hand (2026-10-18), and
+`np.nansum_help.json` was rebuilt after it (the array's heat_map with the row
+totals in a column beside it and the column totals in a strip under it);
+`make_numpy_reduce_help.py` builds neither now, nor `np.any_help.json`
+(David's rework) and `np.all_help.json` (np.any's layout with np.all in it),
+nor `np.amax_help.json` (make_spot feeding the array, row maxima in a column
+beside it, column maxima in a strip under it) and `np.amin_help.json` (the same
+with make_dark_spot), nor `np.argmax_help.json` (the np.amax layout, with the
+index of each row's and each column's largest value lined up the same way, then
+David's adjustments), nor `np.argmin_help.json` (np.argmax's layout with
+make_dark_spot and np.argmin), so it builds no pages at all now.
+`np.[]_help.json` and `np.crop_help.json` are David's reworks, and
+`np.where_help.json` follows them (a make_ramps subpatcher feeding the two
+branch pictures, then threshold, condition, np.where and result in a row),
+as does `np.argwhere_help.json` (noise, threshold and mask across the top, the
+found pairs and their count under it), so `make_numpy_select_help.py` builds no
+pages at all now.
+`np.clip_help.json` is laid out the same way (make_sine, t array array, np.clip
+and pack 2 in one row, the plot under it), and `np.min_help.json` and
+`np.max_help.json` follow it (with np.amin or np.amax under the plot for
+contrast), so `make_numpy_calc_help.py` no longer builds them.
+`np.cumsum_help.json` is in two chunks (the random walk, the ramp), each a row
+with its two pictures side by side under it, and `np.cumprod_help.json` has the
+np.min row-and-plot layout (make_ones holds the metro and np.ones) with the
+factorials in a row under the plot, and `np.diff_help.json` is in two chunks
+like np.cumsum (the differences with their heat maps, the inverse with its
+lists); `make_numpy_calc_help.py` no longer builds them either.
+`np.distance_from_target_help.json` has the same row-and-plot layout
+(make_point, the node and the number in one row, the plot under it), and so
+does `proximity_trigger_help.json` (state and count stacked beside the node,
+then the pack that adds the threshold lines), and
+`np.proximity_to_target_help.json` (fade, nearest and targets stacked beside the
+node, the nearest plot under the row), so `make_numpy_calc_help.py` builds no
+pages at all now.
+`np.mean_help.json` follows
+the same layout (a toggled glitch of 30 shows the mean jump and the median
+hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
+reworks, and `np.nanmedian_help.json` is np.nanmean's layout with the median
+nodes. `np.std_help.json` is laid out the same way (spread and shift
+sliders into make_noise, and a make_jitter table whose np.std 0 strip sits
+under its columns), and `np.robust_mean_help.json` is David's rework.
+`np.var_help.json` is David's rework too, so `make_numpy_average_help.py`
+builds no pages at all now. `t.take_along_dim_help.json` is David's rework,
+so `make_torch_select_help.py` no longer builds it. `tensor_help.json` is
+David's simplification (t.info's outlet labels show the dtype and device, so
+the string displays are gone), and `t.detach_help.json`, `t.info_help.json`,
+`t.buffer_help.json` and `t.rolling_buffer_help.json` are David's reworks, so
+`make_torch_tensor_help.py` no longer builds any of them. `t.data_set` has
+no page any more: `register_torch_dataloader_nodes()` is never called, so the
+node does not exist in the app (and it has no inlets or outlets anyway).
+check_coverage lists it as undocumented, because iface.json is read from the
+source and still sees its register_node line. Use `relayout.py --minimal`
+on these, never plain relayout.
+
+The sixteen pages for the numpy nodes added 2026-10-24 (atan2,
+np.logical_and/or/xor/not, np.isnan, np.isfinite, np.nan_to_num, np.percentile,
+np.histogram, np.interp, np.convolve, np.correlate, np.linalg.pinv,
+np.linalg.lstsq, np.einsum) were seeded by `seed_numpy_more_help.py` and are
+hand-made from then on. The seeder is deliberately not a `make_*` script, so
+rebuild.py never runs it: its demos flow left to right with each comment above
+its node, and plain relayout would move those comments into a gutter. It also
+refuses to overwrite an existing page without `--force`. Use
+`relayout.py --minimal` on these pages. (`log` is derived with the other
+single-input functions in `derive_math_single_help.py`; only its own page was
+written, because regenerating log2/log10/exp would not reproduce them exactly.)
+The second batch (np.ptp, np.unique, np.cov, np.corrcoef, np.gradient,
+np.fft.rfft, np.fft.irfft, np.take, np.pad, np.tile, np.digitize, np.arange,
+np.eye, np.diag, np.polyfit, np.polyval, np.linalg.svd, np.linalg.eigh) was
+seeded the same way by `seed_numpy_batch2_help.py`, which borrows the first
+seeder's building blocks.
+The third batch (hypot, np.full, np.meshgrid, np.trace, np.tril, np.triu,
+np.take_along_axis, np.tensordot, np.linalg.qr, np.linalg.eig) is seeded by
+`seed_numpy_batch3_help.py`; its element-wise nodes (sign, log1p, degrees,
+radians, tanh, sinh, cosh) are derived in `derive_math_single_help.py`, which
+again wrote only their new pages.
+The fourth batch (np.real, np.imag, np.angle, np.unwrap, np.nanmin,
+np.nanmax, np.nanstd, np.nanvar, np.average, np.histogram2d, np.top_k,
+np.isclose, np.allclose, np.trapezoid, np.cumulative_trapezoid, np.fft.fft,
+np.fft.ifft) is seeded by `seed_numpy_batch4_help.py`. smoke reports the first
+np.allclose on its page as ALWAYS ZERO: that demo is meant to answer false.
+The fifth batch (np.save, np.savetxt, np.loadtxt, np.random.normal,
+np.random.integers, np.random.choice, np.random.permutation,
+np.sliding_window_view, np.maximum.accumulate, np.minimum.accumulate, np.insert,
+np.delete, np.append, np.nanargmax, np.nanargmin, np.bincount) is seeded by
+`seed_numpy_batch5_help.py`. The np.save and np.savetxt demos keep their path
+empty and wire no button node to write: smoke --click bangs button nodes, and a
+write with no path opens a native save dialog that would stall the run. smoke
+reports both as never sent, which is expected. np.loadtxt reads
+help/data/np_loadtxt_example.csv.
+The sixth batch (np.logspace, np.geomspace, np.fft.rfft2, np.fft.fft2,
+np.fft.irfft2, np.fft.ifft2, np.isin, np.intersect1d, np.setdiff1d, np.union1d)
+is seeded by `seed_numpy_batch6_help.py`.
+The scipy nodes (scipy.find_peaks, scipy.filtfilt, scipy.kdtree,
+scipy.cubic_spline, in scipy_nodes.py) are seeded by `seed_scipy_help.py`; the
+peak and filter pages share a make_wobble subpatcher that makes the demo curve.
+The second scipy batch (scipy.resample_poly, scipy.spectrogram, scipy.welch,
+scipy.label, scipy.gaussian_filter, scipy.median_filter) is seeded by
+`seed_scipy2_help.py`. In make_wobble and make_two_tones the ripple branch is
+linked BEFORE the slow wave: an outlet sends in the order its links were made, and
+the ripple must reach the + operand before the slow wave triggers the sum, or the
+first tick (the only one a slow metro gives a quick check) adds nothing to it.
+The third scipy batch (scipy.slerp, scipy.rotation_mean, scipy.align_vectors,
+scipy.rotation_apply, scipy.circmean, scipy.circstd, scipy.hilbert, scipy.detrend,
+scipy.convex_hull, scipy.kmeans, scipy.procrustes, scipy.curve_fit) is seeded by
+`seed_scipy3_help.py`; its make_swell and make_drift subpatchers link the cold
+operand first for the same reason. The rotation nodes are scalar first (w x y z),
+like the quaternion nodes. smoke reports three ALWAYS ZERO outlets on these pages
+(align_vectors' error, circmean's np.mean, procrustes' same-shape difference): each
+demo is showing that the answer is 0.
+The fourth scipy batch (scipy.linear_sum_assignment, scipy.griddata,
+scipy.correlate, scipy.coherence, scipy.local_maxima, scipy.zscore,
+scipy.linregress, scipy.spearmanr, scipy.entropy) is seeded by
+`seed_scipy4_help.py`; make_pair and make_two_rhythms send b before a, so b is held
+when a triggers. smoke reports linear_sum_assignment's cost as ALWAYS ZERO: the
+demo only reorders points that do not move, so the distance moved is 0.
+
+To hand-edit any generated page: open it, rework it, save over the same file
+in dpg_system/help, then remove its build() call from its generator (and add
+it here) so rebuild.py cannot write over it.
+
+## arithmetic: a hand-made template, one page per operation
+
+`arithmetic_help.json` is laid out by hand and is no longer generated by
+`make_math_help.py` -- a rebuild would have overwritten it. It is the family
+overview, and the template for one page per operation (`add`, `subtract`,
+`multiply`, `divide`, `floor_divide`, `modulo`, `power`, `min`, `max`,
+`reverse_subtract`, `reverse_divide`, `perm`, `combination`).
+`derive_arithmetic_help.py` copies its layout into each, swapping in that
+operation's node, operand, plot range and prose. After rearranging the
+overview:
+
+    python3 derive_arithmetic_help.py
+    python3 relayout.py --minimal ../{add,subtract,...}_help.json
+
+It is deliberately not a `make_*` script, so rebuild.py neither runs it nor
+re-flows its pages. It finds template nodes by id; if a node in the overview is
+deleted and remade, update the ids at the top of the script.
+
+`derive_comparison_help.py` does the same for `>`, `>=`, `<`, `<=`, `==`, `!=`
+(pages `greater` ... `not_equal`), from the SAME arithmetic template, importing
+its helpers. comparison_help.json stays the generated overview. Two traps it
+handles: a comparison node's operand inlet is named `''` when given an
+argument but `operand` without one, so cords into it are named per node; and
+its default true/false output cannot be plotted, so the sine and NumPy demos
+set output_type to int / float. `==` / `!=` demos compare whole numbers
+(`// 0.25` steps, int64 random arrays) - floats would never match.
+
+`derive_math_single_help.py` does it for the single-input functions (`abs`,
+`sqrt`, `exp`, `log`, `log1p`, `log2`, `log10`, `sign`, `degrees`, `radians`, `tanh`, `sinh`, `cosh`, `inverse`, `norm`, `round`, `floor`, `ceil`,
+`trunc`; the `np.` rounding names share their pages), again from the
+arithmetic template with the operand box and the second random array taken
+out. Logs and inverse put a `+` offset before the function so the sine never
+reaches zero; `norm` has no sine demo (a single number always gives 1.0) and
+uses a message list `3 4` instead. math_single_help.json stays the overview.
+
+`derive_trig_help.py` does `sin`, `cos`, `tan`, `asin`, `acos`, `atan` by
+importing `derive()` from the math_single script: an angle ramp (saw, 0 to 360)
+for the forward functions, a sine wave for the reverse ones. Trig nodes send
+from `out` (not `result`) and save their `degrees` checkbox, which the op's
+`out` and `props` keys carry. trig_help.json stays the overview.
+
+`derive_color_convert_help.py` does the twelve named colour conversions
+(`rgb_to_hsl` ...) from the hand-made `color_convert_help.json`, which is no
+longer generated by make_basic_color_dict_help.py. A saw sweeps the first
+component of a colour in the FROM space; the swatch needs rgb, so it hangs off
+the converter (to rgb), the input (from rgb) or a second small `<from>_to_rgb`
+node. Don't run relayout on the overview: its top note block saves an
+internal height of 400, which relayout reads as an overlap.
+
+`accumulate_help.json` is also hand-made now (random walk plus an accumulated
+sawtooth) and is no longer generated by make_math_help.py.
+
+`derive_gate_help.py` derives `decreasing`, `change` and `pass` from the
+hand-made `increasing_help.json` (one node class: a gate that sends the value
+itself). The signal there starts by itself, saved with on = true, so there is
+no load_bang / t 1. None of the four is generated by make_math_help.py any more.
+
+## signals start themselves
+
+A `signal` saved with `on` true starts when the patch loads, so help pages no
+longer carry a `load_bang -> t 1` starter for it. `build()` removes such
+starters as it writes a page (generators may still call `starter()`), and
+`strip_starters.py` applies the same rule to hand-made pages. A `t 1` goes only
+if every cord out of it reaches a signal's `on`; a load_bang only if all it fed
+went too (tracker_align's starter also seeds a pak, so it stays).
+
+A metro saves its own on/off too, so a toggle whose only cord goes to a
+metro's `on` goes the same way (`strip_toggles`, run by `build()`; pass
+`keep_toggles=True` where the toggle is the point, as on the toggle page). For
+a per-frame trigger use `tick`, not `metro 16`.
+
+`filter`, `one_euro_filter`, `kalman_filter` and `multi_filter` are David's
+hand layouts and are no longer generated (make_filter_help.py,
+make_signal_filters_help.py). Their small overlaps are deliberate.
+`diff_filter` has its own generated page (make_signal_filters_help.py); its
+material was taken out of the multi_filter page.
 
 ## bugs these tools found
 
@@ -1044,6 +1314,11 @@ triad_openvr, no attempt to install openvr. The module being skipped with a
 clear console line is correct behaviour for an unsupported platform, and making
 the nodes register non-functionally on macOS would be worse, not better.
 
+Update 2026-10-20: triad_openvr IS now vendored, as `dpg_system/vive_openvr.py`
+(it carries fixes the node depends on). The skip behaviour is unchanged: that
+module imports openvr at the top, so on a Mac without openvr the import still
+fails and dpg_app still skips vive_tracker_nodes with the same console line.
+
 What that means for verification, stated plainly: the page's port names are
 checked (validate_help reads them from the AST-extracted interface, which does
 not need the module to import) and the patch loads clean. The WIRING and
@@ -1232,8 +1507,8 @@ sense:
 - movesense, display_info, t.data_set — three singletons.
   `display_info` needs Quartz (pyobjc) on macOS and reports nothing without it —
   verified here, where it returns []. On Linux it reads xrandr.
-  `t.data_set` genuinely has NO inlets and NO outlets; the page says so plainly
-  rather than implying it is usable from a patch.
+  `t.data_set` genuinely has NO inlets and NO outlets, and it turned out never
+  to be registered at all; its page has since been retired.
 - mgl_shader — ShaderToy-compatible. The point worth the most: a shader that
   fails to compile leaves the PREVIOUS one running, so a silent failure looks
   exactly like a shader that did nothing. Watch 'status'.

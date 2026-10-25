@@ -1,0 +1,1195 @@
+{
+    "height": 962,
+    "width": 1856,
+    "position": [
+        8,
+        67
+    ],
+    "id": 10821,
+    "name": "t.take_along_dim_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 10849,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.take_along_dim - a different position in each row",
+            "name": "comment",
+            "id": 10867,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 635,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.take_along_dim - a different position in each row",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "t.take_along_dim - a different position in each row"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 10878,
+            "sid": 3,
+            "position_x": 1070,
+            "position_y": 29,
+            "width": 768,
+            "height": 1096,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Takes a DIFFERENT position from each row (or column), using a tensor of positions shaped like the input.\n\nThe other selectors take the same positions from every row. This one reads its indices row by row: row 0 of the result is taken from row 0 of the input at the positions in row 0 of the indices, and so on. It is the partner of the nodes that MAKE such positions - t.argsort, t.argmax:\n\n  t.argsort 1, then t.take_along_dim 1 with the same tensor, sorts each\n  row (that is the demo).\n  Feed the indices from one tensor and the values from ANOTHER, and you\n  reorder the second by the first - \"sort the angles by the speeds\", or\n  \"the angle of each joint at the moment it was fastest\".\n\nSYNTAX:\nt.take_along_dim <dim: int>\nDefault dim 0. The dim box is always shown.\n\nEXAMPLE:\nt.take_along_dim 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values (a list or numpy array is converted to a float32 tensor). Sends on arrival. This is the only inlet that sends.\n\nindices in:\nThe positions, as whole numbers, with the SAME NUMBER OF DIMENSIONS as the input. Along dim they may be any length (that is how many values each row gives); along every other dimension they must match the input or be 1 (a single row of indices then applies to every row). t.argmax 1 removes the dimension it worked along - put it back with t.unsqueeze 1 before using it here. Wrong shapes print an error in the console and nothing is sent. This inlet is cold: send the indices FIRST. Nothing is sent until indices have arrived.\n\ndim (int box, also an inlet):\nWhich dimension the positions run along: 1 positions within each row, 0 positions within each column. Negative counts from the end (-1 is the last dimension, so on a matrix -1 is 1 and -2 is 0). A dimension the tensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the indices.\n\nREADING THE DEMO:\nClick t.rand for a fresh 6 x 8 tensor; var holds it and the metro re-sends it ten times a second. t.argsort 1 gives, for each row, the column of its smallest value, then the next smallest, and so on - the middle heat_map, numbered 0 to 7, different in every row. t.take_along_dim 1 reads each row at its own positions, so every row of the result runs dark to bright. Click sort_columns and both nodes switch to dim 0: t.argsort then gives each column's positions, 0 to 5 from its smallest value, and every column of the result runs dark to bright from top to bottom. sort_rows switches them back to dim 1. Tick descending on t.argsort and the rows run bright to dark instead.\n\nRELATED:\nt.take uses flat positions. t.index_select takes the same positions from every row. t.argsort and t.argmax make the positions. np.argsort is the numpy argsort; numpy's np.[] cannot take a different position per row.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1080,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "Takes a DIFFERENT position from each row (or column), using a tensor of positions shaped like the input.\n\nThe other selectors take the same positions from every row. This one reads its indices row by row: row 0 of the result is taken from row 0 of the input at the positions in row 0 of the indices, and so on. It is the partner of the nodes that MAKE such positions - t.argsort, t.argmax:\n\n  t.argsort 1, then t.take_along_dim 1 with the same tensor, sorts each\n  row (that is the demo).\n  Feed the indices from one tensor and the values from ANOTHER, and you\n  reorder the second by the first - \"sort the angles by the speeds\", or\n  \"the angle of each joint at the moment it was fastest\".\n\nSYNTAX:\nt.take_along_dim <dim: int>\nDefault dim 0. The dim box is always shown.\n\nEXAMPLE:\nt.take_along_dim 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values (a list or numpy array is converted to a float32 tensor). Sends on arrival. This is the only inlet that sends.\n\nindices in:\nThe positions, as whole numbers, with the SAME NUMBER OF DIMENSIONS as the input. Along dim they may be any length (that is how many values each row gives); along every other dimension they must match the input or be 1 (a single row of indices then applies to every row). t.argmax 1 removes the dimension it worked along - put it back with t.unsqueeze 1 before using it here. Wrong shapes print an error in the console and nothing is sent. This inlet is cold: send the indices FIRST. Nothing is sent until indices have arrived.\n\ndim (int box, also an inlet):\nWhich dimension the positions run along: 1 positions within each row, 0 positions within each column. Negative counts from the end (-1 is the last dimension, so on a matrix -1 is 1 and -2 is 0). A dimension the tensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the indices.\n\nREADING THE DEMO:\nClick t.rand for a fresh 6 x 8 tensor; var holds it and the metro re-sends it ten times a second. t.argsort 1 gives, for each row, the column of its smallest value, then the next smallest, and so on - the middle heat_map, numbered 0 to 7, different in every row. t.take_along_dim 1 reads each row at its own positions, so every row of the result runs dark to bright. Click sort_columns and both nodes switch to dim 0: t.argsort then gives each column's positions, 0 to 5 from its smallest value, and every column of the result runs dark to bright from top to bottom. sort_rows switches them back to dim 1. Tick descending on t.argsort and the rows run bright to dark instead.\n\nRELATED:\nt.take uses flat positions. t.index_select takes the same positions from every row. t.argsort and t.argmax make the positions. np.argsort is the numpy argsort; numpy's np.[] cannot take a different position per row."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 10895,
+            "sid": 4,
+            "position_x": 30,
+            "position_y": 50,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "4": {
+            "init": "t.rand 6 8",
+            "name": "t.rand",
+            "id": 10902,
+            "sid": 5,
+            "position_x": 145,
+            "position_y": 82,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "input",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "shape",
+                    "value": "[6, 8]",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "init": "comment click t.rand for fresh values",
+            "name": "comment",
+            "id": 10927,
+            "sid": 6,
+            "position_x": 141,
+            "position_y": 45,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click t.rand for fresh values",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "click t.rand for fresh values"
+        },
+        "6": {
+            "init": "metro 100",
+            "name": "metro",
+            "id": 10938,
+            "sid": 7,
+            "position_x": 66,
+            "position_y": 278,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "init": "var t_take_along_dim_help",
+            "name": "var",
+            "id": 10951,
+            "sid": 8,
+            "position_x": 359,
+            "position_y": 113,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "name",
+                    "value": "t_take_along_dim_help",
+                    "value_type": "string"
+                }
+            }
+        },
+        "8": {
+            "init": "comment holds the tensor; the metro re-sends it",
+            "name": "comment",
+            "id": 10961,
+            "sid": 9,
+            "position_x": 340,
+            "position_y": 78,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "holds the tensor; the metro re-sends it",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "holds the tensor; the metro re-sends it"
+        },
+        "9": {
+            "init": "t array array",
+            "name": "t",
+            "id": 10972,
+            "sid": 10,
+            "position_x": 501,
+            "position_y": 117,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "array",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "trigger 1",
+                    "value": "array",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "init": "t.argsort 1",
+            "name": "t.argsort",
+            "id": 10998,
+            "sid": 12,
+            "position_x": 406,
+            "position_y": 320,
+            "width": 111,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "descending",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "stable",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 11014,
+            "sid": 13,
+            "position_x": 650,
+            "position_y": 115,
+            "width": 328,
+            "height": 230,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.1f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 11051,
+            "sid": 14,
+            "position_x": 667,
+            "position_y": 383,
+            "width": 328,
+            "height": 230,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 7.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "init": "t.take_along_dim 1",
+            "name": "t.take_along_dim",
+            "id": 11099,
+            "sid": 16,
+            "position_x": 418,
+            "position_y": 655,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "highlight": true
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 11112,
+            "sid": 17,
+            "position_x": 668,
+            "position_y": 666,
+            "width": 328,
+            "height": 230,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.1f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "init": "comment each row read at its own positions: sorted",
+            "name": "comment",
+            "id": 11149,
+            "sid": 18,
+            "position_x": 649,
+            "position_y": 629,
+            "width": 383,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the values of the array rearranged by the sort position above",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "the values of the array rearranged by the sort position above"
+        },
+        "16": {
+            "init": "help_link t.take",
+            "name": "help_link",
+            "id": 11160,
+            "sid": 19,
+            "position_x": 58,
+            "position_y": 764,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "t.take",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "help_link t.index_select",
+            "name": "help_link",
+            "id": 11171,
+            "sid": 20,
+            "position_x": 128,
+            "position_y": 764,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "t.index_select",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "init": "help_link t.argsort",
+            "name": "help_link",
+            "id": 11182,
+            "sid": 21,
+            "position_x": 248,
+            "position_y": 764,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "t.argsort",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "init": "help_link t.argmax",
+            "name": "help_link",
+            "id": 11193,
+            "sid": 22,
+            "position_x": 337,
+            "position_y": 764,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "t.argmax",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "20": {
+            "init": "help_link np.argsort",
+            "name": "help_link",
+            "id": 11204,
+            "sid": 23,
+            "position_x": 419,
+            "position_y": 764,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.argsort",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "21": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 11215,
+            "sid": 24,
+            "position_x": 58,
+            "position_y": 730,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "22": {
+            "name": "close",
+            "id": 11226,
+            "sid": 25,
+            "position_x": 52,
+            "position_y": 838,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "23": {
+            "init": "comment the indices for each row that would sort the values",
+            "name": "comment",
+            "id": 11315,
+            "sid": 30,
+            "position_x": 612,
+            "position_y": 349,
+            "width": 445,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "these values are the order of values in each row if sorted by magnitude",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "these values are the order of values in each row if sorted by magnitude"
+        },
+        "24": {
+            "init": "comment  the array ",
+            "name": "comment",
+            "id": 11334,
+            "sid": 32,
+            "position_x": 718,
+            "position_y": 79,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": " the array ",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": " the array "
+        },
+        "25": {
+            "init": "button sort_rows",
+            "name": "button",
+            "id": 11426,
+            "sid": 39,
+            "position_x": 56,
+            "position_y": 474,
+            "width": 80,
+            "height": 53,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "sort_rows",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 72,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 23,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "color",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "7": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "26": {
+            "init": "button sort_rows",
+            "name": "button",
+            "id": 11454,
+            "sid": 40,
+            "position_x": 54,
+            "position_y": 554,
+            "width": 94,
+            "height": 53,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "message",
+                    "value": "sort_columns",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 23,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "flash_duration",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "color",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "7": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "27": {
+            "init": "t 0",
+            "name": "t",
+            "id": 11523,
+            "sid": 44,
+            "position_x": 169,
+            "position_y": 574,
+            "width": 22,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "0",
+                    "value_type": "string"
+                }
+            }
+        },
+        "28": {
+            "init": "t 1",
+            "name": "t",
+            "id": 11549,
+            "sid": 47,
+            "position_x": 165,
+            "position_y": 479,
+            "width": 22,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "1",
+                    "value_type": "string"
+                }
+            }
+        },
+        "29": {
+            "init": "comment choose the dimension along which to sort",
+            "name": "comment",
+            "id": 11573,
+            "sid": 49,
+            "position_x": 52,
+            "position_y": 433,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "choose the dimension along which to sort",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "choose the dimension along which to sort"
+        },
+        "30": {
+            "init": "comment output indices that would sort along dimension",
+            "name": "comment",
+            "id": 11592,
+            "sid": 51,
+            "position_x": 332,
+            "position_y": 285,
+            "width": 291,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output indices that would sort along dimension",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "output indices that would sort along dimension"
+        },
+        "31": {
+            "init": "comment reorder using the sorting indices",
+            "name": "comment",
+            "id": 11611,
+            "sid": 53,
+            "position_x": 383,
+            "position_y": 620,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "reorder using the sorting indices",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "reorder using the sorting indices"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 10895,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 10902,
+            "dest_node_name": "t.rand",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 10902,
+            "source_node_name": "t.rand",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 10951,
+            "dest_node_name": "var",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 10938,
+            "source_node_name": "metro",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 10951,
+            "dest_node_name": "var",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 10951,
+            "source_node_name": "var",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 10972,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 10972,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "array",
+            "dest_node": 11014,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 10972,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "array",
+            "dest_node": 11099,
+            "dest_node_name": "t.take_along_dim",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "6": {
+            "source_node": 10972,
+            "source_node_name": "t",
+            "source_output_index": 1,
+            "source_output_name": "array",
+            "dest_node": 10998,
+            "dest_node_name": "t.argsort",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 10998,
+            "source_node_name": "t.argsort",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 11051,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 10998,
+            "source_node_name": "t.argsort",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 11099,
+            "dest_node_name": "t.take_along_dim",
+            "dest_input_index": 1,
+            "dest_input_name": "indices in"
+        },
+        "9": {
+            "source_node": 11099,
+            "source_node_name": "t.take_along_dim",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 11112,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "10": {
+            "source_node": 11426,
+            "source_node_name": "button",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 11549,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 11454,
+            "source_node_name": "button",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 11523,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "12": {
+            "source_node": 11523,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "0",
+            "dest_node": 11099,
+            "dest_node_name": "t.take_along_dim",
+            "dest_input_index": 2,
+            "dest_input_name": "dim"
+        },
+        "13": {
+            "source_node": 11523,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "0",
+            "dest_node": 10998,
+            "dest_node_name": "t.argsort",
+            "dest_input_index": 1,
+            "dest_input_name": "dim"
+        },
+        "14": {
+            "source_node": 11549,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 11099,
+            "dest_node_name": "t.take_along_dim",
+            "dest_input_index": 2,
+            "dest_input_name": "dim"
+        },
+        "15": {
+            "source_node": 11549,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 10998,
+            "dest_node_name": "t.argsort",
+            "dest_input_index": 1,
+            "dest_input_name": "dim"
+        }
+    }
+}

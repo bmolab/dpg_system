@@ -1,0 +1,1511 @@
+{
+    "name": "t.nansum_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nansum_help.json",
+    "patches": {
+        "0": {
+            "height": 850,
+            "width": 867,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1606,
+            "name": "make_hole",
+            "parent_node_uuid": 718,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1643,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "in",
+                    "init": "in tensor",
+                    "id": 1680,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "in",
+                    "init": "in hole",
+                    "id": 1717,
+                    "position_x": 240,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "3": {
+                    "name": "load_bang",
+                    "init": "load_bang",
+                    "id": 1754,
+                    "position_x": 440,
+                    "position_y": 40,
+                    "width": 88,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1791,
+                    "position_x": 440,
+                    "position_y": 110,
+                    "width": 100,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "nan",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 80,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "comment",
+                    "init": "comment the NaN that fills the hole",
+                    "id": 1828,
+                    "position_x": 560,
+                    "position_y": 115,
+                    "width": 227,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the NaN that fills the hole",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the NaN that fills the hole"
+                },
+                "6": {
+                    "name": "np.zeros",
+                    "init": "np.zeros 6 8",
+                    "id": 1865,
+                    "position_x": 40,
+                    "position_y": 240,
+                    "width": 170,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dim 0",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "dim 1",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "7": {
+                    "name": "comment",
+                    "init": "comment made fresh for every tensor that arrives",
+                    "id": 1902,
+                    "position_x": 230,
+                    "position_y": 245,
+                    "width": 328,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "made fresh for every tensor that arrives",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "made fresh for every tensor that arrives"
+                },
+                "8": {
+                    "name": "np.edit",
+                    "init": "np.edit 2,3",
+                    "id": 1939,
+                    "position_x": 40,
+                    "position_y": 370,
+                    "width": 170,
+                    "height": 90,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "indices",
+                            "value": "2,3",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "values",
+                            "value": "1",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "comment",
+                    "init": "comment a 1 at row 2, column 3: where the hole goes",
+                    "id": 1976,
+                    "position_x": 230,
+                    "position_y": 375,
+                    "width": 351,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a 1 at row 2, column 3: where the hole goes",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a 1 at row 2, column 3: where the hole goes"
+                },
+                "10": {
+                    "name": "*",
+                    "init": "*",
+                    "id": 2013,
+                    "position_x": 40,
+                    "position_y": 480,
+                    "width": 130,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "comment",
+                    "init": "comment times the toggle: no hole when it is off",
+                    "id": 2050,
+                    "position_x": 230,
+                    "position_y": 485,
+                    "width": 328,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "times the toggle: no hole when it is off",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "times the toggle: no hole when it is off"
+                },
+                "12": {
+                    "name": "np.where",
+                    "init": "np.where",
+                    "id": 2087,
+                    "position_x": 40,
+                    "position_y": 570,
+                    "width": 150,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "13": {
+                    "name": "comment",
+                    "init": "comment NaN at the hole, the tensor everywhere else",
+                    "id": 2124,
+                    "position_x": 230,
+                    "position_y": 575,
+                    "width": 351,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "NaN at the hole, the tensor everywhere else",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "NaN at the hole, the tensor everywhere else"
+                },
+                "14": {
+                    "name": "out",
+                    "init": "out holed",
+                    "id": 2161,
+                    "position_x": 40,
+                    "position_y": 690,
+                    "width": 160,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "15": {
+                    "name": "t",
+                    "init": "t bang array",
+                    "id": 2198,
+                    "position_x": 40,
+                    "position_y": 150,
+                    "width": 130,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "16": {
+                    "name": "comment",
+                    "init": "comment the tensor (as a NumPy array) first, then a fresh mask",
+                    "id": 2235,
+                    "position_x": 230,
+                    "position_y": 155,
+                    "width": 435,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the tensor (as a NumPy array) first, then a fresh mask",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the tensor (as a NumPy array) first, then a fresh mask"
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1754,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1791,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 2087,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "if true"
+                },
+                "2": {
+                    "source_node": 1680,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor",
+                    "dest_node": 2198,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "3": {
+                    "source_node": 2198,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array",
+                    "dest_node": 2087,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "if false"
+                },
+                "4": {
+                    "source_node": 2198,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 1865,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 1717,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "hole",
+                    "dest_node": 2013,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "6": {
+                    "source_node": 1865,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array of zeros",
+                    "dest_node": 1939,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "array in"
+                },
+                "7": {
+                    "source_node": 1939,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 2013,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 2013,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 2087,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "condition"
+                },
+                "9": {
+                    "source_node": 2087,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "selected",
+                    "dest_node": 2161,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "holed"
+                }
+            }
+        },
+        "1": {
+            "height": 1742,
+            "width": 1834,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1569,
+            "name": "t.nansum_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nansum_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.nansum - add up, skipping NaN",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 389,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.nansum - add up, skipping NaN",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.nansum - add up, skipping NaN"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1026,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1036,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Adds up the values of a tensor as t.sum does, but skips any NaN (not-a-number) values instead of letting them spoil the total.\n\nNaN plus anything is NaN, so ONE missing value - a dropped frame, a lost sensor - turns a t.sum total into NaN. t.nansum treats each NaN as 0 and adds up what is actually there.\n\nA ROW OF NOTHING BUT NaN:\ngives 0 - an empty total, not NaN. If you need to know that a row had no data at all, count its NaNs separately.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.nansum 0) chooses a dim to reduce along and adds a dim inlet and a keep_dims checkbox - the argument creates them, so a node made without one cannot be given a dim later. For a table, dim 0 gives one answer per column, dim 1 one per row; -1 is the last dim.\n\nSYNTAX:\nt.nansum <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.nansum 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is added up and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nWith no NaN in it the answer is exactly what t.sum gives.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8]. On, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1. Keep it when the answer must line up against the original again - to subtract each row's total from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number; with a dim, a tensor of totals with that dim removed (or kept at length 1), never NaN.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of whole numbers 0 to 3; click its button for new ones. make_hole passes the tensor through untouched until you click the toggle: then the cell at row 2, column 3 becomes NaN (the heat_map writes it as nan). The slider starts at dim 1 - one answer per row - and goes through 't bang int' to both dim nodes, re-sending the held tensor. With the toggle off, t.sum and\nt.nansum agree everywhere. With it on, t.sum of everything turns to nan, and so does its total for row 2 (the third cell of its strip);\nevery other row is unaffected. t.nansum's totals stay numbers: row 2's simply leaves the hole out.\n\nRELATED:\nt.sum is the plain version. t.nanmean and t.nanmedian skip NaN the same way for the average and the middle value. np.nansum is the NumPy version.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1020,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Adds up the values of a tensor as t.sum does, but skips any NaN (not-a-number) values instead of letting them spoil the total.\n\nNaN plus anything is NaN, so ONE missing value - a dropped frame, a lost sensor - turns a t.sum total into NaN. t.nansum treats each NaN as 0 and adds up what is actually there.\n\nA ROW OF NOTHING BUT NaN:\ngives 0 - an empty total, not NaN. If you need to know that a row had no data at all, count its NaNs separately.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.nansum 0) chooses a dim to reduce along and adds a dim inlet and a keep_dims checkbox - the argument creates them, so a node made without one cannot be given a dim later. For a table, dim 0 gives one answer per column, dim 1 one per row; -1 is the last dim.\n\nSYNTAX:\nt.nansum <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.nansum 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is added up and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nWith no NaN in it the answer is exactly what t.sum gives.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8]. On, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1. Keep it when the answer must line up against the original again - to subtract each row's total from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number; with a dim, a tensor of totals with that dim removed (or kept at length 1), never NaN.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of whole numbers 0 to 3; click its button for new ones. make_hole passes the tensor through untouched until you click the toggle: then the cell at row 2, column 3 becomes NaN (the heat_map writes it as nan). The slider starts at dim 1 - one answer per row - and goes through 't bang int' to both dim nodes, re-sending the held tensor. With the toggle off, t.sum and\nt.nansum agree everywhere. With it on, t.sum of everything turns to nan, and so does its total for row 2 (the third cell of its strip);\nevery other row is unaffected. t.nansum's totals stay numbers: row 2's simply leaves the hole out.\n\nRELATED:\nt.sum is the plain version. t.nanmean and t.nanmedian skip NaN the same way for the average and the middle value. np.nansum is the NumPy version."
+                },
+                "3": {
+                    "name": "load_bang",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 88,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "t.rand",
+                    "id": 385,
+                    "position_x": 30,
+                    "position_y": 130,
+                    "width": 163,
+                    "height": 126,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "[6, 8]",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "dtype",
+                            "value": "int64",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "t.rand 6 8"
+                },
+                "5": {
+                    "init": "comment click its button for new values",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 686,
+                    "position_y": 135,
+                    "width": 199,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "click its button for new values",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "click its button for new values"
+                },
+                "6": {
+                    "name": "var",
+                    "id": 459,
+                    "position_x": 250,
+                    "position_y": 200,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "name",
+                            "value": "t_nansum_help_tensor",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "var t_nansum_help_tensor"
+                },
+                "7": {
+                    "init": "comment holds the tensor so it can be sent again",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 686,
+                    "position_y": 280,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "holds the tensor so it can be sent again",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "holds the tensor so it can be sent again"
+                },
+                "8": {
+                    "name": "heat_map",
+                    "id": 533,
+                    "position_x": 30,
+                    "position_y": 400,
+                    "width": 448,
+                    "height": 290,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 440,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 240,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 3.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment the tensor: 6 rows by 8 columns, row 0 at the top",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 686,
+                    "position_y": 695,
+                    "width": 310,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the tensor: 6 rows by 8 columns, row 0 at the top",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the tensor: 6 rows by 8 columns, row 0 at the top"
+                },
+                "10": {
+                    "name": "toggle",
+                    "id": 607,
+                    "position_x": 530,
+                    "position_y": 130,
+                    "width": 45,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "t",
+                    "id": 644,
+                    "position_x": 620,
+                    "position_y": 130,
+                    "width": 33,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t bang int"
+                },
+                "12": {
+                    "init": "comment click: put a NaN at row 2, column 3",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 686,
+                    "position_y": 175,
+                    "width": 224,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "click: put a NaN at row 2, column 3",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "click: put a NaN at row 2, column 3"
+                },
+                "13": {
+                    "name": "p",
+                    "id": 718,
+                    "position_x": 530,
+                    "position_y": 200,
+                    "width": 72,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_hole",
+                    "patcher id": 1606
+                },
+                "14": {
+                    "init": "comment open it to see how the hole is made",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 686,
+                    "position_y": 320,
+                    "width": 224,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "open it to see how the hole is made",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "open it to see how the hole is made"
+                },
+                "15": {
+                    "name": "t.sum",
+                    "id": 792,
+                    "position_x": 530,
+                    "position_y": 400,
+                    "width": 64,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "16": {
+                    "name": "float",
+                    "id": 829,
+                    "position_x": 530,
+                    "position_y": 490,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment t.sum of everything",
+                    "name": "comment",
+                    "id": 866,
+                    "position_x": 686,
+                    "position_y": 540,
+                    "width": 125,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.sum of everything",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.sum of everything"
+                },
+                "18": {
+                    "name": "t.nansum",
+                    "id": 903,
+                    "position_x": 530,
+                    "position_y": 590,
+                    "width": 64,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "19": {
+                    "name": "float",
+                    "id": 940,
+                    "position_x": 530,
+                    "position_y": 680,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "20": {
+                    "init": "comment t.nansum of everything",
+                    "name": "comment",
+                    "id": 977,
+                    "position_x": 686,
+                    "position_y": 730,
+                    "width": 144,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.nansum of everything",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.nansum of everything"
+                },
+                "21": {
+                    "name": "slider",
+                    "id": 1014,
+                    "position_x": 30,
+                    "position_y": 780,
+                    "width": 170,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "format",
+                            "value": "%d",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 140,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    },
+                    "init": "slider 1"
+                },
+                "22": {
+                    "init": "comment dim: drag it between 0 and 1",
+                    "name": "comment",
+                    "id": 1051,
+                    "position_x": 686,
+                    "position_y": 785,
+                    "width": 181,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "dim: drag it between 0 and 1",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "dim: drag it between 0 and 1"
+                },
+                "23": {
+                    "name": "t",
+                    "id": 1088,
+                    "position_x": 30,
+                    "position_y": 840,
+                    "width": 33,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t bang int"
+                },
+                "24": {
+                    "name": "t.sum",
+                    "id": 1125,
+                    "position_x": 30,
+                    "position_y": 910,
+                    "width": 111,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dim",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "keep_dims",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    },
+                    "init": "t.sum 1"
+                },
+                "25": {
+                    "name": "heat_map",
+                    "id": 1162,
+                    "position_x": 30,
+                    "position_y": 1060,
+                    "width": 448,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 440,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 24.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "26": {
+                    "init": "comment t.sum along the dim",
+                    "name": "comment",
+                    "id": 1199,
+                    "position_x": 686,
+                    "position_y": 1175,
+                    "width": 125,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.sum along the dim",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.sum along the dim"
+                },
+                "27": {
+                    "name": "t.nansum",
+                    "id": 1236,
+                    "position_x": 30,
+                    "position_y": 1220,
+                    "width": 111,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dim",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "keep_dims",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    },
+                    "init": "t.nansum 1",
+                    "highlight": true
+                },
+                "28": {
+                    "name": "heat_map",
+                    "id": 1273,
+                    "position_x": 30,
+                    "position_y": 1370,
+                    "width": 448,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 440,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 24.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "29": {
+                    "init": "comment t.nansum along the dim",
+                    "name": "comment",
+                    "id": 1310,
+                    "position_x": 686,
+                    "position_y": 1485,
+                    "width": 144,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.nansum along the dim",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.nansum along the dim"
+                },
+                "30": {
+                    "name": "help_link",
+                    "id": 1347,
+                    "position_x": 30,
+                    "position_y": 1564,
+                    "width": 73,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.nansum"
+                },
+                "31": {
+                    "name": "help_link",
+                    "id": 1384,
+                    "position_x": 119,
+                    "position_y": 1564,
+                    "width": 48,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.sum"
+                },
+                "32": {
+                    "name": "help_link",
+                    "id": 1421,
+                    "position_x": 183,
+                    "position_y": 1564,
+                    "width": 73,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.nanmean"
+                },
+                "33": {
+                    "name": "help_link",
+                    "id": 1458,
+                    "position_x": 272,
+                    "position_y": 1564,
+                    "width": 85,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.nanmedian"
+                },
+                "34": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1495,
+                    "position_x": 30,
+                    "position_y": 1530,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "35": {
+                    "name": "close",
+                    "id": 1532,
+                    "position_x": 24,
+                    "position_y": 1638,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 385,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random tensor",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor"
+                },
+                "3": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "int",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "hole"
+                },
+                "5": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "7": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "8": {
+                    "source_node": 792,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "9": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 903,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "10": {
+                    "source_node": 903,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 940,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "11": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "int out",
+                    "dest_node": 1088,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "12": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "int",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "dim"
+                },
+                "13": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "int",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "dim"
+                },
+                "14": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "15": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "16": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "holed",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "17": {
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "18": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

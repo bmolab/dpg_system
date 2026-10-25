@@ -1,0 +1,364 @@
+{
+    "height": 695,
+    "width": 1395,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "np.astype_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.astype_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.astype - change an array's number type",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.astype - change an array's number type",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.astype - change an array's number type"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 557,
+            "position_y": 45,
+            "width": 798,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np.astype converts an array to a different number type.\n\nAn array of float64 and one of float32 hold the same numbers and are not interchangeable everywhere - image work usually wants uint8, torch usually wants float32, and indices have to be integers. When a node refuses an array that looks correct, the type is a likely culprit, and info will tell you what it actually is.\n\nTHE TYPES:\nChosen from the \"type\" menu: bool, uint8, int8, int64, float, float32, double. There is no int32 here. \"float\" and \"double\" are the same thing, the 64-bit float; \"float32\" is the single-precision one torch usually wants.\n\nCONVERTING TO INTEGERS TRUNCATES:\nConverting a float array to an integer type cuts off the fraction rather than rounding, so 9.7 becomes 9 and -0.9 becomes 0. If you want the nearest whole number, round first with np.round and then convert.\n\nOut-of-range values do not stop at the limit: converted to uint8, 300 comes out as 44 and -1 as 255. Clip first (np.clip) if the data can leave the 0 to 255 range.\n\nLists and single numbers are accepted too, and come out as arrays.\n\nSYNTAX:\nnp.astype\n\nEXAMPLE:\nnp.astype\n\nINPUTS and PARAMETERS:\n\ninput array:\nThe array. Receiving it triggers the node.\n\ntype:\nWhat to convert to.\n\nOUTPUTS:\n\nconverted array:\nThe same values, in the new type.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "np.astype converts an array to a different number type.\n\nAn array of float64 and one of float32 hold the same numbers and are not interchangeable everywhere - image work usually wants uint8, torch usually wants float32, and indices have to be integers. When a node refuses an array that looks correct, the type is a likely culprit, and info will tell you what it actually is.\n\nTHE TYPES:\nChosen from the \"type\" menu: bool, uint8, int8, int64, float, float32, double. There is no int32 here. \"float\" and \"double\" are the same thing, the 64-bit float; \"float32\" is the single-precision one torch usually wants.\n\nCONVERTING TO INTEGERS TRUNCATES:\nConverting a float array to an integer type cuts off the fraction rather than rounding, so 9.7 becomes 9 and -0.9 becomes 0. If you want the nearest whole number, round first with np.round and then convert.\n\nOut-of-range values do not stop at the limit: converted to uint8, 300 comes out as 44 and -1 as 255. Clip first (np.clip) if the data can leave the 0 to 255 range.\n\nLists and single numbers are accepted too, and come out as arrays.\n\nSYNTAX:\nnp.astype\n\nEXAMPLE:\nnp.astype\n\nINPUTS and PARAMETERS:\n\ninput array:\nThe array. Receiving it triggers the node.\n\ntype:\nWhat to convert to.\n\nOUTPUTS:\n\nconverted array:\nThe same values, in the new type."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 4"
+        },
+        "5": {
+            "name": "list",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 245,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment click: floats between 0 and 10",
+            "name": "comment",
+            "id": 459,
+            "position_x": 291,
+            "position_y": 295,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click: floats between 0 and 10",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click: floats between 0 and 10"
+        },
+        "7": {
+            "name": "np.astype",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 335,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "type",
+                    "value": "int64",
+                    "value_type": "str"
+                }
+            },
+            "highlight": true
+        },
+        "8": {
+            "name": "list",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 425,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment truncated, not rounded: 9.7 becomes 9",
+            "name": "comment",
+            "id": 570,
+            "position_x": 291,
+            "position_y": 475,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "truncated, not rounded: 9.7 becomes 9",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "truncated, not rounded: 9.7 becomes 9"
+        },
+        "10": {
+            "name": "info",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 515,
+            "width": 235,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment info reports the type it really is",
+            "name": "comment",
+            "id": 644,
+            "position_x": 291,
+            "position_y": 605,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "info reports the type it really is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "info reports the type it really is"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 587,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input array"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "converted array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "converted array",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

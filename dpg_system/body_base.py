@@ -443,6 +443,12 @@ class BodyDataBase:
         glShadeModel(hold_shade)
 
     def update_quats(self, quats, z_up=False):
+        if not isinstance(quats, np.ndarray):
+            # a plain list (or tensor) pose, e.g. straight from a message
+            quats = np.asarray(any_to_array(quats), dtype=np.float64)
+        if quats.ndim == 1 and quats.size % 4 == 0:
+            # a flat pose: one quaternion (w x y z) per joint
+            quats = quats.reshape(-1, 4)
         if len(quats.shape) > 2:
             self.quaternions_np = quats
             self.num_bodies = quats.shape[0]

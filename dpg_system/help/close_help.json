@@ -69,7 +69,8 @@
                     "value": null,
                     "value_type": "NoneType"
                 }
-            }
+            },
+            "highlight": true
         },
         "3": {
             "name": "text_block",
@@ -84,7 +85,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The close node is a button that closes the patch it is in.\n\nIt renders as a standalone button without the standard node frame or background.\n\nWHERE YOU END UP:\nClosing a patch takes you back to the patch you were in before it, at the\nwindow size it had. So in a help patch the button reads '< back': it returns\nyou to wherever you opened the help from - your own patch, or a page of the\nnode browser. On a node browser page it reads 'close browser', because there\nthe '< ...' button at the top already goes back up a level. Anywhere else it\nreads 'close patch'.\n\nSYNTAX:\nclose\n\nEXAMPLE:\nclose\n\nINPUTS and PARAMETERS:\n\nclose patch:\nA trigger input and button.\nReceiving a signal here, or clicking the yellow button, closes the patch.\n",
+                    "value": "The close node is a button that closes the patch it is in.\n\nIt renders as a standalone button without the standard node frame or background.\n\nWHERE YOU END UP:\nClosing a patch takes you back to the patch you were in before it, at the window size it had. So in a help patch the button reads '< back': it returns you to wherever you opened the help from - your own patch, or a page of the node browser. On a node browser page it reads 'close browser', because there the '< ...' button at the top already goes back up a level. Anywhere else it reads 'close patch'.\n\nSYNTAX:\nclose\n\nEXAMPLE:\nclose\n\nINPUTS and PARAMETERS:\n\nclose patch:\nA trigger input and button.\nReceiving a signal here, or clicking the yellow button, closes the patch.\n",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +109,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The close node is a button that closes the patch it is in.\n\nIt renders as a standalone button without the standard node frame or background.\n\nWHERE YOU END UP:\nClosing a patch takes you back to the patch you were in before it, at the\nwindow size it had. So in a help patch the button reads '< back': it returns\nyou to wherever you opened the help from - your own patch, or a page of the\nnode browser. On a node browser page it reads 'close browser', because there\nthe '< ...' button at the top already goes back up a level. Anywhere else it\nreads 'close patch'.\n\nSYNTAX:\nclose\n\nEXAMPLE:\nclose\n\nINPUTS and PARAMETERS:\n\nclose patch:\nA trigger input and button.\nReceiving a signal here, or clicking the yellow button, closes the patch.\n"
+            "text": "The close node is a button that closes the patch it is in.\n\nIt renders as a standalone button without the standard node frame or background.\n\nWHERE YOU END UP:\nClosing a patch takes you back to the patch you were in before it, at the window size it had. So in a help patch the button reads '< back': it returns you to wherever you opened the help from - your own patch, or a page of the node browser. On a node browser page it reads 'close browser', because there the '< ...' button at the top already goes back up a level. Anywhere else it reads 'close patch'.\n\nSYNTAX:\nclose\n\nEXAMPLE:\nclose\n\nINPUTS and PARAMETERS:\n\nclose patch:\nA trigger input and button.\nReceiving a signal here, or clicking the yellow button, closes the patch.\n"
         }
     },
     "links": {}

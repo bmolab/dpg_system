@@ -1,0 +1,785 @@
+{
+    "name": "proximity_trigger_help",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/ptrig/out/proximity_trigger_help.json",
+    "patches": {
+        "0": {
+            "height": 470,
+            "width": 580,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1051,
+            "name": "make_point",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1088,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "signal",
+                    "init": "signal 3.0 sin",
+                    "id": 1125,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 3.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "signal",
+                    "init": "signal 4.0 cos",
+                    "id": 1162,
+                    "position_x": 200,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "cos",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "3": {
+                    "name": "comment",
+                    "init": "comment x: once every 3 s, y: once every 4 s, both -1 to 1",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 135,
+                    "width": 460,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "x: once every 3 s, y: once every 4 s, both -1 to 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "x: once every 3 s, y: once every 4 s, both -1 to 1"
+                },
+                "4": {
+                    "name": "pack",
+                    "init": "pack 2",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 180,
+                    "width": 130,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "5": {
+                    "name": "comment",
+                    "init": "comment the point as a list: x y",
+                    "id": 1273,
+                    "position_x": 200,
+                    "position_y": 200,
+                    "width": 260,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the point as a list: x y",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the point as a list: x y"
+                },
+                "6": {
+                    "name": "out",
+                    "init": "out point",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "1": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "2": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "point"
+                }
+            }
+        },
+        "1": {
+            "height": 1344,
+            "width": 1722,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1014,
+            "name": "proximity_trigger_help",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/ptrig/out/proximity_trigger_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment proximity_trigger - an event on arrival at a target",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 612,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "proximity_trigger - an event on arrival at a target",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "proximity_trigger - an event on arrival at a target"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 922,
+                    "position_y": 26,
+                    "width": 768,
+                    "height": 1216,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Fires an event when its input arrives near a stored target, and counts the arrivals.\n\nIt turns \"how far is it\" into \"it got there\": when the distance from the input to the target drops below threshold, state sends true and count goes up by one. It cannot fire again until the input has gone further away than release_threshold, when state sends false. Use it to trigger a cue when a dancer's hand reaches a spot, or to count how often a tracked point visits a place.\n\nTWO THRESHOLDS:\nThe gap between threshold and release_threshold is hysteresis, the same idea as the hysteresis node: without it, a hand hovering at the boundary would fire over and over as tracking noise carries it back and forth. Keep release_threshold larger than threshold; if it is smaller, the trigger releases on the very next input and re-fires while you stay near.\n\nSYNTAX:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array of any length. Every input is measured against the target. The node does nothing at all until a target is set and arm is ticked. An input whose shape does not fit the target sends nothing.\n\narm (checkbox):\nSwitches the trigger on. It starts OFF, and while it is off nothing is measured or sent. Ticking or unticking it also sets the count back to 0 and sends that 0 from count.\n\nreset_count (button):\nSets the count back to 0 and sends the 0 from count at once.\n\nset target (button):\nCaptures whatever was last received at input as the target. The target is saved with the patch - this page opens with 0.5 0.7.\n\nthreshold (drag float, default 0.3):\nHow close counts as arrived. Strictly closer than this fires.\n\nrelease_threshold (drag float, default 0.5):\nHow far it must go (this far or further) before it can fire again.\n\naxis (menu, also an inlet):\nOnly matters when the input holds several positions, one per row. With None (the default) the whole difference is one distance. With 1 each row has its own distance, and the NEAREST decides: any row inside threshold fires, and it releases only when every row is past release_threshold.\n\nOUTPUTS:\n\nstate:\ntrue on arrival, false on release - sent only when it changes.\n\ncount:\nHow many arrivals since the count was last reset, sent on each arrival and on each reset.\n\nproximity:\nDespite its name, the DISTANCE to the target, sent on every input while armed (one per row with axis 1). It gets smaller as you approach, and is 0 at the target.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1. The plot shows its distance from the target 0.5 0.7, with two flat lines at 0.3 and 0.5 - the thresholds as saved. Each time the curve dips below the lower line the toggle turns on and the count goes up; the toggle turns off only when the curve climbs back past the upper line. The point arrives about every three seconds. Drag the thresholds on the node (the lines stay at the saved values), or click set target to move the target.\n\nRELATED:\nnp.distance_from_target sends the same distance without the event. np.proximity_to_target grades closeness to several targets from 0 to 1. trigger and hysteresis do the same two-threshold firing on a single number.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1200,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Fires an event when its input arrives near a stored target, and counts the arrivals.\n\nIt turns \"how far is it\" into \"it got there\": when the distance from the input to the target drops below threshold, state sends true and count goes up by one. It cannot fire again until the input has gone further away than release_threshold, when state sends false. Use it to trigger a cue when a dancer's hand reaches a spot, or to count how often a tracked point visits a place.\n\nTWO THRESHOLDS:\nThe gap between threshold and release_threshold is hysteresis, the same idea as the hysteresis node: without it, a hand hovering at the boundary would fire over and over as tracking noise carries it back and forth. Keep release_threshold larger than threshold; if it is smaller, the trigger releases on the very next input and re-fires while you stay near.\n\nSYNTAX:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array of any length. Every input is measured against the target. The node does nothing at all until a target is set and arm is ticked. An input whose shape does not fit the target sends nothing.\n\narm (checkbox):\nSwitches the trigger on. It starts OFF, and while it is off nothing is measured or sent. Ticking or unticking it also sets the count back to 0 and sends that 0 from count.\n\nreset_count (button):\nSets the count back to 0 and sends the 0 from count at once.\n\nset target (button):\nCaptures whatever was last received at input as the target. The target is saved with the patch - this page opens with 0.5 0.7.\n\nthreshold (drag float, default 0.3):\nHow close counts as arrived. Strictly closer than this fires.\n\nrelease_threshold (drag float, default 0.5):\nHow far it must go (this far or further) before it can fire again.\n\naxis (menu, also an inlet):\nOnly matters when the input holds several positions, one per row. With None (the default) the whole difference is one distance. With 1 each row has its own distance, and the NEAREST decides: any row inside threshold fires, and it releases only when every row is past release_threshold.\n\nOUTPUTS:\n\nstate:\ntrue on arrival, false on release - sent only when it changes.\n\ncount:\nHow many arrivals since the count was last reset, sent on each arrival and on each reset.\n\nproximity:\nDespite its name, the DISTANCE to the target, sent on every input while armed (one per row with axis 1). It gets smaller as you approach, and is 0 at the target.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1. The plot shows its distance from the target 0.5 0.7, with two flat lines at 0.3 and 0.5 - the thresholds as saved. Each time the curve dips below the lower line the toggle turns on and the count goes up; the toggle turns off only when the curve climbs back past the upper line. The point arrives about every three seconds. Drag the thresholds on the node (the lines stay at the saved values), or click set target to move the target.\n\nRELATED:\nnp.distance_from_target sends the same distance without the event. np.proximity_to_target grades closeness to several targets from 0 to 1. trigger and hysteresis do the same two-threshold firing on a single number."
+                },
+                "3": {
+                    "init": "comment an x y point, wandering",
+                    "name": "comment",
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 161,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "an x y point, wandering",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "an x y point, wandering"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 110,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_point",
+                    "patcher id": 1051
+                },
+                "5": {
+                    "init": "comment armed; target 0.5 0.7",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 200,
+                    "position_y": 53,
+                    "width": 147,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "armed; target 0.5 0.7",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "armed; target 0.5 0.7"
+                },
+                "6": {
+                    "name": "proximity_trigger",
+                    "id": 459,
+                    "position_x": 200,
+                    "position_y": 92,
+                    "width": 240,
+                    "height": 220,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "arm",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "threshold",
+                            "value": 0.3,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "release_threshold",
+                            "value": 0.5,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "axis",
+                            "value": "None",
+                            "value_type": "str"
+                        }
+                    },
+                    "target": [
+                        0.5,
+                        0.7
+                    ],
+                    "highlight": true
+                },
+                "7": {
+                    "init": "comment state: on while arrived",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 500,
+                    "position_y": 53,
+                    "width": 161,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "state: on while arrived",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "state: on while arrived"
+                },
+                "8": {
+                    "name": "toggle",
+                    "id": 533,
+                    "position_x": 500,
+                    "position_y": 92,
+                    "width": 45,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "9": {
+                    "init": "comment count of arrivals",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 500,
+                    "position_y": 160,
+                    "width": 119,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "count of arrivals",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "count of arrivals"
+                },
+                "10": {
+                    "name": "int",
+                    "id": 607,
+                    "position_x": 500,
+                    "position_y": 195,
+                    "width": 127,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%d",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "11": {
+                    "init": "comment plus lines at 0.3, 0.5",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 700,
+                    "position_y": 53,
+                    "width": 154,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "plus lines at 0.3, 0.5",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "plus lines at 0.3, 0.5"
+                },
+                "12": {
+                    "name": "pack",
+                    "id": 681,
+                    "position_x": 700,
+                    "position_y": 92,
+                    "width": 150,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pack f 0.3 0.5"
+                },
+                "13": {
+                    "init": "comment the distance: fires when it dips under 0.3, re-arms when it climbs back past 0.5",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 28,
+                    "position_y": 335,
+                    "width": 560,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the distance: fires when it dips under 0.3, re-arms when it climbs back past 0.5",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the distance: fires when it dips under 0.3, re-arms when it climbs back past 0.5"
+                },
+                "14": {
+                    "name": "plot",
+                    "id": 755,
+                    "position_x": 28,
+                    "position_y": 370,
+                    "width": 840,
+                    "height": 300,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 820,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 240,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 2.5,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 744,
+                    "width": 161,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.distance_from_target"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 207,
+                    "position_y": 744,
+                    "width": 155,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.proximity_to_target"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 378,
+                    "position_y": 744,
+                    "width": 60,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link trigger"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 454,
+                    "position_y": 744,
+                    "width": 79,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link hysteresis"
+                },
+                "19": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 940,
+                    "position_x": 30,
+                    "position_y": 710,
+                    "width": 168,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "20": {
+                    "name": "close",
+                    "id": 977,
+                    "position_x": 24,
+                    "position_y": 854,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "point",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "1": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "state",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "count",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "3": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "proximity",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "float"
+                },
+                "4": {
+                    "source_node": 681,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The pack node combines individual values from multiple input pins into a single composite \ndata structure. \n\nIt is the reverse of the unpack node. It gathers data such as integers, floats, or strings \nand bundles them into a List, Numpy Array, or PyTorch Tensor. \n\nNote on Triggering: \nIf created as 'pack', only the first input (leftmost) is \"hot\" and triggers the output. \nThe other inputs just update their values stored in memory.\n\nIf created as 'pak', all inputs are \"hot\" and changing any value will immediately trigger \na new output.\n\nSYNTAX:\n\npack <count> \nOR\npack <type_flag_1> <type_flag_2> ...\nOR\npack <default_val_1> <default_val_2> ...\n\n(You can also use 'pak' in place of 'pack' to change the triggering behavior).\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\npack 3        (Creates 3 generic inputs; output triggers only on input 1)\npack i f s    (Creates Int, Float, and String inputs)\npak 3         (Creates 3 generic inputs; output triggers on ANY input)\n\nINPUTS AND PARAMETERS:\n\nin (variable):\nA series of input pins. Data received here is stored until output occurs.\nIf 'pack': Input 1 triggers execution and sends the result. Inputs 2+ only update stored values.\nIf 'pak': Receiving data on ANY input triggers execution and sends the result immediately.\n\noutput pref (Option):\nSelects the format of the output data.\nlist: Returns a standard Python list (default).\narray: Returns a Numpy array (if types are compatible).\ntensor: Returns a PyTorch Tensor (if types are compatible and Torch is installed).\n\nOUTPUTS: \n\nout:\nThe bundled data structure containing the current values of all input pins.",
+                    "value": "The pack node combines individual values from multiple input pins into a single composite  data structure. \n\nIt is the reverse of the unpack node. It gathers data such as integers, floats, or strings  and bundles them into a List, Numpy Array, or PyTorch Tensor. \n\nNote on Triggering: \nIf created as 'pack', only the first input (leftmost) is \"hot\" and triggers the output.  The other inputs just update their values stored in memory.\n\nIf created as 'pak', all inputs are \"hot\" and changing any value will immediately trigger  a new output.\n\nSYNTAX:\n\npack <count> \nOR\npack <type_flag_1> <type_flag_2> ...\nOR\npack <default_val_1> <default_val_2> ...\n\n(You can also use 'pak' in place of 'pack' to change the triggering behavior).\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\npack 3        (Creates 3 generic inputs; output triggers only on input 1)\npack i f s    (Creates Int, Float, and String inputs)\npak 3         (Creates 3 generic inputs; output triggers on ANY input)\n\nINPUTS AND PARAMETERS:\n\nin (variable):\nA series of input pins. Data received here is stored until output occurs. If 'pack': Input 1 triggers execution and sends the result. Inputs 2+ only update stored values. If 'pak': Receiving data on ANY input triggers execution and sends the result immediately.\n\noutput pref (Option):\nSelects the format of the output data.\nlist: Returns a standard Python list (default).\narray: Returns a Numpy array (if types are compatible).\ntensor: Returns a PyTorch Tensor (if types are compatible and Torch is installed).\n\nOUTPUTS: \n\nout:\nThe bundled data structure containing the current values of all input pins.",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The pack node combines individual values from multiple input pins into a single composite \ndata structure. \n\nIt is the reverse of the unpack node. It gathers data such as integers, floats, or strings \nand bundles them into a List, Numpy Array, or PyTorch Tensor. \n\nNote on Triggering: \nIf created as 'pack', only the first input (leftmost) is \"hot\" and triggers the output. \nThe other inputs just update their values stored in memory.\n\nIf created as 'pak', all inputs are \"hot\" and changing any value will immediately trigger \na new output.\n\nSYNTAX:\n\npack <count> \nOR\npack <type_flag_1> <type_flag_2> ...\nOR\npack <default_val_1> <default_val_2> ...\n\n(You can also use 'pak' in place of 'pack' to change the triggering behavior).\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\npack 3        (Creates 3 generic inputs; output triggers only on input 1)\npack i f s    (Creates Int, Float, and String inputs)\npak 3         (Creates 3 generic inputs; output triggers on ANY input)\n\nINPUTS AND PARAMETERS:\n\nin (variable):\nA series of input pins. Data received here is stored until output occurs.\nIf 'pack': Input 1 triggers execution and sends the result. Inputs 2+ only update stored values.\nIf 'pak': Receiving data on ANY input triggers execution and sends the result immediately.\n\noutput pref (Option):\nSelects the format of the output data.\nlist: Returns a standard Python list (default).\narray: Returns a Numpy array (if types are compatible).\ntensor: Returns a PyTorch Tensor (if types are compatible and Torch is installed).\n\nOUTPUTS: \n\nout:\nThe bundled data structure containing the current values of all input pins."
+            "text": "The pack node combines individual values from multiple input pins into a single composite  data structure. \n\nIt is the reverse of the unpack node. It gathers data such as integers, floats, or strings  and bundles them into a List, Numpy Array, or PyTorch Tensor. \n\nNote on Triggering: \nIf created as 'pack', only the first input (leftmost) is \"hot\" and triggers the output.  The other inputs just update their values stored in memory.\n\nIf created as 'pak', all inputs are \"hot\" and changing any value will immediately trigger  a new output.\n\nSYNTAX:\n\npack <count> \nOR\npack <type_flag_1> <type_flag_2> ...\nOR\npack <default_val_1> <default_val_2> ...\n\n(You can also use 'pak' in place of 'pack' to change the triggering behavior).\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\npack 3        (Creates 3 generic inputs; output triggers only on input 1)\npack i f s    (Creates Int, Float, and String inputs)\npak 3         (Creates 3 generic inputs; output triggers on ANY input)\n\nINPUTS AND PARAMETERS:\n\nin (variable):\nA series of input pins. Data received here is stored until output occurs. If 'pack': Input 1 triggers execution and sends the result. Inputs 2+ only update stored values. If 'pak': Receiving data on ANY input triggers execution and sends the result immediately.\n\noutput pref (Option):\nSelects the format of the output data.\nlist: Returns a standard Python list (default).\narray: Returns a Numpy array (if types are compatible).\ntensor: Returns a PyTorch Tensor (if types are compatible and Torch is installed).\n\nOUTPUTS: \n\nout:\nThe bundled data structure containing the current values of all input pins."
         },
         "4": {
             "init": "pack 6",
@@ -127,7 +127,8 @@
                     "value": "list",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "message",
@@ -502,7 +503,8 @@
                     "value": "list",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "13": {
             "name": "list",
@@ -718,7 +720,8 @@
                     "value": "array",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "18": {
             "name": "message",
@@ -958,7 +961,8 @@
                     "value": "list",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "28": {
             "name": "list",

@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "mouse reports where the pointer is, continuously, while it is switched on.\n\nIt is how a patch becomes playable without building an interface for it - \nthe whole window becomes a two-dimensional control, useful for performance, for \ntesting something quickly, and for anything where a widget would be in the way \nof what you are doing with your hand.\n\nTO USE IT:\nTick the box. From then on the position is sent every frame, about 60 times a \nsecond, until you untick it. Unticked, it sends nothing at all.\n\nSYNTAX:\nmouse\n\nINPUTS and PARAMETERS:\n\non (the checkbox):\nSwitches the stream on and off.\n\nOUTPUTS:\n\nx / y:\nThe pointer position in pixels, measured from the top left of the window, on \nseparate outlets. It is sent wherever the pointer is - over a node, over empty \npatch, or outside the window altogether - so the numbers can run negative or \npast the window's size.\n\nTo use it as a control, scale it into the range you need: ranger, or a \ndivision by the window size, turns pixels into 0 to 1.\n\nRELATED:\nkeys reports the keyboard. \njoy_stick is an x and y control that lives in a patch, with a range you set.",
+                    "value": "mouse reports where the pointer is, continuously, while it is switched on.\n\nIt is how a patch becomes playable without building an interface for it -  the whole window becomes a two-dimensional control, useful for performance, for  testing something quickly, and for anything where a widget would be in the way  of what you are doing with your hand.\n\nTO USE IT:\nTick the box. From then on the position is sent every frame, about 60 times a  second, until you untick it. Unticked, it sends nothing at all.\n\nSYNTAX:\nmouse\n\nINPUTS and PARAMETERS:\n\non (the checkbox):\nSwitches the stream on and off.\n\nOUTPUTS:\n\nx / y:\nThe pointer position in pixels, measured from the top left of the window, on  separate outlets. It is sent wherever the pointer is - over a node, over empty  patch, or outside the window altogether - so the numbers can run negative or  past the window's size.\n\nTo use it as a control, scale it into the range you need: ranger, or a  division by the window size, turns pixels into 0 to 1.\n\nRELATED:\nkeys reports the keyboard. \njoy_stick is an x and y control that lives in a patch, with a range you set.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "mouse reports where the pointer is, continuously, while it is switched on.\n\nIt is how a patch becomes playable without building an interface for it - \nthe whole window becomes a two-dimensional control, useful for performance, for \ntesting something quickly, and for anything where a widget would be in the way \nof what you are doing with your hand.\n\nTO USE IT:\nTick the box. From then on the position is sent every frame, about 60 times a \nsecond, until you untick it. Unticked, it sends nothing at all.\n\nSYNTAX:\nmouse\n\nINPUTS and PARAMETERS:\n\non (the checkbox):\nSwitches the stream on and off.\n\nOUTPUTS:\n\nx / y:\nThe pointer position in pixels, measured from the top left of the window, on \nseparate outlets. It is sent wherever the pointer is - over a node, over empty \npatch, or outside the window altogether - so the numbers can run negative or \npast the window's size.\n\nTo use it as a control, scale it into the range you need: ranger, or a \ndivision by the window size, turns pixels into 0 to 1.\n\nRELATED:\nkeys reports the keyboard. \njoy_stick is an x and y control that lives in a patch, with a range you set."
+            "text": "mouse reports where the pointer is, continuously, while it is switched on.\n\nIt is how a patch becomes playable without building an interface for it -  the whole window becomes a two-dimensional control, useful for performance, for  testing something quickly, and for anything where a widget would be in the way  of what you are doing with your hand.\n\nTO USE IT:\nTick the box. From then on the position is sent every frame, about 60 times a  second, until you untick it. Unticked, it sends nothing at all.\n\nSYNTAX:\nmouse\n\nINPUTS and PARAMETERS:\n\non (the checkbox):\nSwitches the stream on and off.\n\nOUTPUTS:\n\nx / y:\nThe pointer position in pixels, measured from the top left of the window, on  separate outlets. It is sent wherever the pointer is - over a node, over empty  patch, or outside the window altogether - so the numbers can run negative or  past the window's size.\n\nTo use it as a control, scale it into the range you need: ranger, or a  division by the window size, turns pixels into 0 to 1.\n\nRELATED:\nkeys reports the keyboard. \njoy_stick is an x and y control that lives in a patch, with a range you set."
         },
         "3": {
             "name": "mouse",
@@ -108,7 +108,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment ticked: move the mouse anywhere",

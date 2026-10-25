@@ -1,0 +1,348 @@
+{
+    "height": 881,
+    "width": 1612,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "crossfade_scanner_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/crossfade_scanner_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment crossfade_scanner - one number walks through sounds",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 635,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "crossfade_scanner - one number walks through sounds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "crossfade_scanner - one number walks through sounds"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 774,
+            "position_y": 45,
+            "width": 798,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "crossfade_scanner turns one number from 0 to 1 into a walk through a chain of sounds, as a fade list for a polyphonic sampler.\n\nAny single continuous control - a limb height, a distance, a fader - becomes a path through a set of sounds.\n\nHOW THE RANGE IS DIVIDED:\n0 to 1 is split into 'n' equal sections, one per sound. At 0 everything is silent. Through the first section the first sound fades up to full. Through each section after that the previous sound fades out as the next fades in. At 1 the last sound is at full and the rest are silent. So with 4 sounds, 0.25 is the first alone, 0.375 is the first and second at half each, and 0.5 is the second alone.\n\n'equal_power' bends each level along a quarter sine, so that at the middle of a crossover both sounds sit at about 0.71 rather than 0.5 - the loudness holds steady through the crossover instead of dipping.\n\nWHICH SOUNDS:\nBy default the sound ids are 0 to n-1. Send a list of ids to 'sound_ids' to choose them - its length becomes n. Changing 'n' afterwards goes back to 0 to n-1. The ids are saved with the patch.\n\nWHAT IT SENDS:\nThe whole list - every sound with its level, silent ones at 0 - each time the value, n, the ids or equal_power changes.\n\nTHE fade LIST:\n[[sound_id, level], ...] is what a polyphonic sampler's 'fade' inlet takes:\neach listed sound plays at its level, and a sound at 0 is silenced. So the whole crossfade is one message.\n\nSYNTAX:\ncrossfade_scanner\n\nIt takes no arguments.\n\nEXAMPLE:\ncrossfade_scanner\n\nINPUTS and PARAMETERS:\n\nvalue:\nThe position along the chain, 0 to 1.\n\nn:\nHow many sounds, 2 to 128. 4 by default.\n\nsound_ids:\nA list of sound ids; sets n to its length.\n\nequal_power:\nHold the loudness through each crossover.\n\nOUTPUTS:\n\nfade:\nThe [sound_id, level] list.\n\nRELATED:\npolyphonic_sampler~ plays the list. effort_fader and muscle_activation_fader make fade lists from body data. crossfade blends two values.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "crossfade_scanner turns one number from 0 to 1 into a walk through a chain of sounds, as a fade list for a polyphonic sampler.\n\nAny single continuous control - a limb height, a distance, a fader - becomes a path through a set of sounds.\n\nHOW THE RANGE IS DIVIDED:\n0 to 1 is split into 'n' equal sections, one per sound. At 0 everything is silent. Through the first section the first sound fades up to full. Through each section after that the previous sound fades out as the next fades in. At 1 the last sound is at full and the rest are silent. So with 4 sounds, 0.25 is the first alone, 0.375 is the first and second at half each, and 0.5 is the second alone.\n\n'equal_power' bends each level along a quarter sine, so that at the middle of a crossover both sounds sit at about 0.71 rather than 0.5 - the loudness holds steady through the crossover instead of dipping.\n\nWHICH SOUNDS:\nBy default the sound ids are 0 to n-1. Send a list of ids to 'sound_ids' to choose them - its length becomes n. Changing 'n' afterwards goes back to 0 to n-1. The ids are saved with the patch.\n\nWHAT IT SENDS:\nThe whole list - every sound with its level, silent ones at 0 - each time the value, n, the ids or equal_power changes.\n\nTHE fade LIST:\n[[sound_id, level], ...] is what a polyphonic sampler's 'fade' inlet takes:\neach listed sound plays at its level, and a sound at 0 is silenced. So the whole crossfade is one message.\n\nSYNTAX:\ncrossfade_scanner\n\nIt takes no arguments.\n\nEXAMPLE:\ncrossfade_scanner\n\nINPUTS and PARAMETERS:\n\nvalue:\nThe position along the chain, 0 to 1.\n\nn:\nHow many sounds, 2 to 128. 4 by default.\n\nsound_ids:\nA list of sound ids; sets n to its length.\n\nequal_power:\nHold the loudness through each crossover.\n\nOUTPUTS:\n\nfade:\nThe [sound_id, level] list.\n\nRELATED:\npolyphonic_sampler~ plays the list. effort_fader and muscle_activation_fader make fade lists from body data. crossfade blends two values."
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 12.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "triangle",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment a slow sweep from 0 to 1 and back",
+            "name": "comment",
+            "id": 385,
+            "position_x": 496,
+            "position_y": 62,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a slow sweep from 0 to 1 and back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a slow sweep from 0 to 1 and back"
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 340,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "10 11 12",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment click: three sounds, ids 10 to 12",
+            "name": "comment",
+            "id": 459,
+            "position_x": 496,
+            "position_y": 110,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click: three sounds, ids 10 to 12",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click: three sounds, ids 10 to 12"
+        },
+        "7": {
+            "name": "crossfade_scanner",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 270,
+            "width": 283,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "8": {
+            "init": "comment tick equal_power and watch the middles",
+            "name": "comment",
+            "id": 533,
+            "position_x": 496,
+            "position_y": 270,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick equal_power and watch the middles",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick equal_power and watch the middles"
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment the fade list, for a polyphonic sampler",
+            "name": "comment",
+            "id": 607,
+            "position_x": 496,
+            "position_y": 520,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the fade list, for a polyphonic sampler",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the fade list, for a polyphonic sampler"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 542,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "value"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "sound_ids"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "fade",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

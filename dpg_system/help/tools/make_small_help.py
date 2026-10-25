@@ -1,4 +1,4 @@
-"""Three small nodes: movesense, display_info, t.data_set."""
+"""Two small nodes: movesense, display_info."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -158,56 +158,3 @@ demo = [
 links = [('i0', 'int out', 'di', 'in'), ('di', 'data out', 'l1', '')]
 print(build('display_info', 'display_info - which screen is where', body,
             demo, links, demo_width=460, text_width=780, text_height=620))
-
-# ----------------------------------------------------------------- t.data_set
-body = """Loads a directory of saved tensors as a torch dataset.
-
-THE NODE:
-
-t.data_set <directory>   a torch Dataset over the .pt files in a folder
-
-Give it a directory and it builds a torch Dataset from what it finds, which is
-the thing torch's training machinery expects to be handed.
-
-IT HAS NO INLETS AND NO OUTLETS:
-That is not an omission you have missed - the node genuinely exposes nothing to
-the patch. It loads the dataset and holds it, and nothing in a patch can ask it
-for anything.
-
-So it is groundwork rather than a working node: the loading part of a training
-setup that would be driven from code. If you are looking for a way to get sample
-data INTO a patch, this is not it - t.rand, np.load or a rolling_buffer of
-recorded input will all be more use.
-
-A missing directory or an unreadable file does not stop the node being created;
-it prints the reason and leaves the dataset empty.
-
-SYNTAX:
-t.data_set <directory>
-
-EXAMPLE:
-t.data_set ~/datasets/poses
-
-INPUTS and PARAMETERS:
-
-The directory, as the argument.
-
-OUTPUTS: 
-
-None.
-
-RELATED:
-t.buffer and rolling_buffer to collect data inside a patch.
-The torch pages for what to do with tensors once you have them."""
-
-demo = [
-    {'key': 'ds', 'init': 't.data_set', 'pos': (30, 62), 'w': 260, 'h': 80},
-    {'key': 'c0', 'comment': True, 'text': 'no inlets and no outlets - the node\nloads a dataset and holds it, and\nnothing in a patch can ask it anything\ngroundwork for a training setup driven\nfrom code, not a way to get data into\na patch',
-     'pos': (30, 155)},
-    {'key': 'rb', 'init': 'rolling_buffer 256', 'pos': (30, 360), 'w': 300, 'h': 200},
-    {'key': 'c6', 'comment': True, 'text': 'for that, this - or t.rand, or np.load',
-     'pos': (30, 575)},
-]
-links = []
-print(build('t.data_set', 't.data_set - a folder of tensors', body,
-            demo, links, demo_width=420, text_width=780, text_height=560))

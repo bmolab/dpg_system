@@ -1,0 +1,696 @@
+{
+    "height": 1271,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "scipy.cubic_spline_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.cubic_spline_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scipy.cubic_spline - a smooth curve through points",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 623,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scipy.cubic_spline - a smooth curve through points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scipy.cubic_spline - a smooth curve through points"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Draws a smooth curve through a set of points and reads values off it. Where np.interp joins the points with straight lines, meeting at corners, the spline bends smoothly through every point, with no corners and no sudden changes of speed.\n\nUse it for animation and camera paths through key positions, for resampling a recorded movement without the kinks straight lines would put into its speed, or for a control curve drawn with a few points that should feel continuous. A 2-D table of values - one row per point, xyz in the columns - gives a smooth path in space.\n\nSYNTAX:\nscipy.cubic_spline <boundary>\nDefault: not-a-knot.\n\nINPUTS and PARAMETERS:\n\nx:\nWhere to read the curve: a number, list or array. Every input is read and sent - the only inlet that makes the node send.\n\nxp:\nThe positions of the points, held. Sorted for you if they are not in order. Without xp the positions are 0, 1, 2 ... - the index of each value.\n\nfp:\nThe values at those positions, held. A 2-D fp, one row per position, gives a curve for each column.\n\nboundary:\nAn option, under the node: how the curve behaves at its two ends. not-a-knot (the default) lets the ends follow the nearest points naturally; natural lets the curve straighten out at its ends; clamped makes it flat at both ends; periodic makes it a loop that joins its end smoothly to its start (the last value is set equal to the first), and repeats beyond the ends.\n\nextrapolate:\nAn option, under the node. Off (the default), the curve is held flat beyond the first and last points, as np.interp does. On, the curve carries on past them - which can quickly run far off.\n\nOUTPUTS:\n\nvalues:\nThe curve's value at each x.\n\nREADING THE DEMO:\nFive points: 0 at 0, 0.8 at 0.25, 0.3 at 0.5, 0.9 at 0.75 and 1 at 1. A ramp from 0 to 1 reads them two ways. np.interp (left) goes from point to point in straight lines, with sharp corners at each; the spline (right) passes through the same five points as one smooth swing.\n\nRELATED:\nnp.interp joins the points with straight lines. np.polyfit fits one curve near the points rather than through them. lerp blends between two values.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Draws a smooth curve through a set of points and reads values off it. Where np.interp joins the points with straight lines, meeting at corners, the spline bends smoothly through every point, with no corners and no sudden changes of speed.\n\nUse it for animation and camera paths through key positions, for resampling a recorded movement without the kinks straight lines would put into its speed, or for a control curve drawn with a few points that should feel continuous. A 2-D table of values - one row per point, xyz in the columns - gives a smooth path in space.\n\nSYNTAX:\nscipy.cubic_spline <boundary>\nDefault: not-a-knot.\n\nINPUTS and PARAMETERS:\n\nx:\nWhere to read the curve: a number, list or array. Every input is read and sent - the only inlet that makes the node send.\n\nxp:\nThe positions of the points, held. Sorted for you if they are not in order. Without xp the positions are 0, 1, 2 ... - the index of each value.\n\nfp:\nThe values at those positions, held. A 2-D fp, one row per position, gives a curve for each column.\n\nboundary:\nAn option, under the node: how the curve behaves at its two ends. not-a-knot (the default) lets the ends follow the nearest points naturally; natural lets the curve straighten out at its ends; clamped makes it flat at both ends; periodic makes it a loop that joins its end smoothly to its start (the last value is set equal to the first), and repeats beyond the ends.\n\nextrapolate:\nAn option, under the node. Off (the default), the curve is held flat beyond the first and last points, as np.interp does. On, the curve carries on past them - which can quickly run far off.\n\nOUTPUTS:\n\nvalues:\nThe curve's value at each x.\n\nREADING THE DEMO:\nFive points: 0 at 0, 0.8 at 0.25, 0.3 at 0.5, 0.9 at 0.75 and 1 at 1. A ramp from 0 to 1 reads them two ways. np.interp (left) goes from point to point in straight lines, with sharp corners at each; the spline (right) passes through the same five points as one smooth swing.\n\nRELATED:\nnp.interp joins the points with straight lines. np.polyfit fits one curve near the points rather than through them. lerp blends between two values."
+        },
+        "3": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "4": {
+            "name": "load_bang",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment positions",
+            "name": "comment",
+            "id": 422,
+            "position_x": 140,
+            "position_y": 53,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "positions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "positions"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 140,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0.25 0.5 0.75 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment values at them",
+            "name": "comment",
+            "id": 496,
+            "position_x": 140,
+            "position_y": 150,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "values at them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "values at them"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 140,
+            "position_y": 185,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0.8 0.3 0.9 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment a ramp, 0 to 1",
+            "name": "comment",
+            "id": 570,
+            "position_x": 380,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a ramp, 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a ramp, 0 to 1"
+        },
+        "10": {
+            "name": "signal",
+            "id": 607,
+            "position_x": 380,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 2.0 saw"
+        },
+        "11": {
+            "init": "comment straight lines",
+            "name": "comment",
+            "id": 644,
+            "position_x": 28,
+            "position_y": 280,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "straight lines",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "straight lines"
+        },
+        "12": {
+            "name": "np.interp",
+            "id": 681,
+            "position_x": 28,
+            "position_y": 315,
+            "width": 64,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 28,
+            "position_y": 450,
+            "width": 368,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 240.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "init": "comment one smooth curve",
+            "name": "comment",
+            "id": 755,
+            "position_x": 440,
+            "position_y": 280,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one smooth curve",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one smooth curve"
+        },
+        "15": {
+            "name": "scipy.cubic_spline",
+            "id": 792,
+            "position_x": 440,
+            "position_y": 315,
+            "width": 119,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "16": {
+            "name": "plot",
+            "id": 829,
+            "position_x": 440,
+            "position_y": 450,
+            "width": 368,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 240.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 690,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 724,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.interp"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 143,
+            "position_y": 724,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.polyfit"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 264,
+            "position_y": 724,
+            "width": 41,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link lerp"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 338,
+            "position_y": 724,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link crossfade"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 834,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xp"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "fp"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xp"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "fp"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "x"
+        },
+        "7": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "x"
+        },
+        "8": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

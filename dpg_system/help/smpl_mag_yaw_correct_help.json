@@ -1,0 +1,260 @@
+{
+    "height": 1408,
+    "width": 1372,
+    "position": [
+        100,
+        100
+    ],
+    "id": 570,
+    "name": "smpl_mag_yaw_correct_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_mag_yaw_correct_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_mag_yaw_correct - heading, joint by joint",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_mag_yaw_correct - heading, joint by joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_mag_yaw_correct - heading, joint by joint"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 514,
+            "position_y": 45,
+            "width": 818,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smpl_mag_yaw_correct turns joints of an SMPL pose about the vertical, to undo heading errors that come from the suit's magnetometers.\n\nWHAT IT TAKES:\nAn SMPL pose in AXIS-ANGLE form, at least 22 joints. Joints past the 22nd pass through untouched. A pose in quaternions produces no output at all - from shadow_to_smpl, set 'output_format' to axis_angle.\n\nSet 'up axis' to match the pose. It defaults to Y, but shadow_to_smpl sends Z-up by default, and a heading correction about the wrong axis is a tilt.\n\nEACH JOINT IS CORRECTED WHERE IT IS IN THE ROOM:\nThe node works out every joint's orientation in the room, turns each one, and then works the pose back out from the corrected orientations. So a correction on the upper arm turns the upper arm alone: the forearm stays where it was in the room. That matches the problem, because each sensor has its own heading error.\n\nTWO CORRECTIONS PER JOINT:\nEach joint has two values, in degrees.\n\nThe first, named after the joint (left_shoulder), turns the joint about the room's vertical. This is the one for heading drift: the whole sensor reading rotated in the room.\n\nThe second, named with _cal (left_shoulder_cal), turns it about the vertical axis in the joint's own frame - so its effect follows the joint as it moves.\n\n'sync local/global' keeps the two equal. Equal values leave a joint that is in the rest orientation - or turned from it only about the vertical - exactly as it is; the correction shows as the joint tilts away. That is right when a sensor's heading error is the same whichever way it faces, and not otherwise, so it is a convenience rather than a setting to leave on regardless.\n\nAfter the conversion from the suit to SMPL the _cal value is no longer the sensor's own calibration offset; treat it as a heading adjustment that travels with the joint.\n\nSYNTAX:\nsmpl_mag_yaw_correct\n\nEXAMPLE:\nsmpl_mag_yaw_correct\n\nINPUTS and PROPERTIES:\n\npose in:\nThe axis-angle pose.\n\nup axis:\nY or Z: which way is up in the pose.\n\nsymmetric:\nEditing a left joint copies the same value to the right one, and the other way round.\n\nsync local/global:\nEditing either value of a joint copies it to the other.\n\nBoth act when you edit a value; ticking them does not change values already set.\n\nreset:\nSet every value back to zero.\n\npelvis ... right_wrist, pelvis_cal ... right_wrist_cal:\nThe two corrections for each joint, in degrees.\n\nOUTPUT:\n\npose out:\nThe corrected pose, one row per joint.\n\nRELATED:\nmag_yaw_correct does the same correction on the suit side, per sensor, before the pose becomes SMPL at all. Correcting there is better when you can, because it fixes the measurement rather than its consequences. smpl_pose_adjust adds a fixed rotation to any joint, in the joint's frame or its parent's.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "smpl_mag_yaw_correct turns joints of an SMPL pose about the vertical, to undo heading errors that come from the suit's magnetometers.\n\nWHAT IT TAKES:\nAn SMPL pose in AXIS-ANGLE form, at least 22 joints. Joints past the 22nd pass through untouched. A pose in quaternions produces no output at all - from shadow_to_smpl, set 'output_format' to axis_angle.\n\nSet 'up axis' to match the pose. It defaults to Y, but shadow_to_smpl sends Z-up by default, and a heading correction about the wrong axis is a tilt.\n\nEACH JOINT IS CORRECTED WHERE IT IS IN THE ROOM:\nThe node works out every joint's orientation in the room, turns each one, and then works the pose back out from the corrected orientations. So a correction on the upper arm turns the upper arm alone: the forearm stays where it was in the room. That matches the problem, because each sensor has its own heading error.\n\nTWO CORRECTIONS PER JOINT:\nEach joint has two values, in degrees.\n\nThe first, named after the joint (left_shoulder), turns the joint about the room's vertical. This is the one for heading drift: the whole sensor reading rotated in the room.\n\nThe second, named with _cal (left_shoulder_cal), turns it about the vertical axis in the joint's own frame - so its effect follows the joint as it moves.\n\n'sync local/global' keeps the two equal. Equal values leave a joint that is in the rest orientation - or turned from it only about the vertical - exactly as it is; the correction shows as the joint tilts away. That is right when a sensor's heading error is the same whichever way it faces, and not otherwise, so it is a convenience rather than a setting to leave on regardless.\n\nAfter the conversion from the suit to SMPL the _cal value is no longer the sensor's own calibration offset; treat it as a heading adjustment that travels with the joint.\n\nSYNTAX:\nsmpl_mag_yaw_correct\n\nEXAMPLE:\nsmpl_mag_yaw_correct\n\nINPUTS and PROPERTIES:\n\npose in:\nThe axis-angle pose.\n\nup axis:\nY or Z: which way is up in the pose.\n\nsymmetric:\nEditing a left joint copies the same value to the right one, and the other way round.\n\nsync local/global:\nEditing either value of a joint copies it to the other.\n\nBoth act when you edit a value; ticking them does not change values already set.\n\nreset:\nSet every value back to zero.\n\npelvis ... right_wrist, pelvis_cal ... right_wrist_cal:\nThe two corrections for each joint, in degrees.\n\nOUTPUT:\n\npose out:\nThe corrected pose, one row per joint.\n\nRELATED:\nmag_yaw_correct does the same correction on the suit side, per sensor, before the pose becomes SMPL at all. Correcting there is better when you can, because it fixes the measurement rather than its consequences. smpl_pose_adjust adds a fixed rotation to any joint, in the joint's frame or its parent's."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 119,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "shadow_to_smpl",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 179,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_format",
+                    "value": "axis_angle",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment axis_angle out, Z-up",
+            "name": "comment",
+            "id": 422,
+            "position_x": 235,
+            "position_y": 400,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis_angle out, Z-up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "axis_angle out, Z-up"
+        },
+        "6": {
+            "name": "smpl_mag_yaw_correct",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 168,
+            "height": 714,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "up axis",
+                    "value": "Z",
+                    "value_type": "str"
+                }
+            },
+            "highlight": true
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 235,
+            "position_y": 560,
+            "width": 249,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "up axis Z, to match\nfirst value: turn in the room\n_cal: turn in the joint's own frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "up axis Z, to match\nfirst value: turn in the room\n_cal: turn in the joint's own frame"
+        },
+        "8": {
+            "name": "close",
+            "id": 533,
+            "position_x": 24,
+            "position_y": 1304,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        }
+    }
+}

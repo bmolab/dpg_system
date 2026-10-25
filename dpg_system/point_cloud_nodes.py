@@ -1309,6 +1309,10 @@ class PointCloudInfoNode(PointCloudNode):
     def execute(self):
         pts = self._get_cloud()
         if pts is None:
+            # an empty frame still passes through, so downstream sees it clear
+            raw_pts, _ = unwrap_cloud(self.in_raw)
+            if raw_pts is not None and np.size(raw_pts) == 0:
+                self.passthrough_output.send(self.in_raw)
             self.count_output.send(0)
             return
         self.passthrough_output.send(self.in_raw)   # frame unchanged, dict or raw

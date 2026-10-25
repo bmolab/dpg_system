@@ -1,0 +1,469 @@
+{
+    "height": 821,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "np.isfinite_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.isfinite_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.isfinite - where the values are ordinary numbers",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 635,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.isfinite - where the values are ordinary numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.isfinite - where the values are ordinary numbers"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Marks the elements that are ordinary, finite numbers - not nan (\"not a number\") and not infinite - and counts them.\n\nInfinity comes from dividing by zero, from exp of something large, from log of 0;\nnan from 0 divided by 0 and other calculations with no answer. Either one wrecks what follows: a plot's range, a mean, a filter's memory. np.isfinite gives a mask of the values you can trust, ready for np.where (keep the good, replace the rest) or np.all (is this whole frame usable?).\n\nSYNTAX:\nnp.isfinite\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a message can say nan and inf). Every input is tested and sent.\n\nOUTPUTS:\n\nmask:\nTrue where the element is an ordinary number, the same shape as the input.\n\ncount:\nHow many elements are ordinary numbers. Sent before the mask.\n\nREADING THE DEMO:\n1 nan 3 inf -inf 0: nan, inf and -inf all fail, so the mask is true false true false false true and the count is 3. A metro re-sends the message five times a second; edit it and click it.\n\nRELATED:\nnp.isnan marks only the nans. np.nan_to_num replaces nan and infinity with numbers you choose. np.all of the mask says whether every value is good.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Marks the elements that are ordinary, finite numbers - not nan (\"not a number\") and not infinite - and counts them.\n\nInfinity comes from dividing by zero, from exp of something large, from log of 0;\nnan from 0 divided by 0 and other calculations with no answer. Either one wrecks what follows: a plot's range, a mean, a filter's memory. np.isfinite gives a mask of the values you can trust, ready for np.where (keep the good, replace the rest) or np.all (is this whole frame usable?).\n\nSYNTAX:\nnp.isfinite\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a message can say nan and inf). Every input is tested and sent.\n\nOUTPUTS:\n\nmask:\nTrue where the element is an ordinary number, the same shape as the input.\n\ncount:\nHow many elements are ordinary numbers. Sent before the mask.\n\nREADING THE DEMO:\n1 nan 3 inf -inf 0: nan, inf and -inf all fail, so the mask is true false true false false true and the count is 3. A metro re-sends the message five times a second; edit it and click it.\n\nRELATED:\nnp.isnan marks only the nans. np.nan_to_num replaces nan and infinity with numbers you choose. np.all of the mask says whether every value is good."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment a list with gaps in it",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a list with gaps in it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a list with gaps in it"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 nan 3 inf -inf 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment test each",
+            "name": "comment",
+            "id": 496,
+            "position_x": 460,
+            "position_y": 53,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "test each",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "test each"
+        },
+        "8": {
+            "name": "np.isfinite",
+            "id": 533,
+            "position_x": 460,
+            "position_y": 92,
+            "width": 76,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "init": "comment ordinary numbers here",
+            "name": "comment",
+            "id": 570,
+            "position_x": 28,
+            "position_y": 215,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ordinary numbers here",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ordinary numbers here"
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 28,
+            "position_y": 250,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment how many",
+            "name": "comment",
+            "id": 644,
+            "position_x": 460,
+            "position_y": 215,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how many"
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 460,
+            "position_y": 250,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 374,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.isnan"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 135,
+            "position_y": 374,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.nan_to_num"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 279,
+            "position_y": 374,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.all"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 369,
+            "position_y": 374,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.where"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 484,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mask",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,1293 @@
+{
+    "name": "t.rolling_buffer_help",
+    "patches": {
+        "0": {
+            "height": 1262,
+            "width": 1979,
+            "position": [
+                77,
+                67
+            ],
+            "id": 2316,
+            "parent_node_uuid": 2536,
+            "name": "make_bump",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 2344,
+                    "sid": 1,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "hidden",
+                    "draggable": false,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "metro 60",
+                    "name": "metro",
+                    "id": 2362,
+                    "sid": 2,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 60.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "2": {
+                    "init": "comment one step every 60 ms",
+                    "name": "comment",
+                    "id": 2375,
+                    "sid": 3,
+                    "position_x": 200,
+                    "position_y": 50,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one step every 60 ms",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "one step every 60 ms"
+                },
+                "3": {
+                    "init": "counter 16 1",
+                    "name": "counter",
+                    "id": 2386,
+                    "sid": 4,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "count",
+                            "value": 16,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "step",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "init": "comment counts 0 to 15 and round again",
+                    "name": "comment",
+                    "id": 2405,
+                    "sid": 5,
+                    "position_x": 230,
+                    "position_y": 140,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "counts 0 to 15 and round again",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "counts 0 to 15 and round again"
+                },
+                "5": {
+                    "init": "t bang int",
+                    "name": "t",
+                    "id": 2416,
+                    "sid": 6,
+                    "position_x": 40,
+                    "position_y": 240,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "trigger 0",
+                            "value": "bang",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "trigger 1",
+                            "value": "int",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "t.window.gaussian",
+                    "id": 2431,
+                    "sid": 7,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "type",
+                            "value": "gaussian",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "m",
+                            "value": 16,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "std",
+                            "value": 1.5,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "sym",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "6": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "string"
+                        },
+                        "7": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "string"
+                        },
+                        "8": {
+                            "name": "requires_grad",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "7": {
+                    "init": "comment a bump 16 values wide",
+                    "name": "comment",
+                    "id": 2462,
+                    "sid": 8,
+                    "position_x": 300,
+                    "position_y": 320,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a bump 16 values wide",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "a bump 16 values wide"
+                },
+                "8": {
+                    "name": "t.roll",
+                    "id": 2473,
+                    "sid": 9,
+                    "position_x": 300,
+                    "position_y": 380,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shifts",
+                            "value": "5",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "dims",
+                            "value": "0",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment moved along by the count",
+                    "name": "comment",
+                    "id": 2486,
+                    "sid": 10,
+                    "position_x": 520,
+                    "position_y": 390,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "moved along by the count",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "moved along by the count"
+                },
+                "10": {
+                    "init": "out bump",
+                    "name": "out",
+                    "id": 2497,
+                    "sid": 11,
+                    "position_x": 300,
+                    "position_y": 520,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dest",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "output name",
+                            "value": "bump",
+                            "value_type": "string"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 2362,
+                    "source_node_name": "metro",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 2386,
+                    "dest_node_name": "counter",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "1": {
+                    "source_node": 2386,
+                    "source_node_name": "counter",
+                    "source_output_index": 0,
+                    "source_output_name": "count out",
+                    "dest_node": 2416,
+                    "dest_node_name": "t",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 2416,
+                    "source_node_name": "t",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 2431,
+                    "dest_node_name": "t.window.gaussian",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "3": {
+                    "source_node": 2416,
+                    "source_node_name": "t",
+                    "source_output_index": 1,
+                    "source_output_name": "int",
+                    "dest_node": 2473,
+                    "dest_node_name": "t.roll",
+                    "dest_input_index": 1,
+                    "dest_input_name": "shifts"
+                },
+                "4": {
+                    "source_node": 2431,
+                    "source_node_name": "t.window.gaussian",
+                    "source_output_index": 0,
+                    "source_output_name": "window tensor out",
+                    "dest_node": 2473,
+                    "dest_node_name": "t.roll",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "5": {
+                    "source_node": 2473,
+                    "source_node_name": "t.roll",
+                    "source_output_index": 0,
+                    "source_output_name": "rolled tensor",
+                    "dest_node": 2497,
+                    "dest_node_name": "out",
+                    "dest_input_index": 0,
+                    "dest_input_name": "bump"
+                }
+            }
+        },
+        "1": {
+            "height": 1262,
+            "width": 1979,
+            "position": [
+                77,
+                67
+            ],
+            "id": 2268,
+            "name": "t.rolling_buffer_help",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 2296,
+                    "sid": 1,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "hidden",
+                    "draggable": false,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.rolling_buffer - the last N samples, as one tensor",
+                    "name": "comment",
+                    "id": 2508,
+                    "sid": 2,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 647,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.rolling_buffer - the last N samples, as one tensor",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "t.rolling_buffer - the last N samples, as one tensor"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 2519,
+                    "sid": 3,
+                    "position_x": 1003,
+                    "position_y": 16,
+                    "width": 788,
+                    "height": 1133,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Keeps the last N samples that arrived and sends them all, oldest first, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into a tensor of the recent past that other nodes can work on: average it, take its spectrum, find its peak, draw it. Almost any question about \"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not been filled yet are zeros, at the oldest (top) end, and they scroll out as real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten. Longer windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single number is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the cleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next input: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list longer than N leaves just its last N). The output is N rows by 1 column. \"input is multi-channel sample\" - each arrival (a list or 1-D tensor of C values) is ONE sample of C channels; the output is N rows by C columns. A sample with a different C starts a new, empty buffer. \"buffer holds one sample of input\" - each arrival replaces the whole buffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it. float32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last 32: one heat_map row per sample, oldest at the top and newest at the bottom, so the moving bump draws a diagonal stripe that scrolls upward. Click reset on the node and the picture empties, then refills from the bottom. Change sample count in the node's options (16, or 64) and the window starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into the last 64 (64 rows of 1 column), drawn as a curve with the newest at the right (t.flatten makes the column one row for plot).\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer is the NumPy version; np.sequence records and plays back. capture~ records the audio graph. t.mean and t.rfft are typical next steps.",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 780,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1118,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "string"
+                        }
+                    },
+                    "text": "Keeps the last N samples that arrived and sends them all, oldest first, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into a tensor of the recent past that other nodes can work on: average it, take its spectrum, find its peak, draw it. Almost any question about \"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not been filled yet are zeros, at the oldest (top) end, and they scroll out as real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten. Longer windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single number is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the cleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next input: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list longer than N leaves just its last N). The output is N rows by 1 column. \"input is multi-channel sample\" - each arrival (a list or 1-D tensor of C values) is ONE sample of C channels; the output is N rows by C columns. A sample with a different C starts a new, empty buffer. \"buffer holds one sample of input\" - each arrival replaces the whole buffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it. float32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last 32: one heat_map row per sample, oldest at the top and newest at the bottom, so the moving bump draws a diagonal stripe that scrolls upward. Click reset on the node and the picture empties, then refills from the bottom. Change sample count in the node's options (16, or 64) and the window starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into the last 64 (64 rows of 1 column), drawn as a curve with the newest at the right (t.flatten makes the column one row for plot).\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer is the NumPy version; np.sequence records and plays back. capture~ records the audio graph. t.mean and t.rfft are typical next steps."
+                },
+                "3": {
+                    "init": "p make_bump",
+                    "name": "p",
+                    "id": 2536,
+                    "sid": 4,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 72,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "make_bump",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "patcher name",
+                            "value": "make_bump",
+                            "value_type": "string"
+                        }
+                    },
+                    "show inputs": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "show outputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "patcher id": 2316
+                },
+                "4": {
+                    "name": "heat_map",
+                    "id": 2655,
+                    "sid": 6,
+                    "position_x": 133,
+                    "position_y": 66,
+                    "width": 327,
+                    "height": 79,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 30,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "string"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "5": {
+                    "init": "comment one sample: the latest bump",
+                    "name": "comment",
+                    "id": 2692,
+                    "sid": 7,
+                    "position_x": 207,
+                    "position_y": 37,
+                    "width": 174,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one sample: the latest bump",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "one sample: the latest bump"
+                },
+                "6": {
+                    "init": "t.rolling_buffer 32",
+                    "name": "t.rolling_buffer",
+                    "id": 2703,
+                    "sid": 8,
+                    "position_x": 38,
+                    "position_y": 194,
+                    "width": 162,
+                    "height": 97,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "reset",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "requires_grad",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "4": {
+                            "name": "sample count",
+                            "value": 32,
+                            "value_type": "int"
+                        },
+                        "5": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "string"
+                        }
+                    },
+                    "highlight": true
+                },
+                "7": {
+                    "init": "comment click reset to empty it",
+                    "name": "comment",
+                    "id": 2728,
+                    "sid": 9,
+                    "position_x": 43,
+                    "position_y": 153,
+                    "width": 150,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "click reset to empty it",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "click reset to empty it"
+                },
+                "8": {
+                    "name": "heat_map",
+                    "id": 2739,
+                    "sid": 10,
+                    "position_x": 227,
+                    "position_y": 198,
+                    "width": 327,
+                    "height": 369,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 32,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "string"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment the last 32 samples: oldest at the top, newest at the bottom",
+                    "name": "comment",
+                    "id": 2776,
+                    "sid": 11,
+                    "position_x": 213,
+                    "position_y": 153,
+                    "width": 377,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the last 32 samples: oldest at the top, newest at the bottom",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "the last 32 samples: oldest at the top, newest at the bottom"
+                },
+                "10": {
+                    "init": "metro 50",
+                    "name": "metro",
+                    "id": 2787,
+                    "sid": 12,
+                    "position_x": 29,
+                    "position_y": 605,
+                    "width": 128,
+                    "height": 69,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 50.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "11": {
+                    "init": "random 1.0",
+                    "name": "random",
+                    "id": 2800,
+                    "sid": 13,
+                    "position_x": 183,
+                    "position_y": 619,
+                    "width": 122,
+                    "height": 55,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment one number every 50 ms",
+                    "name": "comment",
+                    "id": 2813,
+                    "sid": 14,
+                    "position_x": 177,
+                    "position_y": 586,
+                    "width": 144,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one number every 50 ms",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "one number every 50 ms"
+                },
+                "13": {
+                    "name": "t.flatten",
+                    "id": 2849,
+                    "sid": 16,
+                    "position_x": 539,
+                    "position_y": 623,
+                    "width": 69,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all"
+                },
+                "14": {
+                    "name": "plot",
+                    "id": 2867,
+                    "sid": 18,
+                    "position_x": 637,
+                    "position_y": 614,
+                    "width": 327,
+                    "height": 199,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 150,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "string"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "string"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 64,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 64.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "comment the last 64, newest at the right",
+                    "name": "comment",
+                    "id": 2913,
+                    "sid": 19,
+                    "position_x": 694,
+                    "position_y": 579,
+                    "width": 205,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the last 64, newest at the right",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "the last 64, newest at the right"
+                },
+                "16": {
+                    "init": "help_link t.buffer",
+                    "name": "help_link",
+                    "id": 2975,
+                    "sid": 23,
+                    "position_x": 33,
+                    "position_y": 822,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "t.buffer",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "help_link np.rolling_buffer",
+                    "name": "help_link",
+                    "id": 2986,
+                    "sid": 24,
+                    "position_x": 115,
+                    "position_y": 822,
+                    "width": 121,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "np.rolling_buffer",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "18": {
+                    "init": "help_link np.sequence",
+                    "name": "help_link",
+                    "id": 2997,
+                    "sid": 25,
+                    "position_x": 254,
+                    "position_y": 822,
+                    "width": 84,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "np.sequence",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "19": {
+                    "init": "help_link t.mean",
+                    "name": "help_link",
+                    "id": 3008,
+                    "sid": 26,
+                    "position_x": 355,
+                    "position_y": 822,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "t.mean",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "20": {
+                    "init": "help_link capture~",
+                    "name": "help_link",
+                    "id": 3019,
+                    "sid": 27,
+                    "position_x": 425,
+                    "position_y": 822,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "capture~",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "21": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 3030,
+                    "sid": 28,
+                    "position_x": 33,
+                    "position_y": 788,
+                    "width": 156,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "22": {
+                    "name": "close",
+                    "id": 3041,
+                    "sid": 29,
+                    "position_x": 27,
+                    "position_y": 896,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "23": {
+                    "init": "t.rolling_buffer 64",
+                    "name": "t.rolling_buffer",
+                    "id": 3109,
+                    "sid": 15,
+                    "position_x": 341,
+                    "position_y": 607,
+                    "width": 162,
+                    "height": 97,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "reset",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "requires_grad",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "4": {
+                            "name": "sample count",
+                            "value": 64,
+                            "value_type": "int"
+                        },
+                        "5": {
+                            "name": "update style",
+                            "value": "input is stream of samples",
+                            "value_type": "string"
+                        }
+                    },
+                    "highlight": true
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 2536,
+                    "source_node_name": "p",
+                    "source_output_index": 0,
+                    "source_output_name": "bump",
+                    "dest_node": 2655,
+                    "dest_node_name": "heat_map",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "1": {
+                    "source_node": 2536,
+                    "source_node_name": "p",
+                    "source_output_index": 0,
+                    "source_output_name": "bump",
+                    "dest_node": 2703,
+                    "dest_node_name": "t.rolling_buffer",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "2": {
+                    "source_node": 2703,
+                    "source_node_name": "t.rolling_buffer",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 2739,
+                    "dest_node_name": "heat_map",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "3": {
+                    "source_node": 2787,
+                    "source_node_name": "metro",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 2800,
+                    "dest_node_name": "random",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
+                },
+                "4": {
+                    "source_node": 2800,
+                    "source_node_name": "random",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 3109,
+                    "dest_node_name": "t.rolling_buffer",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "5": {
+                    "source_node": 2849,
+                    "source_node_name": "t.flatten",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor out",
+                    "dest_node": 2867,
+                    "dest_node_name": "plot",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "6": {
+                    "source_node": 3109,
+                    "source_node_name": "t.rolling_buffer",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 2849,
+                    "dest_node_name": "t.flatten",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                }
+            }
+        }
+    }
+}

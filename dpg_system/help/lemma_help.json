@@ -1,0 +1,303 @@
+{
+    "height": 681,
+    "width": 1596,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "lemma_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/lemma_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment lemma - every word in its dictionary form",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lemma - every word in its dictionary form",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lemma - every word in its dictionary form"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 748,
+            "position_y": 45,
+            "width": 808,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "lemma gives back the dictionary form of every word in a phrase.\n\n'geese' becomes 'goose', 'were' becomes 'be', 'running' becomes 'run', 'better' becomes 'well'. It is not chopping off endings - it knows the irregular forms, because it has parsed the sentence and knows which word is doing what.\n\nWHAT IT IS FOR:\nMatching. Counting words, comparing phrases or looking for a term all work better on lemmas, because 'run', 'running' and 'ran' stop being three different things. Put it in front of a word count or a word_trigger and the results get noticeably steadier.\n\nWHAT COMES OUT:\nA LIST, one lemma per word, in the order the words arrived. Punctuation is kept as items of its own, so 'ran,' gives 'run' and ','. Capitals mostly go: 'The Mice' becomes 'the mouse'. A list going into it is joined back into one phrase first, so a message node works as a source.\n\nSYNTAX:\nlemma\n\nINPUTS:\n\ntext in:\nA word, phrase or sentence. Receiving it triggers the node.\n\nOUTPUTS:\n\nlemmas out:\nA list, one dictionary form per word.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy node in every patch then shares it. It is a few hundred megabytes and takes a moment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all - no output, no error each time. A spacy node that is silent when everything is wired correctly is the thing to suspect.\n\nRELATED:\nrephrase also works from the grammar of a phrase.\nspacy_similarity works on meaning rather than grammar.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "lemma gives back the dictionary form of every word in a phrase.\n\n'geese' becomes 'goose', 'were' becomes 'be', 'running' becomes 'run', 'better' becomes 'well'. It is not chopping off endings - it knows the irregular forms, because it has parsed the sentence and knows which word is doing what.\n\nWHAT IT IS FOR:\nMatching. Counting words, comparing phrases or looking for a term all work better on lemmas, because 'run', 'running' and 'ran' stop being three different things. Put it in front of a word count or a word_trigger and the results get noticeably steadier.\n\nWHAT COMES OUT:\nA LIST, one lemma per word, in the order the words arrived. Punctuation is kept as items of its own, so 'ran,' gives 'run' and ','. Capitals mostly go: 'The Mice' becomes 'the mouse'. A list going into it is joined back into one phrase first, so a message node works as a source.\n\nSYNTAX:\nlemma\n\nINPUTS:\n\ntext in:\nA word, phrase or sentence. Receiving it triggers the node.\n\nOUTPUTS:\n\nlemmas out:\nA list, one dictionary form per word.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy node in every patch then shares it. It is a few hundred megabytes and takes a moment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all - no output, no error each time. A spacy node that is silent when everything is wired correctly is the thing to suspect.\n\nRELATED:\nrephrase also works from the grammar of a phrase.\nspacy_similarity works on meaning rather than grammar."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 370,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "the geese were running quickly",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "string",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 115,
+            "width": 370,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "The Mice ran, and she was better.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "init": "comment click either to send it",
+            "name": "comment",
+            "id": 422,
+            "position_x": 426,
+            "position_y": 165,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click either to send it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click either to send it"
+        },
+        "6": {
+            "name": "lemma",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "7": {
+            "name": "list",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 295,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 426,
+            "position_y": 345,
+            "width": 292,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "geese -> goose, were -> be, running -> run\nit knows the irregular forms - it has\nparsed the sentence, not chopped endings",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "geese -> goose, were -> be, running -> run\nit knows the irregular forms - it has\nparsed the sentence, not chopped endings"
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 367,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "lemmas out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -5,183 +5,656 @@ from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
 # ---------------------------------------------------------------------- shadow
-body = """These read live data from a Shadow suit.
+body = """shadow reads live motion capture from a Shadow suit, for up to four bodies.
 
-THE NODES:
+shadow_sensor, which reads the raw sensor values of one sensor, has its own help
+patch. shadow_pose is not a suit node: it builds a 37-row pose from single
+joints, and is described on the pose help patch.
 
-shadow         the suit: joint orientations and positions, for up to four bodies
-shadow_sensor  the raw sensor readings from one sensor - magnetometer, 
-               accelerometer and gyroscope, before any fusion
-shadow_pose    a named pose from a Shadow stream
+CONNECTING:
+shadow talks to the Shadow application on this machine, port 32076. On a Mac,
+if Shadow is not running, creating the node launches it, and the node connects
+once it is up. 'reconnect' drops the connection and makes it again.
 
 WHAT THE SUIT GIVES YOU:
-Each body has a quaternions outlet and a positions outlet. The quaternions are 
-the joint ORIENTATIONS, which is the real measurement - the suit is a set of 
-inertial sensors, and orientation is what they produce. The positions are 
-inferred from those orientations plus assumed limb lengths, so they are a 
-derived quantity and only as good as the assumptions behind them.
+Each body has a quaternions outlet and a positions outlet, each 37 rows, one
+per joint in the Shadow layout.
 
-That distinction matters constantly. An orientation error is a sensor problem; 
-a position error may be an orientation error, or a limb length, or the root 
+The quaternions are the joint ORIENTATIONS - each joint's rotation, w x y z -
+and they are the real measurement: the suit is a set of inertial sensors, and
+orientation is what they produce. The positions are worked out by Shadow from
+those orientations plus its limb lengths, so they are a derived quantity and
+only as good as the assumptions behind them. They arrive in centimetres and the
+node divides by 100, so they go out in metres.
+
+That distinction matters constantly. An orientation error is a sensor problem;
+a position error may be an orientation error, or a limb length, or the root
 inference - see the sensor_to_root help patch.
 
-shadow_sensor IS FOR DIAGNOSING, NOT PERFORMING:
-It gives you what one sensor actually reads before the fusion combines them. 
-The magnetometer outlet is the one that matters for troubleshooting: a sensor 
-sitting in a distorted field produces a yaw error that no amount of filtering 
-downstream will fix, and the only way to see it is to look at the raw field. 
-Patch it into mag_offset to measure that.
+WHEN IT SENDS:
+Frames are read on a background thread. Normally the newest frame goes out once
+per frame of the app, positions first, then quaternions, body by body; frames
+that arrive in between are replaced by the newest. With 'direct_out' on, every
+frame goes out from the background thread the moment it arrives.
 
 SYNTAX:
 shadow
-shadow_sensor
 
 EXAMPLE:
 shadow
 
 INPUTS and PARAMETERS:
 
-flush (shadow):
-Discard whatever is queued and start from the current frame. Use it when the 
-stream has fallen behind and you would rather lose data than lag.
+flush:
+Discard whatever is queued in the connection and start from the current frame.
+Use it when the stream has fallen behind and you would rather lose data than
+lag.
 
 reconnect:
-Re-establish the connection to the suit.
+Close the connection to Shadow and open it again.
 
-OUTPUTS: 
+direct_out:
+Off by default. On, each frame is sent from the background thread as it
+arrives instead of once per app frame.
+
+OUTPUTS:
 
 body N quaternions:
-The joint orientations for that body - the measurement.
+The joint orientations for that body, 37 rows of w x y z - the measurement.
 
 body N positions:
-Joint positions, inferred from the orientations and the limb lengths.
-
-magnetometer / accelerometer / gyroscope (shadow_sensor):
-The raw readings from one sensor.
+The 37 joint positions in metres, worked out from the orientations.
 
 A NOTE ON MULTIPLE BODIES:
-The four bodies are separate suits, and the outlets are static - body 3's 
-outlets exist whether or not a third suit is connected, and simply stay quiet. 
-So a patch built for two performers works unchanged with one."""
+The four bodies are separate suits, and the outlets are static - body 3's
+outlets exist whether or not a third suit is connected, and simply stay quiet.
+So a patch built for two performers works unchanged with one.
+
+RELATED:
+active_joints reduces the 37 rows to the 20 joints most patches use, as in the
+example.
+shadow_sensor shows what one sensor reads before Shadow combines them.
+take records the stream and plays it back."""
 
 demo = [
-    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
-    {'key': 'c0', 'comment': True, 'text': 'quaternions are the measurement\npositions are inferred from them',
-     'pos': (30, 395)},
-    {'key': 'aj', 'init': 'active_joints', 'pos': (30, 470), 'w': 220, 'h': 90},
+    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 119, 'h': 168},
+    {'key': 'c0', 'comment': True, 'text': 'needs a running suit\nquaternions are the measurement\npositions are inferred from them',
+     'pos': (330, 62)},
+    {'key': 'aj', 'init': 'active_joints', 'pos': (30, 250), 'w': 144, 'h': 42},
     {'key': 'c2', 'comment': True, 'text': 'the 20 joints most patches want',
-     'pos': (30, 575)},
-    {'key': 'ss', 'init': 'shadow_sensor', 'pos': (350, 62), 'w': 240, 'h': 180},
-    {'key': 'mo', 'init': 'mag_offset', 'pos': (350, 260), 'w': 240, 'h': 220},
-    {'key': 'c3', 'comment': True, 'text': 'raw field, for diagnosing a bad sensor',
-     'pos': (350, 495)},
+     'pos': (330, 250)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 315), 'w': 321, 'h': 350},
+    {'key': 'c3', 'comment': True, 'text': 'body 1, one row per joint',
+     'pos': (330, 315)},
 ]
 links = [('sh', 'body 1 quaternions', 'aj', 'full pose quats in'),
-         ('ss', 'magnetometer', 'mo', 'magnetometer')]
+         ('aj', 'active joint quats out', 'ap', 'in')]
 print(build('shadow', 'shadow - live data from the suit', body, demo, links,
-            demo_width=620, text_width=800, text_height=700))
+            demo_width=620, text_width=800, text_height=980))
+
+# --------------------------------------------------------------- shadow_sensor
+body = """shadow_sensor shows what one sensor in a Shadow suit actually reads - its
+magnetometer, accelerometer and gyroscope - before Shadow combines the sensors
+into a pose.
+
+IT IS FOR DIAGNOSING, NOT PERFORMING:
+The magnetometer outlet is the one that matters for troubleshooting. A sensor
+sitting in a distorted field, or carrying a bit of magnetised metal with it,
+reports a heading that is wrong - a limb turned about the vertical - and no
+amount of filtering downstream will fix it, because it is not noise. The only
+way to see it is to look at the field the sensor reads. Patch the magnetometer
+into mag_offset, turn the sensor through many orientations, and mag_offset
+measures it, as in the example.
+
+CONNECTING:
+It opens its own connection to the Shadow application on this machine, port
+32076, separate from any shadow node, so it can run beside a capture patch
+without disturbing it. Shadow must already be running; 'reconnect' tries again.
+
+CHOOSING A SENSOR:
+'sensor' lists only the physical sensors that are actually reporting - joints
+that Shadow derives rather than measures never appear. Until data arrives it
+reads '<waiting for device>'. 'body' picks the suit, 0 to 3.
+
+THREE KINDS OF DATA:
+'data' chooses what Shadow is asked for. Changing it reconnects.
+  a / m / g             accelerometer in g, magnetometer in microtesla,
+                        gyroscope in degrees per second (the default)
+  sensor (calibrated)   the same three after the suit's own calibration has
+                        corrected each sensor's bias and scale
+  raw                   uncalibrated integer counts, before any of that
+
+Comparing 'sensor (calibrated)' with 'raw' tells you whether the suit's stored
+calibration is already removing an offset you have measured. A clean
+magnetometer in 'sensor (calibrated)' mode, turned through every orientation,
+traces a sphere centred close to the origin with a radius equal to the local
+field strength - between about 52 and 55 microtesla in the Toronto studios.
+
+SYNTAX:
+shadow_sensor
+
+EXAMPLE:
+shadow_sensor
+
+INPUTS and PARAMETERS:
+
+reconnect:
+Close the connection and open it again.
+
+body:
+Which suit, 0 to 3.
+
+data:
+a / m / g, sensor (calibrated) or raw - see above.
+
+sensor:
+Which sensor, from the ones reporting.
+
+OUTPUTS:
+
+magnetometer / accelerometer / gyroscope:
+Three numbers each, x y z in the sensor's own frame. All three go out
+together, once per app frame, whenever a new reading has arrived.
+
+RELATED:
+mag_offset fits a sphere to the magnetometer readings, as in the example.
+shadow is the suit's pose, after the sensors are combined."""
+
+demo = [
+    {'key': 'ss', 'init': 'shadow_sensor', 'pos': (30, 62), 'w': 129, 'h': 112},
+    {'key': 'c0', 'comment': True, 'text': 'needs a running suit\npick a sensor once it is listed',
+     'pos': (330, 62)},
+    {'key': 'mo', 'init': 'mag_offset', 'pos': (30, 200), 'w': 246, 'h': 182},
+    {'key': 'c1', 'comment': True, 'text': 'turn the sensor through many orientations\nthe offset is what the sensor adds to the field',
+     'pos': (330, 200)},
+]
+links = [('ss', 'magnetometer', 'mo', 'magnetometer')]
+print(build('shadow_sensor', 'shadow_sensor - one sensor, before fusion', body, demo, links,
+            demo_width=620, text_width=800, text_height=1000))
 
 # ------------------------------------------------------------------------ pose
-body = """These carry, edit and compare poses.
+# A quaternion stream every pose demo below shares: a swinging angle about x,
+# packed to x y z and turned into one w x y z quaternion (an array, which is
+# what the pose nodes need - they ignore plain lists).
+def swing(x=30, y=62):
+    return [
+        {'key': 'sig', 'init': 'signal 4.0 sin', 'pos': (x, y), 'w': 129, 'h': 78,
+         'props': SIG('sin', 4.0, 90.0, True)},
+        {'key': 'pk', 'init': 'pack 3', 'pos': (x, y + 100), 'w': 140, 'h': 100},
+        {'key': 'eq', 'init': 'euler_to_quaternion', 'pos': (x, y + 215), 'w': 260, 'h': 120,
+         'props': {'degrees': True}},
+        {'key': 'cs', 'comment': True, 'text': 'one joint swinging 90 degrees\neach way about x',
+         'pos': (x + 300, y + 215)},
+    ]
 
-A pose is a set of joint orientations as quaternions. Everything else in this 
-part of the system is a transformation of one.
+SWING_LINKS = [('sig', '', 'pk', 'in 1'),
+               ('pk', 'out', 'eq', 'xyz rotation')]
+
+body = """pose builds a whole pose out of single joints. It has one inlet per joint, and
+whenever any of them receives a rotation, the whole pose goes out.
 
 THE NODES:
 
-pose            hold a pose, and send it
-shadow_pose     the same, for the 37-joint Shadow layout
-active_pose     an editor for the 20 active joints - see and set each one
-active_joints   reduce a full pose to the 20 active joints
-target_pose     compare a pose against a captured one and score the match
-pose_adjust     apply a per-joint correction to a pose
-calibrate_pose  capture a reference pose and correct against it
+pose         20 joint inlets in, a 20-joint pose out
+shadow_pose  the same 20 inlets, but the pose out has the 37 rows of the
+             raw Shadow layout
 
-TWENTY JOINTS, NOT THIRTY-SEVEN:
-The Shadow layout has 37 joints; most work uses the 20 that carry the movement. 
-active_joints does that reduction, and it is worth doing early - the other 17 
-are mostly fixed relationships that add nothing and cost attention.
+WHAT A POSE IS:
+An array of joint orientations, one row per joint, each a quaternion
+w x y z with the real part first. pose sends the 20 active joints in the
+order active_joints uses: base of skull, upper vertebrae, mid vertebrae,
+lower vertebrae, spine pelvis, pelvis anchor, then left hip, knee and ankle,
+right hip, knee and ankle, left shoulder blade, shoulder, elbow and wrist,
+and the same four on the right. So a pose made here can go anywhere a
+reduced suit pose goes.
 
-pose_adjust IS WHERE FRAME CONVENTION BITES:
-It applies a per-joint quaternion correction, and by default each non-root joint 
-is PRE-multiplied, so the correction is expressed in the PARENT bone's frame. 
-The root is post-multiplied, in body-local terms.
+shadow_pose puts each of the same 20 inlets at its row in the 37-row layout
+the shadow node sends. The 17 rows without an inlet are always the identity.
 
-The 'child frame' checkbox switches every non-root joint to post-multiply, 
-putting the correction in the joint's OWN frame. Which you want depends on where 
-the error is: a sensor mounted on the child side of a joint produces an error in 
-the child's frame, and correcting it in the parent's will not hold as the joint 
-moves.
+JOINTS YOU DO NOT SET:
+An inlet that has received nothing counts as the identity - no rotation - and
+an inlet keeps the last rotation it received. So you can drive two or three
+joints and leave the rest of the body at rest.
 
-If a correction looks right in one posture and wrong in another, that is almost 
-always this setting.
-
-target_pose SCORES A MATCH:
-Capture a pose, then feed the live stream in, and it reports how close the 
-current pose is. The 'axis distances out' outlet breaks the score down per axis, 
-which tells you WHICH way the difference lies rather than only how much - so a 
-performer can be guided towards a target rather than just told they are wrong.
+WHAT AN INLET TAKES:
+Four numbers, w x y z: a numpy array, a torch tensor, or a plain list - from
+a message box, say. euler_to_quaternion turns angles into one, as the example
+does.
 
 SYNTAX:
 pose
+shadow_pose
+
+EXAMPLE:
+pose
+
+INPUTS:
+
+base of skull ... right wrist:
+One quaternion each, w x y z. Any of them arriving sends the pose.
+
+OUTPUT:
+
+pose out:
+The pose as a numpy array: 20 rows of four for pose, 37 rows of four for
+shadow_pose.
+
+RELATED:
+active_pose shows a whole pose row by row, and lets you edit it.
+active_joints reduces a 37-row Shadow pose to these 20 joints.
+gl_body draws a pose of either size."""
+
+demo = swing() + [
+    {'key': 'po', 'init': 'pose', 'pos': (30, 400), 'w': 160, 'h': 300},
+    {'key': 'c0', 'comment': True, 'text': 'into the left elbow inlet only:\nevery other joint stays at rest',
+     'pos': (330, 400)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 720), 'w': 300, 'h': 520},
+    {'key': 'c1', 'comment': True, 'text': 'the pose that comes out - 20 rows,\nonly left_elbow moving', 'pos': (330, 720)},
+]
+links = SWING_LINKS + [('eq', 'quaternion rotation', 'po', 'left elbow'),
+                       ('po', 'pose out', 'ap', 'in')]
+print(build('pose', 'pose - a pose built from single joints', body, demo, links,
+            demo_width=620, text_width=810, text_height=870))
+
+# ----------------------------------------------------------------- active_pose
+body = """active_pose shows a 20-joint pose one row per joint, and lets you edit it.
+
+WHAT IT SHOWS:
+Twenty rows, labelled base_of_skull through right_wrist in the order
+active_joints and pose use. Each row is one joint's rotation as a quaternion,
+w x y z with the real part first. Every joint starts at the identity, 1 0 0 0,
+which is no rotation.
+
+EDITING:
+Change any number in a row and the whole pose goes out of 'out'. The numbers
+go out exactly as typed - nothing normalises them - so keep each row a unit
+quaternion, its four squares adding up to one. 0.707 0.707 0 0 is a quarter
+turn about x; 1 1 0 0 is not a rotation at all.
+
+A POSE ARRIVING:
+A pose sent into 'in' replaces the rows and goes straight out, so active_pose
+also works as a readout of a live pose. While a stream is arriving, it
+overwrites your edits on the next frame. A bang into 'in' sends the rows as
+they are.
+
+Send it 20 rows. It shows whatever shape arrives, but the joint labels belong
+to the first 20 rows, so a pose of another size is labelled wrongly.
+
+The rows are saved with the patch.
+
+SYNTAX:
 active_pose
-calibrate_pose
+
+EXAMPLE:
+active_pose
+
+INPUTS:
+
+in:
+A 20-joint pose, or a bang to send the current rows.
+
+base_of_skull ... right_wrist:
+The rows themselves.
+
+reset:
+Set every joint back to the identity, and send the pose.
+
+output type:
+numpy (the default), torch or list.
+
+OPTIONS:
+save and load write the rows to a .npy file and read them back.
+
+OUTPUT:
+
+out:
+The pose, 20 rows of four.
+
+RELATED:
+pose builds a pose from single joints.
+pose_adjust applies fixed corrections to a pose, joint by joint.
+quaternion_to_euler shows the rows as angles, as in the example."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click to send the pose', 'pos': (330, 62)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 130), 'w': 300, 'h': 520,
+     'props': {'[14]': [0.7071, 0.7071, 0.0, 0.0]}},
+    {'key': 'c1', 'comment': True, 'text': 'left_elbow is set to a quarter\nturn about x - edit any row\nand the pose goes out',
+     'pos': (330, 130)},
+    {'key': 'qe', 'init': 'quaternion_to_euler', 'pos': (30, 670), 'w': 260, 'h': 160,
+     'props': {'degrees': True}},
+    {'key': 've', 'init': 'vector', 'pos': (30, 850), 'w': 260, 'h': 520},
+    {'key': 'c2', 'comment': True, 'text': 'the same pose as x y z angles\nin degrees, one row per joint',
+     'pos': (330, 850)},
+]
+links = [('btn', '', 'ap', 'in'),
+         ('ap', 'out', 'qe', 'quaternion'),
+         ('qe', 'euler angles', 've', 'in')]
+print(build('active_pose', 'active_pose - see and edit a 20-joint pose', body, demo, links,
+            demo_width=620, text_width=810, text_height=920))
+
+# --------------------------------------------------------------- active_joints
+body = """active_joints reduces a full 37-row Shadow pose to the 20 joints most work
+uses.
+
+WHY 20:
+The shadow node sends 37 rows per body. Twenty of them are the joints that
+carry the movement of the body: the spine and head, the hips, knees and
+ankles, the shoulder blades, shoulders, elbows and wrists. Reducing early
+keeps everything downstream smaller and in one agreed order.
+
+WHAT IT TAKES:
+A pose of 37 rows, as a numpy array or a torch tensor - straight from the
+shadow node's 'body N quaternions' outlet, from a take, or from shadow_pose.
+Anything else produces nothing: a pose that is already 20 rows, a flat array
+of 148 numbers, or a list.
+
+WHAT IT SENDS:
+The 20 rows, in this order: base of skull, upper vertebrae, mid vertebrae,
+lower vertebrae, spine pelvis, pelvis anchor, left hip, knee and ankle, right
+hip, knee and ankle, left shoulder blade, shoulder, elbow and wrist, then the
+same four on the right.
+
+It picks rows and does not change them, and sends the same kind it received:
+numpy in, numpy out; torch in, torch out.
+
+SYNTAX:
+active_joints
 
 EXAMPLE:
 active_joints
 
-INPUTS and PARAMETERS:
+INPUTS:
+
+full pose quats in:
+A 37-row Shadow pose.
+
+OUTPUT:
+
+active joint quats out:
+The 20-row pose.
+
+RELATED:
+shadow_pose builds a 37-row pose from single joints, as in the example.
+active_pose shows a 20-joint pose with its joint names.
+body_to_joints splits a pose into one outlet per joint."""
+
+demo = swing() + [
+    {'key': 'sp', 'init': 'shadow_pose', 'pos': (30, 400), 'w': 160, 'h': 300},
+    {'key': 'c0', 'comment': True, 'text': 'a 37-row pose with the left elbow moving\n- the same shape the shadow node sends',
+     'pos': (330, 400)},
+    {'key': 'aj', 'init': 'active_joints', 'pos': (30, 720), 'w': 220, 'h': 90},
+    {'key': 'c1', 'comment': True, 'text': '37 rows in, 20 out', 'pos': (330, 720)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 830), 'w': 300, 'h': 520},
+    {'key': 'c2', 'comment': True, 'text': 'the left elbow lands on its\nown row of the 20', 'pos': (330, 830)},
+]
+links = SWING_LINKS + [('eq', 'quaternion rotation', 'sp', 'left elbow'),
+                       ('sp', 'pose out', 'aj', 'full pose quats in'),
+                       ('aj', 'active joint quats out', 'ap', 'in')]
+print(build('active_joints', 'active_joints - 37 Shadow joints down to 20', body, demo, links,
+            demo_width=620, text_width=810, text_height=720))
+
+# ----------------------------------------------------------------- target_pose
+body = """target_pose compares each pose that arrives with a stored target pose, and says
+how far apart they are - in total, and joint by joint.
+
+HOW FAR:
+For each joint it measures the angle between the joint's rotation in the pose
+and its rotation in the target: the size of the single turn that would take
+one to the other. It is in radians, from 0 when they match to 3.14 (half a
+turn) at most. A quaternion and its negative are the same rotation, and
+count as a match.
+
+'score out' is the sum of those angles over all the joints.
+
+'axis distances out' sends the angles themselves, one per joint in the pose's
+row order. Despite the name, it is one number per JOINT, not per axis: it
+tells you which joints are off, rather than only how much in all.
+
+Every row of both is normalised before comparing, so a quaternion that is
+not quite unit length does not distort the result.
+
+CAPTURING THE TARGET:
+Click 'capture in', and the NEXT pose to arrive becomes the target. Nothing
+is sent for that pose; the poses after it are scored against it.
+
+A bang sent into 'capture in' does the same as a click.
+
+A number - a toggle, say - switches CONTINUOUS capture: while it is non-zero,
+every pose that arrives becomes the target and nothing is scored; 0 switches
+it off, and the poses after that are scored against the last one captured.
+
+The target is held in memory only. It is not saved with the patch.
+
+BEFORE THE FIRST CAPTURE:
+The target starts as 20 joints at rest, so the score is how far the pose is
+from the rest pose. A pose with more than 20 rows - a 37-row Shadow pose -
+fails with an error until a pose of that size has been captured.
+
+SYNTAX:
+target_pose
+
+EXAMPLE:
+target_pose
+
+INPUTS:
 
 pose in:
-The pose, as quaternions.
+A pose: rows of w x y z quaternions.
 
-capture in (target_pose):
-Store the current pose as the target.
+capture in:
+Click (or bang) to take the next pose as the target; 1 / 0 to capture
+continuously or stop.
 
-calibration input / calibrate input (calibrate_pose):
-The reference, and the command to capture it.
+OUTPUTS:
 
-child frame (pose_adjust):
-Which frame the correction is applied in - see above.
+score out:
+The total angle between pose and target, in radians.
+
+axis distances out:
+The angle for each joint, in radians.
+
+RELATED:
+calibrate_pose captures a pose and measures every later one FROM it.
+quaternion_distance measures between two single rotations."""
+
+demo = swing() + [
+    {'key': 'po', 'init': 'pose', 'pos': (30, 400), 'w': 160, 'h': 300},
+    {'key': 'btn', 'init': 'button', 'pos': (250, 720), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click: the next pose becomes the target',
+     'pos': (360, 720)},
+    {'key': 'tp', 'init': 'target_pose', 'pos': (30, 780), 'w': 240, 'h': 140},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 940), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c1', 'comment': True, 'text': 'total angle from the target, radians\nat rest until you capture',
+     'pos': (360, 940)},
+    {'key': 've', 'init': 'vector', 'pos': (30, 1000), 'w': 200, 'h': 520},
+    {'key': 'c2', 'comment': True, 'text': 'one angle per joint: only the\nleft elbow (row 14) is ever off',
+     'pos': (360, 1000)},
+]
+links = SWING_LINKS + [('eq', 'quaternion rotation', 'po', 'left elbow'),
+                       ('po', 'pose out', 'tp', 'pose in'),
+                       ('btn', '', 'tp', 'capture in'),
+                       ('tp', 'score out', 'f1', ''),
+                       ('tp', 'axis distances out', 've', 'in')]
+print(build('target_pose', 'target_pose - how far from a captured pose', body, demo, links,
+            demo_width=620, text_width=810, text_height=930))
+
+# ----------------------------------------------------------------- pose_adjust
+body = """pose_adjust applies a fixed rotation to chosen joints of a 20-joint pose - for a
+pose that is right in shape but wrong in detail, such as a sensor that sits a
+little off on one limb.
+
+WHAT IT TAKES:
+A 20-joint active pose: 20 rows of w x y z, or a flat list of 80 numbers. A
+pose of any other size produces nothing - reduce a 37-row Shadow pose with
+active_joints first.
+
+THE CORRECTIONS:
+One row of four numbers per joint, a quaternion w x y z. 1 0 0 0, the
+identity, means no correction. Keep each row unit length - its four squares
+adding to one - because nothing normalises it, and a longer or shorter row
+scales the joint's quaternion as well as turning it.
+
+The rows have short names, in the same order as the active joints:
+
+head     base of skull         l_hip ... l_ankle      left leg
+neck     upper vertebrae       r_hip ... r_ankle      right leg
+spine3   mid vertebrae         l_collar ... l_wrist   left arm, from the
+spine2   lower vertebrae                              shoulder blade out
+spine1   spine pelvis          r_collar ... r_wrist   right arm
+pelvis   pelvis anchor
+
+Changing a correction does not send anything; the next pose to arrive is
+corrected with it.
+
+WHICH FRAME A CORRECTION IS IN:
+The frame the rotation is applied in decides whether the correction holds as
+the body moves.
+
+The pelvis correction is always in the body's own frame. Every other joint's
+correction is, by default, in its PARENT bone's frame. The 'child frame'
+checkbox switches them all to the joint's OWN frame.
+
+A sensor mounted on the child side of a joint produces an error in the
+child's frame, and correcting it in the parent's will drift as the joint
+bends. If a correction looks right in one posture and wrong in another, this
+is the setting.
+
+In the example the left elbow swings about x and is corrected by a quarter
+turn about z. Tick 'child frame' and the corrected angles change, because
+the two frames differ once the elbow has turned.
+
+SYNTAX:
+pose_adjust
+
+EXAMPLE:
+pose_adjust
+
+INPUTS:
+
+pose in:
+The 20-joint pose.
+
+child frame:
+Off: corrections in the parent bone's frame. On: in the joint's own frame.
 
 reset:
-Clear the corrections.
+Set every correction back to the identity.
 
-zero (active_pose):
-Set every joint to identity.
+head ... r_wrist:
+The correction for each joint. Saved with the patch and with presets.
 
-OUTPUTS: 
+OUTPUT:
 
 pose out:
-The pose, adjusted or passed through.
+The corrected pose, 20 rows. Joints without a correction come out exactly
+as they went in.
 
-score out / axis distances out (target_pose):
-How close, overall and per axis.
+RELATED:
+smpl_pose_adjust does the same for an SMPL pose, with the corrections in
+axis-angle form.
+calibrate_pose works out a correction from a captured pose rather than
+taking one you set."""
+
+demo = swing() + [
+    {'key': 'po', 'init': 'pose', 'pos': (30, 400), 'w': 160, 'h': 300},
+    {'key': 'pa', 'init': 'pose_adjust', 'pos': (30, 720), 'w': 300, 'h': 560,
+     'props': {'l_elbow': [0.7071, 0.0, 0.0, 0.7071]}},
+    {'key': 'c0', 'comment': True, 'text': 'l_elbow: a quarter turn about z\ntick child frame and watch row 14 change',
+     'pos': (360, 720)},
+    {'key': 'qe', 'init': 'quaternion_to_euler', 'pos': (30, 1300), 'w': 260, 'h': 160,
+     'props': {'degrees': True}},
+    {'key': 've', 'init': 'vector', 'pos': (30, 1480), 'w': 260, 'h': 520},
+    {'key': 'c1', 'comment': True, 'text': 'the corrected pose, as x y z\nangles in degrees', 'pos': (360, 1480)},
+]
+links = SWING_LINKS + [('eq', 'quaternion rotation', 'po', 'left elbow'),
+                       ('po', 'pose out', 'pa', 'pose in'),
+                       ('pa', 'pose out', 'qe', 'quaternion'),
+                       ('qe', 'euler angles', 've', 'in')]
+print(build('pose_adjust', 'pose_adjust - fixed corrections, joint by joint', body, demo, links,
+            demo_width=640, text_width=810, text_height=1190))
+
+# -------------------------------------------------------------- calibrate_pose
+body = """calibrate_pose captures a reference pose and, from then on, sends every pose as
+it stands relative to that reference.
+
+WHAT CALIBRATING DOES:
+Click 'calibrate input' and it takes the pose currently at 'pose input' and
+stores the opposite of each joint's rotation. Every pose that arrives after
+that has each joint combined with its stored opposite. So in the captured
+posture every joint reads as the identity, 1 0 0 0, and away from it each
+joint reads as the turn it has made since, in its parent bone's frame.
+
+That is how to make a performer's own stance the zero: have them hold it,
+click, and the pose becomes a measure of departure from it.
+
+NOTHING COMES OUT UNTIL IT IS CALIBRATED:
+Before the first calibration, 'pose out' sends nothing at all - not the pose
+unchanged. Click 'calibrate input' while a pose is arriving, or send it a
+stored calibration.
+
+KEEPING A CALIBRATION:
+The capture is not saved with the patch. It goes out of 'calibration output'
+as soon as it is taken - the stored opposites, one row per joint, not the
+captured pose itself - and sending those rows into 'calibration input' later
+restores it.
+
+ANY NUMBER OF JOINTS:
+It works row by row, so a 20-joint pose, a 37-row Shadow pose or a 22-joint
+SMPL quaternion pose all work, as long as the poses that follow have the same
+number of rows as the one captured. Each row is a quaternion w x y z; it must
+be a numpy array.
+
+SYNTAX:
+calibrate_pose
+
+EXAMPLE:
+calibrate_pose
+
+INPUTS:
+
+pose input:
+The pose. Each one is sent on, corrected, once calibrated.
+
+calibration input:
+A stored calibration, from 'calibration output'. Replaces the current one.
+
+calibrate input:
+Click to capture the pose arriving now.
+
+OUTPUTS:
+
+pose out:
+The pose relative to the captured one.
 
 calibration output:
-The captured reference, so it can be stored and reloaded."""
+The calibration, sent when it is captured.
 
-demo = [
-    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
-    {'key': 'aj', 'init': 'active_joints', 'pos': (30, 400), 'w': 220, 'h': 90},
-    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 505), 'w': 260, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'see and set each of the 20 joints',
-     'pos': (30, 720)},
-    {'key': 'pa', 'init': 'pose_adjust', 'pos': (30, 875), 'w': 260, 'h': 200},
-    {'key': 'c1', 'comment': True, 'text': 'child frame changes which frame the\ncorrection is applied in - it matters',
-     'pos': (30, 1090)},
-    {'key': 'tp', 'init': 'target_pose', 'pos': (371, 505), 'w': 240, 'h': 140},
-    {'key': 'f1', 'init': 'float', 'pos': (371, 660), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c3', 'comment': True, 'text': 'how close to the captured target',
-     'pos': (340, 710)},
+RELATED:
+target_pose also captures a pose, but scores later poses against it rather
+than correcting them.
+pose_adjust applies corrections you set by hand."""
+
+demo = swing() + [
+    {'key': 'po', 'init': 'pose', 'pos': (30, 400), 'w': 160, 'h': 300},
+    {'key': 'btn', 'init': 'button', 'pos': (250, 720), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click: the pose arriving now becomes zero',
+     'pos': (360, 720)},
+    {'key': 'cp', 'init': 'calibrate_pose', 'pos': (30, 780), 'w': 240, 'h': 140},
+    {'key': 'qe', 'init': 'quaternion_to_euler', 'pos': (30, 940), 'w': 260, 'h': 160,
+     'props': {'degrees': True}},
+    {'key': 've', 'init': 'vector', 'pos': (30, 1120), 'w': 260, 'h': 520},
+    {'key': 'c1', 'comment': True, 'text': 'nothing until you click; then the left\nelbow reads as its turn since the click',
+     'pos': (360, 1120)},
 ]
-links = [('sh', 'body 1 quaternions', 'aj', 'full pose quats in'),
-         ('aj', 'active joint quats out', 'ap', 'in'),
-         ('ap', 'out', 'pa', 'pose in'),
-         ('aj', 'active joint quats out', 'tp', 'pose in'),
-         ('tp', 'score out', 'f1', '')]
-print(build('pose', 'pose - carrying, editing and comparing poses', body, demo, links,
-            demo_width=620, text_width=810, text_height=780))
+links = SWING_LINKS + [('eq', 'quaternion rotation', 'po', 'left elbow'),
+                       ('po', 'pose out', 'cp', 'pose input'),
+                       ('btn', '', 'cp', 'calibrate input'),
+                       ('cp', 'pose out', 'qe', 'quaternion'),
+                       ('qe', 'euler angles', 've', 'in')]
+print(build('calibrate_pose', 'calibrate_pose - a captured pose as the zero', body, demo,
+            links, demo_width=640, text_width=810, text_height=950))
 
 # --------------------------------------------------------------------- gl_body
 body = """These draw a skeleton using the older GL system.

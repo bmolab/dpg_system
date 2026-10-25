@@ -49,8 +49,19 @@ class QuaternionToEulerNode(Node):
         self.output = self.add_output('euler angles')
         self.x_offset = self.add_option('offset x', widget_type='drag_int', default_value=0)
         self.y_offset = self.add_option('offset y', widget_type='drag_int', default_value=0)
-        self.z_offset = self.add_option('offset x', widget_type='drag_int', default_value=0)
+        self.z_offset = self.add_option('offset z', widget_type='drag_int', default_value=0)
         self.degrees = self.add_option('degrees', widget_type='checkbox', default_value=True)
+
+    def restore_properties(self, node_container):
+        # The z offset was once labelled 'offset x' too, so older patches save
+        # 'offset x' twice: x's value, then z's. Restore the second one to z.
+        properties = node_container.get('properties') if node_container else None
+        if properties:
+            names = [p.get('name', '').strip('#') for p in properties.values()]
+            if 'offset z' not in names and names.count('offset x') > 1:
+                keys = [k for k, p in properties.items() if p.get('name', '').strip('#') == 'offset x']
+                properties[keys[1]] = dict(properties[keys[1]], name='offset z')
+        super().restore_properties(node_container)
 
     def execute(self):
         offset = np.array([any_to_float(self.x_offset()), any_to_float(self.y_offset()), any_to_float(self.z_offset())], dtype=float)

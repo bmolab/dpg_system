@@ -1,0 +1,721 @@
+{
+    "height": 1152,
+    "width": 1662,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "t.nn.gumbel_softmax_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nn.gumbel_softmax_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.nn.gumbel_softmax - a weighted random choice",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.nn.gumbel_softmax - a weighted random choice",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.nn.gumbel_softmax - a weighted random choice"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 834,
+            "position_y": 45,
+            "width": 788,
+            "height": 946,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Makes a random choice among the elements, weighted by their scores, as a softmax: each call adds fresh random noise (Gumbel noise) to the scores and then takes a softmax.\n\nRun it repeatedly on the same scores and each element comes out on top as often as its plain softmax share says it should - the 3 in the demo wins about 38% of the time, the 0 about 2%. So where t.nn.softmax DESCRIBES the distribution, gumbel_softmax SAMPLES from it. With 'hard' on, the output is exactly one 1 and the rest 0: a one-of-N pick, the way you would choose a random state, sound or pose by weight.\n\nSYNTAX:\nt.nn.gumbel_softmax\nNo arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (unnormalised log probabilities). Receiving them triggers the node, and every arrival draws new noise, so the same input gives a different output each time. A list, number or numpy array is turned into a float32 tensor first; an integer tensor is refused.\n\ntau (drag float on the node, and an inlet):\nThe temperature of the softmax taken after the noise. Default 1. Low tau (0.1) makes each draw nearly one-of-N - one element close to 1, the others close to 0. High tau (5) blurs each draw towards even shares. Must be above 0. Does not trigger.\n\nhard (checkbox on the node, and an inlet):\nOn: the output is exactly one-of-N, a single 1 at the winner. Default off. Does not trigger.\n\ndim (box on the node, and an inlet):\nThe axis the choice is made along. Default -1, the last axis. For a 2-D tensor, -1 (or 1) makes one choice per ROW, each row summing to 1; 0 makes one choice per COLUMN. The demo's scores are 1-D, so there is only one axis (0 and -1 are the same). An axis the tensor does not have is refused with a console message and nothing is sent. Does not trigger.\n\nOUTPUTS:\n\noutput:\nOne random draw, the same shape as the input, summing to 1 along the dim axis.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page, re-sent five times a second, so the bottom strip changes on every draw. Watch which cell lights up: mostly the fourth (score 3) and seventh (2.5), sometimes others, rarely the sixth (score 0). The int shows the winner's index (t.argmax), counting from 0. Tick 'hard' on the node to see clean one-of-N picks;\ndrag tau up and the draws turn soft and even. The scale slider is a second temperature, applied before the noise: it changes how often each element wins, where tau changes only how decisive each draw looks.\n\nRELATED:\nt.nn.softmax is the distribution being sampled. t.argmax picks the winner's index. t.dist.gumbel is the noise itself. With hard on, this node is the patch's way to make a weighted random choice.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 930,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Makes a random choice among the elements, weighted by their scores, as a softmax: each call adds fresh random noise (Gumbel noise) to the scores and then takes a softmax.\n\nRun it repeatedly on the same scores and each element comes out on top as often as its plain softmax share says it should - the 3 in the demo wins about 38% of the time, the 0 about 2%. So where t.nn.softmax DESCRIBES the distribution, gumbel_softmax SAMPLES from it. With 'hard' on, the output is exactly one 1 and the rest 0: a one-of-N pick, the way you would choose a random state, sound or pose by weight.\n\nSYNTAX:\nt.nn.gumbel_softmax\nNo arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (unnormalised log probabilities). Receiving them triggers the node, and every arrival draws new noise, so the same input gives a different output each time. A list, number or numpy array is turned into a float32 tensor first; an integer tensor is refused.\n\ntau (drag float on the node, and an inlet):\nThe temperature of the softmax taken after the noise. Default 1. Low tau (0.1) makes each draw nearly one-of-N - one element close to 1, the others close to 0. High tau (5) blurs each draw towards even shares. Must be above 0. Does not trigger.\n\nhard (checkbox on the node, and an inlet):\nOn: the output is exactly one-of-N, a single 1 at the winner. Default off. Does not trigger.\n\ndim (box on the node, and an inlet):\nThe axis the choice is made along. Default -1, the last axis. For a 2-D tensor, -1 (or 1) makes one choice per ROW, each row summing to 1; 0 makes one choice per COLUMN. The demo's scores are 1-D, so there is only one axis (0 and -1 are the same). An axis the tensor does not have is refused with a console message and nothing is sent. Does not trigger.\n\nOUTPUTS:\n\noutput:\nOne random draw, the same shape as the input, summing to 1 along the dim axis.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page, re-sent five times a second, so the bottom strip changes on every draw. Watch which cell lights up: mostly the fourth (score 3) and seventh (2.5), sometimes others, rarely the sixth (score 0). The int shows the winner's index (t.argmax), counting from 0. Tick 'hard' on the node to see clean one-of-N picks;\ndrag tau up and the draws turn soft and even. The scale slider is a second temperature, applied before the noise: it changes how often each element wins, where tau changes only how decisive each draw looks.\n\nRELATED:\nt.nn.softmax is the distribution being sampled. t.argmax picks the winner's index. t.dist.gumbel is the noise itself. With hard on, this node is the patch's way to make a weighted random choice."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "4": {
+            "init": "comment re-sends the scores five times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 556,
+            "position_y": 72,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "re-sends the scores five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "re-sends the scores five times a second"
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 340,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1.0 2.0 0.5 3.0 1.5 0.0 2.5 1.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 310,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "init": "comment eight scores - edit them",
+            "name": "comment",
+            "id": 459,
+            "position_x": 556,
+            "position_y": 200,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eight scores - edit them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eight scores - edit them"
+        },
+        "7": {
+            "name": "heat_map",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 448,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 440,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment the scores: dark 0, bright 3",
+            "name": "comment",
+            "id": 533,
+            "position_x": 556,
+            "position_y": 330,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the scores: dark 0, bright 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the scores: dark 0, bright 3"
+        },
+        "9": {
+            "name": "slider",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "init": "comment scale: 0 to 5",
+            "name": "comment",
+            "id": 607,
+            "position_x": 556,
+            "position_y": 375,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scale: 0 to 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scale: 0 to 5"
+        },
+        "11": {
+            "name": "*",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 430,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "* 1.0"
+        },
+        "12": {
+            "init": "comment the scores times scale",
+            "name": "comment",
+            "id": 681,
+            "position_x": 556,
+            "position_y": 435,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the scores times scale",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the scores times scale"
+        },
+        "13": {
+            "name": "t.nn.gumbel_softmax",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 125,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 448,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 440,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment one random draw: changes every time",
+            "name": "comment",
+            "id": 792,
+            "position_x": 556,
+            "position_y": 750,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one random draw: changes every time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one random draw: changes every time"
+        },
+        "16": {
+            "name": "t.argmax",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 800,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "int",
+            "id": 866,
+            "position_x": 230,
+            "position_y": 820,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment the winner: 0 is the first cell",
+            "name": "comment",
+            "id": 903,
+            "position_x": 556,
+            "position_y": 870,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the winner: 0 is the first cell",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the winner: 0 is the first cell"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 974,
+            "width": 92,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.softmax"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 138,
+            "position_y": 974,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.argmax"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 220,
+            "position_y": 974,
+            "width": 98,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.gumbel"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 334,
+            "position_y": 974,
+            "width": 117,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.bernoulli"
+        },
+        "23": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 30,
+            "position_y": 940,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 1048,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "max index",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

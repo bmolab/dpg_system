@@ -1,11 +1,11 @@
 {
-    "height": 1190,
-    "width": 1393,
+    "height": 910,
+    "width": 1325,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 644,
     "name": "gl_button_grid_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_button_grid_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 545,
+            "position_x": 477,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "gl_button_grid draws a four by four grid of squares in the scene, with one \nof them highlighted.\n\nWHAT IT IS, AND IS NOT:\nIt is an indicator, not a control. It does not respond to the mouse, and it \nhas no outlet but the chain.\n'selection' is an INPUT - send it a number from 0 to 15 and that square is \noutlined in red while the rest stay grey. Any other number highlights none.\n\nThat makes it a way to show, inside a fullscreen render where no patch is \nvisible, which of sixteen states, presets or sections is active.\n\nTHE LAYOUT:\nSquare 0 is at the bottom left, at 'position_x' and 'position_y'. The \nnumbers run left to right along a row, then up a row, so square 15 is at the \ntop right. 'scale' is the distance from one square to the next, and 'spacing' \nis the part of that distance left as a gap - 0.2 leaves a fifth. The squares \nare drawn as outlines, 'thickness' pixels wide.\n\nWHERE IT GOES:\nLike gl_text, it is drawn in the chain's current coordinates and two units \nfurther away. Straight after gl_context it is fixed on the window; after a \ntransform it moves with it.\n\nIT PUTS THINGS BACK:\nIts two-unit offset, the lighting it switches off, and its outline and \nblending settings all apply only to the grid: what is chained after it is \ndrawn as if the grid were not there.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_button_grid\n\nEXAMPLE:\ngl_button_grid\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\nselection:\nWhich square to highlight, 0 to 15.\n\nposition_x / position_y:\nWhere the bottom left corner of the grid sits.\n\nspacing:\nThe gap between squares, as a part of 'scale'. Default 0.2.\n\nthickness:\nThe outline width in pixels. Default 4.\n\nalpha:\nTransparency, 0 to 1. A low alpha gives an indicator that is there without \ndominating what it sits over.\n\nscale:\nThe distance from one square to the next. Default 0.1.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\ngl_text, which used to share this page, draws text in the scene in the same \nway, and suits a label beside the grid.",
+                    "value": "gl_button_grid draws a four by four grid of squares in the scene, with one  of them highlighted.\n\nWHAT IT IS, AND IS NOT:\nIt is an indicator, not a control. It does not respond to the mouse, and it  has no outlet but the chain.\n'selection' is an INPUT - send it a number from 0 to 15 and that square is  outlined in red while the rest stay grey. Any other number highlights none.\n\nThat makes it a way to show, inside a fullscreen render where no patch is  visible, which of sixteen states, presets or sections is active.\n\nTHE LAYOUT:\nSquare 0 is at the bottom left, at 'position_x' and 'position_y'. The  numbers run left to right along a row, then up a row, so square 15 is at the  top right. 'scale' is the distance from one square to the next, and 'spacing'  is the part of that distance left as a gap - 0.2 leaves a fifth. The squares  are drawn as outlines, 'thickness' pixels wide.\n\nWHERE IT GOES:\nLike gl_text, it is drawn in the chain's current coordinates and two units  further away. Straight after gl_context it is fixed on the window; after a  transform it moves with it.\n\nIT PUTS THINGS BACK:\nIts two-unit offset, the lighting it switches off, and its outline and  blending settings all apply only to the grid: what is chained after it is  drawn as if the grid were not there.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_button_grid\n\nEXAMPLE:\ngl_button_grid\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\nselection:\nWhich square to highlight, 0 to 15.\n\nposition_x / position_y:\nWhere the bottom left corner of the grid sits.\n\nspacing:\nThe gap between squares, as a part of 'scale'. Default 0.2.\n\nthickness:\nThe outline width in pixels. Default 4.\n\nalpha:\nTransparency, 0 to 1. A low alpha gives an indicator that is there without  dominating what it sits over.\n\nscale:\nThe distance from one square to the next. Default 0.1.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\ngl_text, which used to share this page, draws text in the scene in the same  way, and suits a label beside the grid.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "gl_button_grid draws a four by four grid of squares in the scene, with one \nof them highlighted.\n\nWHAT IT IS, AND IS NOT:\nIt is an indicator, not a control. It does not respond to the mouse, and it \nhas no outlet but the chain.\n'selection' is an INPUT - send it a number from 0 to 15 and that square is \noutlined in red while the rest stay grey. Any other number highlights none.\n\nThat makes it a way to show, inside a fullscreen render where no patch is \nvisible, which of sixteen states, presets or sections is active.\n\nTHE LAYOUT:\nSquare 0 is at the bottom left, at 'position_x' and 'position_y'. The \nnumbers run left to right along a row, then up a row, so square 15 is at the \ntop right. 'scale' is the distance from one square to the next, and 'spacing' \nis the part of that distance left as a gap - 0.2 leaves a fifth. The squares \nare drawn as outlines, 'thickness' pixels wide.\n\nWHERE IT GOES:\nLike gl_text, it is drawn in the chain's current coordinates and two units \nfurther away. Straight after gl_context it is fixed on the window; after a \ntransform it moves with it.\n\nIT PUTS THINGS BACK:\nIts two-unit offset, the lighting it switches off, and its outline and \nblending settings all apply only to the grid: what is chained after it is \ndrawn as if the grid were not there.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_button_grid\n\nEXAMPLE:\ngl_button_grid\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\nselection:\nWhich square to highlight, 0 to 15.\n\nposition_x / position_y:\nWhere the bottom left corner of the grid sits.\n\nspacing:\nThe gap between squares, as a part of 'scale'. Default 0.2.\n\nthickness:\nThe outline width in pixels. Default 4.\n\nalpha:\nTransparency, 0 to 1. A low alpha gives an indicator that is there without \ndominating what it sits over.\n\nscale:\nThe distance from one square to the next. Default 0.1.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\ngl_text, which used to share this page, draws text in the scene in the same \nway, and suits a label beside the grid."
+            "text": "gl_button_grid draws a four by four grid of squares in the scene, with one  of them highlighted.\n\nWHAT IT IS, AND IS NOT:\nIt is an indicator, not a control. It does not respond to the mouse, and it  has no outlet but the chain.\n'selection' is an INPUT - send it a number from 0 to 15 and that square is  outlined in red while the rest stay grey. Any other number highlights none.\n\nThat makes it a way to show, inside a fullscreen render where no patch is  visible, which of sixteen states, presets or sections is active.\n\nTHE LAYOUT:\nSquare 0 is at the bottom left, at 'position_x' and 'position_y'. The  numbers run left to right along a row, then up a row, so square 15 is at the  top right. 'scale' is the distance from one square to the next, and 'spacing'  is the part of that distance left as a gap - 0.2 leaves a fifth. The squares  are drawn as outlines, 'thickness' pixels wide.\n\nWHERE IT GOES:\nLike gl_text, it is drawn in the chain's current coordinates and two units  further away. Straight after gl_context it is fixed on the window; after a  transform it moves with it.\n\nIT PUTS THINGS BACK:\nIts two-unit offset, the lighting it switches off, and its outline and  blending settings all apply only to the grid: what is chained after it is  drawn as if the grid were not there.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_button_grid\n\nEXAMPLE:\ngl_button_grid\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\nselection:\nWhich square to highlight, 0 to 15.\n\nposition_x / position_y:\nWhere the bottom left corner of the grid sits.\n\nspacing:\nThe gap between squares, as a part of 'scale'. Default 0.2.\n\nthickness:\nThe outline width in pixels. Default 4.\n\nalpha:\nTransparency, 0 to 1. A low alpha gives an indicator that is there without  dominating what it sits over.\n\nscale:\nThe distance from one square to the next. Default 0.1.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\ngl_text, which used to share this page, draws text in the scene in the same  way, and suits a label beside the grid."
         },
         "3": {
             "name": "gl_context",
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "metro",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "metro",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 516,
+            "position_y": 236,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -145,11 +133,11 @@
             },
             "init": "metro 500"
         },
-        "6": {
+        "5": {
             "name": "counter",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 606,
+            "position_y": 326,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -169,11 +157,11 @@
             },
             "init": "counter 16 1"
         },
-        "7": {
+        "6": {
             "name": "int",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
-            "position_y": 705,
+            "position_y": 425,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -197,12 +185,12 @@
                 }
             }
         },
-        "8": {
+        "7": {
             "init": "comment counts 0 to 15, then wraps",
             "name": "comment",
-            "id": 533,
-            "position_x": 278,
-            "position_y": 755,
+            "id": 496,
+            "position_x": 210,
+            "position_y": 475,
             "width": 168,
             "height": 30,
             "visibility": "show_all",
@@ -222,24 +210,25 @@
             },
             "comment": "counts 0 to 15, then wraps"
         },
-        "9": {
+        "8": {
             "name": "gl_button_grid",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
-            "position_y": 795,
+            "position_y": 515,
             "width": 154,
             "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
-        "10": {
+        "9": {
             "name": "text_block",
-            "id": 607,
+            "id": 570,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 1090,
+            "position_x": 210,
+            "position_y": 810,
             "width": 237,
             "height": 40,
             "visibility": "show_all",
@@ -274,11 +263,11 @@
             },
             "text": "the counted square lights up red,\nbottom left to top right"
         },
-        "11": {
+        "10": {
             "name": "close",
-            "id": 644,
+            "id": 607,
             "position_x": 24,
-            "position_y": 965,
+            "position_y": 685,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -299,7 +288,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl_chain",
-            "dest_node": 385,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -308,38 +297,28 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 570,
+            "source_output_name": "",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": "input"
         },
         "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "count out",
             "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "input"
+            "dest_input_name": ""
         },
         "3": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "count out",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "4": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "int out",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "selection"

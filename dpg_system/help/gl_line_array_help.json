@@ -1,11 +1,11 @@
 {
-    "height": 1328,
-    "width": 1448,
+    "height": 1121,
+    "width": 1411,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "gl_line_array_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_line_array_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 600,
+            "position_x": 563,
             "position_y": 45,
             "width": 808,
             "height": 1016,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These draw geometry that comes from data rather than a built-in shape.\n\nTHE NODES:\n\ngl_line_array     many lines at once, from an array - built for trails of motion\ngl_vertex_buffer  raw vertex data, drawn as points, lines or triangles\n\ngl_line_array IS BUILT FOR MOTION:\nDrawing a trail or a set of trajectories as separate line nodes does not scale. \nThis takes the whole array and draws it in one go. 'array' is points by lines \nby coordinates: each line is one column, its first point the head of the \ntrail, so a rolling buffer of joint positions draws as one trail per joint.\n\nIts options are about making motion legible rather than about geometry. \n'alpha_fade' (on by default) fades each line from its first point to its last, \nso a trail dies away behind its head. 'accent_motion' measures how far each \npoint moved since the previous array and makes the lines only as bright as \nthat movement times 'accent_scale', so a still trail disappears and a fast one \nshines; 'accent_colour' shows the same speed as colour instead, along a \ndark-to-yellow scale. 'selected_joints' restricts it to the lines you care \nabout, which matters as soon as a full body's worth of trails becomes a \nthicket.\n\nThat accenting is the difference between a plot of a movement and a picture of \none. A trail drawn at constant brightness tells you where something went; one \nthat lights up where it moved fast tells you how.\n\nCOLOURS:\nEach of the first 20 lines has its own colour, white to begin with: set \n'color index' to a line number and pick its colour with 'color_control'. \nIndex -1 recolours them all. Lines past the twentieth share the twentieth's \ncolour.\n\nLIGHTING AND DEPTH:\ngl_line_array switches lighting and the depth test off while it draws its \nlines, so they are never shaded or hidden, and switches them back on before \nthe chain continues: shapes chained after it are lit and depth-tested as \nusual.\n\ngl_vertex_buffer:\nVertex data drawn directly, with 'draw_mode' choosing how the vertices are \njoined. The escape hatch for geometry none of the other nodes produces. It \ndraws in the chain's current colour and material, and until data arrives it \nshows 64 random points in the unit cube. Points shrink with distance from \nthe viewer.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_line_array\ngl_vertex_buffer\n\nNeither takes arguments.\n\nEXAMPLE:\ngl_line_array\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\narray (gl_line_array):\nPoints by lines by coordinates (2, 3 or 4 of them). Anything not three \ndimensional is not drawn: a single line still needs the middle dimension, \npoints by 1 by 3. With 'accent_motion' on, an array of a new shape starts \nthe movement measure afresh.\n\nalpha_fade / line_width (gl_line_array):\nThe fade along each line, and the width of the lines.\n\naccent_motion / accent_colour / accent_scale (gl_line_array):\nWhether speed shows, whether as brightness or colour, and the gain on it \n(50 by default) - the movement since the last array is multiplied by this \nand capped at full brightness.\n\nselected_joints (gl_line_array):\nLine numbers to draw, separated by spaces. Empty draws them all.\n\ncolor index / color_control (gl_line_array):\nPer-line colours, as above.\n\nvertex_data (gl_vertex_buffer):\nAn array of vertices, one per row, with 2, 3 or 4 coordinates - or a cloud \nframe from the point cloud nodes, whose 'point_cloud' entry is used. It can \nbe replaced every frame.\n\ndraw_mode (gl_vertex_buffer):\nGL_POINTS (the default), GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, \nGL_TRIANGLES, GL_TRIANGLE_STRIP or GL_TRIANGLE_FAN.\n\nsize (gl_vertex_buffer):\nThe point size, 1 by default.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_line_array is the newer equivalent of gl_line_array, with more control \nover the accenting. np.rolling_buffer builds trails from a stream. \ngl_orientation_disks and gl_rotation_disk, which used to share this page, \ndraw orientations.",
+                    "value": "These draw geometry that comes from data rather than a built-in shape.\n\nTHE NODES:\n\ngl_line_array     many lines at once, from an array - built for trails of motion\ngl_vertex_buffer  raw vertex data, drawn as points, lines or triangles\n\ngl_line_array IS BUILT FOR MOTION:\nDrawing a trail or a set of trajectories as separate line nodes does not scale.  This takes the whole array and draws it in one go. 'array' is points by lines  by coordinates: each line is one column, its first point the head of the  trail, so a rolling buffer of joint positions draws as one trail per joint.\n\nIts options are about making motion legible rather than about geometry.  'alpha_fade' (on by default) fades each line from its first point to its last,  so a trail dies away behind its head. 'accent_motion' measures how far each  point moved since the previous array and makes the lines only as bright as  that movement times 'accent_scale', so a still trail disappears and a fast one  shines; 'accent_colour' shows the same speed as colour instead, along a  dark-to-yellow scale. 'selected_joints' restricts it to the lines you care  about, which matters as soon as a full body's worth of trails becomes a  thicket.\n\nThat accenting is the difference between a plot of a movement and a picture of  one. A trail drawn at constant brightness tells you where something went; one  that lights up where it moved fast tells you how.\n\nCOLOURS:\nEach of the first 20 lines has its own colour, white to begin with: set  'color index' to a line number and pick its colour with 'color_control'.  Index -1 recolours them all. Lines past the twentieth share the twentieth's  colour.\n\nLIGHTING AND DEPTH:\ngl_line_array switches lighting and the depth test off while it draws its  lines, so they are never shaded or hidden, and switches them back on before  the chain continues: shapes chained after it are lit and depth-tested as  usual.\n\ngl_vertex_buffer:\nVertex data drawn directly, with 'draw_mode' choosing how the vertices are  joined. The escape hatch for geometry none of the other nodes produces. It  draws in the chain's current colour and material, and until data arrives it  shows 64 random points in the unit cube. Points shrink with distance from  the viewer.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_line_array\ngl_vertex_buffer\n\nNeither takes arguments.\n\nEXAMPLE:\ngl_line_array\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\narray (gl_line_array):\nPoints by lines by coordinates (2, 3 or 4 of them). Anything not three  dimensional is not drawn: a single line still needs the middle dimension,  points by 1 by 3. With 'accent_motion' on, an array of a new shape starts  the movement measure afresh.\n\nalpha_fade / line_width (gl_line_array):\nThe fade along each line, and the width of the lines.\n\naccent_motion / accent_colour / accent_scale (gl_line_array):\nWhether speed shows, whether as brightness or colour, and the gain on it  (50 by default) - the movement since the last array is multiplied by this  and capped at full brightness.\n\nselected_joints (gl_line_array):\nLine numbers to draw, separated by spaces. Empty draws them all.\n\ncolor index / color_control (gl_line_array):\nPer-line colours, as above.\n\nvertex_data (gl_vertex_buffer):\nAn array of vertices, one per row, with 2, 3 or 4 coordinates - or a cloud  frame from the point cloud nodes, whose 'point_cloud' entry is used. It can  be replaced every frame.\n\ndraw_mode (gl_vertex_buffer):\nGL_POINTS (the default), GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP,  GL_TRIANGLES, GL_TRIANGLE_STRIP or GL_TRIANGLE_FAN.\n\nsize (gl_vertex_buffer):\nThe point size, 1 by default.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_line_array is the newer equivalent of gl_line_array, with more control  over the accenting. np.rolling_buffer builds trails from a stream.  gl_orientation_disks and gl_rotation_disk, which used to share this page,  draw orientations.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These draw geometry that comes from data rather than a built-in shape.\n\nTHE NODES:\n\ngl_line_array     many lines at once, from an array - built for trails of motion\ngl_vertex_buffer  raw vertex data, drawn as points, lines or triangles\n\ngl_line_array IS BUILT FOR MOTION:\nDrawing a trail or a set of trajectories as separate line nodes does not scale. \nThis takes the whole array and draws it in one go. 'array' is points by lines \nby coordinates: each line is one column, its first point the head of the \ntrail, so a rolling buffer of joint positions draws as one trail per joint.\n\nIts options are about making motion legible rather than about geometry. \n'alpha_fade' (on by default) fades each line from its first point to its last, \nso a trail dies away behind its head. 'accent_motion' measures how far each \npoint moved since the previous array and makes the lines only as bright as \nthat movement times 'accent_scale', so a still trail disappears and a fast one \nshines; 'accent_colour' shows the same speed as colour instead, along a \ndark-to-yellow scale. 'selected_joints' restricts it to the lines you care \nabout, which matters as soon as a full body's worth of trails becomes a \nthicket.\n\nThat accenting is the difference between a plot of a movement and a picture of \none. A trail drawn at constant brightness tells you where something went; one \nthat lights up where it moved fast tells you how.\n\nCOLOURS:\nEach of the first 20 lines has its own colour, white to begin with: set \n'color index' to a line number and pick its colour with 'color_control'. \nIndex -1 recolours them all. Lines past the twentieth share the twentieth's \ncolour.\n\nLIGHTING AND DEPTH:\ngl_line_array switches lighting and the depth test off while it draws its \nlines, so they are never shaded or hidden, and switches them back on before \nthe chain continues: shapes chained after it are lit and depth-tested as \nusual.\n\ngl_vertex_buffer:\nVertex data drawn directly, with 'draw_mode' choosing how the vertices are \njoined. The escape hatch for geometry none of the other nodes produces. It \ndraws in the chain's current colour and material, and until data arrives it \nshows 64 random points in the unit cube. Points shrink with distance from \nthe viewer.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_line_array\ngl_vertex_buffer\n\nNeither takes arguments.\n\nEXAMPLE:\ngl_line_array\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\narray (gl_line_array):\nPoints by lines by coordinates (2, 3 or 4 of them). Anything not three \ndimensional is not drawn: a single line still needs the middle dimension, \npoints by 1 by 3. With 'accent_motion' on, an array of a new shape starts \nthe movement measure afresh.\n\nalpha_fade / line_width (gl_line_array):\nThe fade along each line, and the width of the lines.\n\naccent_motion / accent_colour / accent_scale (gl_line_array):\nWhether speed shows, whether as brightness or colour, and the gain on it \n(50 by default) - the movement since the last array is multiplied by this \nand capped at full brightness.\n\nselected_joints (gl_line_array):\nLine numbers to draw, separated by spaces. Empty draws them all.\n\ncolor index / color_control (gl_line_array):\nPer-line colours, as above.\n\nvertex_data (gl_vertex_buffer):\nAn array of vertices, one per row, with 2, 3 or 4 coordinates - or a cloud \nframe from the point cloud nodes, whose 'point_cloud' entry is used. It can \nbe replaced every frame.\n\ndraw_mode (gl_vertex_buffer):\nGL_POINTS (the default), GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, \nGL_TRIANGLES, GL_TRIANGLE_STRIP or GL_TRIANGLE_FAN.\n\nsize (gl_vertex_buffer):\nThe point size, 1 by default.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_line_array is the newer equivalent of gl_line_array, with more control \nover the accenting. np.rolling_buffer builds trails from a stream. \ngl_orientation_disks and gl_rotation_disk, which used to share this page, \ndraw orientations."
+            "text": "These draw geometry that comes from data rather than a built-in shape.\n\nTHE NODES:\n\ngl_line_array     many lines at once, from an array - built for trails of motion\ngl_vertex_buffer  raw vertex data, drawn as points, lines or triangles\n\ngl_line_array IS BUILT FOR MOTION:\nDrawing a trail or a set of trajectories as separate line nodes does not scale.  This takes the whole array and draws it in one go. 'array' is points by lines  by coordinates: each line is one column, its first point the head of the  trail, so a rolling buffer of joint positions draws as one trail per joint.\n\nIts options are about making motion legible rather than about geometry.  'alpha_fade' (on by default) fades each line from its first point to its last,  so a trail dies away behind its head. 'accent_motion' measures how far each  point moved since the previous array and makes the lines only as bright as  that movement times 'accent_scale', so a still trail disappears and a fast one  shines; 'accent_colour' shows the same speed as colour instead, along a  dark-to-yellow scale. 'selected_joints' restricts it to the lines you care  about, which matters as soon as a full body's worth of trails becomes a  thicket.\n\nThat accenting is the difference between a plot of a movement and a picture of  one. A trail drawn at constant brightness tells you where something went; one  that lights up where it moved fast tells you how.\n\nCOLOURS:\nEach of the first 20 lines has its own colour, white to begin with: set  'color index' to a line number and pick its colour with 'color_control'.  Index -1 recolours them all. Lines past the twentieth share the twentieth's  colour.\n\nLIGHTING AND DEPTH:\ngl_line_array switches lighting and the depth test off while it draws its  lines, so they are never shaded or hidden, and switches them back on before  the chain continues: shapes chained after it are lit and depth-tested as  usual.\n\ngl_vertex_buffer:\nVertex data drawn directly, with 'draw_mode' choosing how the vertices are  joined. The escape hatch for geometry none of the other nodes produces. It  draws in the chain's current colour and material, and until data arrives it  shows 64 random points in the unit cube. Points shrink with distance from  the viewer.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_line_array\ngl_vertex_buffer\n\nNeither takes arguments.\n\nEXAMPLE:\ngl_line_array\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\narray (gl_line_array):\nPoints by lines by coordinates (2, 3 or 4 of them). Anything not three  dimensional is not drawn: a single line still needs the middle dimension,  points by 1 by 3. With 'accent_motion' on, an array of a new shape starts  the movement measure afresh.\n\nalpha_fade / line_width (gl_line_array):\nThe fade along each line, and the width of the lines.\n\naccent_motion / accent_colour / accent_scale (gl_line_array):\nWhether speed shows, whether as brightness or colour, and the gain on it  (50 by default) - the movement since the last array is multiplied by this  and capped at full brightness.\n\nselected_joints (gl_line_array):\nLine numbers to draw, separated by spaces. Empty draws them all.\n\ncolor index / color_control (gl_line_array):\nPer-line colours, as above.\n\nvertex_data (gl_vertex_buffer):\nAn array of vertices, one per row, with 2, 3 or 4 coordinates - or a cloud  frame from the point cloud nodes, whose 'point_cloud' entry is used. It can  be replaced every frame.\n\ndraw_mode (gl_vertex_buffer):\nGL_POINTS (the default), GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP,  GL_TRIANGLES, GL_TRIANGLE_STRIP or GL_TRIANGLE_FAN.\n\nsize (gl_vertex_buffer):\nThe point size, 1 by default.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_line_array is the newer equivalent of gl_line_array, with more control  over the accenting. np.rolling_buffer builds trails from a stream.  gl_orientation_disks and gl_rotation_disk, which used to share this page,  draw orientations."
         },
         "3": {
             "name": "gl_context",
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "load_bang",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "load_bang",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 540,
+            "position_y": 260,
             "width": 88,
             "height": 42,
             "visibility": "show_all",
@@ -128,11 +116,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
+        "5": {
             "name": "np.rand",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 610,
+            "position_y": 330,
             "width": 123,
             "height": 112,
             "visibility": "show_all",
@@ -152,12 +140,12 @@
             },
             "init": "np.rand 30 4 3"
         },
-        "7": {
+        "6": {
             "init": "comment 30 points on each of 4 lines",
             "name": "comment",
-            "id": 496,
-            "position_x": 278,
-            "position_y": 610,
+            "id": 459,
+            "position_x": 241,
+            "position_y": 330,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -177,24 +165,25 @@
             },
             "comment": "30 points on each of 4 lines"
         },
-        "8": {
+        "7": {
             "name": "gl_line_array",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 800,
+            "position_y": 520,
             "width": 185,
             "height": 220,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
-        "9": {
+        "8": {
             "name": "text_block",
-            "id": 570,
+            "id": 533,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 800,
+            "position_x": 241,
+            "position_y": 520,
             "width": 231,
             "height": 40,
             "visibility": "show_all",
@@ -229,11 +218,11 @@
             },
             "text": "alpha_fade: each line fades from\nits first point to its last"
         },
-        "10": {
+        "9": {
             "name": "gl_vertex_buffer",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
-            "position_y": 1110,
+            "position_y": 830,
             "width": 148,
             "height": 84,
             "visibility": "show_all",
@@ -250,14 +239,15 @@
                     "value": 4.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
-        "11": {
+        "10": {
             "name": "text_block",
-            "id": 644,
+            "id": 607,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 1110,
+            "position_x": 241,
+            "position_y": 830,
             "width": 292,
             "height": 40,
             "visibility": "show_all",
@@ -292,11 +282,11 @@
             },
             "text": "on its own branch of the chain:\n64 random points until vertex_data arrives"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1224,
+            "position_y": 944,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -317,17 +307,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl_chain",
-            "dest_node": 385,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 533,
+            "source_output_name": "gl_chain",
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -336,28 +326,18 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 607,
+            "source_output_name": "out",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": ""
         },
         "3": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "4": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "array"

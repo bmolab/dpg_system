@@ -1,5 +1,5 @@
 {
-    "height": 1004,
+    "height": 924,
     "width": 1669,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These convert a rotation between the four ways of writing one down.\n\nA rotation is one thing. There are several ways to describe it, each good at \nsomething and bad at something else, and most of the trouble in orientation work \nis a value in the wrong one.\n\nTHE FOUR REPRESENTATIONS:\n\nquaternion        four numbers. No gimbal lock, composes cleanly, interpolates \n                  properly. Unreadable by eye. This is the one to STORE and \n                  COMPUTE in\neuler angles      three angles about three axes. Readable, and what a person \n                  can type. Gimbal locks, and the order of the axes changes \n                  what the numbers mean\nrotation matrix   nine numbers. What actually gets applied to a vector, and how \n                  a graphics system wants it\naxis-angle        an axis and how far round it. The most physical description - \n                  it is what a rotation IS\nrotation vector   the same thing packed into three numbers, with the angle \n                  carried in the length\n\nTHE NODES:\n\nquaternion_to_euler      matrix_to_quaternion       quaternion_to_rotvec\neuler_to_quaternion      quaternion_to_matrix       rotvec_to_quaternion\nquaternion_to_axis_angle matrix_to_axis_angle       matrix_to_rotvec\naxis_angle_to_quaternion\n\nWHAT GIMBAL LOCK ACTUALLY COSTS YOU:\nWhen two of an Euler triple's axes line up, a degree of freedom disappears - \ntwo of the three angles then do the same job, and the values jump about wildly \nfor a rotation that is moving smoothly. Near that configuration, small real \nmovements produce enormous changes in the numbers.\n\nThis is why converting sensor quaternions to Euler angles to do arithmetic on \nthem, and converting back, is a mistake even though it reads more naturally. \nWhatever you were computing behaves badly in exactly the postures where the \nangles broke - typically arms overhead, which is where the interesting movement \nusually is.\n\nConvert to Euler for DISPLAY, and to let a person type a value. Do the work in \nquaternions.\n\nORDER AND DEGREES:\neuler_to_quaternion has an 'order' option because rotating about x then y then \nz gives a different result from z then y then x. There is no universal \nconvention, so two systems that both say \"Euler angles\" will usually disagree. \nIf a conversion is nearly right but wrong in a way that grows with the angle, \nthe order is the first thing to check.\n\nThe 'degrees' option decides whether the angles are in degrees or radians. \nAs elsewhere in this system, degrees is the default.\n\nSYNTAX:\nquaternion_to_euler\neuler_to_quaternion\n\nEXAMPLE:\nquaternion_to_euler\n\nINPUTS and PARAMETERS:\n\nquaternion / rotation matrix / xyz rotation / rotation vector:\nThe rotation, in whichever form the node takes. Receiving it triggers the \nconversion.\n\ndegrees:\nWhether angles are in degrees. On by default.\n\norder (euler_to_quaternion):\nWhich axis order the three angles apply in.\n\noffset x / offset y (quaternion_to_euler):\nConstant offsets added to the result, for matching a convention that differs \nfrom this one.\n\nOUTPUTS: \n\nThe rotation in the target representation.\n\nA NOTE ON QUATERNION ORDER:\nThe quaternions here are scalar-first - w, x, y, z. Several libraries use \nscalar-last, and a quaternion read in the wrong order is not an error, just a \ndifferent and wrong rotation. If an imported orientation is confidently \nincorrect rather than noisy, suspect this.",
+                    "value": "These convert a rotation between the four ways of writing one down.\n\nA rotation is one thing. There are several ways to describe it, each good at  something and bad at something else, and most of the trouble in orientation work  is a value in the wrong one.\n\nTHE FOUR REPRESENTATIONS:\n\nquaternion        four numbers. No gimbal lock, composes cleanly, interpolates \n                  properly. Unreadable by eye. This is the one to STORE and \n                  COMPUTE in\neuler angles      three angles about three axes. Readable, and what a person \n                  can type. Gimbal locks, and the order of the axes changes \n                  what the numbers mean\nrotation matrix   nine numbers. What actually gets applied to a vector, and how \n                  a graphics system wants it\naxis-angle        an axis and how far round it. The most physical description - \n                  it is what a rotation IS\nrotation vector   the same thing packed into three numbers, with the angle \n                  carried in the length\n\nTHE NODES:\n\nquaternion_to_euler      matrix_to_quaternion       quaternion_to_rotvec\neuler_to_quaternion      quaternion_to_matrix       rotvec_to_quaternion\nquaternion_to_axis_angle matrix_to_axis_angle       matrix_to_rotvec\naxis_angle_to_quaternion\n\nWHAT GIMBAL LOCK ACTUALLY COSTS YOU:\nWhen two of an Euler triple's axes line up, a degree of freedom disappears -  two of the three angles then do the same job, and the values jump about wildly  for a rotation that is moving smoothly. Near that configuration, small real  movements produce enormous changes in the numbers.\n\nThis is why converting sensor quaternions to Euler angles to do arithmetic on  them, and converting back, is a mistake even though it reads more naturally.  Whatever you were computing behaves badly in exactly the postures where the  angles broke - typically arms overhead, which is where the interesting movement  usually is.\n\nConvert to Euler for DISPLAY, and to let a person type a value. Do the work in  quaternions.\n\nORDER AND DEGREES:\neuler_to_quaternion has an 'order' option because rotating about x then y then  z gives a different result from z then y then x. There is no universal  convention, so two systems that both say \"Euler angles\" will usually disagree.  If a conversion is nearly right but wrong in a way that grows with the angle,  the order is the first thing to check.\n\nThe 'degrees' option decides whether the angles are in degrees or radians.  As elsewhere in this system, degrees is the default.\n\nSYNTAX:\nquaternion_to_euler\neuler_to_quaternion\n\nEXAMPLE:\nquaternion_to_euler\n\nINPUTS and PARAMETERS:\n\nquaternion / rotation matrix / xyz rotation / rotation vector:\nThe rotation, in whichever form the node takes. Receiving it triggers the  conversion.\n\ndegrees:\nWhether angles are in degrees. On by default.\n\norder (euler_to_quaternion):\nWhich axis order the three angles apply in.\n\noffset x / offset y / offset z (quaternion_to_euler):\nConstant offsets added to the result, for matching a convention that differs  from this one.\n\nOUTPUTS: \n\nThe rotation in the target representation.\n\nA NOTE ON QUATERNION ORDER:\nThe quaternions here are scalar-first - w, x, y, z. Several libraries use  scalar-last, and a quaternion read in the wrong order is not an error, just a  different and wrong rotation. If an imported orientation is confidently  incorrect rather than noisy, suspect this.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,38 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "These convert a rotation between the four ways of writing one down.\n\nA rotation is one thing. There are several ways to describe it, each good at \nsomething and bad at something else, and most of the trouble in orientation work \nis a value in the wrong one.\n\nTHE FOUR REPRESENTATIONS:\n\nquaternion        four numbers. No gimbal lock, composes cleanly, interpolates \n                  properly. Unreadable by eye. This is the one to STORE and \n                  COMPUTE in\neuler angles      three angles about three axes. Readable, and what a person \n                  can type. Gimbal locks, and the order of the axes changes \n                  what the numbers mean\nrotation matrix   nine numbers. What actually gets applied to a vector, and how \n                  a graphics system wants it\naxis-angle        an axis and how far round it. The most physical description - \n                  it is what a rotation IS\nrotation vector   the same thing packed into three numbers, with the angle \n                  carried in the length\n\nTHE NODES:\n\nquaternion_to_euler      matrix_to_quaternion       quaternion_to_rotvec\neuler_to_quaternion      quaternion_to_matrix       rotvec_to_quaternion\nquaternion_to_axis_angle matrix_to_axis_angle       matrix_to_rotvec\naxis_angle_to_quaternion\n\nWHAT GIMBAL LOCK ACTUALLY COSTS YOU:\nWhen two of an Euler triple's axes line up, a degree of freedom disappears - \ntwo of the three angles then do the same job, and the values jump about wildly \nfor a rotation that is moving smoothly. Near that configuration, small real \nmovements produce enormous changes in the numbers.\n\nThis is why converting sensor quaternions to Euler angles to do arithmetic on \nthem, and converting back, is a mistake even though it reads more naturally. \nWhatever you were computing behaves badly in exactly the postures where the \nangles broke - typically arms overhead, which is where the interesting movement \nusually is.\n\nConvert to Euler for DISPLAY, and to let a person type a value. Do the work in \nquaternions.\n\nORDER AND DEGREES:\neuler_to_quaternion has an 'order' option because rotating about x then y then \nz gives a different result from z then y then x. There is no universal \nconvention, so two systems that both say \"Euler angles\" will usually disagree. \nIf a conversion is nearly right but wrong in a way that grows with the angle, \nthe order is the first thing to check.\n\nThe 'degrees' option decides whether the angles are in degrees or radians. \nAs elsewhere in this system, degrees is the default.\n\nSYNTAX:\nquaternion_to_euler\neuler_to_quaternion\n\nEXAMPLE:\nquaternion_to_euler\n\nINPUTS and PARAMETERS:\n\nquaternion / rotation matrix / xyz rotation / rotation vector:\nThe rotation, in whichever form the node takes. Receiving it triggers the \nconversion.\n\ndegrees:\nWhether angles are in degrees. On by default.\n\norder (euler_to_quaternion):\nWhich axis order the three angles apply in.\n\noffset x / offset y (quaternion_to_euler):\nConstant offsets added to the result, for matching a convention that differs \nfrom this one.\n\nOUTPUTS: \n\nThe rotation in the target representation.\n\nA NOTE ON QUATERNION ORDER:\nThe quaternions here are scalar-first - w, x, y, z. Several libraries use \nscalar-last, and a quaternion read in the wrong order is not an error, just a \ndifferent and wrong rotation. If an imported orientation is confidently \nincorrect rather than noisy, suspect this."
+            "text": "These convert a rotation between the four ways of writing one down.\n\nA rotation is one thing. There are several ways to describe it, each good at  something and bad at something else, and most of the trouble in orientation work  is a value in the wrong one.\n\nTHE FOUR REPRESENTATIONS:\n\nquaternion        four numbers. No gimbal lock, composes cleanly, interpolates \n                  properly. Unreadable by eye. This is the one to STORE and \n                  COMPUTE in\neuler angles      three angles about three axes. Readable, and what a person \n                  can type. Gimbal locks, and the order of the axes changes \n                  what the numbers mean\nrotation matrix   nine numbers. What actually gets applied to a vector, and how \n                  a graphics system wants it\naxis-angle        an axis and how far round it. The most physical description - \n                  it is what a rotation IS\nrotation vector   the same thing packed into three numbers, with the angle \n                  carried in the length\n\nTHE NODES:\n\nquaternion_to_euler      matrix_to_quaternion       quaternion_to_rotvec\neuler_to_quaternion      quaternion_to_matrix       rotvec_to_quaternion\nquaternion_to_axis_angle matrix_to_axis_angle       matrix_to_rotvec\naxis_angle_to_quaternion\n\nWHAT GIMBAL LOCK ACTUALLY COSTS YOU:\nWhen two of an Euler triple's axes line up, a degree of freedom disappears -  two of the three angles then do the same job, and the values jump about wildly  for a rotation that is moving smoothly. Near that configuration, small real  movements produce enormous changes in the numbers.\n\nThis is why converting sensor quaternions to Euler angles to do arithmetic on  them, and converting back, is a mistake even though it reads more naturally.  Whatever you were computing behaves badly in exactly the postures where the  angles broke - typically arms overhead, which is where the interesting movement  usually is.\n\nConvert to Euler for DISPLAY, and to let a person type a value. Do the work in  quaternions.\n\nORDER AND DEGREES:\neuler_to_quaternion has an 'order' option because rotating about x then y then  z gives a different result from z then y then x. There is no universal  convention, so two systems that both say \"Euler angles\" will usually disagree.  If a conversion is nearly right but wrong in a way that grows with the angle,  the order is the first thing to check.\n\nThe 'degrees' option decides whether the angles are in degrees or radians.  As elsewhere in this system, degrees is the default.\n\nSYNTAX:\nquaternion_to_euler\neuler_to_quaternion\n\nEXAMPLE:\nquaternion_to_euler\n\nINPUTS and PARAMETERS:\n\nquaternion / rotation matrix / xyz rotation / rotation vector:\nThe rotation, in whichever form the node takes. Receiving it triggers the  conversion.\n\ndegrees:\nWhether angles are in degrees. On by default.\n\norder (euler_to_quaternion):\nWhich axis order the three angles apply in.\n\noffset x / offset y / offset z (quaternion_to_euler):\nConstant offsets added to the result, for matching a convention that differs  from this one.\n\nOUTPUTS: \n\nThe rotation in the target representation.\n\nA NOTE ON QUATERNION ORDER:\nThe quaternions here are scalar-first - w, x, y, z. Several libraries use  scalar-last, and a quaternion read in the wrong order is not an error, just a  different and wrong rotation. If an imported orientation is confidently  incorrect rather than noisy, suspect this."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 5.0 saw"
         },
-        "6": {
+        "4": {
             "name": "pack",
             "id": 459,
             "position_x": 30,
-            "position_y": 232,
+            "position_y": 152,
             "width": 33,
             "height": 70,
             "visibility": "show_all",
@@ -174,12 +149,12 @@
             "properties": {},
             "init": "pack 3"
         },
-        "7": {
+        "5": {
             "init": "comment a sweeping angle on one axis",
             "name": "comment",
             "id": 496,
             "position_x": 584,
-            "position_y": 345,
+            "position_y": 265,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -199,11 +174,11 @@
             },
             "comment": "a sweeping angle on one axis"
         },
-        "8": {
+        "6": {
             "name": "euler_to_quaternion",
             "id": 533,
             "position_x": 30,
-            "position_y": 385,
+            "position_y": 305,
             "width": 125,
             "height": 70,
             "visibility": "show_all",
@@ -215,13 +190,14 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
-        "9": {
+        "7": {
             "name": "list",
             "id": 570,
             "position_x": 30,
-            "position_y": 520,
+            "position_y": 440,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -240,12 +216,12 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "comment as a quaternion: w x y z",
             "name": "comment",
             "id": 607,
             "position_x": 584,
-            "position_y": 570,
+            "position_y": 490,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -265,11 +241,11 @@
             },
             "comment": "as a quaternion: w x y z"
         },
-        "11": {
+        "9": {
             "name": "quaternion_to_euler",
             "id": 644,
             "position_x": 30,
-            "position_y": 615,
+            "position_y": 535,
             "width": 125,
             "height": 42,
             "visibility": "show_all",
@@ -281,13 +257,14 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
-        "12": {
+        "10": {
             "name": "list",
             "id": 681,
             "position_x": 30,
-            "position_y": 790,
+            "position_y": 710,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -306,12 +283,12 @@
                 }
             }
         },
-        "13": {
+        "11": {
             "init": "comment and back again",
             "name": "comment",
             "id": 718,
             "position_x": 584,
-            "position_y": 840,
+            "position_y": 760,
             "width": 95,
             "height": 30,
             "visibility": "show_all",
@@ -331,23 +308,24 @@
             },
             "comment": "and back again"
         },
-        "14": {
+        "12": {
             "name": "quaternion_to_matrix",
             "id": 755,
             "position_x": 350,
-            "position_y": 615,
+            "position_y": 535,
             "width": 131,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
-        "15": {
+        "13": {
             "name": "heat_map",
             "id": 792,
             "position_x": 350,
-            "position_y": 720,
+            "position_y": 640,
             "width": 208,
             "height": 150,
             "visibility": "show_all",
@@ -396,12 +374,12 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "init": "comment the same rotation as a matrix",
             "name": "comment",
             "id": 829,
             "position_x": 584,
-            "position_y": 880,
+            "position_y": 800,
             "width": 187,
             "height": 30,
             "visibility": "show_all",
@@ -421,11 +399,11 @@
             },
             "comment": "the same rotation as a matrix"
         },
-        "17": {
+        "15": {
             "name": "close",
             "id": 866,
             "position_x": 24,
-            "position_y": 900,
+            "position_y": 820,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -442,26 +420,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -471,7 +429,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in 1"
         },
-        "3": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -481,7 +439,7 @@
             "dest_input_index": 0,
             "dest_input_name": "xyz rotation"
         },
-        "4": {
+        "2": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -491,7 +449,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "5": {
+        "3": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -501,7 +459,7 @@
             "dest_input_index": 0,
             "dest_input_name": "quaternion"
         },
-        "6": {
+        "4": {
             "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
@@ -511,7 +469,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "7": {
+        "5": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -521,7 +479,7 @@
             "dest_input_index": 0,
             "dest_input_name": "quaternion"
         },
-        "8": {
+        "6": {
             "source_node": 755,
             "source_node_name": "",
             "source_output_index": 0,

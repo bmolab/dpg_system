@@ -1,0 +1,304 @@
+{
+    "height": 1131,
+    "width": 1471,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "smpl_body_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_body_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_body - the skeleton of an SMPL model",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_body - the skeleton of an SMPL model",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_body - the skeleton of an SMPL model"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 613,
+            "position_y": 45,
+            "width": 818,
+            "height": 1026,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smpl_body reads an SMPL body model file and sends its skeleton: the offset from each joint to the next, at rest.\n\nWHAT IT SENDS:\nOne message per bone on 'skeleton_data': the bone's name followed by x y z, the offset from the joint at its start to the joint at its end, in metres, in the model's rest pose. The bones are left_hip, right_hip, lower_back, left_thigh, right_thigh, mid_back, left_lower_leg, right_lower_leg, upper_back, left_foot, right_foot, lower_neck, left_shoulder_blade, right_shoulder_blade, upper_neck, left_shoulder, right_shoulder, left_upper_arm, right_upper_arm, left_forearm, right_forearm, left_hand and right_hand. An SMPL-H model's left_hand and right_hand run from the wrist to the first knuckle of the index finger; its finger bones are not sent.\n\ngl_body understands these messages. Sent into its 'pose in' inlet, each one sets the matching bone of the gl_body skeleton, so the skeleton takes on the SMPL body's proportions.\n\nWHICH MODEL FILE:\nAn SMPL or SMPL-H body model: the 24-joint SMPL .pkl, or an SMPL-H .pkl such as the two in dpg_system/smplh. 'load' offers .pkl files; the 'path' option also takes an SMPL-H .npz. A file that cannot be read prints a message saying so, and nothing is sent.\n\nBETAS RESHAPE IT:\n'betas' takes a list of shape numbers. Each arrival recomputes the rest joints for that body shape and sends the whole skeleton again. A model has a fixed number of betas (SMPL 10, SMPL-H 16): a shorter list leaves the rest at zero, and extra numbers are ignored. Loading a model starts from its own default body, all betas zero.\n\nWHEN IT SENDS:\nWhen a model loads, and again whenever betas arrive. The 'path' is saved with the patch, so the model reloads when the patch opens, and the skeleton goes out once the patch's cords are connected.\n\nSYNTAX:\nsmpl_body\n\nEXAMPLE:\nsmpl_body\n\nINPUTS and PROPERTIES:\n\nbetas:\nShape numbers. Arriving reshapes the skeleton and sends it.\n\nload:\nChoose a model file.\n\npath (option):\nThe model file. Setting it loads the file.\n\nOUTPUT:\n\nskeleton_data:\nOne message per bone: name, x, y, z.\n\nRELATED:\ngl_body draws a skeleton with these proportions.\nsmpl_beta_editor edits betas, and gives bone lengths for any set of them.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1010,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "smpl_body reads an SMPL body model file and sends its skeleton: the offset from each joint to the next, at rest.\n\nWHAT IT SENDS:\nOne message per bone on 'skeleton_data': the bone's name followed by x y z, the offset from the joint at its start to the joint at its end, in metres, in the model's rest pose. The bones are left_hip, right_hip, lower_back, left_thigh, right_thigh, mid_back, left_lower_leg, right_lower_leg, upper_back, left_foot, right_foot, lower_neck, left_shoulder_blade, right_shoulder_blade, upper_neck, left_shoulder, right_shoulder, left_upper_arm, right_upper_arm, left_forearm, right_forearm, left_hand and right_hand. An SMPL-H model's left_hand and right_hand run from the wrist to the first knuckle of the index finger; its finger bones are not sent.\n\ngl_body understands these messages. Sent into its 'pose in' inlet, each one sets the matching bone of the gl_body skeleton, so the skeleton takes on the SMPL body's proportions.\n\nWHICH MODEL FILE:\nAn SMPL or SMPL-H body model: the 24-joint SMPL .pkl, or an SMPL-H .pkl such as the two in dpg_system/smplh. 'load' offers .pkl files; the 'path' option also takes an SMPL-H .npz. A file that cannot be read prints a message saying so, and nothing is sent.\n\nBETAS RESHAPE IT:\n'betas' takes a list of shape numbers. Each arrival recomputes the rest joints for that body shape and sends the whole skeleton again. A model has a fixed number of betas (SMPL 10, SMPL-H 16): a shorter list leaves the rest at zero, and extra numbers are ignored. Loading a model starts from its own default body, all betas zero.\n\nWHEN IT SENDS:\nWhen a model loads, and again whenever betas arrive. The 'path' is saved with the patch, so the model reloads when the patch opens, and the skeleton goes out once the patch's cords are connected.\n\nSYNTAX:\nsmpl_body\n\nEXAMPLE:\nsmpl_body\n\nINPUTS and PROPERTIES:\n\nbetas:\nShape numbers. Arriving reshapes the skeleton and sends it.\n\nload:\nChoose a model file.\n\npath (option):\nThe model file. Setting it loads the file.\n\nOUTPUT:\n\nskeleton_data:\nOne message per bone: name, x, y, z.\n\nRELATED:\ngl_body draws a skeleton with these proportions.\nsmpl_beta_editor edits betas, and gives bone lengths for any set of them."
+        },
+        "3": {
+            "name": "smpl_beta_editor",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 229,
+            "height": 322,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 285,
+            "position_y": 62,
+            "width": 200,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "change a beta and smpl_body\nsends the reshaped skeleton",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "change a beta and smpl_body\nsends the reshaped skeleton"
+        },
+        "5": {
+            "name": "smpl_body",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 88,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 285,
+            "position_y": 500,
+            "width": 298,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click load and choose an SMPL .pkl\n(SMPL or SMPL-H - dpg_system/smplh has two)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click load and choose an SMPL .pkl\n(SMPL or SMPL-H - dpg_system/smplh has two)"
+        },
+        "7": {
+            "name": "list",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 285,
+            "position_y": 640,
+            "width": 231,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one message per bone: name x y z\n(this shows the last one)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one message per bone: name x y z\n(this shows the last one)"
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 712,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "betas",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "betas"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "skeleton_data",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The append node places a specific value (the suffix) at the end of the incoming data.\n\nIt merges the input with the suffix to form a new list or string.\n\nSYNTAX:\n\nappend <suffix_value>\n\nEXAMPLE:\n\nappend 30\n\nIf you send the list [10, 20] to this node, it outputs [30, 10, 20])\n\nINPUTS AND PARAMETERS:\n\nin:\nThe message body. \nThe current suffix is attached to the received data. When appending a string to\nanother string, a space is inserted between strings\n\nprefix:\nThe value to place at the end of the message.\nYou can define this when creating the node or change it dynamically via this input box.\n\nOPTIONS:\n\nalways output list:\nIf checked, then the output is always a list, with the first element being the prefix.\n\nOUTPUTS: \n\nout:\nThe combined data ending with the suffix",
+                    "value": "The append node places a specific value (the suffix) at the end of the incoming data.\n\nIt merges the input with the suffix to form a new list or string.\n\nSYNTAX:\n\nappend <suffix_value>\n\nEXAMPLE:\n\nappend 30\n\nIf you send the list [10, 20] to this node, it outputs [30, 10, 20])\n\nINPUTS AND PARAMETERS:\n\nin:\nThe message body. \nThe current suffix is attached to the received data. When appending a string to another string, a space is inserted between strings\n\nprefix:\nThe value to place at the end of the message.\nYou can define this when creating the node or change it dynamically via this input box.\n\nOPTIONS:\n\nalways output list:\nIf checked, then the output is always a list, with the first element being the prefix.\n\nOUTPUTS: \n\nout:\nThe combined data ending with the suffix",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The append node places a specific value (the suffix) at the end of the incoming data.\n\nIt merges the input with the suffix to form a new list or string.\n\nSYNTAX:\n\nappend <suffix_value>\n\nEXAMPLE:\n\nappend 30\n\nIf you send the list [10, 20] to this node, it outputs [30, 10, 20])\n\nINPUTS AND PARAMETERS:\n\nin:\nThe message body. \nThe current suffix is attached to the received data. When appending a string to\nanother string, a space is inserted between strings\n\nprefix:\nThe value to place at the end of the message.\nYou can define this when creating the node or change it dynamically via this input box.\n\nOPTIONS:\n\nalways output list:\nIf checked, then the output is always a list, with the first element being the prefix.\n\nOUTPUTS: \n\nout:\nThe combined data ending with the suffix"
+            "text": "The append node places a specific value (the suffix) at the end of the incoming data.\n\nIt merges the input with the suffix to form a new list or string.\n\nSYNTAX:\n\nappend <suffix_value>\n\nEXAMPLE:\n\nappend 30\n\nIf you send the list [10, 20] to this node, it outputs [30, 10, 20])\n\nINPUTS AND PARAMETERS:\n\nin:\nThe message body. \nThe current suffix is attached to the received data. When appending a string to another string, a space is inserted between strings\n\nprefix:\nThe value to place at the end of the message.\nYou can define this when creating the node or change it dynamically via this input box.\n\nOPTIONS:\n\nalways output list:\nIf checked, then the output is always a list, with the first element being the prefix.\n\nOUTPUTS: \n\nout:\nThe combined data ending with the suffix"
         },
         "4": {
             "init": "comment click on the trigger buttons on these nodes to have the type displayed",
@@ -394,7 +394,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "12": {
             "init": "append 145",
@@ -418,7 +419,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         }
     },
     "links": {

@@ -1,0 +1,545 @@
+{
+    "height": 1421,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "scipy.linear_sum_assignment_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.linear_sum_assignment_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scipy.linear_sum_assignment - keep track of who is who",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 672,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scipy.linear_sum_assignment - keep track of who is who",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scipy.linear_sum_assignment - keep track of who is who"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1316,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Pairs up two sets of points - this frame's and the last frame's, or this frame's and a reference - so that the total distance between partners is as small as possible. That is how identities are kept: the blob found near where performer 2 was is performer 2, even though a detector (scipy.label, scipy.kmeans, a depth camera) lists the people in a different order every frame.\n\nWith track on, the node remembers: each frame is matched against the last, and the points come out in a stable order, one row per identity. Someone who disappears keeps their row (as nan) and their last position, so they are picked up again when they return; someone new is added as a new row.\n\nIt also solves the general problem: give it a cost matrix (input: cost matrix) and it finds the one-to-one pairing of rows with columns with the smallest total cost - assigning performers to roles, lights to targets, sounds to dancers.\n\nSYNTAX:\nscipy.linear_sum_assignment\n\nINPUTS and PARAMETERS:\n\npoints:\nThis frame's points, rows of coordinates (or, as a cost matrix, the costs). Every input is matched and sent - the only inlet that makes the node send.\n\nreference:\nThe points to match against, held. With track on, the first frame becomes the reference and after that each frame's result does.\n\nmax distance (float box, also an inlet):\nPartners further apart than this are not paired - the reference point counts as lost, the new point as new. 0 (the default) pairs everything it can.\n\ntrack:\nAn option, under the node: keep identities from frame to frame, as described above.\n\ninput:\nAn option, under the node: points (the default), or cost matrix - rows to be assigned to columns, the matrix holding the cost of each pairing.\n\nOUTPUTS:\n\nmatched:\nFor each reference point (each row of the cost matrix), the position of its partner in this frame, or -1 for none.\n\ntracked:\nThis frame's points in the reference's order: one row per identity, nan for any that were lost, then any new points.\n\ncost:\nThe total distance (or cost) of the pairing. Sent first, then tracked, then matched.\n\nREADING THE DEMO:\nThree points, sent in a different random order twice a second (left: the list keeps changing). With track on, the tracked output (right) is always in the same order - the same point in the same row - because each frame is matched to the last.\n\nRELATED:\nscipy.kdtree finds the nearest point to each point, without making the pairs one to one. scipy.label and scipy.kmeans find the points to track. np.random.permutation shuffles.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1300,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Pairs up two sets of points - this frame's and the last frame's, or this frame's and a reference - so that the total distance between partners is as small as possible. That is how identities are kept: the blob found near where performer 2 was is performer 2, even though a detector (scipy.label, scipy.kmeans, a depth camera) lists the people in a different order every frame.\n\nWith track on, the node remembers: each frame is matched against the last, and the points come out in a stable order, one row per identity. Someone who disappears keeps their row (as nan) and their last position, so they are picked up again when they return; someone new is added as a new row.\n\nIt also solves the general problem: give it a cost matrix (input: cost matrix) and it finds the one-to-one pairing of rows with columns with the smallest total cost - assigning performers to roles, lights to targets, sounds to dancers.\n\nSYNTAX:\nscipy.linear_sum_assignment\n\nINPUTS and PARAMETERS:\n\npoints:\nThis frame's points, rows of coordinates (or, as a cost matrix, the costs). Every input is matched and sent - the only inlet that makes the node send.\n\nreference:\nThe points to match against, held. With track on, the first frame becomes the reference and after that each frame's result does.\n\nmax distance (float box, also an inlet):\nPartners further apart than this are not paired - the reference point counts as lost, the new point as new. 0 (the default) pairs everything it can.\n\ntrack:\nAn option, under the node: keep identities from frame to frame, as described above.\n\ninput:\nAn option, under the node: points (the default), or cost matrix - rows to be assigned to columns, the matrix holding the cost of each pairing.\n\nOUTPUTS:\n\nmatched:\nFor each reference point (each row of the cost matrix), the position of its partner in this frame, or -1 for none.\n\ntracked:\nThis frame's points in the reference's order: one row per identity, nan for any that were lost, then any new points.\n\ncost:\nThe total distance (or cost) of the pairing. Sent first, then tracked, then matched.\n\nREADING THE DEMO:\nThree points, sent in a different random order twice a second (left: the list keeps changing). With track on, the tracked output (right) is always in the same order - the same point in the same row - because each frame is matched to the last.\n\nRELATED:\nscipy.kdtree finds the nearest point to each point, without making the pairs one to one. scipy.label and scipy.kmeans find the points to track. np.random.permutation shuffles."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment three points: x y, x y, x y",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three points: x y, x y, x y",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three points: x y, x y, x y"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0 10 0 0 10",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "np.reshape",
+            "id": 496,
+            "position_x": 470,
+            "position_y": 92,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 3 2"
+        },
+        "8": {
+            "init": "comment shuffled each time",
+            "name": "comment",
+            "id": 533,
+            "position_x": 650,
+            "position_y": 53,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shuffled each time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shuffled each time"
+        },
+        "9": {
+            "name": "np.random.permutation",
+            "id": 570,
+            "position_x": 650,
+            "position_y": 158,
+            "width": 138,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment in: a new order every time",
+            "name": "comment",
+            "id": 607,
+            "position_x": 28,
+            "position_y": 240,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: a new order every time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: a new order every time"
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 28,
+            "position_y": 275,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment track: frame to frame",
+            "name": "comment",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 240,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "track: frame to frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "track: frame to frame"
+        },
+        "13": {
+            "name": "scipy.linear_sum_assignment",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 275,
+            "width": 174,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "track",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            },
+            "highlight": true
+        },
+        "14": {
+            "init": "comment out: always the same order",
+            "name": "comment",
+            "id": 755,
+            "position_x": 400,
+            "position_y": 440,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "out: always the same order",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "out: always the same order"
+        },
+        "15": {
+            "name": "list",
+            "id": 792,
+            "position_x": 400,
+            "position_y": 475,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 570,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 604,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.kdtree"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 166,
+            "position_y": 604,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.label"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 294,
+            "position_y": 604,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.kmeans"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 430,
+            "position_y": 604,
+            "width": 146,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.random.permutation"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 714,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shuffled",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shuffled",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "points"
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tracked",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

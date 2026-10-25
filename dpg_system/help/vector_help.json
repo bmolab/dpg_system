@@ -498,7 +498,8 @@
                     "value": "%.3f",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "init": "comment vector 8",
@@ -1197,7 +1198,8 @@
                     "value": "%.3f",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "init": "comment vector 4 4",

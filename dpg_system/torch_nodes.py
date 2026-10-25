@@ -114,7 +114,7 @@ class TorchNumElNode(TorchNode):
         self.output = self.add_output('numel out')
 
     def execute(self):
-        input_tensor = self.input_to_tensor()
+        input_tensor = self.input_to_tensor(allow_empty=True)   # an empty tensor has 0
         if input_tensor is not None:
             self.output.send(torch.numel(input_tensor))
 
@@ -252,6 +252,8 @@ class TorchBufferNode(TorchDeviceDtypeNode):
             # on every input, including already-tensor inputs.
             if not isinstance(data, torch.Tensor):
                 data = any_to_tensor(data)
+            if data.ndim == 0:
+                data = data.reshape(1)   # a single value is one sample
             if self.update_style == t_TorchBufferFill:
                 self.buffer = data.detach().clone().to(self.device)
             elif self.update_style == t_TorchCircularBufferSerialInput:
@@ -285,7 +287,10 @@ class TorchBufferNode(TorchDeviceDtypeNode):
                 if self.write_pos >= self.sample_count:
                     self.write_pos = 0
             elif self.update_style == t_TorchCircularBufferParallelInput:
-                if len(self.buffer.shape) == 1 or self.buffer.shape[1] != data.shape[0]:
+                # a changed sample count must reallocate too, or write_pos runs
+                # off the end of the old buffer
+                if (len(self.buffer.shape) == 1 or self.buffer.shape[1] != data.shape[0]
+                        or self.buffer.shape[0] != self.sample_count):
                     # Same reasoning as above: avoid resize_ across a dimensionality
                     # change. The buffer fills incrementally so zeros are a safer
                     # starting point than uninitialized memory.
@@ -302,7 +307,8 @@ class TorchBufferNode(TorchDeviceDtypeNode):
                     self.output.send(output_buffer)
                     del output_buffer
                 else:
-                    self.output.send(self.buffer)
+                    # a copy: the live buffer is overwritten by the next input
+                    self.output.send(self.buffer.clone())
 
         if self.index_input.fresh_input:
             index = any_to_int(self.index_input())
@@ -370,17 +376,23 @@ class TorchRollingBuffer:
     def set_value(self, x, value):
         if not self.lock.locked():
             if self.lock.acquire(blocking=False):
-                if 0 <= x < self.buffer.shape[0]:
-                    self.buffer[x, 0] = value
-                self.lock.release()
+                try:
+                    if 0 <= x < self.buffer.shape[0]:
+                        self.buffer[x, 0] = value
+                finally:
+                    self.lock.release()
 
     def set_write_pos(self, pos):
         if not self.lock.locked():
             if self.lock.acquire(blocking=False):
-                self.write_pos = pos
-                self.lock.release()
+                try:
+                    self.write_pos = pos
+                finally:
+                    self.lock.release()
 
     def update(self, incoming):
+        if incoming.ndim == 0:
+            incoming = incoming.reshape(1)   # a 0-d tensor is a single sample
         if not self.lock.locked():
             if self.update_style == t_TorchBufferFill:
                 if self.buffer.shape != incoming.shape:
@@ -390,11 +402,13 @@ class TorchRollingBuffer:
                     else:
                         self.allocate(incoming.shape)
                 if self.lock.acquire(blocking=False):
-                    if len(incoming.shape) == 1:
-                        self.buffer[:, 0] = incoming[:]
-                    else:
-                        self.buffer[:, :] = incoming[:, :]
-                    self.lock.release()
+                    try:
+                        if len(incoming.shape) == 1:
+                            self.buffer[:, 0] = incoming[:]
+                        else:
+                            self.buffer[:, :] = incoming[:, :]
+                    finally:
+                        self.lock.release()
                 self.write_pos = 0
 
             elif self.update_style == t_TorchCircularBufferSerialInput:
@@ -406,50 +420,57 @@ class TorchRollingBuffer:
                 back_size = 0
 
                 if self.lock.acquire(blocking=False):
-                    if self.write_pos > self.sample_count:
-                        self.write_pos = 0
-
-                    if front_size + self.write_pos >= self.sample_count:
-                        front_size = self.sample_count - self.write_pos
-                        back_size = incoming.shape[0] - front_size
-                    if back_size > self.sample_count:
-                        # Incoming wraps past the buffer; keep the most recent
-                        # sample_count samples. Previously sliced incoming[-back_size:]
-                        # (length back_size), mismatching the LHS slice length.
-                        recent = incoming[-self.sample_count:]
-                        self.buffer[:self.sample_count, 0] = recent
-                        self.buffer[self.sample_count:, 0] = recent
-                        self.write_pos = 0
-                        self.lock.release()
-                    else:
-                        start = self.write_pos
-                        end = self.write_pos + front_size
-                        self.buffer[start:end, 0] = incoming[:front_size]
-                        self.buffer[start + self.sample_count:end + self.sample_count, 0] = incoming[:front_size]
-                        if back_size > 0:
-                            self.buffer[:back_size, 0] = self.buffer[self.sample_count:back_size + self.sample_count, 0] = incoming[front_size:front_size + back_size]
-                            self.write_pos = back_size
-                        else:
-                            self.write_pos += front_size
-
-                        if self.write_pos >= self.sample_count:
+                    try:
+                        if self.write_pos > self.sample_count:
                             self.write_pos = 0
-                    self.lock.release()
+
+                        if front_size + self.write_pos >= self.sample_count:
+                            front_size = self.sample_count - self.write_pos
+                            back_size = incoming.shape[0] - front_size
+                        if back_size > self.sample_count:
+                            # Incoming wraps past the buffer; keep the most recent
+                            # sample_count samples. Previously sliced incoming[-back_size:]
+                            # (length back_size), mismatching the LHS slice length.
+                            recent = incoming[-self.sample_count:]
+                            self.buffer[:self.sample_count, 0] = recent
+                            self.buffer[self.sample_count:, 0] = recent
+                            self.write_pos = 0
+                        else:
+                            start = self.write_pos
+                            end = self.write_pos + front_size
+                            self.buffer[start:end, 0] = incoming[:front_size]
+                            self.buffer[start + self.sample_count:end + self.sample_count, 0] = incoming[:front_size]
+                            if back_size > 0:
+                                self.buffer[:back_size, 0] = self.buffer[self.sample_count:back_size + self.sample_count, 0] = incoming[front_size:front_size + back_size]
+                                self.write_pos = back_size
+                            else:
+                                self.write_pos += front_size
+
+                            if self.write_pos >= self.sample_count:
+                                self.write_pos = 0
+                    finally:
+                        self.lock.release()
 
             elif self.update_style == t_TorchCircularBufferParallelInput:
-                if len(self.buffer.shape) == 1 or self.buffer.shape[1] != incoming.shape[0]:
-                    shape = (self.sample_count, incoming.shape[0])
+                # sample_count is set straight from the node's option, so a
+                # changed count must reallocate here too; it didn't, and
+                # write_pos ran off the end of the old buffer (IndexError)
+                if (len(self.buffer.shape) == 1 or self.buffer.shape[1] != incoming.shape[-1]
+                        or self.buffer.shape[0] != self.sample_count * 2):
+                    shape = (self.sample_count, incoming.shape[-1])
                     self.allocate(shape)
                 if self.lock.acquire(blocking=False):
-                    if len(incoming.shape) == 1:
-                        self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[:]
-                    else:
-                        self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[0, :]
+                    try:
+                        if len(incoming.shape) == 1:
+                            self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[:]
+                        else:
+                            self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[0, :]
 
-                    self.write_pos += 1
-                    if self.write_pos >= self.sample_count:
-                        self.write_pos = 0
-                    self.lock.release()
+                        self.write_pos += 1
+                        if self.write_pos >= self.sample_count:
+                            self.write_pos = 0
+                    finally:
+                        self.lock.release()
             return True
         return False
 
@@ -568,8 +589,10 @@ class TorchRollingBufferNode(TorchDeviceDtypeNode):
         # rather than holding the old contents until the next sample arrives.
         output_buffer = self.rolling_buffer.get_buffer()
         if output_buffer is not None:
-            snapshot = output_buffer.clone()
-            self.rolling_buffer.release_buffer()
+            try:
+                snapshot = output_buffer.clone()
+            finally:
+                self.rolling_buffer.release_buffer()
             self.output.send(snapshot)
 
     def execute(self):
@@ -586,8 +609,10 @@ class TorchRollingBufferNode(TorchDeviceDtypeNode):
                 # get_buffer() returns a view into the underlying tensor.
                 # Clone before release so downstream consumers can't be racing
                 # the writer once the lock drops.
-                snapshot = output_buffer.clone()
-                self.rolling_buffer.release_buffer()
+                try:
+                    snapshot = output_buffer.clone()
+                finally:
+                    self.rolling_buffer.release_buffer()
                 self.output.send(snapshot)
 
 

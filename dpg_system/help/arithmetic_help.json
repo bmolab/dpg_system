@@ -2,22 +2,22 @@
     "height": 781,
     "width": 1577,
     "position": [
-        100,
-        100
+        351,
+        81
     ],
-    "id": 755,
+    "id": 1416,
     "name": "arithmetic_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/arithmetic_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 237,
+            "id": 1444,
+            "sid": 1,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
+            "visibility": "hidden",
+            "draggable": false,
             "protected": true,
             "presentation_state": "hidden",
             "properties": {
@@ -31,7 +31,8 @@
         "1": {
             "init": "comment arithmetic - one calculation, one operand",
             "name": "comment",
-            "id": 274,
+            "id": 1462,
+            "sid": 2,
             "position_x": 24,
             "position_y": -4,
             "width": 512,
@@ -43,19 +44,20 @@
                 "0": {
                     "name": "text",
                     "value": "arithmetic - one calculation, one operand",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "48",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "arithmetic - one calculation, one operand"
         },
         "2": {
             "name": "text_block",
-            "id": 311,
+            "id": 1473,
+            "sid": 3,
             "position_x": 729,
             "position_y": 45,
             "width": 808,
@@ -66,8 +68,8 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The arithmetic nodes each perform one calculation on the value arriving at the left inlet, \nusing a second value - the operand - held in the right inlet.\n\nThey all work the same way. The left inlet takes the data and triggers the calculation; \nthe right inlet holds the other number, which you can type, drag, or send from elsewhere. \nThe operand keeps its value between calculations, so you set it once and it stays put.\n\nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors. \nWhen the input and the operand are different kinds of thing, the operand is converted \nto match the input, so feeding an array into a node with a single number as its operand \napplies that number to every element.\n\nYou give the starting operand as an argument when you create the node. \nWhether you write it with a decimal point matters: \"* 2\" gives you an integer operand \nand a stepped slider, \"* 2.0\" gives you a floating point one.\n\nTHE NODES:\n\n+     add                    -     subtract\n*     multiply               /     divide\n//    divide, discarding any remainder\n%     modulo - the remainder after division\n^     raise to a power       pow   the same as ^\nmin   the smaller of the two values\nmax   the larger of the two values\nmod   the same as %\n!-    reverse subtract - operand minus input, rather than input minus operand\n!/    reverse divide - operand divided by input\nperm  permutations: the number of ordered ways to pick operand items from input items\ncombination   the number of unordered ways to make that same pick\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n* 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\noperand:\nThe second value in the calculation. \nSetting it does not itself produce output - the node waits for the next value at \"in\".\n\nOUTPUTS: \n\nresult:\nThe result of the calculation, in the same shape as the input.\n\nA NOTE ON DIVISION:\nDividing by zero does not raise an error and does not stop your patch. \nFor single numbers the result is 0; for arrays the division is done with \nNumPy's error reporting switched off. Likewise \"%\" and \"mod\" return 0 \nwhen the operand is zero. The idea is that a live patch should keep running.",
-                    "value_type": "str"
+                    "value": "The arithmetic nodes each perform one calculation on the value arriving at the left inlet,  using a second value - the operand - held in the right inlet.\n\nThey all work the same way. The left inlet takes the data and triggers the calculation; \nthe right inlet holds the other number, which you can type, drag, or send from elsewhere.  The operand keeps its value between calculations, so you set it once and it stays put.\n\nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors.  When the input and the operand are different kinds of thing, the operand is converted  to match the input, so feeding an array into a node with a single number as its operand  applies that number to every element.\n\nYou give the starting operand as an argument when you create the node.  Whether you write it with a decimal point matters: \"* 2\" gives you an integer operand  and a stepped slider, \"* 2.0\" gives you a floating point one.\n\nTHE NODES:\n\n+     add                    -     subtract\n*     multiply               /     divide\n//    divide, discarding any remainder\n%     modulo - the remainder after division\n^     raise to a power       pow   the same as ^\nmin   the smaller of the two values\nmax   the larger of the two values\nmod   the same as %\n!-    reverse subtract - operand minus input, rather than input minus operand\n!/    reverse divide - operand divided by input\nperm  permutations: the number of ordered ways to pick operand items from input items\ncombination   the number of unordered ways to make that same pick\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n* 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\noperand:\nThe second value in the calculation. \nSetting it does not itself produce output - the node waits for the next value at \"in\".\n\nOUTPUTS: \n\nresult:\nThe result of the calculation, in the same shape as the input.\n\nA NOTE ON DIVISION:\nDividing by zero does not raise an error and does not stop your patch.  A single number is divided by 0.00000001 instead, giving a very large number; \narrays and tensors give inf. Likewise \"%\" and \"mod\" return 0  when the operand is zero. The idea is that a live patch should keep running.",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -87,41 +89,17 @@
                 "4": {
                     "name": "text_size",
                     "value": "30",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
-            "text": "The arithmetic nodes each perform one calculation on the value arriving at the left inlet, \nusing a second value - the operand - held in the right inlet.\n\nThey all work the same way. The left inlet takes the data and triggers the calculation; \nthe right inlet holds the other number, which you can type, drag, or send from elsewhere. \nThe operand keeps its value between calculations, so you set it once and it stays put.\n\nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors. \nWhen the input and the operand are different kinds of thing, the operand is converted \nto match the input, so feeding an array into a node with a single number as its operand \napplies that number to every element.\n\nYou give the starting operand as an argument when you create the node. \nWhether you write it with a decimal point matters: \"* 2\" gives you an integer operand \nand a stepped slider, \"* 2.0\" gives you a floating point one.\n\nTHE NODES:\n\n+     add                    -     subtract\n*     multiply               /     divide\n//    divide, discarding any remainder\n%     modulo - the remainder after division\n^     raise to a power       pow   the same as ^\nmin   the smaller of the two values\nmax   the larger of the two values\nmod   the same as %\n!-    reverse subtract - operand minus input, rather than input minus operand\n!/    reverse divide - operand divided by input\nperm  permutations: the number of ordered ways to pick operand items from input items\ncombination   the number of unordered ways to make that same pick\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n* 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\noperand:\nThe second value in the calculation. \nSetting it does not itself produce output - the node waits for the next value at \"in\".\n\nOUTPUTS: \n\nresult:\nThe result of the calculation, in the same shape as the input.\n\nA NOTE ON DIVISION:\nDividing by zero does not raise an error and does not stop your patch. \nFor single numbers the result is 0; for arrays the division is done with \nNumPy's error reporting switched off. Likewise \"%\" and \"mod\" return 0 \nwhen the operand is zero. The idea is that a live patch should keep running."
+            "text": "The arithmetic nodes each perform one calculation on the value arriving at the left inlet,  using a second value - the operand - held in the right inlet.\n\nThey all work the same way. The left inlet takes the data and triggers the calculation; \nthe right inlet holds the other number, which you can type, drag, or send from elsewhere.  The operand keeps its value between calculations, so you set it once and it stays put.\n\nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors.  When the input and the operand are different kinds of thing, the operand is converted  to match the input, so feeding an array into a node with a single number as its operand  applies that number to every element.\n\nYou give the starting operand as an argument when you create the node.  Whether you write it with a decimal point matters: \"* 2\" gives you an integer operand  and a stepped slider, \"* 2.0\" gives you a floating point one.\n\nTHE NODES:\n\n+     add                    -     subtract\n*     multiply               /     divide\n//    divide, discarding any remainder\n%     modulo - the remainder after division\n^     raise to a power       pow   the same as ^\nmin   the smaller of the two values\nmax   the larger of the two values\nmod   the same as %\n!-    reverse subtract - operand minus input, rather than input minus operand\n!/    reverse divide - operand divided by input\nperm  permutations: the number of ordered ways to pick operand items from input items\ncombination   the number of unordered ways to make that same pick\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n* 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\noperand:\nThe second value in the calculation. \nSetting it does not itself produce output - the node waits for the next value at \"in\".\n\nOUTPUTS: \n\nresult:\nThe result of the calculation, in the same shape as the input.\n\nA NOTE ON DIVISION:\nDividing by zero does not raise an error and does not stop your patch.  A single number is divided by 0.00000001 instead, giving a very large number; \narrays and tensors give inf. Likewise \"%\" and \"mod\" return 0  when the operand is zero. The idea is that a live patch should keep running."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 132,
+            "id": 1507,
+            "sid": 6,
+            "position_x": 176,
+            "position_y": 101,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -141,7 +119,7 @@
                 "2": {
                     "name": "shape",
                     "value": "sin",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "3": {
                     "name": "range",
@@ -160,11 +138,13 @@
                 }
             }
         },
-        "6": {
+        "4": {
+            "init": "* 0.5",
             "name": "*",
-            "id": 459,
-            "position_x": 30,
-            "position_y": 232,
+            "id": 1529,
+            "sid": 7,
+            "position_x": 333,
+            "position_y": 152,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -173,17 +153,17 @@
             "properties": {
                 "0": {
                     "name": "operand",
-                    "value": 0.5,
+                    "value": 0.25999999046325684,
                     "value_type": "float"
                 }
-            },
-            "init": "* 0.5"
+            }
         },
-        "7": {
+        "5": {
             "name": "plot",
-            "id": 496,
-            "position_x": 210,
-            "position_y": 205,
+            "id": 1539,
+            "sid": 8,
+            "position_x": 452,
+            "position_y": 110,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -193,7 +173,7 @@
                 "0": {
                     "name": "color",
                     "value": "none",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
@@ -208,12 +188,12 @@
                 "3": {
                     "name": "style",
                     "value": "line",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "4": {
                     "name": "update style",
                     "value": "input is stream of samples",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "5": {
                     "name": "sample count",
@@ -242,12 +222,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
-            "id": 533,
-            "annotation": true,
-            "position_x": 444,
-            "position_y": 310,
+            "id": 1590,
+            "sid": 9,
+            "position_x": 246,
+            "position_y": 49,
             "width": 255,
             "height": 40,
             "visibility": "show_all",
@@ -257,7 +237,7 @@
                 "0": {
                     "name": "block",
                     "value": "a sine wave, halved\ndrag the operand and watch it change",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -277,16 +257,17 @@
                 "4": {
                     "name": "text_size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "text": "a sine wave, halved\ndrag the operand and watch it change"
         },
-        "9": {
+        "7": {
             "name": "int",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 405,
+            "id": 1607,
+            "sid": 10,
+            "position_x": 29,
+            "position_y": 301,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -294,27 +275,59 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
+                    "name": "",
+                    "value": 12,
+                    "value_type": "int"
                 },
                 "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "2": {
+                "7": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
-        "10": {
+        "8": {
+            "init": "+ 100",
             "name": "+",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 462,
+            "id": 1643,
+            "sid": 11,
+            "position_x": 183,
+            "position_y": 297,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -326,14 +339,14 @@
                     "value": 100,
                     "value_type": "int"
                 }
-            },
-            "init": "+ 100"
+            }
         },
-        "11": {
+        "9": {
             "name": "int",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 552,
+            "id": 1653,
+            "sid": 12,
+            "position_x": 291,
+            "position_y": 304,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -341,28 +354,59 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
+                    "name": "",
+                    "value": 112,
+                    "value_type": "int"
                 },
                 "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "2": {
+                "7": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
-            "id": 681,
-            "position_x": 444,
-            "position_y": 410,
+            "id": 1686,
+            "sid": 13,
+            "position_x": 42,
+            "position_y": 260,
             "width": 107,
             "height": 30,
             "visibility": "show_all",
@@ -372,21 +416,22 @@
                 "0": {
                     "name": "text",
                     "value": "drag this number",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
-            "id": 718,
+            "id": 1697,
+            "sid": 14,
             "position_x": 24,
-            "position_y": 624,
+            "position_y": 674,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -399,66 +444,567 @@
                     "value_type": "NoneType"
                 }
             }
+        },
+        "12": {
+            "name": "float",
+            "id": 1714,
+            "sid": 15,
+            "position_x": 182,
+            "position_y": 221,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.25999999046325684,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "13": {
+            "init": "comment operand",
+            "name": "comment",
+            "id": 1756,
+            "sid": 17,
+            "position_x": 186,
+            "position_y": 181,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "operand",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "operand"
+        },
+        "14": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 1783,
+            "sid": 20,
+            "position_x": 25,
+            "position_y": 409,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 1805,
+            "sid": 21,
+            "position_x": 24,
+            "position_y": 515,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "name": "heat_map",
+            "id": 2002,
+            "sid": 28,
+            "position_x": 165,
+            "position_y": 406,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 2078,
+            "sid": 30,
+            "position_x": 167,
+            "position_y": 553,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "name": "heat_map",
+            "id": 2116,
+            "sid": 31,
+            "position_x": 485,
+            "position_y": 463,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "name": "load_bang",
+            "id": 2162,
+            "sid": 33,
+            "position_x": 26,
+            "position_y": 622,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "20": {
+            "init": "comment you can perform operations on numpy arrays and torch tensors as well",
+            "name": "comment",
+            "id": 2198,
+            "sid": 37,
+            "position_x": 61,
+            "position_y": 366,
+            "width": 426,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "you can perform operations on numpy arrays and torch tensors as well",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "you can perform operations on numpy arrays and torch tensors as well"
+        },
+        "21": {
+            "name": "*",
+            "id": 2217,
+            "sid": 39,
+            "position_x": 372,
+            "position_y": 486,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "22": {
+            "init": "t bang bang",
+            "name": "t",
+            "id": 2300,
+            "sid": 40,
+            "position_x": 124,
+            "position_y": 622,
+            "width": 33,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "trigger 1",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
         }
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
-            "source_node": 422,
-            "source_node_name": "",
+            "source_node": 1507,
+            "source_node_name": "signal",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 459,
-            "dest_node_name": "",
+            "dest_node": 1529,
+            "dest_node_name": "*",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 1529,
+            "source_node_name": "*",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1539,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 1607,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 1643,
+            "dest_node_name": "+",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 459,
-            "source_node_name": "",
+            "source_node": 1643,
+            "source_node_name": "+",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 496,
-            "dest_node_name": "",
+            "dest_node": 1653,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 1714,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1529,
+            "dest_node_name": "*",
+            "dest_input_index": 1,
+            "dest_input_name": "###operand"
+        },
+        "5": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2002,
+            "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
-            "source_node": 570,
-            "source_node_name": "",
+        "6": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
             "source_output_index": 0,
-            "source_output_name": "int out",
-            "dest_node": 607,
-            "dest_node_name": "",
+            "source_output_name": "random array",
+            "dest_node": 2217,
+            "dest_node_name": "*",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
-            "source_node": 607,
-            "source_node_name": "",
+        "7": {
+            "source_node": 1805,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2078,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 1805,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2217,
+            "dest_node_name": "*",
+            "dest_input_index": 1,
+            "dest_input_name": "###operand"
+        },
+        "9": {
+            "source_node": 2217,
+            "source_node_name": "*",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 644,
-            "dest_node_name": "",
+            "dest_node": 2116,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "10": {
+            "source_node": 2162,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 2300,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 2300,
+            "source_node_name": "t",
+            "source_output_index": 1,
+            "source_output_name": "bang",
+            "dest_node": 1805,
+            "dest_node_name": "np.rand",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "12": {
+            "source_node": 2300,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 1783,
+            "dest_node_name": "np.rand",
             "dest_input_index": 0,
             "dest_input_name": ""
         }

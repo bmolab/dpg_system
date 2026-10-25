@@ -1,0 +1,659 @@
+{
+    "height": 1121,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "np.tensordot_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.tensordot_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.tensordot - multiply and sum over matching axes",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 623,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.tensordot - multiply and sum over matching axes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.tensordot - multiply and sum over matching axes"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Multiplies two arrays and adds up over a number of matching axes: the last axes of the first array against the first axes of the second.\n\nWith axes 1 it is the matrix product (np.matmul) - each row of the first against each column of the second - extended to arrays of any number of dimensions: a 3-D array of frames x joints x xyz times a 3 x 3 rotation transforms every point of every frame at once. With axes 2 it multiplies the last two axes of the first by the first two of the second, element by element, and adds everything up; for two matrices that gives a single number measuring how alike they are. With axes 0 it is the outer product.\n\nSYNTAX:\nnp.tensordot <axes: int>\nDefault: axes 2 (NumPy's default).\n\nEXAMPLE:\nnp.tensordot 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe first array. Every input is multiplied and sent - the only inlet that makes the node send.\n\nin 2:\nThe second array, held: send it first.\n\naxes (int box, also an inlet):\nHow many axes to sum over. The sizes of the last that many axes of in must equal the first that many of in 2.\n\nOUTPUTS:\n\nresult:\nThe product. Its axes are in's remaining axes followed by in 2's.\n\nREADING THE DEMO:\nA is 1 2 / 3 4; B is 0 1 / 1 0, the matrix that swaps columns. With axes 1, A times B is 2 1 / 4 3: A with its columns swapped. With axes 2, every element of A times the matching one of B, all added: 0 + 2 + 3 + 0 = 5. A metro re-sends A five times a second.\n\nRELATED:\nnp.matmul and np.dot are the axes 1 case for matrices. np.einsum can say exactly which axes to sum. np.outer is the axes 0 case for lists.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Multiplies two arrays and adds up over a number of matching axes: the last axes of the first array against the first axes of the second.\n\nWith axes 1 it is the matrix product (np.matmul) - each row of the first against each column of the second - extended to arrays of any number of dimensions: a 3-D array of frames x joints x xyz times a 3 x 3 rotation transforms every point of every frame at once. With axes 2 it multiplies the last two axes of the first by the first two of the second, element by element, and adds everything up; for two matrices that gives a single number measuring how alike they are. With axes 0 it is the outer product.\n\nSYNTAX:\nnp.tensordot <axes: int>\nDefault: axes 2 (NumPy's default).\n\nEXAMPLE:\nnp.tensordot 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe first array. Every input is multiplied and sent - the only inlet that makes the node send.\n\nin 2:\nThe second array, held: send it first.\n\naxes (int box, also an inlet):\nHow many axes to sum over. The sizes of the last that many axes of in must equal the first that many of in 2.\n\nOUTPUTS:\n\nresult:\nThe product. Its axes are in's remaining axes followed by in 2's.\n\nREADING THE DEMO:\nA is 1 2 / 3 4; B is 0 1 / 1 0, the matrix that swaps columns. With axes 1, A times B is 2 1 / 4 3: A with its columns swapped. With axes 2, every element of A times the matching one of B, all added: 0 + 2 + 3 + 0 = 5. A metro re-sends A five times a second.\n\nRELATED:\nnp.matmul and np.dot are the axes 1 case for matrices. np.einsum can say exactly which axes to sum. np.outer is the axes 0 case for lists."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment A: 1 2 / 3 4",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "A: 1 2 / 3 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "A: 1 2 / 3 4"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "np.reshape",
+            "id": 496,
+            "position_x": 410,
+            "position_y": 92,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 2 2"
+        },
+        "8": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 533,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "9": {
+            "name": "load_bang",
+            "id": 570,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment B: swaps columns, held",
+            "name": "comment",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "B: swaps columns, held",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "B: swaps columns, held"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 1 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "np.reshape",
+            "id": 681,
+            "position_x": 330,
+            "position_y": 210,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 2 2"
+        },
+        "13": {
+            "init": "comment axes 1: the matrix product",
+            "name": "comment",
+            "id": 718,
+            "position_x": 28,
+            "position_y": 360,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axes 1: the matrix product",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "axes 1: the matrix product"
+        },
+        "14": {
+            "name": "np.tensordot",
+            "id": 755,
+            "position_x": 28,
+            "position_y": 395,
+            "width": 117,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.tensordot 1",
+            "highlight": true
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 792,
+            "position_x": 230,
+            "position_y": 395,
+            "width": 158,
+            "height": 130,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 150,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 80,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment axes 2: one number",
+            "name": "comment",
+            "id": 829,
+            "position_x": 450,
+            "position_y": 360,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axes 2: one number",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "axes 2: one number"
+        },
+        "17": {
+            "name": "np.tensordot",
+            "id": 866,
+            "position_x": 450,
+            "position_y": 395,
+            "width": 117,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "18": {
+            "name": "list",
+            "id": 903,
+            "position_x": 650,
+            "position_y": 395,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 634,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.matmul"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 143,
+            "position_y": 634,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.einsum"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 256,
+            "position_y": 634,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.dot"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 346,
+            "position_y": 634,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.outer"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 744,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "3": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "6": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -93,31 +93,39 @@ print(build('combine', 'combine, join, split - assembling and taking apart', bod
             demo, links, demo_width=580, text_width=790, text_height=640))
 
 # --------------------------------------------------------------- string_replace
-body = """These substitute or clean up parts of a string.
+body = """These find a piece of text and put another in its place.
 
 THE NODES:
 
-string_replace  find a piece of text anywhere and put another in its place
-word_replace    the same, but only where the match is a WHOLE word
-unescape_text   turn HTML escapes back into the characters they stand for
-printable       drop anything that is not a printable character
+string_replace  replace the text wherever it appears, even inside a word
+word_replace    replace it only where it is a WHOLE word
 
 word_replace VERSUS string_replace:
-string_replace matches anywhere, so replacing "cat" also hits "concatenate". 
-word_replace matches only whole words, so it does not. Which you want depends on 
-whether you are editing text or editing markup - for anything language-shaped, 
-whole words is almost always right, and the substring version's surprises are 
-the classic source of mangled output.
+string_replace matches anywhere, so replacing "cat" also hits "concatenate".
+word_replace matches only whole words, so it does not. For anything
+language-shaped, whole words is almost always what you want, and the
+everywhere version's surprises are the classic source of mangled output.
 
-unescape_text AND printable ARE FOR TEXT THAT ARRIVED FROM SOMEWHERE ELSE:
-Text off a network, out of a web page, or from a speech service arrives with 
-things in it that are not really part of the text - HTML escapes like &amp;, 
-control characters, byte-order marks, invisible formatting. 
+Both are case-sensitive: "cat" does not touch "Cat".
 
-unescape_text handles the escapes; printable removes what cannot be shown. 
-Running both on anything incoming costs nothing and saves the class of problem 
-where a string looks correct and behaves oddly - a comparison that fails, a 
-width that is wrong, a word that will not match.
+'find' IS A PATTERN, NOT PLAIN TEXT:
+It is read as a regular expression, so some characters have special meanings.
+A full stop matches any character, "colou?r" matches both "color" and "colour",
+and "cat|dog" matches either word. To find one of . * + ? ( ) [ ] | \\ ^ $
+literally, put a backslash in front of it. An unmatched bracket is an error,
+and the node then sends nothing.
+
+LISTS:
+string_replace given a list replaces within each item that is text and leaves
+numbers alone; a list goes out. word_replace turns a list of words into one
+string, joined with spaces, before it starts; a string goes out.
+
+A STRING THAT STARTS WITH 'find' OR 'replace':
+Text arriving at 'string in' whose first word is 'find' or 'replace' is taken
+as a setting, not as text: "replace dog" sets the replace field to "dog" and
+nothing is sent. Handy from a message box, a surprise in running text.
+
+If 'find' is empty the input is passed on unchanged.
 
 SYNTAX:
 string_replace <find> <replace>
@@ -131,80 +139,191 @@ INPUTS and PARAMETERS:
 string in:
 The text. Receiving it triggers the node.
 
-find / replace:
-What to look for and what to put in its place.
+find:
+What to look for.
 
-OUTPUTS: 
+replace:
+What to put in its place. Leave it empty to delete what was found.
 
-string out / printable characters out / unescaped string out:
+OUTPUTS:
+
+string out:
 The result.
 
 RELATED:
-replace and int_replace do the same job on lists and numbers rather than 
-within a string - see the replace help patch. 
+unescape_text and printable clean up text that arrived from somewhere else.
+replace and int_replace do the same job on lists and numbers rather than
+within a string - see the replace help patch.
 dict_replace holds many substitutions at once."""
 
 demo = [
-    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 320, 'h': 42,
-     'props': {'text in': 'the cat concatenated', 'font size': '24'}},
-    {'key': 'sr', 'init': 'string_replace cat dog', 'pos': (30, 180), 'w': 220, 'h': 110},
-    {'key': 's1', 'init': 'string', 'pos': (30, 305), 'w': 320, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'matches anywhere: concatenated changes too',
-     'pos': (30, 355)},
-    {'key': 'wr', 'init': 'word_replace cat dog', 'pos': (30, 395), 'w': 220, 'h': 110},
-    {'key': 's2', 'init': 'string', 'pos': (30, 520), 'w': 320, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'whole words only: it does not', 'pos': (30, 570)},
-    {'key': 'pt', 'init': 'printable', 'pos': (400, 395), 'w': 200, 'h': 90},
-    {'key': 'c2', 'comment': True, 'text': 'run this on anything incoming',
-     'pos': (400, 495)},
+    {'key': 's0', 'init': 'string', 'pos': (30, 62), 'w': 320, 'h': 42,
+     'props': {'text in': 'the cat concatenated', 'font size': '24', 'width': 280}},
+    {'key': 'c0', 'comment': True, 'text': 'click to send it', 'pos': (30, 112)},
+    {'key': 'sr', 'init': 'string_replace cat dog', 'pos': (30, 150), 'w': 220, 'h': 110},
+    {'key': 's1', 'init': 'string', 'pos': (30, 275), 'w': 320, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 280}},
+    {'key': 'c1', 'comment': True, 'text': 'matches anywhere: concatenated changes too',
+     'pos': (30, 325)},
+    {'key': 'wr', 'init': 'word_replace cat dog', 'pos': (30, 365), 'w': 220, 'h': 110},
+    {'key': 's2', 'init': 'string', 'pos': (30, 490), 'w': 320, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 280}},
+    {'key': 'c2', 'comment': True, 'text': 'whole words only: it does not', 'pos': (30, 540)},
 ]
-links = [('btn', '', 'm1', ''),
-         ('m1', 'message out', 'sr', 'string in'), ('sr', 'string out', 's1', ''),
-         ('m1', 'message out', 'wr', 'string in'), ('wr', 'string out', 's2', ''),
-         ('m1', 'message out', 'pt', 'characters in')]
-print(build('string_replace', 'string_replace - substituting and cleaning up', body,
-            demo, links, demo_width=630, text_width=790, text_height=640))
+links = [('s0', 'string out', 'sr', 'string in'), ('sr', 'string out', 's1', ''),
+         ('s0', 'string out', 'wr', 'string in'), ('wr', 'string out', 's2', '')]
+print(build('string_replace', 'string_replace - find and put something else in its place', body,
+            demo, links, demo_width=400, text_width=790, text_height=640))
+
+# ---------------------------------------------------------------- unescape_text
+body = """unescape_text turns HTML escapes back into the characters they stand for.
+
+Text out of a web page, a feed or some network services arrives with
+characters written as codes: "&amp;" for an ampersand, "&lt;" and "&gt;" for
+angle brackets, "&quot;" for a double quote, "&eacute;" for an accented e,
+"&#8212;" or "&#x2014;" for a long dash. Until they are turned back, the string
+looks wrong when shown and fails to match words it should match.
+
+Every named and numbered escape HTML knows is handled. Anything else is left
+as it is.
+
+ONE TO WATCH:
+"&nbsp;" becomes a non-breaking space. It looks like a space but is not one,
+so splitting on spaces will not split there - and printable, which keeps only
+plain characters, removes it entirely, joining the words on either side.
+
+WHAT IT TAKES:
+Anything; it is turned into a string first. A list of words is joined with
+spaces, and line breaks are removed.
+
+SYNTAX:
+unescape_text
+
+INPUTS:
+
+escaped string in:
+The text. Receiving it triggers the node.
+
+OUTPUTS:
+
+unescaped string out:
+The same text with the escapes replaced.
+
+RELATED:
+printable removes characters rather than translating them.
+string_replace for any other substitution."""
+
+demo = [
+    {'key': 's0', 'init': 'string', 'pos': (30, 62), 'w': 440, 'h': 42,
+     'props': {'text in': 'fish &amp; chips &lt;b&gt; caf&eacute; &#8212; &quot;hi&quot;',
+               'font size': '24', 'width': 400}},
+    {'key': 'c0', 'comment': True, 'text': 'click to send it', 'pos': (30, 112)},
+    {'key': 'ue', 'init': 'unescape_text', 'pos': (30, 150), 'w': 200, 'h': 80},
+    {'key': 's1', 'init': 'string', 'pos': (30, 245), 'w': 440, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 400}},
+    {'key': 'c1', 'comment': True, 'text': 'each code becomes the character it names',
+     'pos': (30, 295)},
+]
+links = [('s0', 'string out', 'ue', 'escaped string in'),
+         ('ue', 'unescaped string out', 's1', '')]
+print(build('unescape_text', 'unescape_text - HTML escapes back to characters', body,
+            demo, links, demo_width=500, text_width=790, text_height=560))
+
+# -------------------------------------------------------------------- printable
+body = """printable keeps only plain characters and drops everything else.
+
+"Plain" here means the basic English keyboard set: the letters a to z and A to
+Z, the digits, ordinary punctuation, spaces, tabs and carriage returns.
+Everything outside that set is removed - other control characters and
+invisible formatting, but also every
+accented letter, curly quotes, long dashes, symbols, emoji and every
+non-Latin script.
+
+WHAT IT IS FOR:
+Text that arrived from somewhere else - off a network, out of a file, from a
+speech service - and has things in it that are not really part of the text.
+Those are the strings that look correct and behave oddly: a comparison that
+fails, a width that is wrong, a word that will not match.
+
+WHAT IT COSTS:
+It does not translate anything, it deletes. "café" becomes "caf", a curly
+quoted word loses its quotes, and text in another language can vanish
+completely. Use it where plain English is what you expect; anywhere else it
+destroys the text.
+
+A non-breaking space is removed too, not turned into a space, so the words on
+either side run together.
+
+WHAT IT TAKES:
+Anything; it is turned into a string first. A list of words is joined with
+spaces, a float is written with three decimals, and line breaks are removed. If nothing
+is left, nothing is sent.
+
+SYNTAX:
+printable
+
+INPUTS:
+
+characters in:
+The text. Receiving it triggers the node.
+
+OUTPUTS:
+
+printable characters out:
+What survives.
+
+RELATED:
+unescape_text turns HTML codes into characters - run it first, since printable
+would leave the codes behind as plain text.
+string_replace to take out particular characters while keeping others."""
+
+demo = [
+    {'key': 's0', 'init': 'string', 'pos': (30, 62), 'w': 380, 'h': 42,
+     'props': {'text in': 'café “quoted” — plain text',
+               'font size': '24', 'width': 340}},
+    {'key': 'c0', 'comment': True, 'text': 'click to send it', 'pos': (30, 112)},
+    {'key': 'pt', 'init': 'printable', 'pos': (30, 150), 'w': 200, 'h': 80},
+    {'key': 's1', 'init': 'string', 'pos': (30, 245), 'w': 380, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 340}},
+    {'key': 'c1', 'comment': True, 'text': 'the accent, the curly quotes and the dash\nare gone - deleted, not translated',
+     'pos': (30, 295)},
+]
+links = [('s0', 'string out', 'pt', 'characters in'),
+         ('pt', 'printable characters out', 's1', '')]
+print(build('printable', 'printable - keep only plain characters', body,
+            demo, links, demo_width=440, text_width=790, text_height=640))
 
 # ----------------------------------------------------------------- word_trigger
-body = """These watch text going past and react to particular words.
+body = """These watch text going past and fire when particular words, or words
+beginning with particular letters, appear in it.
 
 THE NODES:
 
 word_trigger          an outlet per word you name; fires when that word appears
-first_letter_trigger  an outlet per letter; fires on the word's first letter
-word_gate             pass only words that are in a dictionary
-fuzzy_match           find the closest match rather than an exact one
+first_letter_trigger  an outlet per letter; fires when a word begins with it
 
 word_trigger IS route FOR LANGUAGE:
-Name the words as arguments and each gets an outlet. A stream of text - from 
-speech recognition, from a chat, from a file - then drives the patch directly: 
-say a word, something happens. It is the same shape as osc_route or the select 
-node, applied to language.
+Name the words as arguments and each gets an outlet. A stream of text - from
+speech recognition, from a chat, from a file - then drives the patch directly:
+say a word, something happens. It is the same shape as route or select,
+applied to language.
 
-fuzzy_match EXISTS BECAUSE EXACT MATCHING FAILS ON SPEECH:
-Recognised speech is approximate. It gives you "recognise" for "recognize", 
-"there" for "their", and words that are simply wrong but close. Exact matching 
-against a list therefore misses most of what was actually said.
+Each message is checked for every word. A word's outlet sends a bang when the
+word appears anywhere in the message as a whole word - "faster" does not fire
+on "fasterer" - and it fires once however many times the word appears.
+Several words in one message each fire.
 
-fuzzy_match reports the closest entry and a SCORE for how close, so you can 
-decide what counts. The 'threshold' sets how far off is acceptable. Watch the 
-score outlet while tuning - a threshold set without looking at real scores is 
-a guess, and the useful range is usually narrower than you would expect.
+Capitals are ignored: the text and the arguments are both lowered to small
+letters before matching, so "word_trigger Stop" fires on "stop" and on "STOP".
 
-word_gate FILTERS BY VOCABULARY:
-Give it a dictionary and only words in it get through. That is how you keep a 
-text stream to a known vocabulary - useful when the words are going to drive 
-something that only understands certain ones, and as a way of ignoring the 
-noise in a recognition stream without having to enumerate what to reject.
+first_letter_trigger LISTENS FOR INITIALS:
+Name single letters as arguments. A letter's outlet sends a bang when any word
+in the message begins with it - once per message, however many words do.
+Capitals are ignored, as for word_trigger.
 
 SYNTAX:
 word_trigger <word> <word> ...
-first_letter_trigger
-word_gate
-fuzzy_match
+first_letter_trigger <letter> <letter> ...
 
 EXAMPLE:
 word_trigger stop start faster
@@ -212,170 +331,294 @@ word_trigger stop start faster
 INPUTS and PARAMETERS:
 
 string in:
-The text to watch. Receiving it triggers the node.
+The text to watch. Receiving it triggers the node. A list is read as its
+words joined by spaces.
 
-dictionary in / load dictionary / include word (word_gate):
-The vocabulary, and a way to add to it.
-
-threshold (fuzzy_match):
-How close a match has to be.
-
-OUTPUTS: 
+OUTPUTS:
 
 <one outlet per word or letter>:
-Fires when that word or letter appears.
-
-gated string out:
-Only the words that passed.
-
-string out / score out / replacement out (fuzzy_match):
-What was matched, how close it was, and what to substitute.
+A bang when that word, or a word beginning with that letter, appears.
 
 RELATED:
-The spacy nodes do grammatical analysis where these do matching. 
+word_gate passes only the words in a vocabulary, instead of firing on them.
+fuzzy_match corrects a name that was spelled or heard slightly wrong.
 select and route do the same job for messages rather than words."""
 
 demo = [
-    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 320, 'h': 42,
+    {'key': 's0', 'init': 'string', 'pos': (30, 62), 'w': 320, 'h': 42,
      'props': {'text in': 'please go faster now', 'font size': '24'}},
-    {'key': 'wt', 'init': 'word_trigger stop faster slower', 'pos': (30, 180),
+    {'key': 'c0', 'comment': True, 'text': 'click to send the text', 'pos': (30, 112)},
+    {'key': 'wt', 'init': 'word_trigger stop faster slower', 'pos': (30, 150),
      'w': 280, 'h': 140},
-    {'key': 'c0', 'comment': True, 'text': 'an outlet per word you name',
-     'pos': (30, 335)},
-    {'key': 'cnt', 'init': 'counter', 'pos': (30, 375), 'w': 123, 'h': 84},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 470), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c1', 'comment': True, 'text': 'counts how often faster was said',
-     'pos': (30, 520)},
-    {'key': 'fm', 'init': 'fuzzy_match', 'pos': (400, 375), 'w': 240, 'h': 180},
-    {'key': 'f1', 'init': 'float', 'pos': (400, 570), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c2', 'comment': True, 'text': 'watch the score before setting\na threshold - guessing it rarely works',
-     'pos': (400, 620)},
+    {'key': 'c1', 'comment': True, 'text': 'an outlet per word you name',
+     'pos': (30, 305)},
+    {'key': 'cnt', 'init': 'counter', 'pos': (30, 345), 'w': 123, 'h': 84},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 440), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c2', 'comment': True, 'text': 'counts how often faster was said',
+     'pos': (30, 490)},
+    {'key': 'fl', 'init': 'first_letter_trigger g s', 'pos': (380, 150),
+     'w': 240, 'h': 110},
+    {'key': 'c3', 'comment': True, 'text': 'an outlet per letter - go\nbegins with g, nothing with s',
+     'pos': (380, 270)},
+    {'key': 'cnt2', 'init': 'counter', 'pos': (380, 345), 'w': 123, 'h': 84},
+    {'key': 'i2', 'init': 'int', 'pos': (380, 440), 'w': 127, 'h': 42, 'props': INT},
 ]
-links = [('btn', '', 'm1', ''),
-         ('m1', 'message out', 'wt', 'string in'),
+links = [('s0', 'string out', 'wt', 'string in'),
          ('wt', 'faster', 'cnt', 'input'), ('cnt', 'count out', 'i1', ''),
-         ('m1', 'message out', 'fm', 'string in'), ('fm', 'score out', 'f1', '')]
+         ('s0', 'string out', 'fl', 'string in'),
+         ('fl', 'g', 'cnt2', 'input'), ('cnt2', 'count out', 'i2', '')]
 print(build('word_trigger', 'word_trigger - reacting to what was said', body, demo,
-            links, demo_width=670, text_width=800, text_height=680))
+            links, demo_width=660, text_width=800, text_height=640))
+
+# -------------------------------------------------------------------- word_gate
+body = """The word_gate node passes only the words that are in its vocabulary,
+and drops the rest.
+
+That is how you keep a text stream to a known set of words - useful when the
+words are going to drive something that only understands certain ones, and as
+a way of ignoring the noise in a recognition stream without having to list
+what to reject.
+
+HOW IT READS THE TEXT:
+The incoming text is broken into words at anything that is not a letter or an
+apostrophe, so numbers and punctuation never get through. Each word is looked
+up as it is, then in small letters. A word that is not in the vocabulary on
+its own can still pass as the second half of a two-word entry: with "new york"
+in the vocabulary, "New York" passes as one item.
+
+The words that pass are sent as one string, joined by spaces. When nothing
+passes, nothing is sent.
+
+THE VOCABULARY IS A DICTIONARY:
+Each entry is a word and what to send in its place. 'include word' files a
+word under itself, so it passes unchanged. A dictionary arriving at
+'dictionary in' replaces the vocabulary, and can map a word to something else:
+{"crimson": "red"} lets crimson through as red.
+
+SYNTAX:
+word_gate
+
+INPUTS and PARAMETERS:
+
+string in:
+The text to filter. Receiving it triggers the node.
+
+dictionary in:
+A dictionary that replaces the vocabulary.
+
+load dictionary:
+The path of a JSON file holding the vocabulary as a dictionary. Entering a
+path here, or sending one, loads it and replaces the vocabulary.
+
+include word:
+Adds to the vocabulary. A list adds each of its words; a single string is
+added whole, so a string node holding "new york" adds the two-word entry.
+
+OUTPUTS:
+
+gated string out:
+The words that passed, or what the vocabulary maps them to.
+
+RELATED:
+word_trigger fires on particular words rather than passing them along.
+string_replace and dict_replace substitute without filtering anything out."""
+
+demo = [
+    {'key': 'm1', 'init': 'message', 'pos': (30, 62), 'w': 260, 'h': 42,
+     'props': {'text in': 'red green blue', 'font size': '24'}},
+    {'key': 'c0', 'comment': True, 'text': 'click first: adds three words\nto the vocabulary',
+     'pos': (330, 62)},
+    {'key': 's0', 'init': 'string', 'pos': (30, 125), 'w': 420, 'h': 42,
+     'props': {'text in': 'The red car stopped at the green light.', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'then click to send the sentence',
+     'pos': (30, 175)},
+    {'key': 'wg', 'init': 'word_gate', 'pos': (30, 215), 'w': 220, 'h': 130},
+    {'key': 's1', 'init': 'string', 'pos': (30, 370), 'w': 260, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'only the words it knows', 'pos': (30, 420)},
+]
+links = [('m1', 'message out', 'wg', 'include word'),
+         ('s0', 'string out', 'wg', 'string in'),
+         ('wg', 'gated string out', 's1', '')]
+print(build('word_gate', 'word_gate - pass only known words', body, demo,
+            links, demo_width=560, text_width=800, text_height=660))
+
+# ------------------------------------------------------------------ fuzzy_match
+body = """The fuzzy_match node corrects a name in a phrase to the closest name in a
+list you give it.
+
+It was made for image-generation prompts built from recognised speech: "a
+harbour painted by rembrant" should reach the image model as "a harbour painted
+by Rembrandt". Recognition gives you names that are close but wrong, and exact
+matching against a list misses most of them.
+
+WHERE IT LOOKS FOR THE NAME:
+It does not search the whole phrase. It looks for the name after "by " - up to
+" of " or " from " if either follows - or, failing that, after "style of ".
+"by a" and "by the" are not taken as names, and "by" has to be in small
+letters and be a word of its own - "nearby " is not a "by ". When the phrase
+has several "by "s, each is tried and the one whose name scores best is used.
+With several "style of "s, the last one is used.
+
+A phrase with neither is passed through unchanged. So is a phrase where the
+name in front of " of " or " from " is longer than 32 characters or 5 spaces;
+no score is sent for that one.
+
+HOW CLOSE IS CLOSE ENOUGH:
+Every name in the list is scored against the words found, from 0 to 100,
+ignoring capitals; a short name inside a long stretch of words scores lower
+than the same name on its own. If the best score is above 'threshold' (60 by
+default), the name in the phrase is replaced by the best one from the list.
+Otherwise the phrase goes out as it came in.
+
+'score out' reports the best score each time - and reads 20 when nothing
+scored higher than that, which includes a phrase with no name to look for.
+Watch it while tuning: a threshold set without looking at real scores is a
+guess.
+
+THE LIST:
+A JSON file holding a list of names. A JSON dictionary works too: its keys are
+the names. Give the file as the node's argument, click 'load match file' to
+choose one, or send the message "path <file>". With no list loaded nothing is
+ever replaced.
+
+SYNTAX:
+fuzzy_match <file>
+
+EXAMPLE:
+fuzzy_match painters.json
+
+INPUTS and PARAMETERS:
+
+string in:
+The phrase. Receiving it triggers the node. A list is read as its words joined
+by spaces; anything else is ignored.
+
+load match file:
+Click to choose the list's file.
+
+threshold:
+The score a match must beat to be used.
+
+path (option):
+The list's file. Setting it loads the file.
+
+OUTPUTS:
+
+string out:
+The phrase, with the name corrected when a match was good enough.
+
+score out:
+The best score found.
+
+replacement out:
+The words that were put in, with "by " or "style of " in front -
+"by Rembrandt". Sent only when a replacement was made.
+
+RELATED:
+word_gate passes only the words in a vocabulary.
+string_replace swaps exact text for other text."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click first: writes a small list of\nnames to a file and loads it',
+     'pos': (30, 115)},
+    # repeat_in_order: fill the dict, save it as a file, then point fuzzy_match at it
+    {'key': 'rp', 'init': 'repeat_in_order 3', 'pos': (30, 170), 'w': 190, 'h': 70},
+    {'key': 'src', 'init': 'string', 'pos': (30, 255), 'w': 420, 'h': 42,
+     'props': {'text in': '{"Rembrandt": 1, "Vermeer": 1, "Turner": 1, "Hokusai": 1}',
+               'font size': '24'}},
+    {'key': 'sv', 'init': 'message', 'pos': (30, 310), 'w': 420, 'h': 42,
+     'props': {'text in': 'save /tmp/fuzzy_match_names.json', 'font size': '24'}},
+    {'key': 'dc', 'init': 'dict', 'pos': (30, 370), 'w': 160, 'h': 180},
+    {'key': 'pth', 'init': 'message', 'pos': (30, 570), 'w': 420, 'h': 42,
+     'props': {'text in': 'path /tmp/fuzzy_match_names.json', 'font size': '24'}},
+    {'key': 'p1', 'init': 'string', 'pos': (30, 640), 'w': 420, 'h': 42,
+     'props': {'text in': 'a harbour painted by rembrant', 'font size': '24'}},
+    {'key': 'p2', 'init': 'string', 'pos': (30, 692), 'w': 420, 'h': 42,
+     'props': {'text in': 'a garden in the style of hokusia', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'then click a phrase', 'pos': (30, 742)},
+    {'key': 'fm', 'init': 'fuzzy_match', 'pos': (30, 780), 'w': 240, 'h': 180},
+    {'key': 's1', 'init': 'string', 'pos': (30, 985), 'w': 420, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'the phrase, name corrected', 'pos': (30, 1035)},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 1075), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c3', 'comment': True, 'text': 'how close the best name was', 'pos': (30, 1125)},
+    {'key': 's2', 'init': 'string', 'pos': (240, 1075), 'w': 220, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+]
+links = [('btn', '', 'rp', ''),
+         ('rp', 'first', 'src', ''), ('rp', 'second', 'sv', ''), ('rp', 'third', 'pth', ''),
+         ('src', 'string out', 'dc', 'store'),
+         ('sv', 'message out', 'dc', 'retrieve by key'),
+         ('pth', 'message out', 'fm', 'string in'),
+         ('p1', 'string out', 'fm', 'string in'), ('p2', 'string out', 'fm', 'string in'),
+         ('fm', 'string out', 's1', ''), ('fm', 'score out', 'f1', ''),
+         ('fm', 'replacement out', 's2', '')]
+print(build('fuzzy_match', 'fuzzy_match - correct a name to the closest in a list', body,
+            demo, links, demo_width=500, text_width=800, text_height=900))
 
 # --------------------------------------------------------------- gather_sentence
-body = """These accumulate text over time, rather than acting on one message.
+body = """The gather_sentence node collects fragments of text until a sentence
+ends, then sends the whole sentence.
 
 Speech recognition and language models emit text a fragment at a time.
 None of it is a sentence, and most of what you want to do needs one.
-These three assemble the stream into something whole, in different ways.
 
-THE NODES:
-
-gather_sentence  collect fragments until a sentence ends, then send it
-string_builder   collect until you ask for it
-fifo_string      keep a window of recent phrases, older ones fading
-
-gather_sentence DECIDES WHERE A SENTENCE ENDS:
+WHERE A SENTENCE ENDS:
 With 'auto sentence end' on (the default), a fragment that ENDS in . ? ! ; or :
-completes the sentence and it is sent, that fragment included. So do a fragment
-ending in two dashes, and a closing bracket when the sentence began with an
-opening one. An ellipsis (...) does not end a sentence. The punctuation has to
-be the fragment's last character - 'changing. ' with a space after does not
-count.
+completes the sentence and it is sent, that fragment included. So does a
+fragment ending in two dashes, or in two line breaks, and one ending in a
+closing bracket when the sentence began with an opening one. An ellipsis (...)
+does not end a sentence. The punctuation has to be the fragment's last
+character - 'changing. ' with a space after does not count.
 
 'force string end' sends whatever has been collected, whenever the patch
-decides. A fragment that is exactly '<backspace>' removes the last fragment
-collected.
+decides - an empty string if nothing has been. A fragment that is exactly
+'<backspace>' removes the last fragment collected (or does nothing when nothing
+has been).
 
+SPACES:
 Fragments are joined exactly as they arrive - no space is added between them.
 Recognition output usually carries its own spaces; if yours does not, tick
 'enforce spaces', which puts a space between fragments that meet without one -
 but not before a full stop, comma or other closing punctuation, nor after an
-opening bracket.
+opening bracket. A '<backspace>' removes the fragment together with the space
+added in front of it.
 
+LINE BREAKS:
 'end on return' ends the sentence at a line break: what came before it is sent,
 and what follows starts the next sentence. Line breaks never appear in what is
 sent.
 
+LEAVING THINGS OUT:
 'skip framed by' takes a single character and removes everything between a
 pair of it - so with '*', 'it is *laughs* cold.' is sent as 'it is  cold.'.
 Stage directions or annotations in the stream do not end up in the sentence.
 
-string_builder WAITS TO BE ASKED:
-Every message to 'string in' is added on, with a space between pieces when
-neither side already has one. Anything at 'issue text' (a bang, a click) sends
-the collected text and starts again; the word 'clear' there empties it without
-sending.
-
-fifo_string IS THE ONE FOR A ROLLING CONTEXT:
-It keeps the most recent phrases - as many as its argument says, 4 by default -
-and pushes the oldest out as new ones arrive. A message to 'in' is split at its
-full stops into separate phrases (not after Mr, Mrs, Dr or St), each given a
-full stop of its own. A message longer than 'length_threshold' characters is
-split at commas, colons, semicolons, question and exclamation marks as well.
-
-Each phrase carries a weight that starts at one and falls by 'decay_rate' per
-second, reaching zero after 100 seconds at the default 0.01. 'weighted out'
-sends every phrase with its weight; 'string out' sends the phrases whose weight
-is still above zero, as text. That is what you want when feeding something that
-should be influenced more by what was just said than by what was said a minute
-ago - an image prompt, a mood, a running state.
-
-The weights are only brought up to date when something arrives, so the window
-does not change while nothing is being said.
-
-'progress' is for the partial text recognition sends while a phrase is still
-being spoken: it shows in the newest place, and is replaced there when the
-finished phrase arrives at 'in'.
-
 SYNTAX:
 gather_sentence
-string_builder
-fifo_string <count: int>
-
-EXAMPLE:
-fifo_string 6
 
 INPUTS and PARAMETERS:
 
-string in (gather_sentence, string_builder) / in (fifo_string):
+string in:
 The fragments.
 
-force string end (gather_sentence):
+force string end:
 Send what has been collected now.
 
-auto sentence end / skip framed by (gather_sentence):
-Whether ending punctuation completes a sentence, and a character whose pairs
-frame text to leave out.
-
-issue text (string_builder):
-Send what has been collected, or 'clear' to empty it.
-
-progress (fifo_string):
-Text still being spoken, held in the newest place.
-
-clear / dump_oldest (fifo_string):
-Empty the window, or drop the oldest phrase.
-
-order (fifo_string):
-newest_at_end (the default) or newest_at_start.
-
-decay_rate / length_threshold (fifo_string):
-How fast the weights fall, per second, and how long a message must be before it
-is split at every kind of punctuation.
+enforce spaces / auto sentence end / end on return / skip framed by:
+As above.
 
 OUTPUTS:
 
-sentences out (gather_sentence) / text out (string_builder):
-The assembled text.
-
-weighted out (fifo_string):
-The phrases as phrase-and-weight pairs.
-
-string out (fifo_string):
-The phrases still above zero weight, as plain text.
+sentences out:
+The assembled sentence.
 
 RELATED:
-text_change reports only the words in a stream that are new.
-prompt_composer turns fifo_string's weighted phrases into an image prompt.
-word_trigger reacts to particular words as they arrive."""
+string_builder collects until it is asked, rather than until a sentence ends.
+fifo_string keeps a rolling window of recent sentences.
+text_change reports only the words in a stream that are new."""
 
 demo = [
     {'key': 'f1', 'init': 'string', 'pos': (30, 62), 'w': 260, 'h': 42,
@@ -389,29 +632,159 @@ demo = [
      'pos': (420, 180)},
     {'key': 's1', 'init': 'string', 'pos': (30, 370), 'w': 360, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'btn', 'init': 'button', 'pos': (30, 440), 'w': 88, 'h': 46},
-    {'key': 'c2', 'comment': True, 'text': 'string_builder collects the same\nfragments until this is clicked',
-     'pos': (420, 440)},
-    {'key': 'sb', 'init': 'string_builder', 'pos': (30, 505), 'w': 220, 'h': 100},
-    {'key': 's2', 'init': 'string', 'pos': (30, 630), 'w': 360, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'fs', 'init': 'fifo_string', 'pos': (30, 700), 'w': 280, 'h': 180},
-    {'key': 'c3', 'comment': True, 'text': 'each finished sentence joins a rolling\nwindow of four; the oldest falls out',
-     'pos': (420, 700)},
-    {'key': 's3', 'init': 'string', 'pos': (30, 910), 'w': 360, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
 ]
 links = [('f1', 'string out', 'gs', 'string in'),
          ('f2', 'string out', 'gs', 'string in'),
-         ('gs', 'sentences out', 's1', ''),
-         ('f1', 'string out', 'sb', 'string in'),
+         ('gs', 'sentences out', 's1', '')]
+print(build('gather_sentence', 'gather_sentence - collect text until a sentence ends', body,
+            demo, links, demo_width=800, text_width=800, text_height=780))
+
+# ---------------------------------------------------------------- string_builder
+body = """The string_builder node collects text until you ask for it.
+
+Every message to 'string in' is added on, with a space between pieces when
+neither side already has one. Anything arriving at 'issue text' - a bang, a
+click on its button - sends the collected text and starts again.
+
+Where gather_sentence decides for itself when a sentence is finished,
+string_builder leaves that to the patch: a button, a pause detector, the end
+of a recognition turn.
+
+SYNTAX:
+string_builder
+
+INPUTS and PARAMETERS:
+
+issue text:
+Send what has been collected, and start again. The word 'clear' here empties
+it without sending.
+
+string in:
+The text to add.
+
+OUTPUTS:
+
+text out:
+The collected text. Asking with nothing collected sends an empty string.
+
+RELATED:
+gather_sentence collects until a sentence ends.
+combine joins several inlets into one string at once."""
+
+demo = [
+    {'key': 'f1', 'init': 'string', 'pos': (30, 62), 'w': 260, 'h': 42,
+     'props': {'text in': 'the light', 'font size': '24', 'width': 200}},
+    {'key': 'f2', 'init': 'string', 'pos': (30, 115), 'w': 260, 'h': 42,
+     'props': {'text in': 'is changing', 'font size': '24', 'width': 200}},
+    {'key': 'c0', 'comment': True, 'text': 'click these, in any order and as\noften as you like',
+     'pos': (330, 62)},
+    {'key': 'btn', 'init': 'button', 'pos': (30, 180), 'w': 88, 'h': 46},
+    {'key': 'c1', 'comment': True, 'text': 'then click this to send it all',
+     'pos': (330, 180)},
+    {'key': 'sb', 'init': 'string_builder', 'pos': (30, 245), 'w': 220, 'h': 100},
+    {'key': 's2', 'init': 'string', 'pos': (30, 370), 'w': 360, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'the pieces, with spaces between',
+     'pos': (30, 420)},
+]
+links = [('f1', 'string out', 'sb', 'string in'),
          ('f2', 'string out', 'sb', 'string in'),
          ('btn', '', 'sb', 'issue text'),
-         ('sb', 'text out', 's2', ''),
-         ('gs', 'sentences out', 'fs', 'in'),
-         ('fs', 'string out', 's3', '')]
-print(build('gather_sentence', 'gather_sentence - assembling text over time', body,
-            demo, links, demo_width=800, text_width=800, text_height=780))
+         ('sb', 'text out', 's2', '')]
+print(build('string_builder', 'string_builder - collect text until asked', body,
+            demo, links, demo_width=640, text_width=760, text_height=560))
+
+# ------------------------------------------------------------------- fifo_string
+body = """The fifo_string node keeps a rolling window of the most recent phrases,
+older ones fading.
+
+It holds as many phrases as its argument says, 4 by default, and pushes the
+oldest out as new ones arrive. That is what you want when feeding something
+that should be influenced more by what was just said than by what was said a
+minute ago - an image prompt, a mood, a running state.
+
+HOW A MESSAGE BECOMES PHRASES:
+A message to 'in' is split at its full stops into separate phrases (but not
+after Mr, Mrs, Dr or St), each ending in a full stop of its own. A message
+longer than 'length_threshold' characters is split at commas, colons,
+semicolons, question and exclamation marks as well, and each piece again gets a
+full stop.
+
+WEIGHTS:
+Each phrase carries a weight that starts at one and falls by 'decay_rate' per
+second, reaching zero after 100 seconds at the default 0.01. 'weighted out'
+sends every phrase with its weight; 'string out' sends the phrases whose weight
+is still above zero, as text.
+
+The weights are only brought up to date when something arrives, so the window
+does not change while nothing is being said.
+
+TEXT STILL BEING SPOKEN:
+'progress' is for the partial text recognition sends while a phrase is still
+being spoken: it shows in the newest place, and is replaced there when the
+finished phrase arrives at 'in'.
+
+SYNTAX:
+fifo_string <count: int>
+
+EXAMPLE:
+fifo_string 6
+
+INPUTS and PARAMETERS:
+
+in:
+Finished phrases.
+
+progress:
+Text still being spoken, held in the newest place.
+
+clear:
+Anything arriving here empties the window, and an empty window is sent.
+
+dump_oldest:
+Anything arriving here drops the oldest phrase and sends the window.
+
+order:
+newest_at_end (the default) or newest_at_start.
+
+decay_rate / length_threshold:
+How fast the weights fall, per second, and how long a message must be before it
+is split at every kind of punctuation.
+
+OUTPUTS:
+
+weighted out:
+A list of phrase-and-weight pairs.
+
+string out:
+The phrases still above zero weight, as plain text, each followed by a space.
+
+RELATED:
+prompt_composer turns fifo_string's weighted phrases into an image prompt.
+gather_sentence assembles fragments into sentences to feed this node."""
+
+demo = [
+    {'key': 'p1', 'init': 'string', 'pos': (30, 62), 'w': 320, 'h': 42,
+     'props': {'text in': 'The tide is out.', 'font size': '24'}},
+    {'key': 'p2', 'init': 'string', 'pos': (30, 115), 'w': 320, 'h': 42,
+     'props': {'text in': 'Gulls circle the pier.', 'font size': '24'}},
+    {'key': 'p3', 'init': 'string', 'pos': (30, 168), 'w': 520, 'h': 42,
+     'props': {'text in': 'Rain is coming. Mr. Hale closes the shutters.', 'font size': '24'}},
+    {'key': 'c0', 'comment': True, 'text': 'click these in turn - the last holds two\nsentences, so the oldest falls out of three',
+     'pos': (30, 220)},
+    {'key': 'fs', 'init': 'fifo_string 3', 'pos': (30, 275), 'w': 280, 'h': 180},
+    {'key': 's3', 'init': 'string', 'pos': (30, 480), 'w': 560, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'the window, as text', 'pos': (30, 530)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 570), 'w': 560, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'each phrase with its weight', 'pos': (30, 620)},
+]
+links = [('p1', 'string out', 'fs', 'in'), ('p2', 'string out', 'fs', 'in'),
+         ('p3', 'string out', 'fs', 'in'),
+         ('fs', 'string out', 's3', ''), ('fs', 'weighted out', 'l1', '')]
+print(build('fifo_string', 'fifo_string - a rolling window of recent phrases', body,
+            demo, links, demo_width=620, text_width=800, text_height=760))
 
 # ------------------------------------------------------------------ text_change
 body = """text_change reports only the words in a stream of text that are NEW.

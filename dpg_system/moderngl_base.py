@@ -126,6 +126,14 @@ def _char_code_with_shift(char, shift):
 if _HAS_PYGLET:
     from pyglet.window import key as _pkey, mouse as _pmouse
 
+    def _pyglet_mods_to_glfw(modifiers):
+        """Mouse-event modifiers as GLFW's bits: 1 shift, 2 ctrl, 4 alt,
+        8 super (command on a Mac)."""
+        return ((1 if modifiers & _pkey.MOD_SHIFT else 0)
+                | (2 if modifiers & _pkey.MOD_CTRL else 0)
+                | (4 if modifiers & _pkey.MOD_ALT else 0)
+                | (8 if modifiers & (_pkey.MOD_COMMAND | _pkey.MOD_WINDOWS) else 0))
+
     # pyglet key symbols → GLFW key codes for the common non-printing keys
     _PYGLET_TO_GLFW_KEY = {
         _pkey.ESCAPE: 256, _pkey.ENTER: 257, _pkey.TAB: 258,
@@ -312,10 +320,10 @@ class MGLNativeWindow:
             u = v = -1.0
         if action == 1:
             self._buttons_down.add(button)
-            self._push_ui_event(['mouse_down', x, y, button, u, v])
+            self._push_ui_event(['mouse_down', x, y, button, u, v, mods & 0xF])
         else:
             self._buttons_down.discard(button)
-            self._push_ui_event(['mouse_up', x, y, button, u, v])
+            self._push_ui_event(['mouse_up', x, y, button, u, v, mods & 0xF])
 
     def _on_glfw_cursor(self, win, x, y):
         x, y = int(x), int(y)
@@ -677,12 +685,14 @@ class MGLDisplayWindow:
         self._focused = True  # clicking the window fronts it
         x, y = self._mouse_xy(x, y)
         self._push_ui_event(['mouse_down', x, y,
-                             _PYGLET_TO_GLFW_BUTTON.get(button, 0), *self._mouse_uv(x, y)])
+                             _PYGLET_TO_GLFW_BUTTON.get(button, 0), *self._mouse_uv(x, y),
+                             _pyglet_mods_to_glfw(modifiers)])
 
     def _on_mouse_release(self, x, y, button, modifiers):
         x, y = self._mouse_xy(x, y)
         self._push_ui_event(['mouse_up', x, y,
-                             _PYGLET_TO_GLFW_BUTTON.get(button, 0), *self._mouse_uv(x, y)])
+                             _PYGLET_TO_GLFW_BUTTON.get(button, 0), *self._mouse_uv(x, y),
+                             _pyglet_mods_to_glfw(modifiers)])
 
     def _on_mouse_motion(self, x, y, dx, dy):
         if not self._focused:

@@ -98,7 +98,6 @@ class TorchDistributionNode(TorchNode):
         self.input = self.add_input('trigger', triggers_execution=True)
         self.probability = self.add_input('probability', widget_type='drag_float', min=0.0, max=1.0, default_value=0.5, callback=self.prob_changed)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.distributions_help'
 
     def prob_changed(self):
         self.distribution = torch.distributions.bernoulli.Bernoulli(probs=self.probability())
@@ -123,7 +122,6 @@ class TorchDistributionTensorNode(TorchNode):
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.distributions_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -184,16 +182,21 @@ class TorchDistributionTensorOneParamNode(TorchNode):
             kwargs['max'] = param_max
         self.param_1 = self.add_input(param_1_name, **kwargs)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.distributions_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             out_tensor = input_tensor.clone()
-            if self.label == 't.exponential':
-                out_tensor.exponential_(self.param_1())
-            elif self.label == 't.geometric':
-                out_tensor.geometric_(self.param_1())
+            # get_data: the widget's value, clamped to its limits (a raw 0 sent
+            # to the inlet would otherwise reach torch once)
+            try:
+                if self.label == 't.exponential':
+                    out_tensor.exponential_(self.param_1.get_data())
+                elif self.label == 't.geometric':
+                    out_tensor.geometric_(self.param_1.get_data())
+            except Exception as e:
+                print(f'{self.label}: {type(e).__name__}: {e}')
+                return
             self.output.send(out_tensor)
 
 
@@ -223,20 +226,23 @@ class TorchDistributionTensorTwoParamNode(TorchNode):
         self.param_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=param_1)
         self.param_2 = self.add_input(param_2_name, widget_type='drag_float', default_value=param_2)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.distributions_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             out_tensor = input_tensor.clone()
-            if self.label == 't.cauchy':
-                out_tensor.cauchy_(self.param_1(), self.param_2())
-            elif self.label == 't.log_normal':
-                out_tensor.log_normal_(self.param_1(), self.param_2())
-            elif self.label == 't.normal':
-                out_tensor.normal_(self.param_1(), self.param_2())
-            elif self.label == 't.uniform':
-                out_tensor.uniform_(self.param_1(), self.param_2())
+            try:
+                if self.label == 't.cauchy':
+                    out_tensor.cauchy_(self.param_1(), self.param_2())
+                elif self.label == 't.log_normal':
+                    out_tensor.log_normal_(self.param_1(), self.param_2())
+                elif self.label == 't.normal':
+                    out_tensor.normal_(self.param_1(), self.param_2())
+                elif self.label == 't.uniform':
+                    out_tensor.uniform_(self.param_1(), self.param_2())
+            except Exception as e:
+                print(f'{self.label}: {type(e).__name__}: {e}')
+                return
             self.output.send(out_tensor)
 
 
@@ -250,15 +256,37 @@ class TorchCDistanceNode(TorchNode):
         super().__init__(label, data, args)
 
         self.input = self.add_input('input', triggers_execution=True)
+        self.input2 = self.add_input('points 2')
         self.output = self.add_output('output')
+        self.points_2 = None
 
     def execute(self):
+        # rows are points. With nothing in 'points 2' the answer is every row's
+        # distance to every other row; with points there, from each input row to
+        # each of those. A single vector still gives its length, as it always did
+        # (this node used to do only that, and raised on more than one row).
+        if self.input2.fresh_input:
+            data = self.input2()
+            # 'clear' (or an empty list) lets go of the held points
+            if isinstance(data, str) or (isinstance(data, (list, tuple))
+                                         and (len(data) == 0 or isinstance(data[0], str))):
+                self.points_2 = None
+            else:
+                self.points_2 = self.data_to_tensor(data)
         input_tensor = self.input_to_tensor()
-        if input_tensor is not None:
-            input_tensor = input_tensor.unsqueeze(dim=0)
-            euclidean_length = torch.cdist(input_tensor, torch.zeros_like(input_tensor))
-
-            self.output.send(euclidean_length.item())
+        if input_tensor is None:
+            return
+        try:
+            if input_tensor.ndim < 2 and self.points_2 is None:
+                self.output.send(torch.linalg.vector_norm(input_tensor.float()).item())
+                return
+            a = input_tensor.float()
+            a = a.reshape(1, -1) if a.ndim < 2 else a
+            b = a if self.points_2 is None else self.points_2.to(a.device).float()
+            b = b.reshape(1, -1) if b.ndim < 2 else b
+            self.output.send(torch.cdist(a, b))
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e}')
 
 
 class TorchDistanceNode(TorchNode):
@@ -457,15 +485,30 @@ class TorchLCMGCDNode(TorchNode):
 
         self.output = self.add_output(output_name + ' tensor out')
 
+    @staticmethod
+    def to_whole(tensor_):
+        # gcd / lcm are integer-only: round float values to the nearest whole
+        # number (so 12.0, or a list arriving as a float tensor, just works)
+        if tensor_.is_floating_point():
+            tensor_ = torch.round(tensor_).to(torch.int64)
+        elif tensor_.dtype == torch.bool:
+            tensor_ = tensor_.to(torch.int64)
+        return tensor_
+
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             data = self.input_2()
             if data is not None:
-                input_tensor_2 = any_to_tensor(data, dtype=torch.int64)
+                input_tensor_2 = any_to_tensor(data, device=input_tensor.device)
                 if input_tensor_2 is not None:
-                    output_tensor = self.op(input_tensor, input_tensor_2)
-                    self.output.send(output_tensor)
+                    try:
+                        output_tensor = self.op(self.to_whole(input_tensor), self.to_whole(input_tensor_2))
+                        self.output.send(output_tensor)
+                    except Exception as e:
+                        traceback.print_exc()
+                        if self.app.verbose:
+                            print(self.label, e)
 
 
 # class TorchCropNode(Node):
@@ -521,7 +564,6 @@ class TorchMeanMedianNode(TorchWithDimNode):
         self.output = self.add_output('output')
         if self.label in ['t.median', 't.nanmedian'] and self.dim_specified:
             self.index_out = self.add_output("index output")
-        self.help_file_name = 't.mean_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -565,7 +607,8 @@ class TorchCumSumNode(TorchWithDimNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+            ndim = max(input_tensor.ndim, 1)
+            if -ndim <= self.dim < ndim:
                 if self.label in ['t.cummax', 't.cummin']:
                     output_tensor, indices_tensor = self.op(input_tensor, self.dim)
                     self.index_output.send(indices_tensor)
@@ -764,15 +807,16 @@ class CosineSimilarityNode(TorchNode):
     def execute(self):
         vector_1 = self.input_to_tensor()
         if vector_1 is not None:
+            # input 2 is held: it used to be needed fresh before every input 1
             if self.input2.fresh_input:
                 self.vector_2 = self.data_to_tensor(self.input2(), match_tensor=vector_1)
-                if self.vector_2 is not None:
-                    try:
-                        similarity = self.cos(vector_1, self.vector_2)
-                        self.output.send(similarity.item())
-                    except Exception as e:
-                        print(f'{self.label}: {type(e).__name__}: {e}')
-                        traceback.print_exc()
+            if self.vector_2 is not None:
+                try:
+                    similarity = self.cos(vector_1, self.vector_2)
+                    self.output.send(similarity.item() if similarity.numel() == 1 else similarity)
+                except Exception as e:
+                    print(f'{self.label}: {type(e).__name__}: {e}')
+                    traceback.print_exc()
 
 
 class TorchNormalizeNode(TorchNode):
@@ -784,7 +828,7 @@ class TorchNormalizeNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=1)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
         self.normalized_output = self.add_output('normalized tensor out')
 
     def execute(self):
@@ -831,9 +875,17 @@ class TorchLinalgSVDNode(TorchNode):
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.full = True
         self.full_property = self.add_property('full', widget_type='checkbox', default_value=self.full, callback=self.full_changed)
-        self.s_output = self.add_output('S tensor out')
-        self.v_output = self.add_output('V tensor out')
-        self.d_output = self.add_output('D tensor out')
+        # the outlets always carried U, S and Vh in this order, but were
+        # labelled S, V and D. The new names must not reuse the old ones: links
+        # are matched by name first, and 'S tensor out' would move a saved link
+        # from outlet 0 (U) to outlet 1. The archive keeps old patches wired to
+        # the same data.
+        self.u_output = self.add_output('U out')
+        self.u_output.name_archive.append('S tensor out')
+        self.s_output = self.add_output('S out')
+        self.s_output.name_archive.append('V tensor out')
+        self.vh_output = self.add_output('Vh out')
+        self.vh_output.name_archive.append('D tensor out')
 
     def full_changed(self):
         self.full = self.full_property()
@@ -841,10 +893,10 @@ class TorchLinalgSVDNode(TorchNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            s, v, d = torch.linalg.svd(input_tensor, self.full)
-            self.d_output.send(d)
-            self.v_output.send(v)
+            u, s, vh = torch.linalg.svd(input_tensor, full_matrices=self.full)
+            self.vh_output.send(vh)
             self.s_output.send(s)
+            self.u_output.send(u)
 
 
 class TorchPCALowRankNode(TorchNode):
@@ -856,10 +908,10 @@ class TorchPCALowRankNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
-        center = False
+        center = True
         self.center = self.add_property('center', widget_type='checkbox', default_value=center)
         niter = 2
-        self.niter = self.add_property('full', widget_type='input_int', default_value=niter)
+        self.niter = self.add_property('iterations', widget_type='input_int', default_value=niter, min=0)
         self.u_output = self.add_output('U tensor out')
         self.s_output = self.add_output('S tensor out')
         self.v_output = self.add_output('V tensor out')

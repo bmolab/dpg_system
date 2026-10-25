@@ -205,11 +205,17 @@ class NodeOutput:
         self.new_output = False
         self.output_type = None
         self.name_archive = []
+        # a node that writes readouts into its outlet labels (t.info) sets
+        # this to the outlet's real name, so saved links use it and reconnect
+        self.save_name = None
         self.sent_type = None
         self.sent_bang = False
 
     def get_label(self) -> str:
         return self._label
+
+    def get_save_label(self) -> str:
+        return self.save_name if self.save_name is not None else self._label
 
     def set_label(self, name: str) -> None:
         self._label = name
@@ -684,6 +690,9 @@ class NodeProperty:
             else:
                 if self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor', 'text_display']:
                     data = any_to_string(data)
+                elif self.widget.widget == 'color_picker':
+                    # a colour is the whole list, not its first (red) value
+                    pass
                 else:
                     data = data[0]
         self.widget.set(data, propagate)
@@ -1405,11 +1414,13 @@ class SliderInt(IntWidget):
 
 class InputInt(IntWidget):
     def _draw_widget(self):
-        if self.min is None: self.min = 0
-        if self.max is None: self.max = 2 ** 31 - 1
+        # The dpg limits here are not clamped, so typing below them works; keep
+        # self.min/max None unless given, or set()/load() would clamp to them
+        # (a saved -1 reopening as 0).
+        mn, mx = self._get_limits(-2 ** 31, 2 ** 31 - 1)
         dpg.add_input_int(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                           user_data=self.node, default_value=self.default_value,
-                          step=self.step, min_value=self.min, max_value=self.max)
+                          step=self.step, min_value=mn, max_value=mx)
 
     def set_format(self, format: str) -> None:
         pass
@@ -1498,17 +1509,19 @@ class TextEditor(StringWidget):
         self._font = 0
         self._raw = ''      # unwrapped value
         self._shown = ''    # exactly what we last pushed into the widget
+        self._inserted = set()  # indices in _shown of the newlines _wrap added
 
     def _draw_widget(self):
         dpg.add_input_text(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid, user_data=self.node,
                            default_value=self.default_value, on_enter=False, multiline=True)
         self._raw = self.default_value
         self._shown = self.default_value
+        self._inserted = set()
 
     def _convert_and_set(self, data):
         super()._convert_and_set(data, strip=False)
         self._raw = self.value
-        self._shown = self._wrap(self.value)
+        self._shown, self._inserted = self._wrap_marked(self.value)
         if self._shown != self.value and dpg.does_item_exist(self.uuid):
             dpg.set_value(self.uuid, self._shown)
 
@@ -1518,10 +1531,30 @@ class TextEditor(StringWidget):
         shown = dpg.get_value(self.uuid)
         if shown == self._shown:
             self.value = self._raw
-        else:
-            self.value = shown
-            self._raw = shown
-            self._shown = shown
+            return
+        # Something was typed. The display still holds the line breaks _wrap
+        # inserted; they must not become part of the text, or every edit bakes
+        # the current wrap into the patch (and a wider box then shows ragged
+        # lines). Line the new display up with the old one: unchanged stretches
+        # carry their inserted-break marks across and those breaks are dropped;
+        # whatever the user typed (newlines included) is kept as typed.
+        import difflib
+        raw = []
+        inserted = set()
+        ops = difflib.SequenceMatcher(None, self._shown, shown, autojunk=False).get_opcodes()
+        for tag, i1, i2, j1, j2 in ops:
+            if tag == 'equal':
+                for k in range(i2 - i1):
+                    if (i1 + k) in self._inserted:
+                        inserted.add(j1 + k)
+                    else:
+                        raw.append(shown[j1 + k])
+            elif tag in ('replace', 'insert'):
+                raw.append(shown[j1:j2])
+        self._raw = ''.join(raw)
+        self.value = self._raw
+        self._shown = shown
+        self._inserted = inserted
 
     def _glyph_width(self):
         """On-screen advance of one character, in item-width units.
@@ -1564,33 +1597,59 @@ class TextEditor(StringWidget):
         return max(8, int((width - 24) / glyph))  # frame padding + scrollbar
 
     def _wrap(self, text):
+        return self._wrap_marked(text)[0]
+
+    def _wrap_marked(self, text):
+        """The text as displayed, and the indices of the newlines added to it."""
         cols = self._wrap_columns()
         if not cols or not text:
-            return text
+            return text, set()
         out = []
-        for para in text.split('\n'):
-            if len(para) <= cols:
-                out.append(para)
-            else:
-                out.extend(textwrap.wrap(para, cols, break_long_words=True,
-                                         break_on_hyphens=False,
-                                         replace_whitespace=False,
-                                         drop_whitespace=False) or [''])
-        return '\n'.join(out)
+        inserted = set()
+        pos = 0
+        for n, para in enumerate(text.split('\n')):
+            if n:
+                out.append('\n')       # a real newline of the text
+                pos += 1
+            pieces = [para]
+            if len(para) > cols:
+                pieces = textwrap.wrap(para, cols, break_long_words=True,
+                                       break_on_hyphens=False, expand_tabs=False,
+                                       replace_whitespace=False,
+                                       drop_whitespace=False) or ['']
+                if ''.join(pieces) != para:     # never lose characters
+                    pieces = [para]
+                # break after a space, not before it: a line that starts with
+                # the space reads as indented
+                for k in range(1, len(pieces)):
+                    lead = len(pieces[k]) - len(pieces[k].lstrip(' '))
+                    if lead and len(pieces[k]) > lead:
+                        pieces[k - 1] += pieces[k][:lead]
+                        pieces[k] = pieces[k][lead:]
+            for k, piece in enumerate(pieces):
+                if k:
+                    out.append('\n')
+                    inserted.add(pos)
+                    pos += 1
+                out.append(piece)
+                pos += len(piece)
+        return ''.join(out), inserted
 
     def rewrap(self):
         """Re-flow the displayed text. Call after a width or font change."""
         if not dpg.does_item_exist(self.uuid):
             return
-        shown = self._wrap(self._raw)
+        shown, inserted = self._wrap_marked(self._raw)
         if shown != self._shown:
             self._shown = shown
+            self._inserted = inserted
             dpg.set_value(self.uuid, shown)
 
     def set_wrap_enabled(self, enabled):
         self.wrap_enabled = enabled
         if not enabled and dpg.does_item_exist(self.uuid):
             self._shown = self._raw
+            self._inserted = set()
             dpg.set_value(self.uuid, self._raw)
         else:
             self.rewrap()
@@ -2655,7 +2714,7 @@ class NodeInput:
             else:
                 if self.widget is not None and self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor', 'text_display']:
                     data = any_to_string(data)
-                elif self.widget is not None and self.widget.widget == 'drag_float_n':
+                elif self.widget is not None and self.widget.widget in ('drag_float_n', 'color_picker'):
                     pass
                 else:
                     data = data[0]
@@ -2997,6 +3056,8 @@ class Node:
         self.edit_visibility = 'show_all'
         self.edit_draggable = True
         self.do_not_delete = False
+        # drawn in the highlight theme: a help page's featured node
+        self.highlighted = False
         self.active_input = None
         self.in_loading_process = False
         self.show_options_check = None
@@ -3078,10 +3139,16 @@ class Node:
         self.draggable = can_drag
         dpg.configure_item(self.uuid, draggable=self.draggable)
 
+    def set_highlight(self, on: bool) -> None:
+        self.highlighted = on
+        self.set_visibility(self.visibility)
+
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         self.visibility = visibility_state
         if visibility_state == 'show_all':
-            if self.do_not_delete:
+            if self.highlighted:
+                dpg.bind_item_theme(self.uuid, theme=self.app.highlight_theme)
+            elif self.do_not_delete:
                 dpg.bind_item_theme(self.uuid, theme=self.app.do_not_delete_theme)
             elif not self.draggable:
                 dpg.bind_item_theme(self.uuid, theme=self.app.locked_position_theme)
@@ -3108,7 +3175,7 @@ class Node:
 
         self.set_custom_visibility()
         if visibility_state == 'show_all' and self._title_bar_hidden():
-            dpg.bind_item_theme(self.uuid, Node.chromeless_theme())
+            self.bind_chromeless_theme()
             dpg.configure_item(self.uuid, label='')
 
     def create_button_themes(self):
@@ -3193,6 +3260,33 @@ class Node:
                     dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
         return Node._chromeless_theme
 
+    _highlighted_chromeless_themes = {}
+
+    @classmethod
+    def highlighted_chromeless_theme(cls, frameless=False):
+        """The chromeless theme with the highlight's background and outline,
+        so a highlighted comment or button still shows it. frameless also
+        clears the frame background, as text_block's own theme does."""
+        if frameless not in Node._highlighted_chromeless_themes:
+            with dpg.theme() as theme:
+                with dpg.theme_component(dpg.mvAll):
+                    Node.app.highlight_colors()
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    if frameless:
+                        dpg.add_theme_color(dpg.mvThemeCol_FrameBg, [0, 0, 0, 0], category=dpg.mvThemeCat_Core)
+            Node._highlighted_chromeless_themes[frameless] = theme
+        return Node._highlighted_chromeless_themes[frameless]
+
+    def bind_chromeless_theme(self, theme=None, frameless=False):
+        """Bind a node's transparent-chrome theme (the shared one unless theme
+        is given), or its highlighted version when the node is highlighted."""
+        if self.highlighted:
+            theme = Node.highlighted_chromeless_theme(frameless)
+        elif theme is None:
+            theme = Node.chromeless_theme()
+        dpg.bind_item_theme(self.uuid, theme)
+
     def _add_hide_title_bar_option(self, default_value=False):
         self.hide_title_bar = self.add_option(
             'hide_title_bar', widget_type='checkbox',
@@ -3206,7 +3300,7 @@ class Node:
 
     def _apply_title_bar_visibility(self):
         if self._title_bar_hidden():
-            dpg.bind_item_theme(self.uuid, Node.chromeless_theme())
+            self.bind_chromeless_theme()
             dpg.configure_item(self.uuid, label='')
         else:
             # Re-run visibility to restore the right base theme (global / locked / do_not_delete).
@@ -3907,6 +4001,8 @@ class Node:
             node_container['draggable'] = self.edit_draggable if presenting else self.draggable
             if self.do_not_delete:
                 node_container['protected'] = True
+            if self.highlighted:
+                node_container['highlight'] = True
             node_container['presentation_state'] = self.presentation_state
 
             self.store_properties(node_container)
@@ -3940,6 +4036,13 @@ class Node:
                     dpg.set_item_pos(self.uuid, pos)
                 if 'protected' in node_container:
                     self.do_not_delete = True
+                # set before the visibility, which binds the theme; undo
+                # reloads in place, so a missing key turns it off
+                highlighted = bool(node_container.get('highlight', False))
+                if highlighted != self.highlighted:
+                    self.highlighted = highlighted
+                    if 'visibility' not in node_container:
+                        self.set_visibility(self.visibility)
                 if 'visibility' in node_container:
                     self.set_visibility(node_container['visibility'])
                 if 'draggable' in node_container:
@@ -4076,7 +4179,9 @@ class Node:
                 handled = False
                 if '=' in arg and arg != '=':
                     arg_parts = arg.split('=')
-                    if len(arg_parts) == 2:
+                    # both sides must be there: '>=', '<=' and '!=' are words in
+                    # a comment, not name=value settings with an empty side
+                    if len(arg_parts) == 2 and arg_parts[0].strip() and arg_parts[1].strip():
                         if arg_parts[0][-1] == ' ':
                             arg_parts[0] = arg_parts[0][:-1]
                         if arg_parts[1][0] == ' ':
@@ -4187,6 +4292,9 @@ class PatcherOutputNode(Node):
             text_width = [80, 14]
         self.go_property = self.add_property('dest', widget_type='button', width=text_width[0] + 8, callback=self.jump_to_patcher)
         self.output_in = self.add_input(self.output_name, callback=self.send_to_patcher)
+        # pass a bang through as a bang: by default an inlet swaps a bang for
+        # its previous value, which here is None, so the bang never left
+        self.output_in.bang_repeats_previous = False
         self.patcher_node = self.app.get_current_editor().patcher_node
         self.target_output = None
         self.name_option = self.add_option('output name', widget_type='text_input', default_value=self.output_name, callback=self.name_changed)
@@ -4277,6 +4385,7 @@ class PatcherNode(Node):
         self.output_ins = [None] * self.max_output_count
         for i in range(self.max_input_count):
             in_temp = self.add_input('in ' + str(i), callback=self.receive_)
+            in_temp.bang_repeats_previous = False   # a bang goes in as a bang
             self.patcher_inputs[i] = in_temp
         for i in range(self.max_output_count):
             out_temp = self.add_output('out ' + str(i))
@@ -4432,6 +4541,14 @@ class PatcherNode(Node):
         if 'patcher id' in container:
             self.subpatcher_loaded_uuid = container['patcher id']
 
+        # undo reloads a live node in place: it already has its subpatch,
+        # which is not orphaned, so the search below would add an empty
+        # patcher tab and move this node's ins and outs over to it
+        if self.patch_editor is not None and self.patch_editor in self.app.node_editors:
+            self.update_inputs()
+            self.update_outputs()
+            return
+
         self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
         # note that patch_editor may not have been opened yet if opening from file
         if self.patch_editor is None:
@@ -4467,7 +4584,17 @@ class OriginNode(Node):
         # invisible_theme bound in custom_create so undo snapshots round-trip
         # correctly (snapshot stores 'hidden' → load() rebinds invisible_theme).
         self.visibility = 'hidden'
+        # Never draggable: home and saved positions are measured from the
+        # origin, and a box-select that catches it (it sits invisibly at the
+        # patch's top left) would otherwise carry it along with the nodes,
+        # moving home with them for good.
+        self.draggable = False
+        self.edit_draggable = False
         self.ref_property = self.add_property('', widget_type='button', width=1)
+
+    def set_draggable(self, can_drag: bool) -> None:
+        self.draggable = False
+        dpg.configure_item(self.uuid, draggable=False)
 
     def custom_create(self, from_file: bool) -> None:
         with dpg.theme() as item_theme:
@@ -4489,6 +4616,7 @@ class OriginNode(Node):
 
         dpg.bind_item_theme(self.ref_property.uuid, self.app.invisible_theme)
         dpg.bind_item_theme(self.uuid, self.app.invisible_theme)
+        dpg.configure_item(self.uuid, draggable=False)
 
 
 class PlaceholderNameNode(Node):

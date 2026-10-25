@@ -1,5 +1,18 @@
 from dpg_system.torch_base_nodes import *
 
+
+def shape_from_input(value):
+    """Dimensions from whatever reached a shape inlet: text such as '[8, 8]'
+    or '8 8', a number, or a list/tuple/tensor of numbers (a list used to
+    raise a TypeError in re.findall)."""
+    if isinstance(value, torch.Tensor):
+        value = value.tolist()
+    if isinstance(value, (int, float)):
+        value = [value]
+    if isinstance(value, (list, tuple)):
+        value = ' '.join(str(v) for v in value)
+    return [any_to_int(d) for d in re.findall(r'[-+]?\d+', str(value))]
+
 def register_torch_generator_nodes():
     Node.app.register_node('t.rand', TorchGeneratorNode.factory)
     Node.app.register_node('t.ones', TorchGeneratorNode.factory)
@@ -90,12 +103,7 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
 
     def shape_changed(self):
         """Updates internal shape variable from UI. Does NOT trigger execution."""
-        shape_text = self.shape_input()
-        shape_list = re.findall(r'[-+]?\d+', shape_text)
-        shape = []
-        for dim_text in shape_list:
-            shape.append(any_to_int(dim_text))
-        self.shape = shape
+        self.shape = shape_from_input(self.shape_input())
 
     def dtype_changed(self):
         """
@@ -148,8 +156,10 @@ class TorchGeneratorNode(TorchDeviceDtypeNode):
 
             elif self.dtype in ints:
                 # Ensure safe casting to int for logic, use kwargs for tensor creation
+                # max is included: randint's high is exclusive, so uint8 at
+                # 0..255 never produced 255
                 low_val = int(self.min)
-                high_val = int(self.max)
+                high_val = int(self.max) + 1
                 out_array = torch.randint(low=low_val, high=high_val, **kwargs)
 
             elif self.dtype == torch.bool:
@@ -196,7 +206,6 @@ class TorchDistributionNode(TorchNode):
         self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.add_shape_input()
         self.distribution = None
-        self.help_file_name = 't.dist.distributions_help'
 
     def add_shape_input(self):
         self.shape_input = self.add_input('shape', widget_type='text_input', default_value=str(self.shape),
@@ -204,22 +213,32 @@ class TorchDistributionNode(TorchNode):
 
     def add_param_1(self, name='loc', default_value=0.0, min=None, max=None):
         self.param_1_name = name
-        self.param_1 = self.add_input(name, widget_type='drag_float', default_value=default_value, callback=self.params_changed)
+        limits = {k: v for k, v in (('min', min), ('max', max)) if v is not None}
+        self.param_1 = self.add_input(name, widget_type='drag_float', default_value=default_value, callback=self.safe_params_changed, **limits)
 
     def add_param_2(self, name='scale', default_value=1.0, min=None, max=None):
         self.param_2_name = name
-        self.param_2 = self.add_input(name, widget_type='drag_float', default_value=default_value, callback=self.params_changed)
+        limits = {k: v for k, v in (('min', min), ('max', max)) if v is not None}
+        self.param_2 = self.add_input(name, widget_type='drag_float', default_value=default_value, callback=self.safe_params_changed, **limits)
 
     def shape_changed(self):
-        shape_text = self.shape_input()
-        shape_list = re.findall(r'[-+]?\d+', shape_text)
-        shape = []
-        for dim_text in shape_list:
-            shape.append(any_to_int(dim_text))
-        self.shape = shape
+        self.shape = shape_from_input(self.shape_input())
 
     def params_changed(self):
         pass
+
+    def safe_params_changed(self):
+        # torch validates distribution arguments (a scale of 0, a probability
+        # above 1...) by raising; keep the last good distribution instead
+        # a value arriving at an inlet is returned raw on its first read; the
+        # widget has already clamped it to its limits, so read that instead
+        for an_input in self.inputs:
+            if an_input is not self.input and an_input.widget is not None:
+                an_input.fresh_input = False
+        try:
+            self.params_changed()
+        except Exception as e:
+            print(f'{self.label}: {type(e).__name__}: {e} - keeping the previous parameters')
 
     def execute(self):
         if self.distribution is None:
@@ -417,8 +436,8 @@ class TorchDistributionParetoNode(TorchDistributionNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.scale = self.add_input('scale', widget_type='drag_float', default_value=1.0, min=0.000001, callback=self.params_changed)
-        self.alpha = self.add_input('alpha', widget_type='drag_float', default_value=1.0, min=0.000001, callback=self.params_changed)
+        self.scale = self.add_input('scale', widget_type='drag_float', default_value=1.0, min=0.000001, callback=self.safe_params_changed)
+        self.alpha = self.add_input('alpha', widget_type='drag_float', default_value=1.0, min=0.000001, callback=self.safe_params_changed)
         self.distribution = self.dist(scale=1.0, alpha=1.0)
 
         self.output = self.add_output('random tensor')
@@ -656,6 +675,8 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
     def execute(self):
         if self.input.fresh_input:
             data = self.input()
+            if data is not None and not isinstance(data, torch.Tensor):
+                data = any_to_tensor(data)   # a list or number has a shape too
             if isinstance(data, torch.Tensor):
                 shape = data.shape
                 size = tuple(shape)
@@ -663,8 +684,9 @@ class TorchGeneratorLikeNode(TorchDeviceDtypeNode):
                     if self.dtype in [torch.float, torch.float32, torch.double, torch.float16, torch.bfloat16, torch.complex32, torch.complex64, torch.complex128]:
                         range_ = self.max - self.min
                         out_array = torch.rand(size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad) * range_ + self.min
-                    elif self.dtype in [torch.int64, torch.uint8]:
-                        out_array = torch.randint(low=int(self.min), high=int(self.max), size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
+                    elif self.dtype in [torch.int64, torch.int32, torch.int16, torch.int8, torch.uint8]:
+                        # max included, as on t.rand
+                        out_array = torch.randint(low=int(self.min), high=int(self.max) + 1, size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
                     elif self.dtype == torch.bool:
                         # randint high is exclusive; high=2 gives 0s and 1s.
                         out_array = torch.randint(low=0, high=2, size=size, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
@@ -780,7 +802,9 @@ class TorchRangeNode(TorchDeviceDtypeNode):
         # without overshooting due to float accumulation.
         effective_stop = self.stop
         if self.label == 't.range' and self.step != 0:
-            effective_stop = self.stop + self.step / 2.0
+            # a hair past stop, enough to keep stop itself through float error;
+            # half a step let values up to half a step beyond stop through
+            effective_stop = self.stop + self.step * 1e-6
         out_array = self.op(self.start, effective_stop, self.step, dtype=self.dtype, device=self.device, requires_grad=self.requires_grad)
         self.output.send(out_array)
 
@@ -795,10 +819,14 @@ class TorchEyeNode(TorchDeviceDtypeNode):
         super().__init__(label, data, args)
 
         self.shape = []
-        if len(args) > 0:
-            self.n = any_to_int(args[0])
-        else:
-            self.n = 4
+        # n is the first number among the arguments: 't.eye bool' used to read
+        # 'bool' as n = 0
+        self.n = 4
+        for i in range(len(args)):
+            d, t = decode_arg(args, i)
+            if t in [int, float]:
+                self.n = any_to_int(d)
+                break
         self.input = self.add_input('###input', widget_type='button', widget_width=16, triggers_execution=True)
         self.n_input = self.add_input('n', widget_type='input_int', default_value=self.n, callback=self.n_changed)
 

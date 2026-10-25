@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Split an orientation into where a thing points and how far it is turned \nabout its own pointing axis.\n\nWHY YAW, PITCH AND ROLL FEEL WRONG IN THE HAND:\nA yaw/pitch/roll triple is a recipe: turn about the world's vertical, then \nabout a sideways axis, then about the forward axis, in that order. Unless the \nsensor happens to use exactly that order with roll last, its roll is measured \nabout an axis that does not move with the device, and once a hand-held sensor \nis tipped up, rolling it no longer reads as roll. Any one axis on its own \nmakes sense; two together do not.\n\nswing_twist measures differently. The TWIST is the rotation about one of the \ndevice's own axes - the one you name as 'twist axis', usually the axis along \nits length. Rolling the device changes the twist and nothing else, however \nthe device is held. The SWING is everything left over: the rotation that \ncarries that axis from where it starts to where it now points. Together they \nremake the original rotation exactly, swing applied after twist.\n\nWHAT COMES OUT:\n\ndirection     where the twist axis points now, as a unit vector\nazimuth       the bearing of that direction about the up axis - zero where \n              the twist axis points at rest, positive turning right, as a \n              compass reads\nelevation     how far above or below level it points, -90 to +90\ntwist         how far the device is turned about its own axis, positive \n              clockwise seen from behind\nswing / twist quaternion   the two halves, for composing further\n\nWHAT ZERO TWIST MEANS - 'twist reference':\nlevel          the top of the device is up: an aircraft's bank. This is what \n               a hand expects, and the default. It has no meaning pointing \n               straight up or down, where turning the device and turning \n               about its length are the same motion - so within about twelve \n               degrees of vertical it fades over into the other reference \n               rather than jumping\nshortest arc   twist beyond the shortest rotation that carries the axis to \n               where it points. Well defined everywhere except pointing \n               exactly backwards, but its zero rolls with direction: at \n               azimuth 90 and elevation 45, a device with its top up reads \n               45 degrees of twist. Useful when the device spends its time \n               near vertical\n\nSET NEUTRAL:\nHold the device the way you call 'straight' and press 'set neutral'. From then \non everything is measured from that pose: twist zero, azimuth zero, elevation \nzero, in the frame of the device as it was held then. This is usually what a \nhand-held device wants - a gesture starts from wherever the hand is, not from \nmagnetic north - and it also absorbs any fixed offset a sensor's quaternion \ncarries in relation to its own body. 'clear neutral' goes back to measuring \nfrom the world.\n\nIF THE SIGNS COME OUT WRONG:\nTurn right: azimuth should rise. Tip the front up: elevation should rise. \nRoll to the right: twist should rise. If elevation and twist BOTH run backwards \nwhile azimuth is right, the end you call the front is the sensor's negative \naxis - name '-x' (or '-y', '-z') as the twist axis.\n\nSYNTAX:\nswing_twist\nswing_twist <twist axis> <up axis>\n\nEXAMPLE:\nswing_twist x z\n\nINPUTS and PARAMETERS:\n\nquaternion:\nThe orientation, scalar first - as euler_to_quaternion and pipo_motion \nproduce it. A batch of quaternions works too.\n\ntwist axis:\nWhich of the device's own axes is its length, with sign: x, y, z, -x, -y, -z. \nCan be given as the first argument.\n\nup axis:\nWhich axis is up, for azimuth, elevation and level twist - the world's up, or \nthe device's up in its neutral pose once one is set. y is the default; \npipo_motion's world has z up. Can be given as the second argument.\n\nset neutral / clear neutral:\nCapture the pose being held as zero, or go back to the world frame.\n\ntwist reference:\nlevel or shortest arc, as above.\n\ndegrees:\nAngles in degrees rather than radians.\n\nOUTPUTS: \n\ndirection / azimuth / elevation / twist / swing quaternion / twist quaternion:\nAs above.\n\nRELATED:\nquaternion_relative in front of this node measures everything from a captured \nstarting pose rather than from the world, which is often what a gesture wants.",
+                    "value": "Split an orientation into where a thing points and how far it is turned  about its own pointing axis.\n\nWHY YAW, PITCH AND ROLL FEEL WRONG IN THE HAND:\nA yaw/pitch/roll triple is a recipe: turn about the world's vertical, then  about a sideways axis, then about the forward axis, in that order. Unless the  sensor happens to use exactly that order with roll last, its roll is measured  about an axis that does not move with the device, and once a hand-held sensor  is tipped up, rolling it no longer reads as roll. Any one axis on its own  makes sense; two together do not.\n\nswing_twist measures differently. The TWIST is the rotation about one of the  device's own axes - the one you name as 'twist axis', usually the axis along  its length. Rolling the device changes the twist and nothing else, however  the device is held. The SWING is everything left over: the rotation that  carries that axis from where it starts to where it now points. Together they  remake the original rotation exactly, swing applied after twist.\n\nWHAT COMES OUT:\n\ndirection     where the twist axis points now, as a unit vector\nazimuth       the bearing of that direction about the up axis - zero where \n              the twist axis points at rest, positive turning right, as a \n              compass reads\nelevation     how far above or below level it points, -90 to +90\ntwist         how far the device is turned about its own axis, positive \n              clockwise seen from behind\nswing / twist quaternion   the two halves, for composing further\n\nWHAT ZERO TWIST MEANS - 'twist reference':\nlevel          the top of the device is up: an aircraft's bank. This is what \n               a hand expects, and the default. It has no meaning pointing \n               straight up or down, where turning the device and turning \n               about its length are the same motion - so within about twelve \n               degrees of vertical it fades over into the other reference \n               rather than jumping\nshortest arc   twist beyond the shortest rotation that carries the axis to \n               where it points. Well defined everywhere except pointing \n               exactly backwards, but its zero rolls with direction: at \n               azimuth 90 and elevation 45, a device with its top up reads \n               45 degrees of twist. Useful when the device spends its time \n               near vertical\n\nSET NEUTRAL:\nHold the device the way you call 'straight' and press 'set neutral'. From then  on everything is measured from that pose: twist zero, azimuth zero, elevation  zero, in the frame of the device as it was held then. This is usually what a  hand-held device wants - a gesture starts from wherever the hand is, not from  magnetic north - and it also absorbs any fixed offset a sensor's quaternion  carries in relation to its own body. 'clear neutral' goes back to measuring  from the world.\n\nIF THE SIGNS COME OUT WRONG:\nTurn right: azimuth should rise. Tip the front up: elevation should rise. \nRoll to the right: twist should rise. If elevation and twist BOTH run backwards  while azimuth is right, the end you call the front is the sensor's negative  axis - name '-x' (or '-y', '-z') as the twist axis.\n\nSYNTAX:\nswing_twist\nswing_twist <twist axis> <up axis>\n\nEXAMPLE:\nswing_twist x z\n\nINPUTS and PARAMETERS:\n\nquaternion:\nThe orientation, scalar first - as euler_to_quaternion and pipo_motion  produce it. A batch of quaternions works too.\n\ntwist axis:\nWhich of the device's own axes is its length, with sign: x, y, z, -x, -y, -z.  Can be given as the first argument.\n\nup axis:\nWhich axis is up, for azimuth, elevation and level twist - the world's up, or  the device's up in its neutral pose once one is set. y is the default; \npipo_motion's world has z up. Can be given as the second argument.\n\nset neutral / clear neutral:\nCapture the pose being held as zero, or go back to the world frame.\n\ntwist reference:\nlevel or shortest arc, as above.\n\ndegrees:\nAngles in degrees rather than radians.\n\nOUTPUTS: \n\ndirection / azimuth / elevation / twist / swing quaternion / twist quaternion:\nAs above.\n\nRELATED:\nquaternion_relative in front of this node measures everything from a captured  starting pose rather than from the world, which is often what a gesture wants.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,38 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "Split an orientation into where a thing points and how far it is turned \nabout its own pointing axis.\n\nWHY YAW, PITCH AND ROLL FEEL WRONG IN THE HAND:\nA yaw/pitch/roll triple is a recipe: turn about the world's vertical, then \nabout a sideways axis, then about the forward axis, in that order. Unless the \nsensor happens to use exactly that order with roll last, its roll is measured \nabout an axis that does not move with the device, and once a hand-held sensor \nis tipped up, rolling it no longer reads as roll. Any one axis on its own \nmakes sense; two together do not.\n\nswing_twist measures differently. The TWIST is the rotation about one of the \ndevice's own axes - the one you name as 'twist axis', usually the axis along \nits length. Rolling the device changes the twist and nothing else, however \nthe device is held. The SWING is everything left over: the rotation that \ncarries that axis from where it starts to where it now points. Together they \nremake the original rotation exactly, swing applied after twist.\n\nWHAT COMES OUT:\n\ndirection     where the twist axis points now, as a unit vector\nazimuth       the bearing of that direction about the up axis - zero where \n              the twist axis points at rest, positive turning right, as a \n              compass reads\nelevation     how far above or below level it points, -90 to +90\ntwist         how far the device is turned about its own axis, positive \n              clockwise seen from behind\nswing / twist quaternion   the two halves, for composing further\n\nWHAT ZERO TWIST MEANS - 'twist reference':\nlevel          the top of the device is up: an aircraft's bank. This is what \n               a hand expects, and the default. It has no meaning pointing \n               straight up or down, where turning the device and turning \n               about its length are the same motion - so within about twelve \n               degrees of vertical it fades over into the other reference \n               rather than jumping\nshortest arc   twist beyond the shortest rotation that carries the axis to \n               where it points. Well defined everywhere except pointing \n               exactly backwards, but its zero rolls with direction: at \n               azimuth 90 and elevation 45, a device with its top up reads \n               45 degrees of twist. Useful when the device spends its time \n               near vertical\n\nSET NEUTRAL:\nHold the device the way you call 'straight' and press 'set neutral'. From then \non everything is measured from that pose: twist zero, azimuth zero, elevation \nzero, in the frame of the device as it was held then. This is usually what a \nhand-held device wants - a gesture starts from wherever the hand is, not from \nmagnetic north - and it also absorbs any fixed offset a sensor's quaternion \ncarries in relation to its own body. 'clear neutral' goes back to measuring \nfrom the world.\n\nIF THE SIGNS COME OUT WRONG:\nTurn right: azimuth should rise. Tip the front up: elevation should rise. \nRoll to the right: twist should rise. If elevation and twist BOTH run backwards \nwhile azimuth is right, the end you call the front is the sensor's negative \naxis - name '-x' (or '-y', '-z') as the twist axis.\n\nSYNTAX:\nswing_twist\nswing_twist <twist axis> <up axis>\n\nEXAMPLE:\nswing_twist x z\n\nINPUTS and PARAMETERS:\n\nquaternion:\nThe orientation, scalar first - as euler_to_quaternion and pipo_motion \nproduce it. A batch of quaternions works too.\n\ntwist axis:\nWhich of the device's own axes is its length, with sign: x, y, z, -x, -y, -z. \nCan be given as the first argument.\n\nup axis:\nWhich axis is up, for azimuth, elevation and level twist - the world's up, or \nthe device's up in its neutral pose once one is set. y is the default; \npipo_motion's world has z up. Can be given as the second argument.\n\nset neutral / clear neutral:\nCapture the pose being held as zero, or go back to the world frame.\n\ntwist reference:\nlevel or shortest arc, as above.\n\ndegrees:\nAngles in degrees rather than radians.\n\nOUTPUTS: \n\ndirection / azimuth / elevation / twist / swing quaternion / twist quaternion:\nAs above.\n\nRELATED:\nquaternion_relative in front of this node measures everything from a captured \nstarting pose rather than from the world, which is often what a gesture wants."
+            "text": "Split an orientation into where a thing points and how far it is turned  about its own pointing axis.\n\nWHY YAW, PITCH AND ROLL FEEL WRONG IN THE HAND:\nA yaw/pitch/roll triple is a recipe: turn about the world's vertical, then  about a sideways axis, then about the forward axis, in that order. Unless the  sensor happens to use exactly that order with roll last, its roll is measured  about an axis that does not move with the device, and once a hand-held sensor  is tipped up, rolling it no longer reads as roll. Any one axis on its own  makes sense; two together do not.\n\nswing_twist measures differently. The TWIST is the rotation about one of the  device's own axes - the one you name as 'twist axis', usually the axis along  its length. Rolling the device changes the twist and nothing else, however  the device is held. The SWING is everything left over: the rotation that  carries that axis from where it starts to where it now points. Together they  remake the original rotation exactly, swing applied after twist.\n\nWHAT COMES OUT:\n\ndirection     where the twist axis points now, as a unit vector\nazimuth       the bearing of that direction about the up axis - zero where \n              the twist axis points at rest, positive turning right, as a \n              compass reads\nelevation     how far above or below level it points, -90 to +90\ntwist         how far the device is turned about its own axis, positive \n              clockwise seen from behind\nswing / twist quaternion   the two halves, for composing further\n\nWHAT ZERO TWIST MEANS - 'twist reference':\nlevel          the top of the device is up: an aircraft's bank. This is what \n               a hand expects, and the default. It has no meaning pointing \n               straight up or down, where turning the device and turning \n               about its length are the same motion - so within about twelve \n               degrees of vertical it fades over into the other reference \n               rather than jumping\nshortest arc   twist beyond the shortest rotation that carries the axis to \n               where it points. Well defined everywhere except pointing \n               exactly backwards, but its zero rolls with direction: at \n               azimuth 90 and elevation 45, a device with its top up reads \n               45 degrees of twist. Useful when the device spends its time \n               near vertical\n\nSET NEUTRAL:\nHold the device the way you call 'straight' and press 'set neutral'. From then  on everything is measured from that pose: twist zero, azimuth zero, elevation  zero, in the frame of the device as it was held then. This is usually what a  hand-held device wants - a gesture starts from wherever the hand is, not from  magnetic north - and it also absorbs any fixed offset a sensor's quaternion  carries in relation to its own body. 'clear neutral' goes back to measuring  from the world.\n\nIF THE SIGNS COME OUT WRONG:\nTurn right: azimuth should rise. Tip the front up: elevation should rise. \nRoll to the right: twist should rise. If elevation and twist BOTH run backwards  while azimuth is right, the end you call the front is the sensor's negative  axis - name '-x' (or '-y', '-z') as the twist axis.\n\nSYNTAX:\nswing_twist\nswing_twist <twist axis> <up axis>\n\nEXAMPLE:\nswing_twist x z\n\nINPUTS and PARAMETERS:\n\nquaternion:\nThe orientation, scalar first - as euler_to_quaternion and pipo_motion  produce it. A batch of quaternions works too.\n\ntwist axis:\nWhich of the device's own axes is its length, with sign: x, y, z, -x, -y, -z.  Can be given as the first argument.\n\nup axis:\nWhich axis is up, for azimuth, elevation and level twist - the world's up, or  the device's up in its neutral pose once one is set. y is the default; \npipo_motion's world has z up. Can be given as the second argument.\n\nset neutral / clear neutral:\nCapture the pose being held as zero, or go back to the world frame.\n\ntwist reference:\nlevel or shortest arc, as above.\n\ndegrees:\nAngles in degrees rather than radians.\n\nOUTPUTS: \n\ndirection / azimuth / elevation / twist / swing quaternion / twist quaternion:\nAs above.\n\nRELATED:\nquaternion_relative in front of this node measures everything from a captured  starting pose rather than from the world, which is often what a gesture wants."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 4.0 sin"
         },
-        "6": {
+        "4": {
             "name": "signal",
             "id": 459,
             "position_x": 200,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -205,12 +180,12 @@
             },
             "init": "signal 7.0 triangle"
         },
-        "7": {
+        "5": {
             "init": "comment roll about x, and a slower tilt about z",
             "name": "comment",
             "id": 496,
             "position_x": 486,
-            "position_y": 215,
+            "position_y": 135,
             "width": 248,
             "height": 30,
             "visibility": "show_all",
@@ -230,11 +205,11 @@
             },
             "comment": "roll about x, and a slower tilt about z"
         },
-        "8": {
+        "6": {
             "name": "pack",
             "id": 533,
             "position_x": 30,
-            "position_y": 250,
+            "position_y": 170,
             "width": 33,
             "height": 70,
             "visibility": "show_all",
@@ -243,11 +218,11 @@
             "properties": {},
             "init": "pack 3"
         },
-        "9": {
+        "7": {
             "name": "euler_to_quaternion",
             "id": 570,
             "position_x": 30,
-            "position_y": 365,
+            "position_y": 285,
             "width": 125,
             "height": 70,
             "visibility": "show_all",
@@ -261,11 +236,11 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "name": "swing_twist",
             "id": 607,
             "position_x": 30,
-            "position_y": 490,
+            "position_y": 410,
             "width": 154,
             "height": 168,
             "visibility": "show_all",
@@ -283,13 +258,70 @@
                     "value_type": "str"
                 }
             },
-            "init": "swing_twist x y"
+            "init": "swing_twist x y",
+            "highlight": true
         },
-        "11": {
+        "9": {
             "name": "float",
             "id": 644,
             "position_x": 30,
-            "position_y": 700,
+            "position_y": 620,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "float",
+            "id": 681,
+            "position_x": 180,
+            "position_y": 620,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "float",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 620,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -314,67 +346,11 @@
             }
         },
         "12": {
-            "name": "float",
-            "id": 681,
-            "position_x": 180,
-            "position_y": 700,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "13": {
-            "name": "float",
-            "id": 718,
-            "position_x": 330,
-            "position_y": 700,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "14": {
             "name": "text_block",
             "id": 755,
             "annotation": true,
             "position_x": 486,
-            "position_y": 755,
+            "position_y": 675,
             "width": 329,
             "height": 40,
             "visibility": "show_all",
@@ -409,11 +385,11 @@
             },
             "text": "azimuth, elevation, twist - elevation reads back\nthe tilt, twist reads back the roll, unmixed"
         },
-        "15": {
+        "13": {
             "name": "list",
             "id": 792,
             "position_x": 30,
-            "position_y": 820,
+            "position_y": 740,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -432,12 +408,12 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "init": "comment where the x axis points now",
             "name": "comment",
             "id": 829,
             "position_x": 486,
-            "position_y": 870,
+            "position_y": 790,
             "width": 174,
             "height": 30,
             "visibility": "show_all",
@@ -457,11 +433,11 @@
             },
             "comment": "where the x axis points now"
         },
-        "17": {
+        "15": {
             "name": "close",
             "id": 866,
             "position_x": 24,
-            "position_y": 892,
+            "position_y": 812,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -478,36 +454,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "3": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -517,7 +463,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in 1"
         },
-        "4": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -527,7 +473,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in 3"
         },
-        "5": {
+        "2": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -537,7 +483,7 @@
             "dest_input_index": 0,
             "dest_input_name": "xyz rotation"
         },
-        "6": {
+        "3": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
@@ -547,7 +493,7 @@
             "dest_input_index": 0,
             "dest_input_name": "quaternion"
         },
-        "7": {
+        "4": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
@@ -557,7 +503,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "8": {
+        "5": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
@@ -567,7 +513,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "9": {
+        "6": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
@@ -577,7 +523,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "10": {
+        "7": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,

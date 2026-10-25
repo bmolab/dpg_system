@@ -14,13 +14,14 @@ relatives live in this world, and because the fixed-function pipeline they use
 is sometimes simpler to reason about when all you want is a few shapes.
 """
 
+# The context lights the scene itself (lights 0 and 1), so these pages chain
+# straight from it; a gl_light here would only take over one of those lights.
 def chain(x=30, y=62):
     return [
         {'key': 'ctx', 'init': 'gl_context', 'pos': (x, y), 'w': 240, 'h': 120},
-        {'key': 'lgt', 'init': 'gl_light', 'pos': (x, y + 140), 'w': 240, 'h': 240},
     ]
 
-CHAIN_LINKS = [('ctx', 'gl_chain', 'lgt', 'gl chain in')]
+CHAIN_LINKS = []
 
 # ------------------------------------------------------------------ gl_context
 body = """gl_context is the root of a scene in the older GL system.
@@ -59,13 +60,18 @@ is how you draw something at a flat known colour among lit objects.
 
 Because it obeys the same save-and-restore rule as everything else, the change 
 lasts only for the rest of that branch.
+
+Name the flag after the node (gl_enable GL_DEPTH_TEST) or pick it from 'flag'; 
+without one it is GL_LIGHTING. 'enabled' starts unticked, so a gl_enable 
+switches its flag OFF for the rest of the branch until you tick it.
 """ + OLDER + """
 SYNTAX:
 gl_context
-gl_enable
+gl_enable <flag>
 
 EXAMPLE:
 gl_context
+gl_enable GL_DEPTH_TEST
 
 INPUTS and PARAMETERS:
 
@@ -73,7 +79,7 @@ commands (gl_context):
 Messages to the context.
 
 enabled / flag (gl_enable):
-Which GL state, and whether on.
+Which GL state, and whether on. GL_LIGHTING and off by default.
 
 OUTPUTS: 
 
@@ -88,15 +94,15 @@ mgl_context is the current equivalent, and its help patch explains the same
 chain idea. gl_body draws a skeleton in this chain."""
 
 demo = chain() + [
-    {'key': 'rot', 'init': 'gl_rotate', 'pos': (30, 516), 'w': 240, 'h': 160},
-    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 696), 'w': 240, 'h': 200},
+    {'key': 'rot', 'init': 'gl_rotate', 'pos': (30, 236), 'w': 240, 'h': 160},
+    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 416), 'w': 240, 'h': 200},
     {'key': 'c0', 'comment': True, 'text': 'the rotate applies to everything after it',
-     'pos': (30, 911)},
-    {'key': 'en', 'init': 'gl_enable', 'pos': (310, 516), 'w': 240, 'h': 120},
+     'pos': (30, 631)},
+    {'key': 'en', 'init': 'gl_enable', 'pos': (310, 236), 'w': 240, 'h': 120},
     {'key': 'c1', 'comment': True, 'text': 'a flag, for the rest of this branch',
-     'pos': (310, 651)},
+     'pos': (310, 371)},
 ]
-links = CHAIN_LINKS + [('lgt', 'gl chain out', 'rot', 'gl chain in'),
+links = CHAIN_LINKS + [('ctx', 'gl_chain', 'rot', 'gl chain in'),
                        ('rot', 'gl chain out', 'sph', 'gl chain in')]
 print(build('gl_context', 'gl_context - the older scene chain', body, demo, links,
             demo_width=580, text_width=810, text_height=740))
@@ -164,19 +170,19 @@ gl chain out:
 The chain, with the transform in force downstream."""
 
 demo = chain() + [
-    {'key': 'tr1', 'init': 'gl_translate', 'pos': (30, 516), 'w': 240, 'h': 160},
-    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 696), 'w': 240, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'moved by the first translate', 'pos': (30, 911)},
-    {'key': 'tr2', 'init': 'gl_translate', 'pos': (30, 951), 'w': 240, 'h': 160},
-    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 1131), 'w': 240, 'h': 220},
+    {'key': 'tr1', 'init': 'gl_translate', 'pos': (30, 236), 'w': 240, 'h': 160},
+    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 416), 'w': 240, 'h': 200},
+    {'key': 'c0', 'comment': True, 'text': 'moved by the first translate', 'pos': (30, 631)},
+    {'key': 'tr2', 'init': 'gl_translate', 'pos': (30, 671), 'w': 240, 'h': 160},
+    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 851), 'w': 240, 'h': 220},
     {'key': 'c1', 'comment': True, 'text': 'by BOTH: they accumulate down the chain',
-     'pos': (30, 1366)},
-    {'key': 'al', 'init': 'gl_align', 'pos': (310, 951), 'w': 240, 'h': 160},
+     'pos': (30, 1086)},
+    {'key': 'al', 'init': 'gl_align', 'pos': (310, 671), 'w': 240, 'h': 160},
     {'key': 'c2', 'comment': True, 'text': 'points what follows along a direction',
-     'pos': (310, 1126)},
+     'pos': (310, 846)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'tr1', 'gl chain in'),
+    ('ctx', 'gl_chain', 'tr1', 'gl chain in'),
     ('tr1', 'gl chain out', 'sph', 'gl chain in'),
     ('sph', 'gl chain out', 'tr2', 'gl chain in'),
     ('tr2', 'gl chain out', 'cyl', 'gl chain in')]
@@ -184,90 +190,352 @@ print(build('gl_translate', 'gl transforms - moving what comes after', body, dem
             links, demo_width=580, text_width=810, text_height=760))
 
 # ------------------------------------------------------------------- gl_light
-body = """These decide how surfaces are lit and what colour they are.
+GL_LIGHTING_NOTE = """
+WHAT THE CONTEXT ALREADY SETS UP:
+gl_context switches lighting on when its window opens, with two lights of
+its own (light 0 and light 1, grey, from the upper left) and a scene-wide
+ambient glow. So shapes are lit before any gl_light is added - a scene with
+no gl_light is not dark.
+"""
 
-THE NODES:
+body = """gl_light sets up one of the eight OpenGL lights.
 
-gl_light     a light source
-gl_material  how a surface responds to light
-gl_color     a flat colour, ignoring lighting
+IT CHANGES A LIGHT, AND DOES NOT PUT IT BACK:
+OpenGL has eight lights, numbered 0 to 7. A gl_light sets the one named by
+'id' each time the chain reaches it, and leaves it that way: unlike a
+transform, a material or a colour, it is not undone at the end of its branch.
+The light keeps those settings for the rest of the frame, in every branch,
+and into the next frame - so from the second frame on it lights shapes
+earlier in the chain too. In practice a light lights the whole scene. Put
+lights near the top of the chain anyway, so the first frame is right and the
+position is easy to reason about.
+""" + GL_LIGHTING_NOTE + """
+A gl_light takes over the light of the same number, the context's included.
+A new gl_light is on, numbered 0, and lit from the upper left on the
+viewer's side - so placing one replaces the context's light 0 with a
+similar light rather than putting it out. Untick 'enabled' to switch its
+light off; that is also how to turn out one of the context's own lights.
 
-A SCENE NEEDS A LIGHT:
-Without one, anything using a material is black. That is the usual reason a 
-chain that looks correct renders a dark window - the shapes are being drawn and 
-there is nothing to see them by.
+POSITION:
+With 'positional' off (the default) the light is a direction, like the sun:
+'position' is the direction the light comes FROM, and every surface is lit
+from that same direction. The default position is -1 1 1: from the upper
+left, on the viewer's side.
 
-gl_color IS NOT gl_material:
-A colour is flat, so the shape comes out an even patch with no shading and no 
-sense of form. A material responds to lights, so the same shape shows its 
-curvature. Use colour for markers, lines and anything schematic; material for 
-anything meant to look like an object.
+With 'positional' on (send it 1) the light is a point at 'position'. It
+fades with distance only if you set the attenuation; by default it does not.
 
-THE COMPONENTS:
-'ambient' is the colour in shadow, 'diffuse' the colour in plain light, 
-'specular' the colour of the highlight, and 'shininess' how tight that highlight 
-is - high is a small hard glint, low a broad sheen. The light has the matching 
-three, and what you see is the product of the two, which is why a red light on 
-a green object gives almost nothing.
+Either way the position is taken in the chain's coordinates where the
+gl_light sits, so a transform before it moves or turns the light.
 
-gl_material also has 'emission', which the light does not: a surface that 
-appears to give out light without illuminating anything else. That is how you 
-make something read as glowing or as self-lit among lit objects.
+THE COLOURS:
+'ambient' is light that reaches every surface regardless of direction,
+'diffuse' the main light, brightest on surfaces facing it, and 'specular'
+the colour of the highlight. Each is red green blue (alpha optional), from
+0 to 1. A gl_light's specular starts at black, so it makes no highlight until
+you send one. What you see is each of these times the matching part of the
+material - which is why a red light on a green surface gives almost nothing.
 
-MULTIPLE LIGHTS:
-gl_light has an 'id' so several can exist at once, and 'positional' decides 
-whether it is a point in the scene or a direction from infinitely far away. 
-A directional light is the sun; a positional one falls off with distance and 
-shows where it is.
+A SPOTLIGHT:
+For a positional light, 'spot_cutoff' (in degrees, 90 or less) narrows it to
+a cone around 'spot_direction', and 'spot_exponent' concentrates it toward
+the middle of the cone. Above 90 there is no cone.
+
+THE LIGHTING MODEL:
+These affect lighting as a whole, not this light, and are only applied while
+'light_model_active' is ticked. 'global ambient enabled' with
+'global_ambient' sets the scene-wide ambient glow. 'local_viewer' and
+'two_sided' switch those OpenGL modes on when ticked and off when not. (The
+context turns two_sided on, so a gl_light with 'light_model_active' ticked
+and 'two_sided' unticked turns it off.)
 """ + OLDER + """
 SYNTAX:
-gl_light
+gl_light <id>
+
+The number after the name is the light, 0 to 7, and shows in 'id'. Without
+one it is light 0.
+
+EXAMPLE:
+gl_light 1
+
+INPUTS and PARAMETERS:
+
+gl chain in:
+The chain. This triggers the node.
+
+enabled:
+Whether this light is on. On by default; unticked, it switches the light
+off.
+
+id:
+Which light, 0 to 7. Changing it leaves the previous light as it was
+last set.
+
+ambient / diffuse / specular:
+Red green blue, or red green blue alpha, 0 to 1. Defaults: 0.2 grey,
+0.8 grey, black.
+
+position:
+x y z: a direction, or a place with 'positional' on. -1 1 1 by default.
+
+positional:
+Send 1 for a point light, 0 for a directional one.
+
+spot_direction / spot_cutoff / spot_exponent:
+The spotlight, as above. 0 0 -1, 180 (no cone) and 0 by default.
+
+constant_attenuation / linear_attenuation / quadratic_attenuation:
+How a positional light fades with distance. 1, 0, 0 by default: no fading.
+
+light_model_active / global ambient enabled / global_ambient /
+local_viewer / two_sided:
+The lighting model, as above.
+
+OUTPUTS:
+
+gl chain out:
+The chain, continuing.
+
+RELATED:
+gl_material for how surfaces answer the light; gl_color for unlit colour.
+mgl_light is the newer equivalent, and does go away at the end of the
+frame."""
+
+demo = [
+    {'key': 'ctx', 'init': 'gl_context', 'pos': (30, 62), 'w': 240, 'h': 120},
+    {'key': 'c0', 'comment': True, 'text': 'the picture opens in its own window',
+     'pos': (30, 190)},
+    {'key': 'lb', 'init': 'load_bang', 'pos': (330, 240), 'w': 88, 'h': 42},
+    {'key': 'p1', 'init': 'message', 'pos': (330, 300), 'w': 140, 'h': 42,
+     'props': {'text in': '-1 1 1', 'font size': '24'}},
+    {'key': 'd1', 'init': 'message', 'pos': (330, 360), 'w': 140, 'h': 42,
+     'props': {'text in': '1 0.2 0.2', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'from the upper left, red',
+     'pos': (330, 420)},
+    {'key': 'l1', 'init': 'gl_light', 'pos': (30, 240), 'w': 240, 'h': 400,
+     'props': {'enabled': True, 'id': 0}},
+    {'key': 'p2', 'init': 'message', 'pos': (330, 680), 'w': 140, 'h': 42,
+     'props': {'text in': '1 1 1', 'font size': '24'}},
+    {'key': 'd2', 'init': 'message', 'pos': (330, 740), 'w': 140, 'h': 42,
+     'props': {'text in': '0.2 0.4 1', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'from the upper right, blue',
+     'pos': (330, 800)},
+    {'key': 'l2', 'init': 'gl_light 1', 'pos': (30, 680), 'w': 240, 'h': 400,
+     'props': {'enabled': True, 'id': 1}},
+    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 1120), 'w': 240, 'h': 200,
+     'props': {'size': 0.25}},
+    {'key': 'c3', 'comment': True,
+     'text': 'lit red from one side and blue from the other:\nthe two lights add up',
+     'pos': (30, 1340)},
+]
+links = [
+    ('ctx', 'gl_chain', 'l1', 'gl chain in'),
+    ('l1', 'gl chain out', 'l2', 'gl chain in'),
+    ('l2', 'gl chain out', 'sph', 'gl chain in'),
+    ('lb', 'out', 'p1', ''),
+    ('lb', 'out', 'd1', ''),
+    ('lb', 'out', 'p2', ''),
+    ('lb', 'out', 'd2', ''),
+    ('p1', '', 'l1', 'position'),
+    ('d1', '', 'l1', 'diffuse'),
+    ('p2', '', 'l2', 'position'),
+    ('d2', '', 'l2', 'diffuse')]
+print(build('gl_light', 'gl_light - one of the eight lights', body, demo, links,
+            demo_width=590, text_width=800, text_height=1100))
+
+# ---------------------------------------------------------------- gl_material
+body = """gl_material sets how surfaces answer light, for everything drawn after it.
+
+IT IS PUT BACK, LIKE A TRANSFORM:
+A material applies from where it sits onward and is restored at the end of
+its branch. A material placed before three shapes gives all three that
+material; a second material on one branch changes only what follows it there.
+
+Before any gl_material, OpenGL's own material is in force: 0.2 grey ambient,
+0.8 grey diffuse, no highlight, no glow - the same as this node's defaults,
+so a fresh gl_material changes nothing until it is set.
+""" + GL_LIGHTING_NOTE + """
+THE COMPONENTS:
+'ambient' is the colour in shadow, 'diffuse' the colour in plain light,
+'specular' the colour of the highlight, and 'shininess' how tight that
+highlight is - high is a small hard glint, low a broad sheen. Each multiplies
+the matching part of every light, so a highlight needs a light with a
+specular colour as well. (The context's light 0 has one; a gl_light starts
+without.)
+
+'emission' is light the surface seems to give out by itself. It is added on
+top of the lighting, so the surface reads as glowing even where no light
+reaches it - though it lights nothing else.
+
+'alpha' is the surface's transparency. The context has blending on already,
+so it works as it is - but transparent things have to be drawn after what
+shows through them, so if one hides what it should reveal, that is the chain
+order rather than the alpha.
+
+PRESETS:
+'presets' is a menu of named materials - gold, brass, chrome, copper,
+pearl, jade, ruby, plastics and rubbers in several colours, and more.
+Choosing one sets all five components at once.
+
+NOT FOR UNLIT DRAWING:
+A material only matters while lighting is on. With lighting switched off
+(gl_enable GL_LIGHTING, unticked), shapes are drawn in the plain colour from
+gl_color instead.
+""" + OLDER + """
+SYNTAX:
 gl_material
+
+It takes no arguments.
 
 EXAMPLE:
 gl_material
 
 INPUTS and PARAMETERS:
 
-enabled / id / positional (gl_light):
-Whether it is on, which light it is, and what kind.
+gl chain in:
+The chain. This triggers the node.
 
-position / ambient / diffuse / specular:
-Where the light is and what it contributes.
+ambient / diffuse / specular / emission:
+Each as red green blue alpha, red green blue (alpha 1), or one number for a
+grey, 0 to 1.
 
-ambient / diffuse / specular / emission / shininess / alpha (gl_material):
-How the surface answers, and its transparency.
+shininess:
+How tight the highlight is, 0 to 128. 0 by default. Drag it, send it, or
+save it in the patch; choosing a preset sets it too.
 
-red / green / blue / alpha (gl_color):
-The flat colour.
+alpha:
+Transparency, 0 to 1, applied to all four components. 1 by default.
 
-OUTPUTS: 
+presets:
+A named material, as above.
+
+OUTPUTS:
 
 gl chain out:
-The chain, with the setting in force downstream.
+The chain, with this material in force downstream.
 
-A NOTE ON ALPHA:
-Transparency needs blending enabled, which is a gl_enable flag, and it is 
-order-dependent - transparent things have to be drawn after what shows through 
-them. If something transparent is disappearing behind what it should reveal, 
-that is the chain order rather than the alpha value."""
+RELATED:
+gl_light for the light it answers; gl_color for unlit colour. mgl_material
+is the newer equivalent."""
 
-demo = chain() + [
-    {'key': 'mat', 'init': 'gl_material', 'pos': (30, 516), 'w': 240, 'h': 240},
-    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 776), 'w': 240, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'material: it shows its curvature',
-     'pos': (30, 991)},
-    {'key': 'col', 'init': 'gl_color', 'pos': (310, 516), 'w': 240, 'h': 200},
-    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (310, 736), 'w': 240, 'h': 220},
-    {'key': 'c1', 'comment': True, 'text': 'colour: flat, no shading', 'pos': (310, 971)},
+demo = [
+    {'key': 'ctx', 'init': 'gl_context', 'pos': (30, 62), 'w': 240, 'h': 120},
+    {'key': 'c0', 'comment': True, 'text': 'the picture opens in its own window',
+     'pos': (30, 190)},
+    {'key': 'mat', 'init': 'gl_material', 'pos': (30, 240), 'w': 240, 'h': 240,
+     'props': {'presets': 'gold'}},
+    {'key': 'c1', 'comment': True, 'text': 'gold, for both spheres', 'pos': (30, 500)},
+    {'key': 'tr1', 'init': 'gl_translate -0.3 0 0', 'pos': (30, 540), 'w': 240, 'h': 160,
+     'props': {'x': -0.3, 'y': 0.0, 'z': 0.0}},
+    {'key': 's1', 'init': 'gl_sphere', 'pos': (30, 720), 'w': 240, 'h': 200,
+     'props': {'size': 0.2}},
+    {'key': 'tr2', 'init': 'gl_translate 0.3 0 0', 'pos': (330, 540), 'w': 240, 'h': 160,
+     'props': {'x': 0.3, 'y': 0.0, 'z': 0.0}},
+    {'key': 'lb', 'init': 'load_bang', 'pos': (330, 720), 'w': 88, 'h': 42},
+    {'key': 'em', 'init': 'message', 'pos': (330, 780), 'w': 140, 'h': 42,
+     'props': {'text in': '0.5 0.1 0', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'an orange glow', 'pos': (330, 840)},
+    {'key': 'mat2', 'init': 'gl_material', 'pos': (330, 880), 'w': 240, 'h': 240,
+     'props': {'presets': 'gold'}},
+    {'key': 's2', 'init': 'gl_sphere', 'pos': (330, 1140), 'w': 240, 'h': 200,
+     'props': {'size': 0.2}},
+    {'key': 'c3', 'comment': True,
+     'text': 'gold plus emission, on this branch only:\nit glows even on its shadowed side',
+     'pos': (330, 1360)},
 ]
-links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'mat', 'gl chain in'),
-    ('mat', 'gl chain out', 'sph', 'gl chain in'),
-    ('sph', 'gl chain out', 'col', 'gl chain in'),
-    ('col', 'gl chain out', 'cyl', 'gl chain in')]
-print(build('gl_light', 'gl light, material and colour', body, demo, links,
-            demo_width=590, text_width=800, text_height=740))
+links = [
+    ('ctx', 'gl_chain', 'mat', 'gl chain in'),
+    ('mat', 'gl chain out', 'tr1', 'gl chain in'),
+    ('tr1', 'gl chain out', 's1', 'gl chain in'),
+    ('mat', 'gl chain out', 'tr2', 'gl chain in'),
+    ('tr2', 'gl chain out', 'mat2', 'gl chain in'),
+    ('mat2', 'gl chain out', 's2', 'gl chain in'),
+    ('lb', 'out', 'em', ''),
+    ('em', '', 'mat2', 'emission')]
+print(build('gl_material', 'gl_material - how surfaces answer light', body, demo,
+            links, demo_width=600, text_width=800, text_height=1000))
+
+# ------------------------------------------------------------------- gl_color
+body = """gl_color sets the plain colour things are drawn in when lighting is off.
+
+LIGHTING IGNORES IT:
+gl_context switches lighting on, and while it is on, OpenGL takes a shape's
+colour from the material and the lights - the current colour is not used at
+all. So gl_color placed before a lit sphere changes nothing. To see it,
+switch lighting off for that branch with gl_enable GL_LIGHTING, unticked.
+
+With lighting off a shape is drawn in exactly this colour, an even patch
+with no shading and no sense of form. That is right for markers, lines and
+anything schematic; gl_material and a light are for anything meant to look
+like an object.
+
+gl_text, gl_line_array and gl_button_grid set colours of their own and are
+not affected.
+
+IT IS PUT BACK, LIKE A TRANSFORM:
+The colour applies from where it sits onward and the previous colour is
+restored at the end of its branch.
+
+IT STARTS INVISIBLE:
+All four sliders start at 0 - black, and fully transparent. Blending is on
+in the context, so until 'alpha' is raised, what it colours cannot be seen.
+""" + OLDER + """
+SYNTAX:
+gl_color
+
+It takes no arguments.
+
+EXAMPLE:
+gl_color
+
+INPUTS and PARAMETERS:
+
+gl chain in:
+The chain. This triggers the node.
+
+red / green / blue / alpha:
+The colour, each 0 to 1. All 0 by default.
+
+OUTPUTS:
+
+gl chain out:
+The chain, with this colour in force downstream.
+
+RELATED:
+gl_enable to switch lighting off; gl_material for lit surfaces. mgl_color is
+the newer equivalent, and does tint lit shapes."""
+
+demo = [
+    {'key': 'ctx', 'init': 'gl_context', 'pos': (30, 62), 'w': 240, 'h': 120},
+    {'key': 'c0', 'comment': True, 'text': 'the picture opens in its own window',
+     'pos': (30, 190)},
+    {'key': 'col', 'init': 'gl_color', 'pos': (30, 240), 'w': 240, 'h': 200,
+     'props': {'red': 1.0, 'green': 0.5, 'blue': 0.0, 'alpha': 1.0}},
+    {'key': 'c1', 'comment': True, 'text': 'orange, for both branches', 'pos': (30, 460)},
+    {'key': 'tr1', 'init': 'gl_translate -0.3 0 0', 'pos': (30, 500), 'w': 240, 'h': 160,
+     'props': {'x': -0.3, 'y': 0.0, 'z': 0.0}},
+    {'key': 'en', 'init': 'gl_enable GL_LIGHTING', 'pos': (30, 680), 'w': 240, 'h': 120},
+    {'key': 'c2', 'comment': True, 'text': 'lighting off for this branch', 'pos': (30, 810)},
+    {'key': 's1', 'init': 'gl_sphere', 'pos': (30, 850), 'w': 240, 'h': 200,
+     'props': {'size': 0.2}},
+    {'key': 'c3', 'comment': True, 'text': 'flat orange: no shading',
+     'pos': (30, 1070)},
+    {'key': 'tr2', 'init': 'gl_translate 0.3 0 0', 'pos': (330, 500), 'w': 240, 'h': 160,
+     'props': {'x': 0.3, 'y': 0.0, 'z': 0.0}},
+    {'key': 's2', 'init': 'gl_sphere', 'pos': (330, 680), 'w': 240, 'h': 200,
+     'props': {'size': 0.2}},
+    {'key': 'c4', 'comment': True, 'text': 'still lit and shaded:\nthe orange is ignored',
+     'pos': (330, 900)},
+]
+links = [
+    ('ctx', 'gl_chain', 'col', 'gl chain in'),
+    ('col', 'gl chain out', 'tr1', 'gl chain in'),
+    ('tr1', 'gl chain out', 'en', 'gl chain in'),
+    ('en', 'gl chain out', 's1', 'gl chain in'),
+    ('col', 'gl chain out', 'tr2', 'gl chain in'),
+    ('tr2', 'gl chain out', 's2', 'gl chain in')]
+print(build('gl_color', 'gl_color - plain colour, for unlit drawing', body, demo,
+            links, demo_width=600, text_width=800, text_height=880))
 
 # ------------------------------------------------------------------ gl_sphere
 body = """The built-in shapes: geometry you can draw without supplying any.
@@ -357,19 +625,19 @@ gl chain out:
 The chain, continuing - shapes change no state for what follows."""
 
 demo = chain() + [
-    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 516), 'w': 240, 'h': 240},
+    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 236), 'w': 240, 'h': 240},
     {'key': 'c0', 'comment': True, 'text': 'set top radius to 0 for a cone',
-     'pos': (30, 771)},
-    {'key': 'tr', 'init': 'gl_translate', 'pos': (30, 811), 'w': 240, 'h': 160},
-    {'key': 'pd', 'init': 'gl_partial_disk', 'pos': (30, 991), 'w': 240, 'h': 280},
+     'pos': (30, 491)},
+    {'key': 'tr', 'init': 'gl_translate', 'pos': (30, 531), 'w': 240, 'h': 160},
+    {'key': 'pd', 'init': 'gl_partial_disk', 'pos': (30, 711), 'w': 240, 'h': 280},
     {'key': 'c1', 'comment': True, 'text': 'drag sweep angle: a value as an arc',
-     'pos': (30, 1286)},
-    {'key': 'ns', 'init': 'gl_nested_spheres', 'pos': (310, 811), 'w': 240, 'h': 220},
+     'pos': (30, 1006)},
+    {'key': 'ns', 'init': 'gl_nested_spheres', 'pos': (310, 531), 'w': 240, 'h': 220},
     {'key': 'c2', 'comment': True, 'text': 'a sphere at each size in the list',
-     'pos': (310, 1046)},
+     'pos': (310, 766)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'cyl', 'gl chain in'),
+    ('ctx', 'gl_chain', 'cyl', 'gl chain in'),
     ('cyl', 'gl chain out', 'tr', 'gl chain in'),
     ('tr', 'gl chain out', 'pd', 'gl chain in')]
 print(build('gl_sphere', 'gl shapes - the built-in geometry', body, demo, links,
@@ -480,24 +748,24 @@ gl_orientation_disks and gl_rotation_disk, which used to share this page,
 draw orientations."""
 
 demo = chain() + [
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 540), 'w': 88, 'h': 42},
-    {'key': 'nr', 'init': 'np.rand 30 4 3', 'pos': (30, 610), 'w': 140, 'h': 160,
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 260), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 30 4 3', 'pos': (30, 330), 'w': 140, 'h': 160,
      'props': {'min': -0.3, 'max': 0.3}},
     {'key': 'c0', 'comment': True, 'text': '30 points on each of 4 lines',
-     'pos': (30, 610)},
-    {'key': 'la', 'init': 'gl_line_array', 'pos': (30, 800), 'w': 220, 'h': 280},
+     'pos': (30, 330)},
+    {'key': 'la', 'init': 'gl_line_array', 'pos': (30, 520), 'w': 220, 'h': 280},
     {'key': 'c1', 'comment': True,
      'text': 'alpha_fade: each line fades from\nits first point to its last',
-     'pos': (30, 800)},
-    {'key': 'vb', 'init': 'gl_vertex_buffer', 'pos': (30, 1110), 'w': 200, 'h': 120,
+     'pos': (30, 520)},
+    {'key': 'vb', 'init': 'gl_vertex_buffer', 'pos': (30, 830), 'w': 200, 'h': 120,
      'props': {'draw_mode': 'GL_POINTS', 'size': 4.0}},
     {'key': 'c2', 'comment': True,
      'text': 'on its own branch of the chain:\n64 random points until vertex_data arrives',
-     'pos': (30, 1110)},
+     'pos': (30, 830)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'la', 'gl chain in'),
-    ('lgt', 'gl chain out', 'vb', 'gl chain in'),
+    ('ctx', 'gl_chain', 'la', 'gl chain in'),
+    ('ctx', 'gl_chain', 'vb', 'gl chain in'),
     ('lb', 'out', 'nr', ''),
     ('nr', 'random array', 'la', 'array')]
 print(build('gl_line_array', 'gl_line_array - drawing data as lines and points', body,
@@ -605,28 +873,28 @@ gl_axis_angle_rotate turn the chain by such rotations instead of showing
 them. gl_line_array, which used to share this page, draws motion trails."""
 
 demo = chain() + [
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 540), 'w': 88, 'h': 42},
-    {'key': 'nr', 'init': 'np.rand 3 3', 'pos': (30, 610), 'w': 140, 'h': 140,
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 260), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 3 3', 'pos': (30, 330), 'w': 140, 'h': 140,
      'props': {'min': -1.5, 'max': 1.5}},
     {'key': 'c0', 'comment': True, 'text': 'three random rotation vectors,\none row per disk',
-     'pos': (30, 610)},
-    {'key': 'od', 'init': 'gl_orientation_disks 3 0.25', 'pos': (30, 780), 'w': 220, 'h': 280},
+     'pos': (30, 330)},
+    {'key': 'od', 'init': 'gl_orientation_disks 3 0.25', 'pos': (30, 500), 'w': 220, 'h': 280},
     {'key': 'c1', 'comment': True,
      'text': 'each disk faces along its axis,\nits radius is the angle times scale',
-     'pos': (30, 780)},
-    {'key': 'tr', 'init': 'gl_translate 0.5 0 0', 'pos': (30, 1090), 'w': 160, 'h': 110,
+     'pos': (30, 500)},
+    {'key': 'tr', 'init': 'gl_translate 0.5 0 0', 'pos': (30, 810), 'w': 160, 'h': 110,
      'props': {'x': 0.5, 'y': 0.0, 'z': 0.0}},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 1230), 'w': 200, 'h': 42,
+    {'key': 'm1', 'init': 'message', 'pos': (30, 950), 'w': 200, 'h': 42,
      'props': {'text in': '0.85 0.3 0.25 0.35', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'a quaternion, w x y z', 'pos': (30, 1230)},
-    {'key': 'rd', 'init': 'gl_rotation_disk', 'pos': (30, 1300), 'w': 200, 'h': 180},
+    {'key': 'c2', 'comment': True, 'text': 'a quaternion, w x y z', 'pos': (30, 950)},
+    {'key': 'rd', 'init': 'gl_rotation_disk', 'pos': (30, 1020), 'w': 200, 'h': 180},
     {'key': 'c3', 'comment': True,
      'text': 'red, blue and green disks\nsized by x, y and z',
-     'pos': (30, 1300)},
+     'pos': (30, 1020)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'od', 'gl chain in'),
-    ('lgt', 'gl chain out', 'tr', 'gl chain in'),
+    ('ctx', 'gl_chain', 'od', 'gl chain in'),
+    ('ctx', 'gl_chain', 'tr', 'gl chain in'),
     ('tr', 'gl chain out', 'rd', 'gl chain in'),
     ('lb', 'out', 'nr', ''),
     ('nr', 'random array', 'od', 'axis-angle'),
@@ -726,26 +994,26 @@ mgl_text is the newer equivalent. gl_button_grid, which used to share this
 page, draws a grid of highlighted squares in the same way."""
 
 demo = chain() + [
-    {'key': 'la1', 'init': 'load_action fixed on the window', 'pos': (30, 516),
+    {'key': 'la1', 'init': 'load_action fixed on the window', 'pos': (30, 236),
      'w': 300, 'h': 90},
     # 'font' saved at its exact default: restore_properties skips a no-op, so
     # font_changed never fires. (mgl_text's font callback opens a native file
     # dialog; gl_text's only reloads the font, but keep the restore a no-op.)
-    {'key': 'tx', 'init': 'gl_text', 'pos': (30, 626), 'w': 260, 'h': 260,
+    {'key': 'tx', 'init': 'gl_text', 'pos': (30, 346), 'w': 260, 'h': 260,
      'props': {'font': 'Inconsolata-g.otf'}},
     {'key': 'c0', 'comment': True, 'text': 'straight after the context: no transform is\nin force, so it stays put on the window',
-     'pos': (30, 901)},
-    {'key': 'tr', 'init': 'gl_translate 0 -0.5 0', 'pos': (30, 951), 'w': 240, 'h': 160,
+     'pos': (30, 621)},
+    {'key': 'tr', 'init': 'gl_translate 0 -0.5 0', 'pos': (30, 671), 'w': 240, 'h': 160,
      'props': {'x': 0.0, 'y': -0.5, 'z': 0.0}},
-    {'key': 'la2', 'init': 'load_action moved by the translate', 'pos': (30, 1131),
+    {'key': 'la2', 'init': 'load_action moved by the translate', 'pos': (30, 851),
      'w': 300, 'h': 90},
-    {'key': 'tx2', 'init': 'gl_text', 'pos': (30, 1241), 'w': 260, 'h': 260,
+    {'key': 'tx2', 'init': 'gl_text', 'pos': (30, 961), 'w': 260, 'h': 260,
      'props': {'font': 'Inconsolata-g.otf'}},
     {'key': 'c2', 'comment': True, 'text': 'after a transform: it moves, and would\nturn, with everything else downstream',
-     'pos': (30, 1516)},
+     'pos': (30, 1236)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'tx', 'gl chain in'),
+    ('ctx', 'gl_chain', 'tx', 'gl chain in'),
     ('la1', 'out', 'tx', 'text'),
     ('tx', 'gl chain out', 'tr', 'gl chain in'),
     ('tr', 'gl chain out', 'tx2', 'gl chain in'),
@@ -823,18 +1091,18 @@ gl_text, which used to share this page, draws text in the scene in the same
 way, and suits a label beside the grid."""
 
 demo = chain() + [
-    {'key': 'met', 'init': 'metro 500', 'pos': (30, 516), 'w': 129, 'h': 70,
+    {'key': 'met', 'init': 'metro 500', 'pos': (30, 236), 'w': 129, 'h': 70,
      'props': {'on': True, 'period': 500.0, 'units': 'milliseconds'}},
-    {'key': 'cnt', 'init': 'counter 16 1', 'pos': (30, 606), 'w': 123, 'h': 84,
+    {'key': 'cnt', 'init': 'counter 16 1', 'pos': (30, 326), 'w': 123, 'h': 84,
      'props': {'count': 16, 'step': 1}},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 705), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c0', 'comment': True, 'text': 'counts 0 to 15, then wraps', 'pos': (30, 755)},
-    {'key': 'bg', 'init': 'gl_button_grid', 'pos': (30, 795), 'w': 260, 'h': 280},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 425), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c0', 'comment': True, 'text': 'counts 0 to 15, then wraps', 'pos': (30, 475)},
+    {'key': 'bg', 'init': 'gl_button_grid', 'pos': (30, 515), 'w': 260, 'h': 280},
     {'key': 'c1', 'comment': True, 'text': 'the counted square lights up red,\nbottom left to top right',
-     'pos': (30, 1090)},
+     'pos': (30, 810)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'bg', 'gl chain in'),
+    ('ctx', 'gl_chain', 'bg', 'gl chain in'),
     ('met', '', 'cnt', 'input'),
     ('cnt', 'count out', 'i1', ''),
     ('i1', 'int out', 'bg', 'selection')]

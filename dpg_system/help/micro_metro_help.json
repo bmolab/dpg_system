@@ -54,7 +54,8 @@
                     "value": "milliseconds",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "2": {
             "init": "comment micro_metro",
@@ -94,7 +95,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "\nThe microsecond timer node is a high-precision alternative to the standard metro node.\n\nIt generates a repeating pulse signal (sending out the word \"bang\") using a dedicated background \nthread rather than the visual update loop. \n\nYou use this node when you need timing that is faster or more accurate than the interface frame rate, \nor when you need a steady rhythm that is not affected by visual lag.\n\nSYNTAX:\n\nmicrosecond_timer <period: int or float>\n\nExample:\nmicrosecond_timer 10\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the timer initiates a background worker thread to begin sending signals. \nWhen unchecked, the thread pauses.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nBecause this node uses a high-precision clock, it can handle very fast intervals (low numbers) \nmore accurately than the standard metro node.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the high-precision loop completes a cycle, the node sends a \"bang\" trigger out of its \noutput pin.",
+                    "value": "\nThe microsecond timer node is a high-precision alternative to the standard metro node.\n\nIt generates a repeating pulse signal (sending out the word \"bang\") using a dedicated background  thread rather than the visual update loop. \n\nYou use this node when you need timing that is faster or more accurate than the interface frame rate,  or when you need a steady rhythm that is not affected by visual lag.\n\nSYNTAX:\n\nmicrosecond_timer <period: int or float>\n\nExample:\nmicrosecond_timer 10\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the timer initiates a background worker thread to begin sending signals.  When unchecked, the thread pauses.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\"  Because this node uses a high-precision clock, it can handle very fast intervals (low numbers)  more accurately than the standard metro node.\n\nunits: \nThis lets you decide what time scale the period number represents.  You can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the high-precision loop completes a cycle, the node sends a \"bang\" trigger out of its  output pin.",
                     "value_type": "string"
                 },
                 "1": {
@@ -118,7 +119,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "\nThe microsecond timer node is a high-precision alternative to the standard metro node.\n\nIt generates a repeating pulse signal (sending out the word \"bang\") using a dedicated background \nthread rather than the visual update loop. \n\nYou use this node when you need timing that is faster or more accurate than the interface frame rate, \nor when you need a steady rhythm that is not affected by visual lag.\n\nSYNTAX:\n\nmicrosecond_timer <period: int or float>\n\nExample:\nmicrosecond_timer 10\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the timer initiates a background worker thread to begin sending signals. \nWhen unchecked, the thread pauses.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nBecause this node uses a high-precision clock, it can handle very fast intervals (low numbers) \nmore accurately than the standard metro node.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the high-precision loop completes a cycle, the node sends a \"bang\" trigger out of its \noutput pin."
+            "text": "\nThe microsecond timer node is a high-precision alternative to the standard metro node.\n\nIt generates a repeating pulse signal (sending out the word \"bang\") using a dedicated background  thread rather than the visual update loop. \n\nYou use this node when you need timing that is faster or more accurate than the interface frame rate,  or when you need a steady rhythm that is not affected by visual lag.\n\nSYNTAX:\n\nmicrosecond_timer <period: int or float>\n\nExample:\nmicrosecond_timer 10\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the timer initiates a background worker thread to begin sending signals.  When unchecked, the thread pauses.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\"  Because this node uses a high-precision clock, it can handle very fast intervals (low numbers)  more accurately than the standard metro node.\n\nunits: \nThis lets you decide what time scale the period number represents.  You can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the high-precision loop completes a cycle, the node sends a \"bang\" trigger out of its  output pin."
         },
         "4": {
             "name": "counter",

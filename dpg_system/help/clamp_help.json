@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The clamp node restricts numerical input values so that they stay within a defined range.\n\nIt compares the incoming data against a minimum and maximum limit. \nIf a value is lower than the minimum, it becomes the minimum; \nif it is higher than the maximum, it becomes the maximum. \n\nIt supports single numbers as well as complex data structures like lists, NumPy arrays, \nand PyTorch tensors. \n\nYou use this node to normalize control signals, prevent data from exceeding safety limits,\nor crop values to a specific window (e.g., keeping color values between 0.0 and 1.0).\n\nSYNTAX:\nclamp\n\nEXAMPLE:\nclamp\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be processed. \nReceiving data here triggers the calculation. It accepts integers, floats, lists, NumPy arrays, \nor PyTorch tensors.\n\nmin:\nThe lower limit. \n\nmax:\nThe upper limit. \n\nOUTPUTS: \n\nclamped output:\nThe result of the operation. \nThe output preserves the data structure and type of the input \n(e.g., if you put in a list, you get a list back).",
+                    "value": "The clamp node restricts numerical input values so that they stay within a defined range.\n\nIt compares the incoming data against a minimum and maximum limit.  If a value is lower than the minimum, it becomes the minimum; \nif it is higher than the maximum, it becomes the maximum. \n\nIt supports single numbers as well as complex data structures like lists, NumPy arrays,  and PyTorch tensors. \n\nYou use this node to normalize control signals, prevent data from exceeding safety limits, or crop values to a specific window (e.g., keeping color values between 0.0 and 1.0).\n\nSYNTAX:\nclamp\n\nEXAMPLE:\nclamp\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be processed. \nReceiving data here triggers the calculation. It accepts integers, floats, lists, NumPy arrays,  or PyTorch tensors.\n\nmin:\nThe lower limit. \n\nmax:\nThe upper limit. \n\nOUTPUTS: \n\nclamped output:\nThe result of the operation. \nThe output preserves the data structure and type of the input  (e.g., if you put in a list, you get a list back).",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The clamp node restricts numerical input values so that they stay within a defined range.\n\nIt compares the incoming data against a minimum and maximum limit. \nIf a value is lower than the minimum, it becomes the minimum; \nif it is higher than the maximum, it becomes the maximum. \n\nIt supports single numbers as well as complex data structures like lists, NumPy arrays, \nand PyTorch tensors. \n\nYou use this node to normalize control signals, prevent data from exceeding safety limits,\nor crop values to a specific window (e.g., keeping color values between 0.0 and 1.0).\n\nSYNTAX:\nclamp\n\nEXAMPLE:\nclamp\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be processed. \nReceiving data here triggers the calculation. It accepts integers, floats, lists, NumPy arrays, \nor PyTorch tensors.\n\nmin:\nThe lower limit. \n\nmax:\nThe upper limit. \n\nOUTPUTS: \n\nclamped output:\nThe result of the operation. \nThe output preserves the data structure and type of the input \n(e.g., if you put in a list, you get a list back)."
+            "text": "The clamp node restricts numerical input values so that they stay within a defined range.\n\nIt compares the incoming data against a minimum and maximum limit.  If a value is lower than the minimum, it becomes the minimum; \nif it is higher than the maximum, it becomes the maximum. \n\nIt supports single numbers as well as complex data structures like lists, NumPy arrays,  and PyTorch tensors. \n\nYou use this node to normalize control signals, prevent data from exceeding safety limits, or crop values to a specific window (e.g., keeping color values between 0.0 and 1.0).\n\nSYNTAX:\nclamp\n\nEXAMPLE:\nclamp\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be processed. \nReceiving data here triggers the calculation. It accepts integers, floats, lists, NumPy arrays,  or PyTorch tensors.\n\nmin:\nThe lower limit. \n\nmax:\nThe upper limit. \n\nOUTPUTS: \n\nclamped output:\nThe result of the operation. \nThe output preserves the data structure and type of the input  (e.g., if you put in a list, you get a list back)."
         },
         "4": {
             "init": "clamp .1 .9",
@@ -132,7 +132,8 @@
                     "value": 0.5,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "signal",
@@ -306,7 +307,8 @@
                     "value": 0.699999988079071,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "heat_map",
@@ -411,48 +413,6 @@
             }
         },
         "11": {
-            "name": "load_bang",
-            "id": 2900,
-            "position_x": 33,
-            "position_y": 50,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "12": {
-            "init": "t 1",
-            "name": "t",
-            "id": 3032,
-            "position_x": 133,
-            "position_y": 54,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "13": {
             "init": "comment click the top button to send",
             "name": "comment",
             "id": 3088,
@@ -477,7 +437,7 @@
             },
             "comment": "click the top button to send"
         },
-        "14": {
+        "12": {
             "init": "comment click the top button to send",
             "name": "comment",
             "id": 3099,
@@ -553,26 +513,6 @@
             "dest_node_name": "clamp",
             "dest_input_index": 0,
             "dest_input_name": "in"
-        },
-        "5": {
-            "source_node": 2900,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 3032,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "6": {
-            "source_node": 3032,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 776,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
         }
     }
 }

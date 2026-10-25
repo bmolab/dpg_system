@@ -164,68 +164,43 @@ print(build('tv.adjust_brightness', 'tv adjustments - the image editor sliders',
             demo, links, demo_width=1240, text_width=800, text_height=780))
 
 # ------------------------------------------------------------- tv.Grayscale
-body = """Two transforms that torchvision and kornia both offer.
-
-THE NODES:
-
-tv.Grayscale       colour to a single brightness channel
-tv.gaussian_blur   smooth the image
-
-THESE HAVE k. TWINS - WHICH SHOULD YOU USE:
-k.rgb_to_grayscale and k.gaussian_blur do the same jobs. For ordinary work the
-results are equivalent and the choice hardly matters, but three differences are
-worth knowing:
-
-Whole-number images. The tv nodes take 0..255 integers and give them back;
-the k. nodes convert everything to floats. If an image is arriving from a camera
-or a file as integers and you want it to stay that way, use these.
-
-Already-grayscale input. tv.Grayscale accepts a one-channel image and passes it
-through unchanged. k.rgb_to_grayscale refuses it - it wants three channels and
-says so. If a chain might be handed either kind, tv.Grayscale is the forgiving
-one.
-
-What comes next. If the next step is an edge or blob filter, you are in kornia's
-territory anyway, and staying in one family keeps the assumptions consistent.
-
-BLUR IS A CHOICE ABOUT SCALE:
-'sigma' is how far the smoothing reaches, and that is really a decision about
-what counts as detail and what counts as noise. 'kernel size' is just the window
-the arithmetic happens in; it needs to be comfortably wider than sigma or the
-blur is cut off at the edge of its own window. Sigma is the dial you want.
-
-Sigma is clamped above zero, and the widget is corrected to whatever value was
-actually used - a blur of nothing is not a blur, and it will not pretend
-otherwise.
+body = """Turns a colour image into a single brightness channel.
 
 GRAYSCALE IS NOT THE AVERAGE OF THE CHANNELS:
-It is a weighted sum, and green counts for far more than blue, because that is
-how human vision works rather than because of anything about the numbers. Two
-colours that look equally bright to you end up equally bright; averaging the
-three channels instead would make blues too light and greens too dark.
+It is a weighted sum - about 0.30 of red, 0.59 of green and 0.11 of blue -
+because that is how human vision works rather than because of anything about
+the numbers. Two colours that look equally bright to you end up equally bright;
+averaging the three channels instead would make blues too light and greens too
+dark.
 
 Which matters whenever brightness is standing in for something perceptual. If
 you want a plain average, that is a mean over the channel axis, not this.
 
+ALREADY-GRAYSCALE INPUT IS FINE:
+A one-channel image passes through unchanged. Anything else that is not three
+channels - a four-channel image with alpha, for instance - is refused with a
+message in the console.
+
+IT HAS A k. TWIN:
+k.rgb_to_grayscale does the same job with the same weights. Two differences are
+worth knowing. tv.Grayscale keeps whole-number images as whole numbers (0..255
+in, 0..255 out); k.rgb_to_grayscale converts to floats first. And
+k.rgb_to_grayscale refuses a one-channel image, where tv.Grayscale passes it
+through - so if a chain might be handed either kind, this is the forgiving one.
+
 SYNTAX:
 tv.Grayscale
-tv.gaussian_blur
-
-EXAMPLE:
-tv.gaussian_blur
 
 INPUTS and PARAMETERS:
 
 tensor in:
 The image. Receiving it does the work.
 
-kernel size / sigma (tv.gaussian_blur):
-How far the smoothing reaches, and the window it is computed in.
-
-OUTPUTS: 
+OUTPUTS:
 
 output:
-The transformed image, channels first, in the dtype you sent.
+The grayscale image, (1, H, W) - one channel, channels first, in the dtype you
+sent.
 """ + SHARED + """
 RELATED:
 tv.adjust_saturation at 0 gives a grey image that still has three channels;
@@ -248,21 +223,78 @@ demo = [
     {'key': 'sq', 'init': 't.squeeze', 'pos': (30, 480), 'w': 160, 'h': 80},
     {'key': 'hm0', 'init': 'heat_map', 'pos': (30, 575), 'w': 208, 'h': 148,
      'props': HM(32)},
-
-    {'key': 'gb', 'init': 'tv.gaussian_blur', 'pos': (530, 380), 'w': 230, 'h': 150,
-     'props': {'sigma': 2.0, 'kernel size': '9'}},
-    {'key': 'sq1', 'init': 't.squeeze', 'pos': (530, 545), 'w': 160, 'h': 80},
-    {'key': 'hm1', 'init': 'heat_map', 'pos': (530, 640), 'w': 208, 'h': 148,
-     'props': HM(32, 0.2, 0.8)},
-    {'key': 'c3', 'comment': True, 'text': 'the same picture, smoothed - sigma\ndecides what counts as detail',
-     'pos': (530, 800)},
 ]
 links = [('btn', '', 'rnd', '###input'),
          ('rnd', 'random tensor', 'i0', 'in'), ('i0', 'shape', 'l0', ''),
          ('rnd', 'random tensor', 'gs', 'tensor in'),
          ('gs', 'output', 'i1', 'in'), ('i1', 'shape', 'l1', ''),
-         ('gs', 'output', 'sq', 'tensor in'), ('sq', 'output', 'hm0', 'y'),
-         ('gs', 'output', 'gb', 'tensor in'),
+         ('gs', 'output', 'sq', 'tensor in'), ('sq', 'output', 'hm0', 'y')]
+print(build('tv.Grayscale', 'tv.Grayscale - colour to one brightness channel', body,
+            demo, links, demo_width=500, text_width=800, text_height=640))
+
+# --------------------------------------------------------- tv.gaussian_blur
+body = """Smooths an image with a Gaussian blur.
+
+BLUR IS A CHOICE ABOUT SCALE:
+'sigma' is how far the smoothing reaches, and that is really a decision about
+what counts as detail and what counts as noise. 'kernel size' is just the window
+the arithmetic happens in; it needs to be comfortably wider than sigma - about
+six times sigma covers the whole curve - or the blur is cut off at the edge of
+its own window. Sigma is the dial you want.
+
+Sigma is clamped above zero: set it to 0 or below and it becomes 0.1, and the
+widget is corrected to show that - a blur of nothing is not a blur, and it will
+not pretend otherwise.
+
+The defaults, sigma 0.5 in a 9-wide window, are a very light blur.
+
+IT HAS A k. TWIN:
+k.gaussian_blur does the same job and offers larger windows (up to 29 against
+19 here). The difference that matters: tv.gaussian_blur keeps whole-number
+images as whole numbers (0..255 in, 0..255 out), while k.gaussian_blur converts
+to floats first. If an image arrives from a camera or a file as integers and you
+want it to stay that way, use this one. If the next step is an edge or blob
+filter, you are in kornia's territory anyway, and staying in one family keeps
+the assumptions consistent.
+
+SYNTAX:
+tv.gaussian_blur
+
+INPUTS and PARAMETERS:
+
+tensor in:
+The image. Receiving it does the work. Each channel is blurred separately.
+
+sigma:
+How far the smoothing reaches, in pixels. Default 0.5.
+
+kernel size:
+The width of the window, 3 to 19, odd numbers only. Default 9.
+
+OUTPUTS:
+
+output:
+The blurred image, the same shape, channels first, in the dtype you sent.
+""" + SHARED
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'rnd', 'init': 't.rand 1 32 32', 'pos': (30, 120), 'w': 190, 'h': 180},
+    {'key': 'sq0', 'init': 't.squeeze', 'pos': (250, 120), 'w': 160, 'h': 80},
+    {'key': 'hm0', 'init': 'heat_map', 'pos': (250, 215), 'w': 208, 'h': 148,
+     'props': HM(32)},
+    {'key': 'c0', 'comment': True, 'text': 'noise - every pixel on its own', 'pos': (250, 375)},
+    {'key': 'gb', 'init': 'tv.gaussian_blur', 'pos': (30, 420), 'w': 230, 'h': 150,
+     'props': {'sigma': 2.0, 'kernel size': '13'}},
+    {'key': 'sq1', 'init': 't.squeeze', 'pos': (30, 585), 'w': 160, 'h': 80},
+    {'key': 'hm1', 'init': 'heat_map', 'pos': (30, 680), 'w': 208, 'h': 148,
+     'props': HM(32, 0.3, 0.7)},
+    {'key': 'c1', 'comment': True, 'text': 'the same picture, smoothed - sigma\ndecides what counts as detail',
+     'pos': (30, 840)},
+]
+links = [('btn', '', 'rnd', '###input'),
+         ('rnd', 'random tensor', 'sq0', 'tensor in'), ('sq0', 'output', 'hm0', 'y'),
+         ('rnd', 'random tensor', 'gb', 'tensor in'),
          ('gb', 'output', 'sq1', 'tensor in'), ('sq1', 'output', 'hm1', 'y')]
-print(build('tv.Grayscale', 'tv.Grayscale and tv.gaussian_blur - the k. twins', body,
-            demo, links, demo_width=800, text_width=800, text_height=760))
+print(build('tv.gaussian_blur', 'tv.gaussian_blur - smoothing an image', body,
+            demo, links, demo_width=500, text_width=800, text_height=680))

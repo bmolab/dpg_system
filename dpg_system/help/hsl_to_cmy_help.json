@@ -1,0 +1,1231 @@
+{
+    "height": 881,
+    "width": 1497,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1368,
+    "name": "hsl_to_cmy_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1396,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment hsl_to_cmy (hue, saturation, lightness to cyan, magenta, yellow)",
+            "name": "comment",
+            "id": 1414,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 672,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hsl_to_cmy (hue, saturation, lightness to cyan, magenta, yellow)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "hsl_to_cmy (hue, saturation, lightness to cyan, magenta, yellow)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1425,
+            "sid": 3,
+            "position_x": 629,
+            "position_y": 45,
+            "width": 702,
+            "height": 1051,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hsl_to_cmy converts a colour described as hue, saturation, lightness into the same colour described as cyan, magenta, yellow.\n\nAn orange of [30, 1, 0.5] in hsl comes out as [0, 0.5, 1] in cmy. In the demo, one component of the hsl colour sweeps steadily while the other two hold still; the vectors show the colour going in and coming out, and the swatch shows the colour itself (through a second, small hsl_to_rgb node beside the input, as a swatch needs red, green and blue).\n\nUse it to drive something that mixes colour subtractively - inks, or a light with cyan, magenta and yellow filters - by hue.\n\nTHE TWO SPACES:\n\nhsl   hue, saturation, lightness. Hue is the colour itself as an angle\n      round the wheel, saturation is how vivid, lightness runs black to white\n      with the pure colour at the middle.\ncmy   cyan, magenta, yellow - the inverse of rgb, how inks subtract light.\n      Each value is simply one minus the rgb one.\n\nSYNTAX:\nhsl_to_cmy\n\nEXAMPLE:\nhsl_to_cmy\n\nINPUTS and PARAMETERS:\n\nin:\nThree numbers - a list, or a NumPy array - in the hsl space. Receiving data here triggers the conversion.\n\nfrom / to:\nThe spaces being converted between: rgb, cmy, hsl or hsv. The node's name sets them to hsl and cmy; the menus can repoint it to any other pair without replacing the node.\n\nin scale / out scale:\nWhat numeric range the values use, INDEPENDENTLY at each end:\n\n  0-1     0.0 to 1.0, the usual choice inside a patch\n  0-100   percentages, as design tools tend to use\n  0-255   bytes, as image files and many devices use\n\nBecause the two are separate, the node also does the rescaling for you:\nset in scale to 0-255 and out scale to 0-1 to bring an image's colours into patch range in the same move as the conversion.\n\nOUTPUTS:\n\nout:\nThe converted colour: three numbers (a NumPy array) in the cmy space and the out scale.\n\nHUE IS ALWAYS IN DEGREES:\nThe scale settings apply to every component EXCEPT hue, which is always 0 to 360 whatever the scale says. Hue is an angle, not a proportion. An hsl value like [210, 0.5, 0.4] with a 0-1 scale is correct, not a bug.\n\nOUT OF RANGE:\nValues are converted through rgb, and red, green and blue are held to 0 to 1 on the way, so a component pushed past its range gives the nearest colour that exists rather than an error.\n\nSEE ALSO:\ncmy_to_hsl    the reverse conversion\nhsl_to_rgb    hsl to red, green, blue\nhsl_to_hsv    hsl to hue, saturation, value\ncolor_convert    choose both spaces yourself\ncolor            pick a colour, or show one",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 694,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1035,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "hsl_to_cmy converts a colour described as hue, saturation, lightness into the same colour described as cyan, magenta, yellow.\n\nAn orange of [30, 1, 0.5] in hsl comes out as [0, 0.5, 1] in cmy. In the demo, one component of the hsl colour sweeps steadily while the other two hold still; the vectors show the colour going in and coming out, and the swatch shows the colour itself (through a second, small hsl_to_rgb node beside the input, as a swatch needs red, green and blue).\n\nUse it to drive something that mixes colour subtractively - inks, or a light with cyan, magenta and yellow filters - by hue.\n\nTHE TWO SPACES:\n\nhsl   hue, saturation, lightness. Hue is the colour itself as an angle\n      round the wheel, saturation is how vivid, lightness runs black to white\n      with the pure colour at the middle.\ncmy   cyan, magenta, yellow - the inverse of rgb, how inks subtract light.\n      Each value is simply one minus the rgb one.\n\nSYNTAX:\nhsl_to_cmy\n\nEXAMPLE:\nhsl_to_cmy\n\nINPUTS and PARAMETERS:\n\nin:\nThree numbers - a list, or a NumPy array - in the hsl space. Receiving data here triggers the conversion.\n\nfrom / to:\nThe spaces being converted between: rgb, cmy, hsl or hsv. The node's name sets them to hsl and cmy; the menus can repoint it to any other pair without replacing the node.\n\nin scale / out scale:\nWhat numeric range the values use, INDEPENDENTLY at each end:\n\n  0-1     0.0 to 1.0, the usual choice inside a patch\n  0-100   percentages, as design tools tend to use\n  0-255   bytes, as image files and many devices use\n\nBecause the two are separate, the node also does the rescaling for you:\nset in scale to 0-255 and out scale to 0-1 to bring an image's colours into patch range in the same move as the conversion.\n\nOUTPUTS:\n\nout:\nThe converted colour: three numbers (a NumPy array) in the cmy space and the out scale.\n\nHUE IS ALWAYS IN DEGREES:\nThe scale settings apply to every component EXCEPT hue, which is always 0 to 360 whatever the scale says. Hue is an angle, not a proportion. An hsl value like [210, 0.5, 0.4] with a 0-1 scale is correct, not a bug.\n\nOUT OF RANGE:\nValues are converted through rgb, and red, green and blue are held to 0 to 1 on the way, so a component pushed past its range gives the nearest colour that exists rather than an error.\n\nSEE ALSO:\ncmy_to_hsl    the reverse conversion\nhsl_to_rgb    hsl to red, green, blue\nhsl_to_hsv    hsl to hue, saturation, value\ncolor_convert    choose both spaces yourself\ncolor            pick a colour, or show one"
+        },
+        "3": {
+            "init": "signal 6.0 saw",
+            "name": "signal",
+            "id": 1479,
+            "sid": 8,
+            "position_x": 62,
+            "position_y": 102,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 6.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "hsl_to_cmy",
+            "id": 1539,
+            "sid": 12,
+            "position_x": 60,
+            "position_y": 288,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "from",
+                    "value": "hsl",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "to",
+                    "value": "cmy",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "in scale",
+                    "value": "0-1",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "out scale",
+                    "value": "0-1",
+                    "value_type": "string"
+                }
+            },
+            "highlight": true
+        },
+        "5": {
+            "name": "text_block",
+            "id": 1600,
+            "sid": 14,
+            "position_x": 221,
+            "position_y": 409,
+            "width": 323,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "cyan, magenta and yellow rise and fall in turn,\neach the opposite of red, green or blue",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 315,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "text": "cyan, magenta and yellow rise and fall in turn,\neach the opposite of red, green or blue"
+        },
+        "6": {
+            "name": "close",
+            "id": 1617,
+            "sid": 15,
+            "position_x": 24,
+            "position_y": 745,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "7": {
+            "name": "color",
+            "id": 1651,
+            "sid": 17,
+            "position_x": 213,
+            "position_y": 258,
+            "width": 176,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": [
+                        25.499999999999993,
+                        229.5,
+                        25.499999999999993,
+                        255.0
+                    ],
+                    "value_type": "list"
+                },
+                "1": {
+                    "name": "hue_wheel",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "alpha",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "inputs",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "init": "pack f 0.8 0.5",
+            "name": "pack",
+            "id": 1687,
+            "sid": 20,
+            "position_x": 218,
+            "position_y": 102,
+            "width": 39,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output pref",
+                    "value": "list",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "vector",
+            "id": 1713,
+            "sid": 22,
+            "position_x": 290,
+            "position_y": 101,
+            "width": 160,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "[0]",
+                    "value": 120.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "[1]",
+                    "value": 0.8,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "[2]",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "[3]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "[4]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "[5]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "[6]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "[7]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "[8]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "[9]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "[10]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "[11]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "[12]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "[13]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "[14]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "[15]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "[16]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "[17]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "[18]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "[19]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "[20]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "[21]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "[22]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "[23]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "[24]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "[25]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "[26]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "[27]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "[28]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "[29]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "[30]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "[31]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "[32]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "33": {
+                    "name": "[33]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "34": {
+                    "name": "[34]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "35": {
+                    "name": "[35]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "36": {
+                    "name": "[36]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "37": {
+                    "name": "[37]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "38": {
+                    "name": "[38]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "39": {
+                    "name": "[39]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "40": {
+                    "name": "[40]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "41": {
+                    "name": "[41]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "42": {
+                    "name": "[42]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "43": {
+                    "name": "[43]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "44": {
+                    "name": "[44]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "45": {
+                    "name": "[45]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "46": {
+                    "name": "[46]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "47": {
+                    "name": "[47]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "48": {
+                    "name": "[48]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "49": {
+                    "name": "[49]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "50": {
+                    "name": "[50]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "51": {
+                    "name": "[51]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "52": {
+                    "name": "[52]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "53": {
+                    "name": "[53]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "54": {
+                    "name": "[54]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "55": {
+                    "name": "[55]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "56": {
+                    "name": "[56]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "57": {
+                    "name": "[57]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "58": {
+                    "name": "[58]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "59": {
+                    "name": "[59]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "60": {
+                    "name": "[60]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "61": {
+                    "name": "[61]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "62": {
+                    "name": "[62]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "63": {
+                    "name": "[63]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "64": {
+                    "name": "zero",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "65": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "string"
+                },
+                "66": {
+                    "name": "component count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "67": {
+                    "name": "column count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "68": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "69": {
+                    "name": "all inputs trigger",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "70": {
+                    "name": "width",
+                    "value": 45,
+                    "value_type": "int"
+                },
+                "71": {
+                    "name": "save",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "72": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "73": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "name": "vector",
+            "id": 1898,
+            "sid": 24,
+            "position_x": 229,
+            "position_y": 461,
+            "width": 160,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "[0]",
+                    "value": 0.9,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "[1]",
+                    "value": 0.09999999999999998,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "[2]",
+                    "value": 0.9,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "[3]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "[4]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "[5]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "[6]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "[7]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "[8]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "[9]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "[10]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "[11]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "[12]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "[13]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "[14]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "[15]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "16": {
+                    "name": "[16]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "[17]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "[18]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "19": {
+                    "name": "[19]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "20": {
+                    "name": "[20]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "21": {
+                    "name": "[21]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "22": {
+                    "name": "[22]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "23": {
+                    "name": "[23]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "24": {
+                    "name": "[24]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "25": {
+                    "name": "[25]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "26": {
+                    "name": "[26]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "27": {
+                    "name": "[27]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "28": {
+                    "name": "[28]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "29": {
+                    "name": "[29]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "30": {
+                    "name": "[30]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "31": {
+                    "name": "[31]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "32": {
+                    "name": "[32]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "33": {
+                    "name": "[33]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "34": {
+                    "name": "[34]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "35": {
+                    "name": "[35]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "36": {
+                    "name": "[36]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "37": {
+                    "name": "[37]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "38": {
+                    "name": "[38]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "39": {
+                    "name": "[39]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "40": {
+                    "name": "[40]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "41": {
+                    "name": "[41]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "42": {
+                    "name": "[42]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "43": {
+                    "name": "[43]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "44": {
+                    "name": "[44]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "45": {
+                    "name": "[45]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "46": {
+                    "name": "[46]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "47": {
+                    "name": "[47]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "48": {
+                    "name": "[48]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "49": {
+                    "name": "[49]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "50": {
+                    "name": "[50]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "51": {
+                    "name": "[51]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "52": {
+                    "name": "[52]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "53": {
+                    "name": "[53]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "54": {
+                    "name": "[54]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "55": {
+                    "name": "[55]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "56": {
+                    "name": "[56]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "57": {
+                    "name": "[57]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "58": {
+                    "name": "[58]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "59": {
+                    "name": "[59]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "60": {
+                    "name": "[60]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "61": {
+                    "name": "[61]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "62": {
+                    "name": "[62]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "63": {
+                    "name": "[63]",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "64": {
+                    "name": "zero",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "65": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "string"
+                },
+                "66": {
+                    "name": "component count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "67": {
+                    "name": "column count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "68": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "69": {
+                    "name": "all inputs trigger",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "70": {
+                    "name": "width",
+                    "value": 45,
+                    "value_type": "int"
+                },
+                "71": {
+                    "name": "save",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "72": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "73": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "text_block",
+            "id": 2080,
+            "sid": 26,
+            "position_x": 48,
+            "position_y": 49,
+            "width": 428,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "This creates a colour of saturation 0.8 and lightness 0.5\nwith the hue sweeping around the 360 degrees of the colour wheel",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 420,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "text": "This creates a colour of saturation 0.8 and lightness 0.5\nwith the hue sweeping around the 360 degrees of the colour wheel"
+        },
+        "12": {
+            "init": "comment convert to cmy",
+            "name": "comment",
+            "id": 2105,
+            "sid": 28,
+            "position_x": 48,
+            "position_y": 340,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "convert to cmy",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "convert to cmy"
+        },
+        "13": {
+            "name": "hsl_to_rgb",
+            "id": 2106,
+            "sid": 29,
+            "position_x": 410,
+            "position_y": 230,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "from",
+                    "value": "hsl",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "to",
+                    "value": "rgb",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "in scale",
+                    "value": "0-1",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "out scale",
+                    "value": "0-1",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1479,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1687,
+            "dest_node_name": "pack",
+            "dest_input_index": 0,
+            "dest_input_name": "float"
+        },
+        "1": {
+            "source_node": 1539,
+            "source_node_name": "hsl_to_cmy",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1898,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 1687,
+            "source_node_name": "pack",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1539,
+            "dest_node_name": "hsl_to_cmy",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 1687,
+            "source_node_name": "pack",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1713,
+            "dest_node_name": "vector",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 1687,
+            "source_node_name": "pack",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 2106,
+            "dest_node_name": "hsl_to_rgb",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 2106,
+            "source_node_name": "hsl_to_rgb",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1651,
+            "dest_node_name": "color",
+            "dest_input_index": 0,
+            "dest_input_name": "##color"
+        }
+    }
+}
