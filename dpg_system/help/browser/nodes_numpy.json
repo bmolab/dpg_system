@@ -1,11 +1,11 @@
 {
-    "height": 648,
-    "width": 1654,
+    "height": 680,
+    "width": 1766,
     "position": [
         100,
         100
     ],
-    "id": 1758,
+    "id": 1832,
     "name": "nodes_numpy",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy.json",
     "nodes": {
@@ -140,7 +140,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 292,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -150,7 +150,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -162,7 +162,7 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 330,
+            "position_x": 386,
             "position_y": 154,
             "width": 459,
             "height": 64,
@@ -204,7 +204,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 222,
-            "width": 292,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -214,7 +214,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -226,7 +226,7 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 330,
+            "position_x": 386,
             "position_y": 226,
             "width": 446,
             "height": 52,
@@ -268,7 +268,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 282,
-            "width": 292,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -278,7 +278,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -290,7 +290,7 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 330,
+            "position_x": 386,
             "position_y": 286,
             "width": 428,
             "height": 52,
@@ -332,7 +332,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 342,
-            "width": 292,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -342,7 +342,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -354,7 +354,7 @@
         "12": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 330,
+            "position_x": 386,
             "position_y": 346,
             "width": 446,
             "height": 40,
@@ -396,7 +396,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 394,
-            "width": 292,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -406,7 +406,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -418,7 +418,7 @@
         "14": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 330,
+            "position_x": 386,
             "position_y": 398,
             "width": 175,
             "height": 28,
@@ -460,7 +460,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 446,
-            "width": 292,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -470,7 +470,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -482,7 +482,7 @@
         "16": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 330,
+            "position_x": 386,
             "position_y": 450,
             "width": 415,
             "height": 40,
@@ -524,7 +524,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 498,
-            "width": 292,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -534,7 +534,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -546,7 +546,7 @@
         "18": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 330,
+            "position_x": 386,
             "position_y": 502,
             "width": 452,
             "height": 64,
@@ -586,9 +586,9 @@
         "19": {
             "init": "help_link nodes_numpy_spread_of_values Spread of values",
             "name": "help_link",
-            "position_x": 849,
-            "position_y": 150,
-            "width": 292,
+            "position_x": 24,
+            "position_y": 570,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -598,7 +598,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -610,8 +610,8 @@
         "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1155,
-            "position_y": 154,
+            "position_x": 386,
+            "position_y": 574,
             "width": 403,
             "height": 40,
             "properties": {
@@ -650,9 +650,9 @@
         "21": {
             "init": "help_link nodes_numpy_running_totals_and_history Running totals and history",
             "name": "help_link",
-            "position_x": 849,
-            "position_y": 202,
-            "width": 292,
+            "position_x": 905,
+            "position_y": 150,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -662,7 +662,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -674,8 +674,8 @@
         "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1155,
-            "position_y": 206,
+            "position_x": 1267,
+            "position_y": 154,
             "width": 428,
             "height": 52,
             "properties": {
@@ -714,9 +714,9 @@
         "23": {
             "init": "help_link nodes_numpy_curves_and_filters Curves and filters",
             "name": "help_link",
-            "position_x": 849,
-            "position_y": 262,
-            "width": 292,
+            "position_x": 905,
+            "position_y": 210,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -726,7 +726,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -738,8 +738,8 @@
         "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1155,
-            "position_y": 266,
+            "position_x": 1267,
+            "position_y": 214,
             "width": 459,
             "height": 52,
             "properties": {
@@ -778,9 +778,9 @@
         "25": {
             "init": "help_link nodes_numpy_linear_algebra Linear algebra",
             "name": "help_link",
-            "position_x": 849,
-            "position_y": 322,
-            "width": 292,
+            "position_x": 905,
+            "position_y": 270,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -790,7 +790,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -802,8 +802,8 @@
         "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1155,
-            "position_y": 326,
+            "position_x": 1267,
+            "position_y": 274,
             "width": 452,
             "height": 76,
             "properties": {
@@ -840,21 +840,21 @@
             "presentation_state": "show_all"
         },
         "27": {
-            "init": "help_link nodes_numpy_scipy_rotations_angles_shapes_and_fits SciPy: rotations, angles, shapes and fits",
+            "init": "help_link nodes_numpy_scipy_tracking_mapping_synchrony_and_statistics SciPy: tracking, mapping, synchrony and statistics",
             "name": "help_link",
-            "position_x": 849,
-            "position_y": 406,
-            "width": 292,
+            "position_x": 905,
+            "position_y": 354,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "SciPy: rotations, angles, shapes and fits",
+                    "name": "SciPy: tracking, mapping, synchrony and statistics",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
@@ -866,8 +866,72 @@
         "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1155,
-            "position_y": 410,
+            "position_x": 1267,
+            "position_y": 358,
+            "width": 434,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "scipy.linear_sum_assignment, scipy.griddata, scipy.local_maxima,\nscipy.correlate, scipy.coherence, scipy.zscore, scipy.linregress,\nscipy.spearmanr, scipy.entropy",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 426,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "scipy.linear_sum_assignment, scipy.griddata, scipy.local_maxima,\nscipy.correlate, scipy.coherence, scipy.zscore, scipy.linregress,\nscipy.spearmanr, scipy.entropy",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link nodes_numpy_scipy_rotations_angles_shapes_and_fits SciPy: rotations, angles, shapes and fits",
+            "name": "help_link",
+            "position_x": 905,
+            "position_y": 414,
+            "width": 348,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "SciPy: rotations, angles, shapes and fits",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 332,
+                    "value_type": "int"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1267,
+            "position_y": 418,
             "width": 446,
             "height": 64,
             "properties": {
@@ -898,17 +962,17 @@
                 }
             },
             "text": "scipy.slerp, scipy.rotation_mean, scipy.align_vectors,\nscipy.rotation_apply, scipy.circmean, scipy.circstd, scipy.hilbert,\nscipy.detrend, scipy.convex_hull, scipy.kmeans, scipy.procrustes,\nscipy.curve_fit",
-            "id": 1573,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
+        "31": {
             "init": "help_link nodes_numpy_scipy_peaks_filters_points_and_curves SciPy: peaks, filters, points and curves",
             "name": "help_link",
-            "position_x": 849,
-            "position_y": 478,
-            "width": 292,
+            "position_x": 905,
+            "position_y": 486,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -918,20 +982,20 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
-            "id": 1610,
+            "id": 1684,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "32": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1155,
-            "position_y": 482,
+            "position_x": 1267,
+            "position_y": 490,
             "width": 415,
             "height": 52,
             "properties": {
@@ -962,17 +1026,17 @@
                 }
             },
             "text": "scipy.find_peaks, scipy.filtfilt, scipy.median_filter,\nscipy.gaussian_filter, scipy.resample_poly, scipy.spectrogram,\nscipy.welch, scipy.label, scipy.kdtree, scipy.cubic_spline",
-            "id": 1647,
+            "id": 1721,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "31": {
+        "33": {
             "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
             "name": "help_link",
-            "position_x": 849,
-            "position_y": 538,
-            "width": 292,
+            "position_x": 905,
+            "position_y": 546,
+            "width": 348,
             "height": 44,
             "properties": {
                 "0": {
@@ -982,20 +1046,20 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 276,
+                    "value": 332,
                     "value_type": "int"
                 }
             },
-            "id": 1684,
+            "id": 1758,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "32": {
+        "34": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1155,
-            "position_y": 542,
+            "position_x": 1267,
+            "position_y": 550,
             "width": 446,
             "height": 40,
             "properties": {
@@ -1026,7 +1090,7 @@
                 }
             },
             "text": "np.distance_from_target, np.proximity_to_target, proximity_trigger,\nnp.line_intersection, rotate_position",
-            "id": 1721,
+            "id": 1795,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

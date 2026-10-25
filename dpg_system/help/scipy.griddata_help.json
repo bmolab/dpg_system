@@ -1,0 +1,661 @@
+{
+    "height": 1271,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "scipy.griddata_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.griddata_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scipy.griddata - fill a grid from scattered readings",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 647,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scipy.griddata - fill a grid from scattered readings",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scipy.griddata - fill a grid from scattered readings"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Takes values measured at scattered points - not on a grid - and fills in a whole grid from them, estimating every cell from the readings around it.\n\nUse it to make a map of a room from sensor readings taken wherever you happened to stand (a magnetic field survey, a light level, a sound level), a heat map of a quantity known only at the performers' positions, or a smooth surface through a few control points to steer a parameter by position.\n\nSYNTAX:\nscipy.griddata <width> <height>\nDefaults: 32 x 32.\n\nINPUTS and PARAMETERS:\n\nvalues:\nOne value per point. Every input is gridded and sent - the only inlet that makes the node send - so the points can stay put while their readings change.\n\npoints:\nWhere the readings were taken: rows of x y. Held.\n\nwidth, height (int boxes, also inlets):\nHow many cells across and down.\n\nx min, x max, y min, y max (float boxes, also inlets):\nThe area the grid covers, when auto range is off.\n\nmethod:\nAn option, under the node. linear (the default) joins the points with flat triangles;\nnearest gives each cell the value of the closest reading (patches); cubic is smoother within the points; smooth fits a thin-plate spline through every reading - smooth everywhere, and fills the whole grid.\n\nauto range:\nAn option, under the node. On (the default), the grid spans the points' own extent.\n\noutside:\nAn option, under the node: what the cells beyond the outermost readings get (linear and cubic cannot reach them) - the nearest reading (the default), nan, or 0.\n\nOUTPUTS:\n\ngrid:\nThe filled grid: one row per y, one column per x.\n\nREADING THE DEMO:\nSix readings at fixed places, with new random values every second. Linear (left) is made of flat triangles with visible creases; smooth (right) flows through the same six readings with no creases.\n\nRELATED:\nnp.interp and scipy.cubic_spline fill in along a line. np.histogram2d counts points into a grid. heat_map draws the grid.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Takes values measured at scattered points - not on a grid - and fills in a whole grid from them, estimating every cell from the readings around it.\n\nUse it to make a map of a room from sensor readings taken wherever you happened to stand (a magnetic field survey, a light level, a sound level), a heat map of a quantity known only at the performers' positions, or a smooth surface through a few control points to steer a parameter by position.\n\nSYNTAX:\nscipy.griddata <width> <height>\nDefaults: 32 x 32.\n\nINPUTS and PARAMETERS:\n\nvalues:\nOne value per point. Every input is gridded and sent - the only inlet that makes the node send - so the points can stay put while their readings change.\n\npoints:\nWhere the readings were taken: rows of x y. Held.\n\nwidth, height (int boxes, also inlets):\nHow many cells across and down.\n\nx min, x max, y min, y max (float boxes, also inlets):\nThe area the grid covers, when auto range is off.\n\nmethod:\nAn option, under the node. linear (the default) joins the points with flat triangles;\nnearest gives each cell the value of the closest reading (patches); cubic is smoother within the points; smooth fits a thin-plate spline through every reading - smooth everywhere, and fills the whole grid.\n\nauto range:\nAn option, under the node. On (the default), the grid spans the points' own extent.\n\noutside:\nAn option, under the node: what the cells beyond the outermost readings get (linear and cubic cannot reach them) - the nearest reading (the default), nan, or 0.\n\nOUTPUTS:\n\ngrid:\nThe filled grid: one row per y, one column per x.\n\nREADING THE DEMO:\nSix readings at fixed places, with new random values every second. Linear (left) is made of flat triangles with visible creases; smooth (right) flows through the same six readings with no creases.\n\nRELATED:\nnp.interp and scipy.cubic_spline fill in along a line. np.histogram2d counts points into a grid. heat_map draws the grid."
+        },
+        "3": {
+            "init": "comment every second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 1000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 1000"
+        },
+        "5": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment six places: x y ...",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "six places: x y ...",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "six places: x y ..."
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0 1 0 0 1 1 1 0.3 0.6 0.7 0.3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "np.reshape",
+            "id": 570,
+            "position_x": 540,
+            "position_y": 210,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 6 2"
+        },
+        "10": {
+            "init": "comment six readings",
+            "name": "comment",
+            "id": 607,
+            "position_x": 580,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "six readings",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "six readings"
+        },
+        "11": {
+            "name": "np.rand",
+            "id": 644,
+            "position_x": 580,
+            "position_y": 92,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 6"
+        },
+        "12": {
+            "init": "comment linear",
+            "name": "comment",
+            "id": 681,
+            "position_x": 28,
+            "position_y": 330,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "linear",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "linear"
+        },
+        "13": {
+            "name": "scipy.griddata",
+            "id": 718,
+            "position_x": 28,
+            "position_y": 365,
+            "width": 129,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 28,
+            "position_y": 610,
+            "width": 218,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment smooth",
+            "name": "comment",
+            "id": 792,
+            "position_x": 400,
+            "position_y": 330,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smooth",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smooth"
+        },
+        "16": {
+            "name": "scipy.griddata",
+            "id": 829,
+            "position_x": 400,
+            "position_y": 365,
+            "width": 129,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "method",
+                    "value": "smooth",
+                    "value_type": "str"
+                }
+            },
+            "highlight": true
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 400,
+            "position_y": 610,
+            "width": 218,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 920,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 954,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.interp"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 143,
+            "position_y": 954,
+            "width": 127,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.cubic_spline"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 325,
+            "position_y": 954,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.histogram2d"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 476,
+            "position_y": 954,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link heat_map"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 1064,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "points"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "points"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "values"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "values"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "grid",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "grid",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

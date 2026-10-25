@@ -419,6 +419,12 @@ operand first for the same reason. The rotation nodes are scalar first (w x y z)
 like the quaternion nodes. smoke reports three ALWAYS ZERO outlets on these pages
 (align_vectors' error, circmean's np.mean, procrustes' same-shape difference): each
 demo is showing that the answer is 0.
+The fourth scipy batch (scipy.linear_sum_assignment, scipy.griddata,
+scipy.correlate, scipy.coherence, scipy.local_maxima, scipy.zscore,
+scipy.linregress, scipy.spearmanr, scipy.entropy) is seeded by
+`seed_scipy4_help.py`; make_pair and make_two_rhythms send b before a, so b is held
+when a triggers. smoke reports linear_sum_assignment's cost as ALWAYS ZERO: the
+demo only reorders points that do not move, so the distance moved is 0.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add
