@@ -1,0 +1,524 @@
+{
+    "height": 1171,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "t.linalg.norm_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.norm_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.linalg.norm - the length of vectors",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 463,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.linalg.norm - the length of vectors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.linalg.norm - the length of vectors"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1066,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Measures the size of a tensor: by default its length, the square root of the sum of the squares. Given a dim, it measures along that dim only - so t.linalg.norm -1 on 24 velocity vectors (24 x 3) gives the 24 speeds, one per joint.\n\nSYNTAX:\nt.linalg.norm <dim>\nWithout a dim, the whole tensor gives one number. With one, a dim box and a keep_dims\ncheckbox appear.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to measure. Every input sends.\n\ndim (int box, also an inlet; only when a dim was given):\nThe dim measured along: -1, the last, measures each row.\n\nkeep_dims (checkbox, also an inlet; only when a dim was given):\nKeep the measured dim, as size 1, so the answer lines up with the input (to divide by it, for instance, making unit vectors).\n\nord:\nAn option, under the node. 2 (the default) is ordinary length; 1 is the sum of the sizes (distance walking a grid); inf is the largest size; 0 counts the non-zero values.\n\nOUTPUTS:\n\nnorm:\nThe length(s).\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nTop: the whole tensor 3 4 is one vector, length 5. Bottom: with dim -1, each row is its own vector: 3 4 is 5, 6 8 is 10, 5 12 is 13.\n\nRELATED:\nnp.linalg.norm is the numpy version. t.length gives the length of a single vector;\nt.cdist the distances between points; t.normalize makes vectors length 1.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1050,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Measures the size of a tensor: by default its length, the square root of the sum of the squares. Given a dim, it measures along that dim only - so t.linalg.norm -1 on 24 velocity vectors (24 x 3) gives the 24 speeds, one per joint.\n\nSYNTAX:\nt.linalg.norm <dim>\nWithout a dim, the whole tensor gives one number. With one, a dim box and a keep_dims\ncheckbox appear.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to measure. Every input sends.\n\ndim (int box, also an inlet; only when a dim was given):\nThe dim measured along: -1, the last, measures each row.\n\nkeep_dims (checkbox, also an inlet; only when a dim was given):\nKeep the measured dim, as size 1, so the answer lines up with the input (to divide by it, for instance, making unit vectors).\n\nord:\nAn option, under the node. 2 (the default) is ordinary length; 1 is the sum of the sizes (distance walking a grid); inf is the largest size; 0 counts the non-zero values.\n\nOUTPUTS:\n\nnorm:\nThe length(s).\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nTop: the whole tensor 3 4 is one vector, length 5. Bottom: with dim -1, each row is its own vector: 3 4 is 5, 6 8 is 10, 5 12 is 13.\n\nRELATED:\nnp.linalg.norm is the numpy version. t.length gives the length of a single vector;\nt.cdist the distances between points; t.normalize makes vectors length 1."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment one vector",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 70,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one vector",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one vector"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "t.linalg.norm",
+            "id": 496,
+            "position_x": 340,
+            "position_y": 92,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "8": {
+            "name": "list",
+            "id": 533,
+            "position_x": 540,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment three vectors, one per row",
+            "name": "comment",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 190,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three vectors, one per row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three vectors, one per row"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 229,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 4 6 8 5 12",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "t.reshape",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 229,
+            "width": 243,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.reshape 3 2"
+        },
+        "12": {
+            "init": "comment dim -1: the length of each row",
+            "name": "comment",
+            "id": 681,
+            "position_x": 640,
+            "position_y": 190,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "dim -1: the length of each row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "dim -1: the length of each row"
+        },
+        "13": {
+            "name": "t.linalg.norm",
+            "id": 718,
+            "position_x": 640,
+            "position_y": 229,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.linalg.norm -1",
+            "highlight": true
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 640,
+            "position_y": 370,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 504,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linalg.norm"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 181,
+            "position_y": 504,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.length"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 286,
+            "position_y": 504,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.cdist"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 383,
+            "position_y": 504,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.normalize"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 614,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "norm",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "norm",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

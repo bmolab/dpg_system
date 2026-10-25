@@ -1,11 +1,11 @@
 {
-    "height": 488,
+    "height": 540,
     "width": 657,
     "position": [
         100,
         100
     ],
-    "id": 1092,
+    "id": 1166,
     "name": "nodes_torch_signal",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_signal.json",
     "nodes": {
@@ -164,12 +164,12 @@
             "annotation": true,
             "position_x": 195,
             "position_y": 154,
-            "width": 218,
+            "width": 323,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.fft, t.ifft, t.rfft, t.irfft",
+                    "value": "t.fft, t.ifft, t.rfft, t.irfft, t.stft, t.istft",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,7 +179,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 210,
+                    "value": 315,
                     "value_type": "int"
                 },
                 "3": {
@@ -193,14 +193,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.fft, t.ifft, t.rfft, t.irfft",
+            "text": "t.fft, t.ifft, t.rfft, t.irfft, t.stft, t.istft",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link nodes_torch_signal_windows Windows",
+            "init": "help_link nodes_torch_signal_convolution Convolution",
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
@@ -208,7 +208,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Windows",
+                    "name": "Convolution",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -228,6 +228,70 @@
             "annotation": true,
             "position_x": 195,
             "position_y": 206,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.convolve, t.correlate",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.convolve, t.correlate",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link nodes_torch_signal_windows Windows",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 157,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Windows",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 195,
+            "position_y": 258,
             "width": 391,
             "height": 64,
             "properties": {
@@ -258,16 +322,16 @@
                 }
             },
             "text": "t.window.hann, t.window.hamming, t.window.general_hamming,\nt.window.blackman, t.window.nuttall, t.window.bartlett,\nt.window.cosine, t.window.gaussian, t.window.kaiser,\nt.window.exponential",
-            "id": 833,
+            "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "9": {
+        "11": {
             "init": "help_link nodes_torch_signal_wavelets Wavelets",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 274,
+            "position_y": 326,
             "width": 157,
             "height": 44,
             "properties": {
@@ -282,16 +346,16 @@
                     "value_type": "int"
                 }
             },
-            "id": 870,
+            "id": 944,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "10": {
+        "12": {
             "name": "text_block",
             "annotation": true,
             "position_x": 195,
-            "position_y": 278,
+            "position_y": 330,
             "width": 206,
             "height": 28,
             "properties": {
@@ -322,16 +386,16 @@
                 }
             },
             "text": "t.cwt, t.ultracwt / ultracwt",
-            "id": 907,
+            "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "13": {
             "init": "help_link nodes_torch_signal_kalman_filters Kalman filters",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 326,
+            "position_y": 378,
             "width": 157,
             "height": 44,
             "properties": {
@@ -346,16 +410,16 @@
                     "value_type": "int"
                 }
             },
-            "id": 944,
+            "id": 1018,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "14": {
             "name": "text_block",
             "annotation": true,
             "position_x": 195,
-            "position_y": 330,
+            "position_y": 382,
             "width": 422,
             "height": 40,
             "properties": {
@@ -386,16 +450,16 @@
                 }
             },
             "text": "t.ESEKF, t.quat_ESEKF, t.smart_clamp_kf, t.smart_clamp_quat_kf,\nt.persistence_quat_kf, t.hybrid_quat_kf",
-            "id": 981,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "15": {
             "init": "help_link nodes_torch_signal_smoothing_and_bands Smoothing and bands",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 378,
+            "position_y": 430,
             "width": 157,
             "height": 44,
             "properties": {
@@ -410,16 +474,16 @@
                     "value_type": "int"
                 }
             },
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "name": "text_block",
             "annotation": true,
             "position_x": 195,
-            "position_y": 382,
+            "position_y": 434,
             "width": 360,
             "height": 28,
             "properties": {
@@ -450,7 +514,7 @@
                 }
             },
             "text": "t.sav_gol_filter, t.filter_bank, t.rotation_band_diff",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

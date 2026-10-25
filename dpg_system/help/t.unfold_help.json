@@ -1,0 +1,469 @@
+{
+    "height": 1271,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "t.unfold_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.unfold_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.unfold - every window of a sequence, at once",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.unfold - every window of a sequence, at once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.unfold - every window of a sequence, at once"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Cuts a sequence into windows of a given length - overlapping or not - and gives them all at once, one window per row. Every 30-frame window of a movement, ready to be averaged, measured or fed to a model in one step instead of one window at a time.\n\nSYNTAX:\nt.unfold <window> <step>\nDefaults: 4, 1.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe sequence. Every input sends.\n\nwindow (int box, also an inlet):\nHow many values in each window.\n\nstep (int box, also an inlet):\nHow far each window starts after the last: 1 for every possible window; the window length for windows side by side with no overlap.\n\ndim (int box, also an inlet):\nThe dim the windows run along; -1, the last, by default. For frames x joints, use 0:\nthe result is windows x joints x window.\n\nOUTPUTS:\n\nwindows:\nOne more dim than the input: the windows, then the values in each. A copy, so changing it does not change the input.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\n0 1 2 3 4 5 in windows of 3: every window, each starting one later (top); with step 3, side by side (bottom).\n\nRELATED:\nnp.sliding_window_view is the numpy version. t.rolling_buffer keeps the latest window of a stream. t.mean with a dim then averages each window. t.stft analyses each window's frequencies.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Cuts a sequence into windows of a given length - overlapping or not - and gives them all at once, one window per row. Every 30-frame window of a movement, ready to be averaged, measured or fed to a model in one step instead of one window at a time.\n\nSYNTAX:\nt.unfold <window> <step>\nDefaults: 4, 1.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe sequence. Every input sends.\n\nwindow (int box, also an inlet):\nHow many values in each window.\n\nstep (int box, also an inlet):\nHow far each window starts after the last: 1 for every possible window; the window length for windows side by side with no overlap.\n\ndim (int box, also an inlet):\nThe dim the windows run along; -1, the last, by default. For frames x joints, use 0:\nthe result is windows x joints x window.\n\nOUTPUTS:\n\nwindows:\nOne more dim than the input: the windows, then the values in each. A copy, so changing it does not change the input.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\n0 1 2 3 4 5 in windows of 3: every window, each starting one later (top); with step 3, side by side (bottom).\n\nRELATED:\nnp.sliding_window_view is the numpy version. t.rolling_buffer keeps the latest window of a stream. t.mean with a dim then averages each window. t.stft analyses each window's frequencies."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment six values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 70,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "six values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "six values"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 2 3 4 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment windows of 3, step 1",
+            "name": "comment",
+            "id": 496,
+            "position_x": 420,
+            "position_y": 53,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "windows of 3, step 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "windows of 3, step 1"
+        },
+        "8": {
+            "name": "t.unfold",
+            "id": 533,
+            "position_x": 420,
+            "position_y": 92,
+            "width": 129,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.unfold 3",
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 265,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment windows of 3, step 3",
+            "name": "comment",
+            "id": 607,
+            "position_x": 420,
+            "position_y": 330,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "windows of 3, step 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "windows of 3, step 3"
+        },
+        "11": {
+            "name": "t.unfold",
+            "id": 644,
+            "position_x": 420,
+            "position_y": 369,
+            "width": 129,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.unfold 3 3",
+            "highlight": true
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 180,
+            "position_y": 540,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 674,
+            "width": 152,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.sliding_window_view"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 243,
+            "position_y": 674,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rolling_buffer"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 410,
+            "position_y": 674,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.mean"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 500,
+            "position_y": 674,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.stft"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 784,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "windows",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "windows",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

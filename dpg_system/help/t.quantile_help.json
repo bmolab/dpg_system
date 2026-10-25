@@ -1,0 +1,491 @@
+{
+    "height": 1371,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "t.quantile_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.quantile_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.quantile - the value below which a given share falls",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 672,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.quantile - the value below which a given share falls",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.quantile - the value below which a given share falls"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1266,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the value below which a given share of the values falls. q 0.5 is the median:\nhalf the values are below it. q 0.9 is the value only a tenth exceed - a robust \"loud\" or \"fast\" level that a few outliers cannot drag up the way they drag the maximum. q 0.1 and 0.9 together give a range that ignores the extremes.\n\nUse it to set thresholds from the data itself, to normalise a feature to its typical range (from the 5% to the 95% quantile), or to summarise a distribution.\n\nSYNTAX:\nt.quantile <q> <dim>\nDefaults: q 0.5, the whole tensor. q is a share from 0 to 1 (np.percentile uses 0 to\n100). Giving a dim adds dim and keep_dims boxes.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values. Every input sends.\n\nq (float box, also an inlet):\nThe share, 0 to 1. A list - 0.1 0.5 0.9 - asks for several at once.\n\ndim, keep_dims (also inlets; only when a dim was given):\nEach slice along dim gets its own quantile(s).\n\ninterpolation:\nAn option, under the node: how a q that falls between two values is answered - linear (the default) blends them, lower and higher pick one, nearest the closer, midpoint their mean.\n\nignore nan:\nAn option, under the node: skip nan values (otherwise any nan makes the answer nan).\n\nOUTPUTS:\n\noutput:\nThe quantile(s).\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nThe values 1 to 9. A quarter of the way up is 3, half way 5, three quarters 7.\n\nRELATED:\nnp.percentile is the numpy version (q in 0 to 100). t.median is q 0.5. t.sort puts every value in order. t.histc counts how many fall in each range.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1250,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the value below which a given share of the values falls. q 0.5 is the median:\nhalf the values are below it. q 0.9 is the value only a tenth exceed - a robust \"loud\" or \"fast\" level that a few outliers cannot drag up the way they drag the maximum. q 0.1 and 0.9 together give a range that ignores the extremes.\n\nUse it to set thresholds from the data itself, to normalise a feature to its typical range (from the 5% to the 95% quantile), or to summarise a distribution.\n\nSYNTAX:\nt.quantile <q> <dim>\nDefaults: q 0.5, the whole tensor. q is a share from 0 to 1 (np.percentile uses 0 to\n100). Giving a dim adds dim and keep_dims boxes.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values. Every input sends.\n\nq (float box, also an inlet):\nThe share, 0 to 1. A list - 0.1 0.5 0.9 - asks for several at once.\n\ndim, keep_dims (also inlets; only when a dim was given):\nEach slice along dim gets its own quantile(s).\n\ninterpolation:\nAn option, under the node: how a q that falls between two values is answered - linear (the default) blends them, lower and higher pick one, nearest the closer, midpoint their mean.\n\nignore nan:\nAn option, under the node: skip nan values (otherwise any nan makes the answer nan).\n\nOUTPUTS:\n\noutput:\nThe quantile(s).\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nThe values 1 to 9. A quarter of the way up is 3, half way 5, three quarters 7.\n\nRELATED:\nnp.percentile is the numpy version (q in 0 to 100). t.median is q 0.5. t.sort puts every value in order. t.histc counts how many fall in each range."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment the values 1 to 9",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the values 1 to 9",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the values 1 to 9"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6 7 8 9",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 496,
+            "position_x": 28,
+            "position_y": 220,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "8": {
+            "name": "load_bang",
+            "id": 533,
+            "position_x": 28,
+            "position_y": 259,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment three shares",
+            "name": "comment",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 220,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three shares",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three shares"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 259,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.25 0.5 0.75",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the value each share falls below",
+            "name": "comment",
+            "id": 644,
+            "position_x": 460,
+            "position_y": 53,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the value each share falls below",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the value each share falls below"
+        },
+        "12": {
+            "name": "t.quantile",
+            "id": 681,
+            "position_x": 460,
+            "position_y": 92,
+            "width": 99,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 680,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 384,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.percentile"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 174,
+            "position_y": 384,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.median"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 279,
+            "position_y": 384,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.sort"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 369,
+            "position_y": 384,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.histc"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 494,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "q"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

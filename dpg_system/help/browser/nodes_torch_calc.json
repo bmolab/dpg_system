@@ -1,11 +1,11 @@
 {
-    "height": 632,
-    "width": 804,
+    "height": 692,
+    "width": 823,
     "position": [
         100,
         100
     ],
-    "id": 1314,
+    "id": 1388,
     "name": "nodes_torch_calc",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_calc.json",
     "nodes": {
@@ -356,12 +356,12 @@
             "annotation": true,
             "position_x": 324,
             "position_y": 310,
-            "width": 440,
+            "width": 446,
             "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.mean, t.median, t.nanmean, t.nanmedian, t.sum, t.nansum, t.prod,\nt.max, t.min, t.argmax, t.any, t.all, t.count_nonzero,\nt.argwhere / t.non_zero",
+                    "value": "t.mean, t.median, t.nanmean, t.nanmedian, t.sum, t.nansum, t.prod,\nt.std, t.var, t.quantile, t.mode, t.max, t.min, t.argmax, t.argmin,\nt.any, t.all, t.count_nonzero, t.argwhere / t.non_zero",
                     "value_type": "str"
                 },
                 "1": {
@@ -371,7 +371,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 432,
+                    "value": 438,
                     "value_type": "int"
                 },
                 "3": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.mean, t.median, t.nanmean, t.nanmedian, t.sum, t.nansum, t.prod,\nt.max, t.min, t.argmax, t.any, t.all, t.count_nonzero,\nt.argwhere / t.non_zero",
+            "text": "t.mean, t.median, t.nanmean, t.nanmedian, t.sum, t.nansum, t.prod,\nt.std, t.var, t.quantile, t.mode, t.max, t.min, t.argmax, t.argmin,\nt.any, t.all, t.count_nonzero, t.argwhere / t.non_zero",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
@@ -420,12 +420,12 @@
             "annotation": true,
             "position_x": 324,
             "position_y": 370,
-            "width": 298,
+            "width": 459,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.argsort, t.histc, t.bincount, t.bucketize",
+                    "value": "t.sort, t.argsort, t.topk, t.unique, t.histc, t.bincount, t.bucketize",
                     "value_type": "str"
                 },
                 "1": {
@@ -435,7 +435,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 290,
+                    "value": 451,
                     "value_type": "int"
                 },
                 "3": {
@@ -449,14 +449,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.argsort, t.histc, t.bincount, t.bucketize",
+            "text": "t.sort, t.argsort, t.topk, t.unique, t.histc, t.bincount, t.bucketize",
             "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "15": {
-            "init": "help_link nodes_torch_calc_running_totals_and_differences Running totals and differences",
+            "init": "help_link nodes_torch_calc_missing_values Missing values",
             "name": "help_link",
             "position_x": 24,
             "position_y": 418,
@@ -464,7 +464,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Running totals and differences",
+                    "name": "Missing values",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -484,6 +484,70 @@
             "annotation": true,
             "position_x": 324,
             "position_y": 422,
+            "width": 348,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.isnan, t.isfinite, t.isinf, t.nan_to_num, t.where",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.isnan, t.isfinite, t.isinf, t.nan_to_num, t.where",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link nodes_torch_calc_running_totals_and_differences Running totals and differences",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 470,
+            "width": 286,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Running totals and differences",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 324,
+            "position_y": 474,
             "width": 428,
             "height": 40,
             "properties": {
@@ -514,16 +578,16 @@
                 }
             },
             "text": "t.cumsum, t.cumprod, t.cummax, t.cummin, t.logcumsumexp, t.diff,\nt.energy",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
             "init": "help_link nodes_torch_calc_distances_and_losses Distances and losses",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 470,
+            "position_y": 522,
             "width": 286,
             "height": 44,
             "properties": {
@@ -538,16 +602,16 @@
                     "value_type": "int"
                 }
             },
-            "id": 1166,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "20": {
             "name": "text_block",
             "annotation": true,
             "position_x": 324,
-            "position_y": 474,
+            "position_y": 526,
             "width": 403,
             "height": 40,
             "properties": {
@@ -578,16 +642,16 @@
                 }
             },
             "text": "t.length, t.dist, t.cdist, t.cosine_similarity, t.normalize,\nt.mse_loss, t.l1_loss, t.cross_entropy_loss",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "21": {
             "init": "help_link nodes_torch_calc_matrices Matrices",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 522,
+            "position_y": 574,
             "width": 286,
             "height": 44,
             "properties": {
@@ -602,22 +666,22 @@
                     "value_type": "int"
                 }
             },
-            "id": 1240,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "22": {
             "name": "text_block",
             "annotation": true,
             "position_x": 324,
-            "position_y": 526,
-            "width": 422,
-            "height": 40,
+            "position_y": 578,
+            "width": 415,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.linalg.svd, t.linalg.qr, t.linalg.eig, t.linalg.pca_low_rank,\nt.corrcoef",
+                    "value": "t.matmul, t.einsum, t.linalg.norm, t.linalg.inv, t.linalg.det,\nt.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.linalg.svd,\nt.linalg.qr, t.linalg.eig, t.linalg.pca_low_rank, t.corrcoef",
                     "value_type": "str"
                 },
                 "1": {
@@ -627,12 +691,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 414,
+                    "value": 407,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -641,8 +705,8 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.linalg.svd, t.linalg.qr, t.linalg.eig, t.linalg.pca_low_rank,\nt.corrcoef",
-            "id": 1277,
+            "text": "t.matmul, t.einsum, t.linalg.norm, t.linalg.inv, t.linalg.det,\nt.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.linalg.svd,\nt.linalg.qr, t.linalg.eig, t.linalg.pca_low_rank, t.corrcoef",
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

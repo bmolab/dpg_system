@@ -1,11 +1,11 @@
 {
-    "height": 468,
-    "width": 521,
+    "height": 572,
+    "width": 1075,
     "position": [
         100,
         100
     ],
-    "id": 1092,
+    "id": 1684,
     "name": "nodes_torch_calc_matrices",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_calc_matrices.json",
     "nodes": {
@@ -136,7 +136,7 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "help_link t.linalg.svd t.linalg.svd",
+            "init": "help_link t.matmul t.matmul",
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
@@ -144,7 +144,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.linalg.svd",
+                    "name": "t.matmul",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -169,6 +169,558 @@
             "annotation": true,
             "position_x": 207,
             "position_y": 154,
+            "width": 305,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "multiply matrices (or a whole stack of them)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "multiply matrices (or a whole stack of them)",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link t.einsum t.einsum",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.einsum",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 206,
+            "width": 268,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "products and sums written as a formula",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "products and sums written as a formula",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link t.linalg.norm t.linalg.norm",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.linalg.norm",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 258,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the length of vectors",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the length of vectors",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link t.linalg.inv t.linalg.inv",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.linalg.inv",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 310,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the matrix that undoes a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the matrix that undoes a matrix",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link t.linalg.det t.linalg.det",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.linalg.det",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 362,
+            "width": 218,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how much a matrix scales space",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how much a matrix scales space",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link t.linalg.pinv t.linalg.pinv",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.linalg.pinv",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 414,
+            "width": 274,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the best possible undoing of any matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the best possible undoing of any matrix",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link t.linalg.solve t.linalg.solve",
+            "name": "help_link",
+            "position_x": 572,
+            "position_y": 150,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.linalg.solve",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 755,
+            "position_y": 154,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "find the x that makes A x = b",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "find the x that makes A x = b",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link t.linalg.lstsq t.linalg.lstsq",
+            "name": "help_link",
+            "position_x": 572,
+            "position_y": 202,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.linalg.lstsq",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 755,
+            "position_y": 206,
+            "width": 280,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the best fit when the equations disagree",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the best fit when the equations disagree",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link t.linalg.svd t.linalg.svd",
+            "name": "help_link",
+            "position_x": 572,
+            "position_y": 254,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.linalg.svd",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 755,
+            "position_y": 258,
             "width": 231,
             "height": 28,
             "properties": {
@@ -199,16 +751,16 @@
                 }
             },
             "text": "the patterns a matrix is made of",
-            "id": 759,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "7": {
+        "23": {
             "init": "help_link t.linalg.qr t.linalg.qr",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 202,
+            "position_x": 572,
+            "position_y": 306,
             "width": 169,
             "height": 44,
             "properties": {
@@ -228,16 +780,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 796,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "8": {
+        "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
-            "position_y": 206,
+            "position_x": 755,
+            "position_y": 310,
             "width": 274,
             "height": 28,
             "properties": {
@@ -268,16 +820,16 @@
                 }
             },
             "text": "perpendicular directions and a triangle",
-            "id": 833,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "9": {
+        "25": {
             "init": "help_link t.linalg.eig t.linalg.eig",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 254,
+            "position_x": 572,
+            "position_y": 358,
             "width": 169,
             "height": 44,
             "properties": {
@@ -297,16 +849,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 870,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "10": {
+        "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
-            "position_y": 258,
+            "position_x": 755,
+            "position_y": 362,
             "width": 268,
             "height": 28,
             "properties": {
@@ -337,16 +889,16 @@
                 }
             },
             "text": "the directions a matrix only stretches",
-            "id": 907,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "27": {
             "init": "help_link t.linalg.pca_low_rank t.linalg.pca_low_rank",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 306,
+            "position_x": 572,
+            "position_y": 410,
             "width": 169,
             "height": 44,
             "properties": {
@@ -366,16 +918,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 944,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
-            "position_y": 310,
+            "position_x": 755,
+            "position_y": 414,
             "width": 255,
             "height": 28,
             "properties": {
@@ -406,16 +958,16 @@
                 }
             },
             "text": "the directions a cloud spreads along",
-            "id": 981,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "29": {
             "init": "help_link t.corrcoef t.corrcoef",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 358,
+            "position_x": 572,
+            "position_y": 462,
             "width": 169,
             "height": 44,
             "properties": {
@@ -435,16 +987,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "30": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
-            "position_y": 362,
+            "position_x": 755,
+            "position_y": 466,
             "width": 194,
             "height": 28,
             "properties": {
@@ -475,7 +1027,7 @@
                 }
             },
             "text": "how the rows move together",
-            "id": 1055,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

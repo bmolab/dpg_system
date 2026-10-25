@@ -425,6 +425,16 @@ scipy.linregress, scipy.spearmanr, scipy.entropy) is seeded by
 `seed_scipy4_help.py`; make_pair and make_two_rhythms send b before a, so b is held
 when a triggers. smoke reports linear_sum_assignment's cost as ALWAYS ZERO: the
 demo only reorders points that do not move, so the distance moved is 0.
+The first torch batch (t.matmul, t.einsum, t.linalg.norm, t.linalg.inv,
+t.linalg.det, t.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.std, t.var,
+t.argmin, t.quantile, t.mode, t.sort, t.topk, t.where, t.unique, t.isnan,
+t.isfinite, t.isinf, t.nan_to_num, t.pad, t.unfold, t.interpolate, t.stft,
+t.istft, t.convolve, t.correlate) is seeded by `seed_torch_help.py`. A list shows
+a float32 value as the double it really is (1.4 as 1.3999999761...), so the demo
+numbers are chosen to come out exact in float32 (0.25, 1.5, ...) or end in a single
+number, which a list prints with its format. sin works in degrees: the make_chirp_4096
+and make_wave multipliers are degrees per sample. smoke reports the second
+t.linalg.det as ALWAYS ZERO: that matrix flattens the plane, so its determinant is 0.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

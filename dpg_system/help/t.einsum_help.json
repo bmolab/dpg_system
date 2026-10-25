@@ -1,0 +1,538 @@
+{
+    "height": 1321,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "t.einsum_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.einsum_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.einsum - products and sums written as a formula",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 611,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.einsum - products and sums written as a formula",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.einsum - products and sums written as a formula"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1216,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Combines tensors according to a short formula naming their dimensions. Each input gets a letter for each of its dimensions; letters shared between inputs are multiplied together, and letters missing from the result (after ->) are summed away.\n\nij,jk->ik     matrix product (t.matmul)\nij,ij->i      the dot product of each row of a with the same row of b\nij->j         the sum down each column\nii->          the trace: the sum of the diagonal\nbij,bjk->bik  a stack of matrix products\ni,j->ij       the outer product: every a times every b\n\nIt says exactly which dimensions meet, so it is clear and fast where t.matmul would need t.permute and t.unsqueeze around it.\n\nSYNTAX:\nt.einsum <formula>\nDefault: ij,jk->ik. The number of commas before -> sets the number of inlets; the\nformula can be changed later in the subscripts option, with the same number of inputs.\n\nINPUTS and PARAMETERS:\n\nin:\nThe first tensor. Every input computes and sends - the only inlet that makes the node send.\n\nin 2, in 3, ...:\nThe other tensors, held, converted to in's device and type.\n\nsubscripts:\nAn option, under the node: the formula.\n\nOUTPUTS:\n\nresult:\nThe tensor the formula describes.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nij,ij->i: three rows of a, each multiplied by the same row of b and summed - three dot products at once. 1 2 . 1 0 = 1; 3 4 . 0 1 = 4; 5 6 . 1 1 = 11.\n\nRELATED:\nnp.einsum is the numpy version. t.matmul is the matrix product. t.sum sums along one dimension.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Combines tensors according to a short formula naming their dimensions. Each input gets a letter for each of its dimensions; letters shared between inputs are multiplied together, and letters missing from the result (after ->) are summed away.\n\nij,jk->ik     matrix product (t.matmul)\nij,ij->i      the dot product of each row of a with the same row of b\nij->j         the sum down each column\nii->          the trace: the sum of the diagonal\nbij,bjk->bik  a stack of matrix products\ni,j->ij       the outer product: every a times every b\n\nIt says exactly which dimensions meet, so it is clear and fast where t.matmul would need t.permute and t.unsqueeze around it.\n\nSYNTAX:\nt.einsum <formula>\nDefault: ij,jk->ik. The number of commas before -> sets the number of inlets; the\nformula can be changed later in the subscripts option, with the same number of inputs.\n\nINPUTS and PARAMETERS:\n\nin:\nThe first tensor. Every input computes and sends - the only inlet that makes the node send.\n\nin 2, in 3, ...:\nThe other tensors, held, converted to in's device and type.\n\nsubscripts:\nAn option, under the node: the formula.\n\nOUTPUTS:\n\nresult:\nThe tensor the formula describes.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nij,ij->i: three rows of a, each multiplied by the same row of b and summed - three dot products at once. 1 2 . 1 0 = 1; 3 4 . 0 1 = 4; 5 6 . 1 1 = 11.\n\nRELATED:\nnp.einsum is the numpy version. t.matmul is the matrix product. t.sum sums along one dimension."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 214,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment b: three rows",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "b: three rows",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "b: three rows"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 214,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 0 0 1 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "t.reshape",
+            "id": 570,
+            "position_x": 420,
+            "position_y": 214,
+            "width": 243,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.reshape 3 2"
+        },
+        "10": {
+            "init": "comment a: three rows",
+            "name": "comment",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a: three rows",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a: three rows"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "t.reshape",
+            "id": 681,
+            "position_x": 420,
+            "position_y": 92,
+            "width": 243,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.reshape 3 2"
+        },
+        "13": {
+            "init": "comment each row of a dot the same row of b",
+            "name": "comment",
+            "id": 718,
+            "position_x": 668,
+            "position_y": 53,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each row of a dot the same row of b",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each row of a dot the same row of b"
+        },
+        "14": {
+            "name": "t.einsum",
+            "id": 755,
+            "position_x": 680,
+            "position_y": 92,
+            "width": 58,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.einsum ij,ij->i",
+            "highlight": true
+        },
+        "15": {
+            "name": "list",
+            "id": 792,
+            "position_x": 680,
+            "position_y": 214,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 374,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.einsum"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 143,
+            "position_y": 374,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.matmul"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 248,
+            "position_y": 374,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.sum"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 330,
+            "position_y": 374,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.permute"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 484,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

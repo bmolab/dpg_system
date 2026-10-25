@@ -1,0 +1,412 @@
+{
+    "height": 1271,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "t.correlate_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.correlate_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.correlate - where a pattern occurs",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 451,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.correlate - where a pattern occurs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.correlate - where a pattern occurs"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Slides a pattern along the values and, at each position, measures how well they match:\nthe values under the pattern, each times the pattern's value there, added up. The result is highest where the values look most like the pattern - a template matcher for a gesture, a beat, a shape in a curve.\n\nIt is t.convolve without reversing the pattern, and it is what torch's conv1d does.\n\nSYNTAX:\nt.correlate <pattern values ...> <mode>\nThe pattern can be given here: t.correlate 1 2 1. The mode can also be given: same, full\nor valid.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values to search. Every input sends.\n\npattern:\nThe pattern, held.\n\ndim (int box, also an inlet):\nThe dim searched along; -1, the last, by default.\n\nmode:\nAn option, under the node: same (the default, the input's length), full, or valid, as for t.convolve.\n\nOUTPUTS:\n\ncorrelated:\nHow well the pattern matches at each position (in same mode, centred on it).\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nThe pattern 1 2 1 occurs twice in the values, centred at positions 2 and 7: the match is highest, 6, exactly there. t.argmax would find the best one.\n\nRELATED:\nnp.correlate is the numpy version. scipy.correlate finds the delay between two whole signals. t.convolve shapes with a kernel. scipy.find_peaks finds every high point of the match.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Slides a pattern along the values and, at each position, measures how well they match:\nthe values under the pattern, each times the pattern's value there, added up. The result is highest where the values look most like the pattern - a template matcher for a gesture, a beat, a shape in a curve.\n\nIt is t.convolve without reversing the pattern, and it is what torch's conv1d does.\n\nSYNTAX:\nt.correlate <pattern values ...> <mode>\nThe pattern can be given here: t.correlate 1 2 1. The mode can also be given: same, full\nor valid.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values to search. Every input sends.\n\npattern:\nThe pattern, held.\n\ndim (int box, also an inlet):\nThe dim searched along; -1, the last, by default.\n\nmode:\nAn option, under the node: same (the default, the input's length), full, or valid, as for t.convolve.\n\nOUTPUTS:\n\ncorrelated:\nHow well the pattern matches at each position (in same mode, centred on it).\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nThe pattern 1 2 1 occurs twice in the values, centred at positions 2 and 7: the match is highest, 6, exactly there. t.argmax would find the best one.\n\nRELATED:\nnp.correlate is the numpy version. scipy.correlate finds the delay between two whole signals. t.convolve shapes with a kernel. scipy.find_peaks finds every high point of the match."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment the pattern 1 2 1 appears twice",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the pattern 1 2 1 appears twice",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the pattern 1 2 1 appears twice"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 2 1 0 0 1 2 1 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment search for 1 2 1",
+            "name": "comment",
+            "id": 496,
+            "position_x": 500,
+            "position_y": 53,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "search for 1 2 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "search for 1 2 1"
+        },
+        "8": {
+            "name": "t.correlate",
+            "id": 533,
+            "position_x": 500,
+            "position_y": 92,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.correlate 1 2 1",
+            "highlight": true
+        },
+        "9": {
+            "init": "comment highest where it matches",
+            "name": "comment",
+            "id": 570,
+            "position_x": 500,
+            "position_y": 230,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "highest where it matches",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "highest where it matches"
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 420,
+            "position_y": 269,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "12": {
+            "name": "help_link",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 404,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.correlate"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 166,
+            "position_y": 404,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.correlate"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 325,
+            "position_y": 404,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.convolve"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 446,
+            "position_y": 404,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.find_peaks"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 514,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "correlated",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

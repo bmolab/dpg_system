@@ -1,11 +1,11 @@
 {
-    "height": 572,
-    "width": 944,
+    "height": 728,
+    "width": 1018,
     "position": [
         100,
         100
     ],
-    "id": 1758,
+    "id": 2128,
     "name": "nodes_torch_calc_reducing_to_an_answer",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_calc_reducing_to_an_answer.json",
     "nodes": {
@@ -619,15 +619,15 @@
             "presentation_state": "show_all"
         },
         "19": {
-            "init": "help_link t.max t.max",
+            "init": "help_link t.std t.std",
             "name": "help_link",
-            "position_x": 497,
-            "position_y": 150,
+            "position_x": 24,
+            "position_y": 514,
             "width": 181,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.max",
+                    "name": "t.std",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -650,8 +650,284 @@
         "20": {
             "name": "text_block",
             "annotation": true,
+            "position_x": 219,
+            "position_y": 518,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how spread out values are",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how spread out values are",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link t.var t.var",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 566,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.var",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 219,
+            "position_y": 570,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the spread of values, squared",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the spread of values, squared",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link t.quantile t.quantile",
+            "name": "help_link",
+            "position_x": 497,
+            "position_y": 150,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.quantile",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
             "position_x": 692,
             "position_y": 154,
+            "width": 286,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the value below which a given share falls",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the value below which a given share falls",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link t.mode t.mode",
+            "name": "help_link",
+            "position_x": 497,
+            "position_y": 202,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.mode",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 692,
+            "position_y": 206,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the most common value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the most common value",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link t.max t.max",
+            "name": "help_link",
+            "position_x": 497,
+            "position_y": 254,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.max",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 692,
+            "position_y": 258,
             "width": 206,
             "height": 28,
             "properties": {
@@ -682,16 +958,16 @@
                 }
             },
             "text": "the largest value, and where",
-            "id": 1277,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "29": {
             "init": "help_link t.min t.min",
             "name": "help_link",
             "position_x": 497,
-            "position_y": 202,
+            "position_y": 306,
             "width": 181,
             "height": 44,
             "properties": {
@@ -711,16 +987,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1314,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "30": {
             "name": "text_block",
             "annotation": true,
             "position_x": 692,
-            "position_y": 206,
+            "position_y": 310,
             "width": 212,
             "height": 28,
             "properties": {
@@ -751,16 +1027,16 @@
                 }
             },
             "text": "the smallest value, and where",
-            "id": 1351,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "31": {
             "init": "help_link t.argmax t.argmax",
             "name": "help_link",
             "position_x": 497,
-            "position_y": 254,
+            "position_y": 358,
             "width": 181,
             "height": 44,
             "properties": {
@@ -780,16 +1056,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1388,
+            "id": 1684,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "32": {
             "name": "text_block",
             "annotation": true,
             "position_x": 692,
-            "position_y": 258,
+            "position_y": 362,
             "width": 194,
             "height": 28,
             "properties": {
@@ -820,16 +1096,85 @@
                 }
             },
             "text": "where the largest value is",
-            "id": 1425,
+            "id": 1721,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "33": {
+            "init": "help_link t.argmin t.argmin",
+            "name": "help_link",
+            "position_x": 497,
+            "position_y": 410,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.argmin",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 692,
+            "position_y": 414,
+            "width": 200,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "where the smallest value is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "where the smallest value is",
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
             "init": "help_link t.any t.any",
             "name": "help_link",
             "position_x": 497,
-            "position_y": 306,
+            "position_y": 462,
             "width": 181,
             "height": 44,
             "properties": {
@@ -849,16 +1194,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1462,
+            "id": 1832,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "36": {
             "name": "text_block",
             "annotation": true,
             "position_x": 692,
-            "position_y": 310,
+            "position_y": 466,
             "width": 138,
             "height": 28,
             "properties": {
@@ -889,16 +1234,16 @@
                 }
             },
             "text": "is anything true?",
-            "id": 1499,
+            "id": 1869,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "37": {
             "init": "help_link t.all t.all",
             "name": "help_link",
             "position_x": 497,
-            "position_y": 358,
+            "position_y": 514,
             "width": 181,
             "height": 44,
             "properties": {
@@ -918,16 +1263,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1536,
+            "id": 1906,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "38": {
             "name": "text_block",
             "annotation": true,
             "position_x": 692,
-            "position_y": 362,
+            "position_y": 518,
             "width": 151,
             "height": 28,
             "properties": {
@@ -958,16 +1303,16 @@
                 }
             },
             "text": "is everything true?",
-            "id": 1573,
+            "id": 1943,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
+        "39": {
             "init": "help_link t.count_nonzero t.count_nonzero",
             "name": "help_link",
             "position_x": 497,
-            "position_y": 410,
+            "position_y": 566,
             "width": 181,
             "height": 44,
             "properties": {
@@ -987,16 +1332,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1610,
+            "id": 1980,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "40": {
             "name": "text_block",
             "annotation": true,
             "position_x": 692,
-            "position_y": 414,
+            "position_y": 570,
             "width": 163,
             "height": 28,
             "properties": {
@@ -1027,16 +1372,16 @@
                 }
             },
             "text": "how many are not zero",
-            "id": 1647,
+            "id": 2017,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "31": {
+        "41": {
             "init": "help_link t.argwhere t.argwhere / t.non_zero",
             "name": "help_link",
             "position_x": 497,
-            "position_y": 462,
+            "position_y": 618,
             "width": 181,
             "height": 44,
             "properties": {
@@ -1056,16 +1401,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1684,
+            "id": 2054,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "32": {
+        "42": {
             "name": "text_block",
             "annotation": true,
             "position_x": 692,
-            "position_y": 466,
+            "position_y": 622,
             "width": 206,
             "height": 40,
             "properties": {
@@ -1096,7 +1441,7 @@
                 }
             },
             "text": "where the non-zero cells are\n(t.argwhere, t.non_zero)",
-            "id": 1721,
+            "id": 2091,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

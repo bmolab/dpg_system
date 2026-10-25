@@ -1,11 +1,11 @@
 {
-    "height": 416,
-    "width": 416,
+    "height": 520,
+    "width": 422,
     "position": [
         100,
         100
     ],
-    "id": 1018,
+    "id": 1166,
     "name": "nodes_torch_signal_spectra",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_signal_spectra.json",
     "nodes": {
@@ -407,6 +407,144 @@
             },
             "text": "from a half spectrum back to samples",
             "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link t.stft t.stft",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 83,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.stft",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 67,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 121,
+            "position_y": 362,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "which frequencies, at which moments",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "which frequencies, at which moments",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link t.istft t.istft",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 83,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.istft",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 67,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 121,
+            "position_y": 414,
+            "width": 261,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "turn a spectrogram back into a signal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "turn a spectrogram back into a signal",
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
