@@ -1,6 +1,6 @@
 {
     "height": 588,
-    "width": 1463,
+    "width": 1470,
     "position": [
         100,
         100
@@ -164,12 +164,12 @@
             "annotation": true,
             "position_x": 238,
             "position_y": 154,
-            "width": 452,
+            "width": 459,
             "height": 64,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.full, np.eye,\nnp.meshgrid, np.random.normal, np.random.integers, np.random.choice,\nnp.random.permutation, np.grid, np.load, np.loadtxt, np.save,\nnp.savetxt, np.sequence",
+                    "value": "np.zeros, np.ones, np.rand, np.linspace, np.logspace, np.geomspace,\nnp.arange, np.full, np.eye, np.meshgrid, np.random.normal,\nnp.random.integers, np.random.choice, np.random.permutation, np.grid,\nnp.load, np.loadtxt, np.save, np.savetxt, np.sequence",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,7 +179,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 444,
+                    "value": 451,
                     "value_type": "int"
                 },
                 "3": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.full, np.eye,\nnp.meshgrid, np.random.normal, np.random.integers, np.random.choice,\nnp.random.permutation, np.grid, np.load, np.loadtxt, np.save,\nnp.savetxt, np.sequence",
+            "text": "np.zeros, np.ones, np.rand, np.linspace, np.logspace, np.geomspace,\nnp.arange, np.full, np.eye, np.meshgrid, np.random.normal,\nnp.random.integers, np.random.choice, np.random.permutation, np.grid,\nnp.load, np.loadtxt, np.save, np.savetxt, np.sequence",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
@@ -356,12 +356,12 @@
             "annotation": true,
             "position_x": 238,
             "position_y": 346,
-            "width": 440,
-            "height": 28,
+            "width": 446,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.[], np.crop, np.where, np.argwhere, np.take_along_axis, np.edit",
+                    "value": "np.[], np.crop, np.where, np.argwhere, np.take_along_axis, np.isin,\nnp.intersect1d, np.setdiff1d, np.union1d, np.edit",
                     "value_type": "str"
                 },
                 "1": {
@@ -371,12 +371,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 432,
+                    "value": 438,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.[], np.crop, np.where, np.argwhere, np.take_along_axis, np.edit",
+            "text": "np.[], np.crop, np.where, np.argwhere, np.take_along_axis, np.isin,\nnp.intersect1d, np.setdiff1d, np.union1d, np.edit",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
@@ -522,7 +522,7 @@
         "17": {
             "init": "help_link nodes_numpy_reducing_to_an_answer Reducing to an answer",
             "name": "help_link",
-            "position_x": 750,
+            "position_x": 757,
             "position_y": 150,
             "width": 200,
             "height": 44,
@@ -546,7 +546,7 @@
         "18": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
+            "position_x": 971,
             "position_y": 154,
             "width": 452,
             "height": 64,
@@ -586,7 +586,7 @@
         "19": {
             "init": "help_link nodes_numpy_spread_of_values Spread of values",
             "name": "help_link",
-            "position_x": 750,
+            "position_x": 757,
             "position_y": 222,
             "width": 200,
             "height": 44,
@@ -610,7 +610,7 @@
         "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
+            "position_x": 971,
             "position_y": 226,
             "width": 403,
             "height": 40,
@@ -650,7 +650,7 @@
         "21": {
             "init": "help_link nodes_numpy_running_totals_and_history Running totals and history",
             "name": "help_link",
-            "position_x": 750,
+            "position_x": 757,
             "position_y": 274,
             "width": 200,
             "height": 44,
@@ -674,7 +674,7 @@
         "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
+            "position_x": 971,
             "position_y": 278,
             "width": 428,
             "height": 52,
@@ -714,7 +714,7 @@
         "23": {
             "init": "help_link nodes_numpy_curves_and_filters Curves and filters",
             "name": "help_link",
-            "position_x": 750,
+            "position_x": 757,
             "position_y": 334,
             "width": 200,
             "height": 44,
@@ -738,14 +738,14 @@
         "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
+            "position_x": 971,
             "position_y": 338,
             "width": 459,
             "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.interp, np.convolve, np.correlate, np.polyfit, np.polyval,\nnp.fft.rfft, np.fft.irfft, np.fft.fft, np.fft.ifft, np.real, np.imag,\nnp.angle",
+                    "value": "np.interp, np.convolve, np.correlate, np.polyfit, np.polyval,\nnp.fft.rfft, np.fft.irfft, np.fft.fft, np.fft.ifft, np.real, np.imag,\nnp.angle, np.fft.rfft2, np.fft.irfft2, np.fft.fft2, np.fft.ifft2",
                     "value_type": "str"
                 },
                 "1": {
@@ -769,7 +769,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.interp, np.convolve, np.correlate, np.polyfit, np.polyval,\nnp.fft.rfft, np.fft.irfft, np.fft.fft, np.fft.ifft, np.real, np.imag,\nnp.angle",
+            "text": "np.interp, np.convolve, np.correlate, np.polyfit, np.polyval,\nnp.fft.rfft, np.fft.irfft, np.fft.fft, np.fft.ifft, np.real, np.imag,\nnp.angle, np.fft.rfft2, np.fft.irfft2, np.fft.fft2, np.fft.ifft2",
             "id": 1425,
             "visibility": "show_all",
             "draggable": true,
@@ -778,7 +778,7 @@
         "25": {
             "init": "help_link nodes_numpy_linear_algebra Linear algebra",
             "name": "help_link",
-            "position_x": 750,
+            "position_x": 757,
             "position_y": 394,
             "width": 200,
             "height": 44,
@@ -802,7 +802,7 @@
         "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
+            "position_x": 971,
             "position_y": 398,
             "width": 452,
             "height": 76,
@@ -842,7 +842,7 @@
         "27": {
             "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
             "name": "help_link",
-            "position_x": 750,
+            "position_x": 757,
             "position_y": 478,
             "width": 200,
             "height": 44,
@@ -866,7 +866,7 @@
         "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
+            "position_x": 971,
             "position_y": 482,
             "width": 446,
             "height": 40,

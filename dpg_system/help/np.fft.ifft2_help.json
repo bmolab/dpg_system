@@ -1,0 +1,566 @@
+{
+    "height": 1021,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "np.fft.ifft2_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.fft.ifft2_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.fft.ifft2 - an image from its spatial frequencies",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 647,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.fft.ifft2 - an image from its spatial frequencies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.fft.ifft2 - an image from its spatial frequencies"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Turns a 2-D spectrum from np.fft.fft2 back into an image: every wave across the grid is rebuilt at its strength and position and all of them are added up.\n\nRound trip it gives back the original exactly. The point is to change the spectrum in between: keep only the middle (the slow waves) to blur; remove the middle to keep only edges and detail; remove one bright point to take out a regular pattern - a mesh, a flicker, a scan line - while leaving everything else.\n\nSYNTAX:\nnp.fft.ifft2\n\nINPUTS and PARAMETERS:\n\nspectrum:\nThe complex spectrum, straight from np.fft.fft2's spectrum outlet (not the centred magnitude). Every input is transformed and sent.\n\nnorm:\nAn option, under the node: must match the norm used for np.fft.fft2.\n\nOUTPUTS:\n\nsignal:\nThe image. Sent as real numbers when the imaginary part is only rounding (any spectrum from a real image, unchanged); otherwise complex.\n\nREADING THE DEMO:\n16 x 16 random values (left) go to their spectrum and straight back (right): the same picture, a new one every two seconds. Put any change to the spectrum between the two nodes to see what it does to the image.\n\nRELATED:\nnp.fft.fft2 makes the spectrum. np.fft.irfft and np.fft.ifft are the 1-D inverses.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Turns a 2-D spectrum from np.fft.fft2 back into an image: every wave across the grid is rebuilt at its strength and position and all of them are added up.\n\nRound trip it gives back the original exactly. The point is to change the spectrum in between: keep only the middle (the slow waves) to blur; remove the middle to keep only edges and detail; remove one bright point to take out a regular pattern - a mesh, a flicker, a scan line - while leaving everything else.\n\nSYNTAX:\nnp.fft.ifft2\n\nINPUTS and PARAMETERS:\n\nspectrum:\nThe complex spectrum, straight from np.fft.fft2's spectrum outlet (not the centred magnitude). Every input is transformed and sent.\n\nnorm:\nAn option, under the node: must match the norm used for np.fft.fft2.\n\nOUTPUTS:\n\nsignal:\nThe image. Sent as real numbers when the imaginary part is only rounding (any spectrum from a real image, unchanged); otherwise complex.\n\nREADING THE DEMO:\n16 x 16 random values (left) go to their spectrum and straight back (right): the same picture, a new one every two seconds. Put any change to the spectrum between the two nodes to see what it does to the image.\n\nRELATED:\nnp.fft.fft2 makes the spectrum. np.fft.irfft and np.fft.ifft are the 1-D inverses."
+        },
+        "3": {
+            "init": "comment every two seconds",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every two seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every two seconds"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 2000"
+        },
+        "5": {
+            "init": "comment 16 x 16 random values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "16 x 16 random values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "16 x 16 random values"
+        },
+        "6": {
+            "name": "np.rand",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 16 16"
+        },
+        "7": {
+            "init": "comment to frequencies",
+            "name": "comment",
+            "id": 496,
+            "position_x": 380,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "to frequencies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "to frequencies"
+        },
+        "8": {
+            "name": "np.fft.fft2",
+            "id": 533,
+            "position_x": 380,
+            "position_y": 92,
+            "width": 76,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment and back",
+            "name": "comment",
+            "id": 570,
+            "position_x": 580,
+            "position_y": 53,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and back"
+        },
+        "10": {
+            "name": "np.fft.ifft2",
+            "id": 607,
+            "position_x": 580,
+            "position_y": 92,
+            "width": 82,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "11": {
+            "init": "comment in",
+            "name": "comment",
+            "id": 644,
+            "position_x": 28,
+            "position_y": 290,
+            "width": 21,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in"
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 28,
+            "position_y": 325,
+            "width": 218,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment out: the same picture",
+            "name": "comment",
+            "id": 718,
+            "position_x": 470,
+            "position_y": 290,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "out: the same picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "out: the same picture"
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 470,
+            "position_y": 325,
+            "width": 218,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 674,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.fft.fft2"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 158,
+            "position_y": 674,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.fft.irfft"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 294,
+            "position_y": 674,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.fft.ifft"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 422,
+            "position_y": 674,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.real"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 784,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "spectrum",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "spectrum"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}
