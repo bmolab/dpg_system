@@ -107,7 +107,11 @@ class BasePlotNode(Node):
             if data.dtype in [np.csingle, np.cdouble, np.clongdouble]:
                 data = data.real
             if data.dtype not in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
-                return None
+                # other number types (int32 from scipy, int16 audio, uint16 depth)
+                # were dropped without a word; draw them as floats instead
+                if not np.issubdtype(data.dtype, np.number):
+                    return None
+                data = data.astype(np.float64)
             # a 0-d array is a single number: give it the shape a float gets
             if data.ndim == 0:
                 data = data.reshape(1)
