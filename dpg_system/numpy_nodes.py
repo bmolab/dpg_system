@@ -166,6 +166,16 @@ def register_numpy_nodes():
     Node.app.register_node('np.nanargmax', NumpyUnaryNode.factory)
     Node.app.register_node('np.nanargmin', NumpyUnaryNode.factory)
     Node.app.register_node('np.bincount', NumpyBincountNode.factory)
+    Node.app.register_node('np.logspace', NumpyLogSpaceNode.factory)
+    Node.app.register_node('np.geomspace', NumpyLogSpaceNode.factory)
+    Node.app.register_node('np.fft.rfft2', NumpyFft2Node.factory)
+    Node.app.register_node('np.fft.fft2', NumpyFft2Node.factory)
+    Node.app.register_node('np.fft.irfft2', NumpyIfft2Node.factory)
+    Node.app.register_node('np.fft.ifft2', NumpyIfft2Node.factory)
+    Node.app.register_node('np.isin', NumpyIsInNode.factory)
+    Node.app.register_node('np.intersect1d', NumpySetOpNode.factory)
+    Node.app.register_node('np.setdiff1d', NumpySetOpNode.factory)
+    Node.app.register_node('np.union1d', NumpySetOpNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -4718,3 +4728,198 @@ class NumpyBincountNode(Node):
                 print(self.label, 'has', weights.shape[0], 'weights for', labels.shape[0], 'labels; counting instead')
             weights = None
         self.output.send(np.bincount(labels, weights=weights, minlength=max(self.length_input(), 0)))
+
+
+class NumpyLogSpaceNode(Node):
+    # np.logspace counts in exponents (logspace 0 3 4 is 1 10 100 1000);
+    # np.geomspace takes the end values themselves (geomspace 1 1000 4)
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLogSpaceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.geometric = label == 'np.geomspace'
+        start, stop, steps = (1.0, 1000.0, 4) if self.geometric else (0.0, 3.0, 4)
+        if len(args) > 0:
+            start = any_to_float(args[0])
+        if len(args) > 1:
+            stop = any_to_float(args[1])
+        if len(args) > 2:
+            steps = max(any_to_int(args[2]), 1)
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.start_input = self.add_input('start', widget_type='drag_float', default_value=start)
+        self.stop_input = self.add_input('stop', widget_type='drag_float', default_value=stop)
+        self.steps_input = self.add_input('steps', widget_type='input_int', default_value=steps)
+        self.base_input = None
+        if not self.geometric:
+            self.base_input = self.add_input('base', widget_type='drag_float', default_value=10.0)
+        self.output = self.add_output(label.split('.')[-1] + ' out')
+
+    def execute(self):
+        start, stop = self.start_input(), self.stop_input()
+        steps = max(self.steps_input(), 1)
+        if self.geometric:
+            if start == 0 or stop == 0 or (start < 0) != (stop < 0):
+                if self.app.verbose:
+                    print(self.label, 'start and stop must be non-zero and on the same side of zero')
+                return
+            self.output.send(np.geomspace(start, stop, steps))
+        else:
+            base = self.base_input()
+            if base <= 0:
+                return
+            self.output.send(np.logspace(start, stop, steps, base=base))
+
+
+class NumpyFft2Node(Node):
+    norms = ['backward', 'ortho', 'forward']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyFft2Node(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.real = label == 'np.fft.rfft2'
+        self.input = self.add_input('in', triggers_execution=True)
+        self.spectrum_output = self.add_output('spectrum')
+        self.magnitude_output = self.add_output('magnitude')
+        self.phase_output = self.add_output('phase')
+        self.centre_option = self.add_option('centre', widget_type='checkbox', default_value=True)
+        self.norm_option = self.add_option('norm', widget_type='combo', default_value='backward')
+        self.norm_option.widget.combo_items = self.norms
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if data.ndim < 2 or data.shape[-1] < 1 or data.shape[-2] < 1:
+            if self.app.verbose:
+                print(self.label, 'needs a 2-D array, got shape', data.shape)
+            return
+        if self.real:
+            if np.iscomplexobj(data):
+                if self.app.verbose:
+                    print(self.label, 'takes real values; use np.fft.fft2 for complex ones')
+                return
+            data = data.astype(float)
+        norm = self.norm_option()
+        if norm not in self.norms:
+            norm = 'backward'
+        spectrum = (np.fft.rfft2 if self.real else np.fft.fft2)(data, norm=norm)
+        # the spectrum stays in numpy's order for the inverse; magnitude and phase can
+        # be centred for looking at, the slowest waves in the middle
+        shown = spectrum
+        if self.centre_option():
+            shown = np.fft.fftshift(spectrum, axes=(-2,) if self.real else (-2, -1))
+        self.phase_output.send(np.angle(shown))
+        self.magnitude_output.send(np.abs(shown))
+        self.spectrum_output.send(spectrum)
+
+
+class NumpyIfft2Node(Node):
+    norms = ['backward', 'ortho', 'forward']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyIfft2Node(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.real = label == 'np.fft.irfft2'
+        shape = [any_to_int(a) for a in args[:2]] if len(args) >= 2 else []
+        self.shape = shape
+        self.input = self.add_input('spectrum', triggers_execution=True)
+        if self.real:
+            self.shape_input = self.add_input('shape', widget_type='text_input', widget_width=100,
+                                              default_value=' '.join(str(d) for d in shape),
+                                              callback=self.shape_changed)
+        self.output = self.add_output('signal')
+        self.norm_option = self.add_option('norm', widget_type='combo', default_value='backward')
+        self.norm_option.widget.combo_items = self.norms
+
+    def shape_changed(self):
+        shape = parse_ints(self.shape_input())
+        self.shape = shape if len(shape) == 2 and min(shape) > 0 else []
+
+    def execute(self):
+        if self.real and self.shape_input.fresh_input:
+            self.shape_changed()
+        spectrum = any_to_array(self.input())
+        if spectrum.ndim < 2:
+            if self.app.verbose:
+                print(self.label, 'needs a 2-D spectrum, got shape', spectrum.shape)
+            return
+        norm = self.norm_option()
+        if norm not in self.norms:
+            norm = 'backward'
+        if self.real:
+            # without a shape the last axis comes back even: 2 x (columns - 1)
+            self.output.send(np.fft.irfft2(spectrum, s=self.shape if self.shape else None, norm=norm))
+            return
+        signal = np.fft.ifft2(spectrum, norm=norm)
+        if np.allclose(signal.imag, 0, atol=1e-9 * max(np.abs(signal).max(initial=0.0), 1.0)):
+            signal = signal.real
+        self.output.send(signal)
+
+
+class NumpyIsInNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyIsInNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        # the set may be given as arguments: numbers, or words
+        self.members = None
+        if len(args) > 0:
+            decoded = [decode_arg(args, i) for i in range(len(args))]
+            if all(t in [int, float] for v, t in decoded):
+                self.members = np.array([v for v, t in decoded])
+            else:
+                self.members = np.array([str(v) for v, t in decoded], dtype=object)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.set_input = self.add_input('set')
+        self.output = self.add_output('mask')
+        self.invert_option = self.add_option('invert', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        if self.set_input.fresh_input:
+            self.members = items_to_array(self.set_input())
+        if self.members is None:
+            return
+        data = items_to_array(self.input())
+        self.output.send(np.isin(data, self.members, invert=self.invert_option()))
+
+
+class NumpySetOpNode(Node):
+    operations = {'np.intersect1d': np.intersect1d, 'np.setdiff1d': np.setdiff1d, 'np.union1d': np.union1d}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpySetOpNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = self.operations.get(label, np.intersect1d)
+        self.input_2_value = None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.input_2 = self.add_input('in 2')
+        self.output = self.add_output({'np.intersect1d': 'in both', 'np.setdiff1d': 'only in first',
+                                       'np.union1d': 'in either'}.get(label, 'result'))
+
+    def execute(self):
+        if self.input_2.fresh_input:
+            self.input_2_value = items_to_array(self.input_2())
+        if self.input_2_value is None:
+            return
+        a = items_to_array(self.input())
+        b = self.input_2_value
+        # words and numbers cannot be sorted together: compare them all as text then
+        if (a.dtype == object) != (b.dtype == object):
+            a, b = a.astype(str).astype(object), b.astype(str).astype(object)
+        self.output.send(self.op(a.ravel(), b.ravel()))
