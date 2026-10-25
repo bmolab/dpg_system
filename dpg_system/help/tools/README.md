@@ -390,6 +390,15 @@ np.nanmax, np.nanstd, np.nanvar, np.average, np.histogram2d, np.top_k,
 np.isclose, np.allclose, np.trapezoid, np.cumulative_trapezoid, np.fft.fft,
 np.fft.ifft) is seeded by `seed_numpy_batch4_help.py`. smoke reports the first
 np.allclose on its page as ALWAYS ZERO: that demo is meant to answer false.
+The fifth batch (np.save, np.savetxt, np.loadtxt, np.random.normal,
+np.random.integers, np.random.choice, np.random.permutation,
+np.sliding_window_view, np.maximum.accumulate, np.minimum.accumulate, np.insert,
+np.delete, np.append, np.nanargmax, np.nanargmin, np.bincount) is seeded by
+`seed_numpy_batch5_help.py`. The np.save and np.savetxt demos keep their path
+empty and wire no button node to write: smoke --click bangs button nodes, and a
+write with no path opens a native save dialog that would stall the run. smoke
+reports both as never sent, which is expected. np.loadtxt reads
+help/data/np_loadtxt_example.csv.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

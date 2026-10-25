@@ -1,0 +1,387 @@
+{
+    "height": 941,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "np.delete_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.delete_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.delete - take elements out by position",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.delete - take elements out by position",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.delete - take elements out by position"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Makes an array shorter by taking out the elements at some positions, closing up the gaps.\n\nUse it to drop joints a model does not need, remove a bad frame or a glitched channel, or take the first or last element off a list.\n\nSYNTAX:\nnp.delete <indices: ints ...>\nDefault: none - the array passes through unchanged.\n\nEXAMPLES:\nnp.delete 0\nnp.delete 0 -1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input has the elements taken out and is sent.\n\nindices:\nThe positions to take out, replacing any given as arguments. Held. -1 is the last;\npositions that do not exist are ignored.\n\naxis (int box, also an inlet):\nWhich way: 0 (the default) elements of a list, or rows of a matrix; 1 columns.\n\nOUTPUTS:\n\nremaining:\nThe shorter array.\n\nREADING THE DEMO:\n10 20 30 40 without its first and last elements (positions 0 and -1): 20 30. A metro re-sends the list twice a second.\n\nRELATED:\nnp.insert and np.append put elements in. np.take keeps the positions you name instead of removing them. np.[] and np.crop cut out a run.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Makes an array shorter by taking out the elements at some positions, closing up the gaps.\n\nUse it to drop joints a model does not need, remove a bad frame or a glitched channel, or take the first or last element off a list.\n\nSYNTAX:\nnp.delete <indices: ints ...>\nDefault: none - the array passes through unchanged.\n\nEXAMPLES:\nnp.delete 0\nnp.delete 0 -1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input has the elements taken out and is sent.\n\nindices:\nThe positions to take out, replacing any given as arguments. Held. -1 is the last;\npositions that do not exist are ignored.\n\naxis (int box, also an inlet):\nWhich way: 0 (the default) elements of a list, or rows of a matrix; 1 columns.\n\nOUTPUTS:\n\nremaining:\nThe shorter array.\n\nREADING THE DEMO:\n10 20 30 40 without its first and last elements (positions 0 and -1): 20 30. A metro re-sends the list twice a second.\n\nRELATED:\nnp.insert and np.append put elements in. np.take keeps the positions you name instead of removing them. np.[] and np.crop cut out a run."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment four values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "four values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "four values"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "10 20 30 40",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment without the first and last",
+            "name": "comment",
+            "id": 496,
+            "position_x": 380,
+            "position_y": 53,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "without the first and last",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "without the first and last"
+        },
+        "8": {
+            "name": "np.delete",
+            "id": 533,
+            "position_x": 380,
+            "position_y": 92,
+            "width": 117,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.delete 0 -1",
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 580,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "11": {
+            "name": "help_link",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 354,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.insert"
+        },
+        "12": {
+            "name": "help_link",
+            "id": 681,
+            "position_x": 143,
+            "position_y": 354,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.take"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 240,
+            "position_y": 354,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.[]"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 322,
+            "position_y": 354,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.crop"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 464,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "remaining",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

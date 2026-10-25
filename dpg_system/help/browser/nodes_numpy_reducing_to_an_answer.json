@@ -1,11 +1,11 @@
 {
-    "height": 780,
+    "height": 832,
     "width": 1050,
     "position": [
         100,
         100
     ],
-    "id": 2276,
+    "id": 2424,
     "name": "nodes_numpy_reducing_to_an_answer",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_reducing_to_an_answer.json",
     "nodes": {
@@ -828,8 +828,8 @@
         "25": {
             "init": "help_link np.robust_mean np.robust_mean",
             "name": "help_link",
-            "position_x": 510,
-            "position_y": 150,
+            "position_x": 24,
+            "position_y": 670,
             "width": 126,
             "height": 44,
             "properties": {
@@ -857,8 +857,8 @@
         "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 650,
-            "position_y": 154,
+            "position_x": 164,
+            "position_y": 674,
             "width": 231,
             "height": 28,
             "properties": {
@@ -898,7 +898,7 @@
             "init": "help_link np.std np.std",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 202,
+            "position_y": 150,
             "width": 126,
             "height": 44,
             "properties": {
@@ -927,7 +927,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 206,
+            "position_y": 154,
             "width": 212,
             "height": 28,
             "properties": {
@@ -967,7 +967,7 @@
             "init": "help_link np.var np.var",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 254,
+            "position_y": 202,
             "width": 126,
             "height": 44,
             "properties": {
@@ -996,7 +996,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 258,
+            "position_y": 206,
             "width": 206,
             "height": 28,
             "properties": {
@@ -1036,7 +1036,7 @@
             "init": "help_link np.nanmin np.nanmin",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 306,
+            "position_y": 254,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1065,7 +1065,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 310,
+            "position_y": 258,
             "width": 237,
             "height": 28,
             "properties": {
@@ -1105,7 +1105,7 @@
             "init": "help_link np.nanmax np.nanmax",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 358,
+            "position_y": 306,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1134,7 +1134,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 362,
+            "position_y": 310,
             "width": 231,
             "height": 28,
             "properties": {
@@ -1174,7 +1174,7 @@
             "init": "help_link np.nanstd np.nanstd",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 410,
+            "position_y": 358,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1203,7 +1203,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 414,
+            "position_y": 362,
             "width": 249,
             "height": 28,
             "properties": {
@@ -1243,7 +1243,7 @@
             "init": "help_link np.nanvar np.nanvar",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 462,
+            "position_y": 410,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1272,7 +1272,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 466,
+            "position_y": 414,
             "width": 261,
             "height": 28,
             "properties": {
@@ -1312,7 +1312,7 @@
             "init": "help_link np.average np.average",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 514,
+            "position_y": 462,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1341,7 +1341,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 518,
+            "position_y": 466,
             "width": 268,
             "height": 28,
             "properties": {
@@ -1381,7 +1381,7 @@
             "init": "help_link np.top_k np.top_k",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 566,
+            "position_y": 514,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1410,7 +1410,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 570,
+            "position_y": 518,
             "width": 360,
             "height": 28,
             "properties": {
@@ -1447,15 +1447,15 @@
             "presentation_state": "show_all"
         },
         "43": {
-            "init": "help_link np.any np.any",
+            "init": "help_link np.nanargmax np.nanargmax",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 618,
+            "position_y": 566,
             "width": 126,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "np.any",
+                    "name": "np.nanargmax",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -1479,7 +1479,145 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
+            "position_y": 570,
+            "width": 286,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "where the largest value is, skipping gaps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "where the largest value is, skipping gaps",
+            "id": 2165,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "init": "help_link np.nanargmin np.nanargmin",
+            "name": "help_link",
+            "position_x": 510,
+            "position_y": 618,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.nanargmin",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2202,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "46": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 650,
             "position_y": 622,
+            "width": 292,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "where the smallest value is, skipping gaps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "where the smallest value is, skipping gaps",
+            "id": 2239,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "47": {
+            "init": "help_link np.any np.any",
+            "name": "help_link",
+            "position_x": 510,
+            "position_y": 670,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.any",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2276,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "48": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 650,
+            "position_y": 674,
             "width": 138,
             "height": 28,
             "properties": {
@@ -1510,16 +1648,16 @@
                 }
             },
             "text": "is anything true?",
-            "id": 2165,
+            "id": 2313,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "45": {
+        "49": {
             "init": "help_link np.all np.all",
             "name": "help_link",
             "position_x": 510,
-            "position_y": 670,
+            "position_y": 722,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1539,16 +1677,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2202,
+            "id": 2350,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "46": {
+        "50": {
             "name": "text_block",
             "annotation": true,
             "position_x": 650,
-            "position_y": 674,
+            "position_y": 726,
             "width": 151,
             "height": 28,
             "properties": {
@@ -1579,7 +1717,7 @@
                 }
             },
             "text": "is everything true?",
-            "id": 2239,
+            "id": 2387,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

@@ -1,5 +1,5 @@
 {
-    "height": 580,
+    "height": 588,
     "width": 1463,
     "position": [
         100,
@@ -165,11 +165,11 @@
             "position_x": 238,
             "position_y": 154,
             "width": 452,
-            "height": 40,
+            "height": 64,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.full, np.eye,\nnp.meshgrid, np.grid, np.load, np.sequence",
+                    "value": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.full, np.eye,\nnp.meshgrid, np.random.normal, np.random.integers, np.random.choice,\nnp.random.permutation, np.grid, np.load, np.loadtxt, np.save,\nnp.savetxt, np.sequence",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,7 +184,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 48,
                     "value_type": "int"
                 },
                 "4": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.full, np.eye,\nnp.meshgrid, np.grid, np.load, np.sequence",
+            "text": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.full, np.eye,\nnp.meshgrid, np.random.normal, np.random.integers, np.random.choice,\nnp.random.permutation, np.grid, np.load, np.loadtxt, np.save,\nnp.savetxt, np.sequence",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
@@ -203,7 +203,7 @@
             "init": "help_link nodes_numpy_reshaping_and_converting Reshaping and converting",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 202,
+            "position_y": 222,
             "width": 200,
             "height": 44,
             "properties": {
@@ -227,7 +227,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 206,
+            "position_y": 226,
             "width": 446,
             "height": 52,
             "properties": {
@@ -267,7 +267,7 @@
             "init": "help_link nodes_numpy_rearranging_and_joining Rearranging and joining",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 262,
+            "position_y": 282,
             "width": 200,
             "height": 44,
             "properties": {
@@ -291,13 +291,13 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 266,
+            "position_y": 286,
             "width": 428,
             "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.flip, np.roll, np.rot90 / np.rotate, np.repeat, np.sort,\nnp.argsort, np.split, np.concatenate, np.stack, np.tile, np.pad,\nnp.take",
+                    "value": "np.flip, np.roll, np.rot90 / np.rotate, np.repeat, np.sort,\nnp.argsort, np.split, np.concatenate, np.stack, np.tile, np.pad,\nnp.take, np.insert, np.delete, np.append",
                     "value_type": "str"
                 },
                 "1": {
@@ -321,7 +321,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.flip, np.roll, np.rot90 / np.rotate, np.repeat, np.sort,\nnp.argsort, np.split, np.concatenate, np.stack, np.tile, np.pad,\nnp.take",
+            "text": "np.flip, np.roll, np.rot90 / np.rotate, np.repeat, np.sort,\nnp.argsort, np.split, np.concatenate, np.stack, np.tile, np.pad,\nnp.take, np.insert, np.delete, np.append",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
@@ -331,7 +331,7 @@
             "init": "help_link nodes_numpy_selecting_and_editing Selecting and editing",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 322,
+            "position_y": 342,
             "width": 200,
             "height": 44,
             "properties": {
@@ -355,7 +355,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 326,
+            "position_y": 346,
             "width": 440,
             "height": 28,
             "properties": {
@@ -395,7 +395,7 @@
             "init": "help_link nodes_numpy_limiting_values Limiting values",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 374,
+            "position_y": 394,
             "width": 200,
             "height": 44,
             "properties": {
@@ -419,7 +419,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 378,
+            "position_y": 398,
             "width": 175,
             "height": 28,
             "properties": {
@@ -459,7 +459,7 @@
             "init": "help_link nodes_numpy_logic_and_gaps Logic and gaps",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 426,
+            "position_y": 446,
             "width": 200,
             "height": 44,
             "properties": {
@@ -483,7 +483,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 430,
+            "position_y": 450,
             "width": 415,
             "height": 40,
             "properties": {
@@ -553,7 +553,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.amax, np.amin, np.argmax, np.argmin, np.sum, np.nansum, np.mean,\nnp.median, np.nanmean, np.nanmedian, np.robust_mean, np.std, np.var,\nnp.nanmin, np.nanmax, np.nanstd, np.nanvar, np.average, np.top_k,\nnp.any, np.all",
+                    "value": "np.amax, np.amin, np.argmax, np.argmin, np.sum, np.nansum, np.mean,\nnp.median, np.nanmean, np.nanmedian, np.robust_mean, np.std, np.var,\nnp.nanmin, np.nanmax, np.nanstd, np.nanvar, np.average, np.top_k,\nnp.nanargmax, np.nanargmin, np.any, np.all",
                     "value_type": "str"
                 },
                 "1": {
@@ -577,7 +577,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.amax, np.amin, np.argmax, np.argmin, np.sum, np.nansum, np.mean,\nnp.median, np.nanmean, np.nanmedian, np.robust_mean, np.std, np.var,\nnp.nanmin, np.nanmax, np.nanstd, np.nanvar, np.average, np.top_k,\nnp.any, np.all",
+            "text": "np.amax, np.amin, np.argmax, np.argmin, np.sum, np.nansum, np.mean,\nnp.median, np.nanmean, np.nanmedian, np.robust_mean, np.std, np.var,\nnp.nanmin, np.nanmax, np.nanstd, np.nanvar, np.average, np.top_k,\nnp.nanargmax, np.nanargmin, np.any, np.all",
             "id": 1203,
             "visibility": "show_all",
             "draggable": true,
@@ -617,7 +617,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.percentile, np.histogram, np.ptp, np.unique, np.digitize,\nnp.histogram2d, np.cov, np.corrcoef",
+                    "value": "np.percentile, np.histogram, np.ptp, np.unique, np.digitize,\nnp.histogram2d, np.bincount, np.cov, np.corrcoef",
                     "value_type": "str"
                 },
                 "1": {
@@ -641,7 +641,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.percentile, np.histogram, np.ptp, np.unique, np.digitize,\nnp.histogram2d, np.cov, np.corrcoef",
+            "text": "np.percentile, np.histogram, np.ptp, np.unique, np.digitize,\nnp.histogram2d, np.bincount, np.cov, np.corrcoef",
             "id": 1277,
             "visibility": "show_all",
             "draggable": true,
@@ -676,12 +676,12 @@
             "annotation": true,
             "position_x": 964,
             "position_y": 278,
-            "width": 391,
-            "height": 40,
+            "width": 428,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.cumsum, np.cumprod, np.diff, np.gradient, np.trapezoid,\nnp.cumulative_trapezoid, np.unwrap, np.rolling_buffer",
+                    "value": "np.cumsum, np.cumprod, np.diff, np.gradient, np.trapezoid,\nnp.cumulative_trapezoid, np.unwrap, np.maximum.accumulate,\nnp.minimum.accumulate, np.sliding_window_view, np.rolling_buffer",
                     "value_type": "str"
                 },
                 "1": {
@@ -691,12 +691,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 383,
+                    "value": 420,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -705,7 +705,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.cumsum, np.cumprod, np.diff, np.gradient, np.trapezoid,\nnp.cumulative_trapezoid, np.unwrap, np.rolling_buffer",
+            "text": "np.cumsum, np.cumprod, np.diff, np.gradient, np.trapezoid,\nnp.cumulative_trapezoid, np.unwrap, np.maximum.accumulate,\nnp.minimum.accumulate, np.sliding_window_view, np.rolling_buffer",
             "id": 1351,
             "visibility": "show_all",
             "draggable": true,
@@ -715,7 +715,7 @@
             "init": "help_link nodes_numpy_curves_and_filters Curves and filters",
             "name": "help_link",
             "position_x": 750,
-            "position_y": 326,
+            "position_y": 334,
             "width": 200,
             "height": 44,
             "properties": {
@@ -739,7 +739,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 964,
-            "position_y": 330,
+            "position_y": 338,
             "width": 459,
             "height": 52,
             "properties": {
@@ -779,7 +779,7 @@
             "init": "help_link nodes_numpy_linear_algebra Linear algebra",
             "name": "help_link",
             "position_x": 750,
-            "position_y": 386,
+            "position_y": 394,
             "width": 200,
             "height": 44,
             "properties": {
@@ -803,7 +803,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 964,
-            "position_y": 390,
+            "position_y": 398,
             "width": 452,
             "height": 76,
             "properties": {
@@ -843,7 +843,7 @@
             "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
             "name": "help_link",
             "position_x": 750,
-            "position_y": 470,
+            "position_y": 478,
             "width": 200,
             "height": 44,
             "properties": {
@@ -867,7 +867,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 964,
-            "position_y": 474,
+            "position_y": 482,
             "width": 446,
             "height": 40,
             "properties": {
