@@ -6,6 +6,12 @@ from scipy.spatial import cKDTree
 from scipy import ndimage
 from fractions import Fraction
 import re
+from scipy.spatial.transform import Rotation, Slerp
+from scipy.spatial import ConvexHull, procrustes
+from scipy.spatial import QhullError
+from scipy import stats
+from scipy.cluster.vq import kmeans2
+from scipy.optimize import curve_fit
 
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -22,6 +28,18 @@ def register_scipy_nodes():
     Node.app.register_node('scipy.label', ScipyLabelNode.factory)
     Node.app.register_node('scipy.gaussian_filter', ScipyImageFilterNode.factory)
     Node.app.register_node('scipy.median_filter', ScipyImageFilterNode.factory)
+    Node.app.register_node('scipy.slerp', ScipySlerpNode.factory)
+    Node.app.register_node('scipy.rotation_mean', ScipyRotationMeanNode.factory)
+    Node.app.register_node('scipy.align_vectors', ScipyAlignVectorsNode.factory)
+    Node.app.register_node('scipy.rotation_apply', ScipyRotationApplyNode.factory)
+    Node.app.register_node('scipy.circmean', ScipyCircularNode.factory)
+    Node.app.register_node('scipy.circstd', ScipyCircularNode.factory)
+    Node.app.register_node('scipy.hilbert', ScipyHilbertNode.factory)
+    Node.app.register_node('scipy.detrend', ScipyDetrendNode.factory)
+    Node.app.register_node('scipy.convex_hull', ScipyConvexHullNode.factory)
+    Node.app.register_node('scipy.kmeans', ScipyKMeansNode.factory)
+    Node.app.register_node('scipy.procrustes', ScipyProcrustesNode.factory)
+    Node.app.register_node('scipy.curve_fit', ScipyCurveFitNode.factory)
 
 
 class ScipyFindPeaksNode(Node):
@@ -473,3 +491,506 @@ class ScipyImageFilterNode(Node):
             self.output.send(ndimage.median_filter(data, size=[max(int(round(s)), 1) for s in size], mode=mode))
         else:
             self.output.send(ndimage.gaussian_filter(data, sigma=size, mode=mode))
+
+
+# Quaternions here are scalar first - w x y z - as in the quaternion nodes.
+
+def quaternions_from(value):
+    """Rows of w x y z (a single quaternion becomes one row), or None."""
+    q = any_to_array(value).astype(float)
+    if q.ndim == 1:
+        q = q.reshape(1, -1)
+    if q.ndim != 2 or q.shape[1] != 4:
+        return None
+    norms = np.linalg.norm(q, axis=1)
+    if np.any(norms == 0) or not np.all(np.isfinite(q)):
+        return None
+    return q
+
+
+class ScipySlerpNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipySlerpNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.keys = None
+        self.key_times = None
+        self.slerp = None
+        self.input = self.add_input('t', triggers_execution=True)
+        self.keys_input = self.add_input('quaternions')
+        self.times_input = self.add_input('times')
+        self.output = self.add_output('quaternions')
+
+    def execute(self):
+        if self.keys_input.fresh_input:
+            self.keys = quaternions_from(self.keys_input())
+            self.slerp = None
+            if self.keys is None and self.app.verbose:
+                print(self.label, 'quaternions must be rows of w x y z')
+        if self.times_input.fresh_input:
+            self.key_times = any_to_array(self.times_input()).astype(float).ravel()
+            self.slerp = None
+        if self.keys is None or self.keys.shape[0] < 2:
+            return
+        if self.slerp is None:
+            n = self.keys.shape[0]
+            # without times the keys are at 0, 1, 2 ...: two keys make t a fraction
+            times = self.key_times if self.key_times is not None and self.key_times.size == n else np.arange(n, dtype=float)
+            order = np.argsort(times, kind='stable')
+            times, keys = times[order], self.keys[order]
+            if np.any(np.diff(times) <= 0):
+                if self.app.verbose:
+                    print(self.label, 'times must all be different')
+                return
+            self.slerp = Slerp(times, Rotation.from_quat(keys, scalar_first=True))
+        t = any_to_array(self.input()).astype(float)
+        single = t.ndim == 0 or t.size == 1
+        t = np.clip(t.ravel(), self.slerp.times[0], self.slerp.times[-1])
+        q = self.slerp(t).as_quat(scalar_first=True)
+        self.output.send(q[0] if single else q)
+
+
+class ScipyRotationMeanNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyRotationMeanNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.weights = None
+        self.input = self.add_input('quaternions', triggers_execution=True)
+        self.weights_input = self.add_input('weights')
+        self.output = self.add_output('mean')
+
+    def execute(self):
+        if self.weights_input.fresh_input:
+            self.weights = any_to_array(self.weights_input()).astype(float).ravel()
+        q = quaternions_from(self.input())
+        if q is None:
+            if self.app.verbose:
+                print(self.label, 'needs rows of w x y z')
+            return
+        weights = self.weights
+        if weights is not None and (weights.size != q.shape[0] or np.any(weights < 0) or weights.sum() == 0):
+            weights = None
+        # the proper average of orientations: q and -q are the same turn, and this
+        # does not mind which one each row happens to be
+        self.output.send(Rotation.from_quat(q, scalar_first=True).mean(weights=weights).as_quat(scalar_first=True))
+
+
+class ScipyAlignVectorsNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyAlignVectorsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.target = None
+        self.input = self.add_input('from', triggers_execution=True)
+        self.target_input = self.add_input('onto')
+        self.rotation_output = self.add_output('rotation')
+        self.aligned_output = self.add_output('aligned')
+        self.error_output = self.add_output('error')
+        self.as_option = self.add_option('treat as', widget_type='combo', default_value='points')
+        self.as_option.widget.combo_items = ['points', 'directions']
+
+    def execute(self):
+        if self.target_input.fresh_input:
+            self.target = any_to_array(self.target_input()).astype(float)
+        if self.target is None:
+            return
+        source = any_to_array(self.input()).astype(float)
+        target = self.target
+        if source.ndim == 1:
+            source = source.reshape(1, -1)
+        if target.ndim == 1:
+            target = target.reshape(1, -1)
+        if source.shape != target.shape or source.shape[-1] != 3:
+            if self.app.verbose:
+                print(self.label, 'needs the same number of xyz rows in both, got', source.shape, target.shape)
+            return
+        points = self.as_option() == 'points'
+        # points: match the shapes about their centres (the Kabsch method); directions
+        # are already about the origin
+        source_centre = source.mean(axis=0) if points else np.zeros(3)
+        target_centre = target.mean(axis=0) if points else np.zeros(3)
+        with warnings.catch_warnings():
+            # one pair of vectors leaves a turn about them free; that is still an answer
+            warnings.simplefilter('ignore', UserWarning)
+            rotation, error = Rotation.align_vectors(target - target_centre, source - source_centre)
+        aligned = rotation.apply(source - source_centre) + target_centre
+        self.error_output.send(float(error))
+        self.aligned_output.send(aligned)
+        self.rotation_output.send(rotation.as_quat(scalar_first=True))
+
+
+class ScipyRotationApplyNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyRotationApplyNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.rotation = None
+        self.input = self.add_input('vectors', triggers_execution=True)
+        self.quaternion_input = self.add_input('quaternion')
+        self.output = self.add_output('rotated')
+        self.inverse_option = self.add_option('inverse', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        if self.quaternion_input.fresh_input:
+            q = quaternions_from(self.quaternion_input())
+            self.rotation = None if q is None else Rotation.from_quat(q if q.shape[0] > 1 else q[0], scalar_first=True)
+        if self.rotation is None:
+            return
+        vectors = any_to_array(self.input()).astype(float)
+        if vectors.shape[-1] != 3:
+            if self.app.verbose:
+                print(self.label, 'needs xyz vectors, got shape', vectors.shape)
+            return
+        rotation = self.rotation.inv() if self.inverse_option() else self.rotation
+        try:
+            self.output.send(rotation.apply(vectors))
+        except ValueError:
+            if self.app.verbose:
+                print(self.label, 'one quaternion, or one per vector:', len(rotation) if not rotation.single else 1,
+                      'for', vectors.shape)
+
+
+class ScipyCircularNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyCircularNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.spread = label == 'scipy.circstd'
+        units = 'degrees'
+        axis = None
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t == str and v in ['degrees', 'radians']:
+                units = v
+            elif t == int:
+                axis = v
+        self.input = self.add_input('angles', triggers_execution=True)
+        self.axis_input = self.add_input('axis', widget_type='text_input', widget_width=60,
+                                         default_value='None' if axis is None else str(axis))
+        self.output = self.add_output('spread' if self.spread else 'mean')
+        self.units_option = self.add_option('units', widget_type='combo', default_value=units)
+        self.units_option.widget.combo_items = ['degrees', 'radians']
+
+    def execute(self):
+        angles = any_to_array(self.input()).astype(float)
+        axis_text = str(self.axis_input()).strip()
+        axis = None
+        if axis_text not in ['', 'None', 'none']:
+            try:
+                axis = int(float(axis_text))
+            except ValueError:
+                axis = None
+        if axis is not None and not -angles.ndim <= axis < angles.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', angles.shape)
+            return
+        degrees = self.units_option() == 'degrees'
+        high, low = (180.0, -180.0) if degrees else (np.pi, -np.pi)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            if self.spread:
+                self.output.send(stats.circstd(angles, high=high, low=low, axis=axis, nan_policy='omit'))
+            else:
+                self.output.send(stats.circmean(angles, high=high, low=low, axis=axis, nan_policy='omit'))
+
+
+class ScipyHilbertNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyHilbertNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        rate = 60.0
+        if len(args) > 0:
+            rate = any_to_float(args[0])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.rate_input = self.add_input('sample rate', widget_type='drag_float', default_value=rate)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.envelope_output = self.add_output('envelope')
+        self.phase_output = self.add_output('phase')
+        self.frequency_output = self.add_output('frequency')
+        self.centre_option = self.add_option('remove mean', widget_type='checkbox', default_value=True)
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim or data.shape[axis] < 2:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range or too short for shape', data.shape)
+            return
+        data = np.nan_to_num(data)
+        # phase means swinging about a centre: take the average level away first
+        if self.centre_option():
+            data = data - data.mean(axis=axis, keepdims=True)
+        analytic = signal.hilbert(data, axis=axis)
+        phase = np.angle(analytic)
+        rate = self.rate_input()
+        if rate > 0:
+            # how fast the phase turns, in cycles per second; the first sample repeats
+            # the second so the result keeps the input's length
+            turning = np.diff(np.unwrap(phase, axis=axis), axis=axis) * rate / (2 * np.pi)
+            first = np.take(turning, [0], axis=axis)
+            self.frequency_output.send(np.concatenate([first, turning], axis=axis))
+        self.phase_output.send(np.degrees(phase))
+        self.envelope_output.send(np.abs(analytic))
+
+
+class ScipyDetrendNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyDetrendNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        kind = 'linear'
+        if len(args) > 0 and args[0] in ['linear', 'constant']:
+            kind = args[0]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('detrended')
+        self.kind_option = self.add_option('remove', widget_type='combo', default_value=kind)
+        self.kind_option.widget.combo_items = ['linear', 'constant']
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim or data.shape[axis] < 2:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range or too short for shape', data.shape)
+            return
+        kind = 'constant' if self.kind_option() == 'constant' else 'linear'
+        self.output.send(signal.detrend(data, axis=axis, type=kind))
+
+
+class ScipyConvexHullNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyConvexHullNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('points', triggers_execution=True)
+        self.size_output = self.add_output('size')
+        self.boundary_output = self.add_output('boundary')
+        self.vertices_output = self.add_output('vertices')
+
+    def execute(self):
+        points = any_to_array(self.input()).astype(float)
+        if points.ndim != 2 or points.shape[1] not in [2, 3]:
+            if self.app.verbose:
+                print(self.label, 'needs rows of x y or x y z, got shape', points.shape)
+            return
+        points = points[np.all(np.isfinite(points), axis=1)]
+        if points.shape[0] < points.shape[1] + 1:
+            return
+        try:
+            hull = ConvexHull(points)
+        except QhullError:
+            # all the points in a line (or a plane, in 3-D): nothing is enclosed
+            self.vertices_output.send(np.zeros(0, dtype=int))
+            self.boundary_output.send(0.0)
+            self.size_output.send(0.0)
+            return
+        # scipy names them for 3-D: volume is the area in 2-D, area the perimeter
+        self.vertices_output.send(hull.vertices)
+        self.boundary_output.send(float(hull.area))
+        self.size_output.send(float(hull.volume))
+
+
+class ScipyKMeansNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyKMeansNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        k = 3
+        if len(args) > 0:
+            k = max(any_to_int(args[0]), 1)
+        self.centres = None
+        self.input = self.add_input('points', triggers_execution=True)
+        self.k_input = self.add_input('k', widget_type='input_int', default_value=k)
+        self.labels_output = self.add_output('labels')
+        self.centres_output = self.add_output('centres')
+        self.follow_option = self.add_option('follow', widget_type='checkbox', default_value=True)
+        self.seed_option = self.add_option('seed', widget_type='input_int', default_value=-1,
+                                           callback=self.seed_changed)
+        self.rng = np.random.default_rng()
+
+    def seed_changed(self):
+        seed = self.seed_option()
+        self.rng = np.random.default_rng(None if seed is None or seed < 0 else seed)
+        self.centres = None
+
+    def execute(self):
+        points = any_to_array(self.input()).astype(float)
+        if points.ndim == 1:
+            points = points.reshape(-1, 1)
+        if points.ndim != 2:
+            if self.app.verbose:
+                print(self.label, 'needs rows of coordinates, got shape', points.shape)
+            return
+        points = points[np.all(np.isfinite(points), axis=1)]
+        k = min(max(self.k_input(), 1), points.shape[0])
+        if k < 1:
+            return
+        with warnings.catch_warnings():
+            # an empty group is reported by scipy as a warning; it is still an answer
+            warnings.simplefilter('ignore')
+            if self.follow_option() and self.centres is not None and self.centres.shape == (k, points.shape[1]):
+                # start from the last centres, so group numbers stay with the same groups
+                centres, labels = kmeans2(points, self.centres, minit='matrix', seed=self.rng)
+            else:
+                centres, labels = kmeans2(points, k, minit='++', seed=self.rng)
+        self.centres = centres
+        self.centres_output.send(centres)
+        self.labels_output.send(labels)
+
+
+class ScipyProcrustesNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyProcrustesNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.reference = None
+        self.input = self.add_input('shape', triggers_execution=True)
+        self.reference_input = self.add_input('reference')
+        self.difference_output = self.add_output('difference')
+        self.aligned_output = self.add_output('aligned')
+        self.standard_output = self.add_output('reference standardized')
+
+    def execute(self):
+        if self.reference_input.fresh_input:
+            self.reference = any_to_array(self.reference_input()).astype(float)
+        if self.reference is None:
+            return
+        shape = any_to_array(self.input()).astype(float)
+        if shape.shape != self.reference.shape or shape.ndim != 2 or shape.shape[0] < 2:
+            if self.app.verbose:
+                print(self.label, 'needs two arrays of the same rows of coordinates, got',
+                      shape.shape, self.reference.shape)
+            return
+        try:
+            standard, aligned, difference = procrustes(self.reference, shape)
+        except ValueError as e:
+            # a shape with every point in the same place has no size to scale
+            if self.app.verbose:
+                print(self.label, e)
+            return
+        self.standard_output.send(standard)
+        self.aligned_output.send(aligned)
+        self.difference_output.send(float(difference))
+
+
+class ScipyCurveFitNode(Node):
+    # the formula is typed by the patch's author, and only numpy's functions are
+    # available to it - no Python builtins
+    functions = {name: getattr(np, name) for name in
+                 ['exp', 'log', 'log10', 'log2', 'sqrt', 'sin', 'cos', 'tan', 'arctan', 'arcsin', 'arccos',
+                  'tanh', 'sinh', 'cosh', 'abs', 'sign', 'pi', 'e', 'power', 'maximum', 'minimum']}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyCurveFitNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        formula = ' '.join(str(a) for a in args) if len(args) > 0 else 'a * exp(-b * x) + c'
+        self.x_value = None
+        self.guess = None
+        self.compiled = None
+        self.names = []
+        self.input = self.add_input('y', triggers_execution=True)
+        self.x_input = self.add_input('x')
+        self.guess_input = self.add_input('guess')
+        self.formula_input = self.add_input('formula', widget_type='text_input', widget_width=200,
+                                            default_value=formula, callback=self.formula_changed)
+        self.parameters_output = self.add_output('parameters')
+        self.names_output = self.add_output('names')
+        self.fitted_output = self.add_output('fitted')
+        self.error_output = self.add_output('error')
+        # a widget's value is not there yet while the node is being made: read the
+        # starting formula from the arguments
+        self.formula_changed(formula)
+
+    def formula_changed(self, formula=None):
+        if formula is None:
+            formula = self.formula_input()
+        formula = str(formula).replace('^', '**')
+        try:
+            code = compile(formula, '<formula>', 'eval')
+        except SyntaxError:
+            self.compiled = None
+            if self.app.verbose:
+                print(self.label, 'cannot read the formula', formula)
+            return
+        # every name that is not x and not a function is a parameter, in order of appearance
+        names = []
+        for name in re.findall(r'[A-Za-z_]\w*', formula):
+            if name != 'x' and name not in self.functions and name not in names:
+                names.append(name)
+        self.compiled = code
+        self.names = names
+
+    def model(self, x, *params):
+        scope = dict(self.functions)
+        scope['x'] = x
+        scope.update(zip(self.names, params))
+        return eval(self.compiled, {'__builtins__': {}}, scope) * np.ones_like(x)
+
+    def execute(self):
+        if self.formula_input.fresh_input:
+            self.formula_changed()
+        if self.x_input.fresh_input:
+            self.x_value = any_to_array(self.x_input()).astype(float).ravel()
+        if self.guess_input.fresh_input:
+            self.guess = any_to_array(self.guess_input()).astype(float).ravel()
+        if self.compiled is None or len(self.names) == 0:
+            return
+        y = any_to_array(self.input()).astype(float).ravel()
+        x = self.x_value if self.x_value is not None else np.arange(y.size, dtype=float)
+        if x.size != y.size or y.size < len(self.names):
+            if self.app.verbose:
+                print(self.label, 'needs one x per y, and at least as many points as parameters', self.names)
+            return
+        keep = np.isfinite(x) & np.isfinite(y)
+        guess = self.guess if self.guess is not None and self.guess.size == len(self.names) else np.ones(len(self.names))
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                params, _ = curve_fit(self.model, x[keep], y[keep], p0=guess, maxfev=5000)
+        except Exception as e:
+            # no fit found (often a poor starting guess); say why, send nothing
+            if self.app.verbose:
+                print(self.label, 'could not fit:', e)
+            return
+        fitted = self.model(x, *params)
+        self.error_output.send(float(np.sqrt(np.nanmean((fitted - y) ** 2))))
+        self.fitted_output.send(fitted)
+        self.names_output.send(list(self.names))
+        self.parameters_output.send(params)
