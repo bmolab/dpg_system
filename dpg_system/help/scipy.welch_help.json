@@ -1,0 +1,722 @@
+{
+    "name": "scipy.welch_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.welch_help.json",
+    "patches": {
+        "0": {
+            "height": 840,
+            "width": 730,
+            "position": [
+                160,
+                160
+            ],
+            "id": 829,
+            "name": "make_two_tones",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 866,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 2000",
+                    "id": 903,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 2000.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment every two seconds",
+                    "id": 940,
+                    "position_x": 190,
+                    "position_y": 55,
+                    "width": 220,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "every two seconds",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "every two seconds"
+                },
+                "3": {
+                    "name": "np.arange",
+                    "init": "np.arange 600",
+                    "id": 977,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 150,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 600 samples: 10 seconds at 60 a second",
+                    "id": 1014,
+                    "position_x": 210,
+                    "position_y": 150,
+                    "width": 380,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "600 samples: 10 seconds at 60 a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "600 samples: 10 seconds at 60 a second"
+                },
+                "5": {
+                    "name": "*",
+                    "init": "* 18",
+                    "id": 1051,
+                    "position_x": 40,
+                    "position_y": 270,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 360,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "comment",
+                    "init": "comment 3 cycles a second",
+                    "id": 1125,
+                    "position_x": 40,
+                    "position_y": 440,
+                    "width": 220,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "3 cycles a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "3 cycles a second"
+                },
+                "8": {
+                    "name": "*",
+                    "init": "* 48",
+                    "id": 1162,
+                    "position_x": 330,
+                    "position_y": 270,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "9": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1199,
+                    "position_x": 330,
+                    "position_y": 360,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "*",
+                    "init": "* 0.5",
+                    "id": 1236,
+                    "position_x": 330,
+                    "position_y": 450,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "comment",
+                    "init": "comment 8 cycles a second, half as tall",
+                    "id": 1273,
+                    "position_x": 330,
+                    "position_y": 530,
+                    "width": 320,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "8 cycles a second, half as tall",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "8 cycles a second, half as tall"
+                },
+                "12": {
+                    "name": "+",
+                    "init": "+",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 580,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "13": {
+                    "name": "out",
+                    "init": "out tones",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 680,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 903,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 977,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1051,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "3": {
+                    "source_node": 1051,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1088,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 1,
+                    "dest_input_name": "operand"
+                },
+                "7": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tones"
+                }
+            }
+        },
+        "1": {
+            "height": 1221,
+            "width": 1670,
+            "position": [
+                100,
+                100
+            ],
+            "id": 792,
+            "name": "scipy.welch_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.welch_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment scipy.welch - a steady spectrum of a whole signal",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 611,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "scipy.welch - a steady spectrum of a whole signal",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "scipy.welch - a steady spectrum of a whole signal"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 862,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1116,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Gives the spectrum of a whole signal - how much power there is at each frequency - by cutting it into overlapping windows, taking the spectrum of each and averaging them. Welch's method.\n\nA single spectrum of a long, noisy recording is ragged: every bin jumps about. Averaging many windows gives a steady, readable answer, at the price of coarser frequency steps. Use it to find the main rhythms in a take - a gait's step rate, a breathing rate, a tremor's frequency - or to compare how much fast and slow movement two performances have.\n\nSYNTAX:\nscipy.welch <window: int> <sample rate>\nDefaults: window 64, sample rate 60.\n\nEXAMPLE:\nscipy.welch 256 100\n\nINPUTS and PARAMETERS:\n\nin:\nThe signal: a list or 1-D array. Every input is analysed and sent.\n\nsample rate (float box, also an inlet):\nSamples per second, so the frequencies come out in cycles per second.\n\nwindow (int box, also an inlet):\nHow many samples in each window. Longer gives finer frequency steps (sample rate / window apart) but fewer windows to average.\n\noverlap (float box, also an inlet):\nHow much each window overlaps the last, as a fraction (0.5 by default).\n\ndecibels:\nAn option, under the node. Off (the default here), plain power; on, in decibels.\n\nOUTPUTS:\n\npower:\nThe power at each frequency.\n\nfrequencies:\nThe frequency of each value, from 0 up to half the sample rate. Sent first.\n\nREADING THE DEMO:\nThe make_two_tones subpatcher makes 10 seconds of a wave at 3 cycles a second plus one half as tall at 8. Welch's spectrum, in windows of 128 (bins 0.47 cycles a second apart), has two peaks: near 3, and near 8 - a quarter as tall, since power goes with the square of the size.\n\nRELATED:\nscipy.spectrogram keeps the windows apart, to show change over time. np.fft.rfft gives the spectrum of a single window. spectrum analyses a live stream.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1100,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Gives the spectrum of a whole signal - how much power there is at each frequency - by cutting it into overlapping windows, taking the spectrum of each and averaging them. Welch's method.\n\nA single spectrum of a long, noisy recording is ragged: every bin jumps about. Averaging many windows gives a steady, readable answer, at the price of coarser frequency steps. Use it to find the main rhythms in a take - a gait's step rate, a breathing rate, a tremor's frequency - or to compare how much fast and slow movement two performances have.\n\nSYNTAX:\nscipy.welch <window: int> <sample rate>\nDefaults: window 64, sample rate 60.\n\nEXAMPLE:\nscipy.welch 256 100\n\nINPUTS and PARAMETERS:\n\nin:\nThe signal: a list or 1-D array. Every input is analysed and sent.\n\nsample rate (float box, also an inlet):\nSamples per second, so the frequencies come out in cycles per second.\n\nwindow (int box, also an inlet):\nHow many samples in each window. Longer gives finer frequency steps (sample rate / window apart) but fewer windows to average.\n\noverlap (float box, also an inlet):\nHow much each window overlaps the last, as a fraction (0.5 by default).\n\ndecibels:\nAn option, under the node. Off (the default here), plain power; on, in decibels.\n\nOUTPUTS:\n\npower:\nThe power at each frequency.\n\nfrequencies:\nThe frequency of each value, from 0 up to half the sample rate. Sent first.\n\nREADING THE DEMO:\nThe make_two_tones subpatcher makes 10 seconds of a wave at 3 cycles a second plus one half as tall at 8. Welch's spectrum, in windows of 128 (bins 0.47 cycles a second apart), has two peaks: near 3, and near 8 - a quarter as tall, since power goes with the square of the size.\n\nRELATED:\nscipy.spectrogram keeps the windows apart, to show change over time. np.fft.rfft gives the spectrum of a single window. spectrum analyses a live stream."
+                },
+                "3": {
+                    "init": "comment two rhythms, mixed",
+                    "name": "comment",
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 119,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "two rhythms, mixed",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "two rhythms, mixed"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 103,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_two_tones",
+                    "patcher id": 829
+                },
+                "5": {
+                    "init": "comment windows of 128 at 60 a second",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 280,
+                    "position_y": 53,
+                    "width": 187,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "windows of 128 at 60 a second",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "windows of 128 at 60 a second"
+                },
+                "6": {
+                    "name": "scipy.welch",
+                    "id": 459,
+                    "position_x": 280,
+                    "position_y": 92,
+                    "width": 160,
+                    "height": 98,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "scipy.welch 128",
+                    "highlight": true
+                },
+                "7": {
+                    "init": "comment peaks near 3 and 8",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 28,
+                    "position_y": 290,
+                    "width": 119,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "peaks near 3 and 8",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "peaks near 3 and 8"
+                },
+                "8": {
+                    "name": "plot",
+                    "id": 533,
+                    "position_x": 28,
+                    "position_y": 325,
+                    "width": 528,
+                    "height": 230,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 520,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "bar",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 65,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 65.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 0.7,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 610,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "10": {
+                    "name": "help_link",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 644,
+                    "width": 121,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link scipy.spectrogram"
+                },
+                "11": {
+                    "name": "help_link",
+                    "id": 644,
+                    "position_x": 204,
+                    "position_y": 644,
+                    "width": 84,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.fft.rfft"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 332,
+                    "position_y": 644,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link spectrum"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 437,
+                    "position_y": 644,
+                    "width": 115,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link scipy.find_peaks"
+                },
+                "14": {
+                    "name": "close",
+                    "id": 755,
+                    "position_x": 24,
+                    "position_y": 754,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tones",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "1": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "power",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

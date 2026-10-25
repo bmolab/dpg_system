@@ -868,12 +868,12 @@
             "annotation": true,
             "position_x": 1143,
             "position_y": 410,
-            "width": 440,
-            "height": 28,
+            "width": 415,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "scipy.find_peaks, scipy.filtfilt, scipy.kdtree, scipy.cubic_spline",
+                    "value": "scipy.find_peaks, scipy.filtfilt, scipy.median_filter,\nscipy.gaussian_filter, scipy.resample_poly, scipy.spectrogram,\nscipy.welch, scipy.label, scipy.kdtree, scipy.cubic_spline",
                     "value_type": "str"
                 },
                 "1": {
@@ -883,12 +883,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 432,
+                    "value": 407,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -897,7 +897,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "scipy.find_peaks, scipy.filtfilt, scipy.kdtree, scipy.cubic_spline",
+            "text": "scipy.find_peaks, scipy.filtfilt, scipy.median_filter,\nscipy.gaussian_filter, scipy.resample_poly, scipy.spectrogram,\nscipy.welch, scipy.label, scipy.kdtree, scipy.cubic_spline",
             "id": 1573,
             "visibility": "show_all",
             "draggable": true,
@@ -907,7 +907,7 @@
             "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
             "name": "help_link",
             "position_x": 843,
-            "position_y": 458,
+            "position_y": 466,
             "width": 286,
             "height": 44,
             "properties": {
@@ -931,7 +931,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 1143,
-            "position_y": 462,
+            "position_y": 470,
             "width": 446,
             "height": 40,
             "properties": {

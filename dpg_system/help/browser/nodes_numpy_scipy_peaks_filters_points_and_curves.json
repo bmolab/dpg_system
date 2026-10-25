@@ -1,11 +1,11 @@
 {
-    "height": 416,
-    "width": 483,
+    "height": 728,
+    "width": 508,
     "position": [
         100,
         100
     ],
-    "id": 1018,
+    "id": 1462,
     "name": "nodes_numpy_scipy_peaks_filters_points_and_curves",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_scipy_peaks_filters_points_and_curves.json",
     "nodes": {
@@ -140,7 +140,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 150,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -150,7 +150,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 134,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -167,7 +167,7 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 188,
+            "position_x": 207,
             "position_y": 154,
             "width": 188,
             "height": 28,
@@ -209,7 +209,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
-            "width": 150,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -219,7 +219,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 134,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -236,7 +236,7 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 188,
+            "position_x": 207,
             "position_y": 206,
             "width": 255,
             "height": 28,
@@ -274,21 +274,21 @@
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link scipy.kdtree scipy.kdtree",
+            "init": "help_link scipy.median_filter scipy.median_filter",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
-            "width": 150,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "scipy.kdtree",
+                    "name": "scipy.median_filter",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 134,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -305,8 +305,422 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 188,
+            "position_x": 207,
             "position_y": 258,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "remove spikes, keep edges",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "remove spikes, keep edges",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link scipy.gaussian_filter scipy.gaussian_filter",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.gaussian_filter",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 310,
+            "width": 114,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a smooth blur",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 106,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a smooth blur",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link scipy.resample_poly scipy.resample_poly",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.resample_poly",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 362,
+            "width": 261,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "change the sample rate of a recording",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "change the sample rate of a recording",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link scipy.spectrogram scipy.spectrogram",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.spectrogram",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 414,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "which frequencies, at which moments",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "which frequencies, at which moments",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link scipy.welch scipy.welch",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 462,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.welch",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 466,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a steady spectrum of a whole signal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a steady spectrum of a whole signal",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link scipy.label scipy.label",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 514,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.label",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 518,
+            "width": 237,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "find the separate blobs in a grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "find the separate blobs in a grid",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link scipy.kdtree scipy.kdtree",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 566,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.kdtree",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 570,
             "width": 218,
             "height": 28,
             "properties": {
@@ -337,17 +751,17 @@
                 }
             },
             "text": "the nearest of a set of points",
-            "id": 907,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "23": {
             "init": "help_link scipy.cubic_spline scipy.cubic_spline",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 306,
-            "width": 150,
+            "position_y": 618,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -357,7 +771,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 134,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -366,16 +780,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 944,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 188,
-            "position_y": 310,
+            "position_x": 207,
+            "position_y": 622,
             "width": 212,
             "height": 28,
             "properties": {
@@ -406,7 +820,7 @@
                 }
             },
             "text": "a smooth curve through points",
-            "id": 981,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

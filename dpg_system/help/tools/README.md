@@ -405,6 +405,12 @@ is seeded by `seed_numpy_batch6_help.py`.
 The scipy nodes (scipy.find_peaks, scipy.filtfilt, scipy.kdtree,
 scipy.cubic_spline, in scipy_nodes.py) are seeded by `seed_scipy_help.py`; the
 peak and filter pages share a make_wobble subpatcher that makes the demo curve.
+The second scipy batch (scipy.resample_poly, scipy.spectrogram, scipy.welch,
+scipy.label, scipy.gaussian_filter, scipy.median_filter) is seeded by
+`seed_scipy2_help.py`. In make_wobble and make_two_tones the ripple branch is
+linked BEFORE the slow wave: an outlet sends in the order its links were made, and
+the ripple must reach the + operand before the slow wave triggers the sum, or the
+first tick (the only one a slow metro gives a quick check) adds nothing to it.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

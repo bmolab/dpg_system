@@ -282,7 +282,7 @@
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "arange out",
-                    "dest_node": 1162,
+                    "dest_node": 1273,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
@@ -292,7 +292,7 @@
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "arange out",
-                    "dest_node": 1273,
+                    "dest_node": 1162,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"

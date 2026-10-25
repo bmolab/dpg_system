@@ -54,7 +54,9 @@ WOBBLE_SUB = {
         S('c3', 'comment added together', 190, 595, 200, 30),
         S('out', 'out wobble', 40, 680, 150, 80),
     ],
-    'links': [('mt', '', 'ar', ''), ('ar', 'arange out', 'm1', 'in'), ('ar', 'arange out', 'm2', 'in'),
+    # the ripple branch is linked first, so it reaches the + operand before the slow
+    # wave arrives to trigger the sum (an outlet sends in the order its links were made)
+    'links': [('mt', '', 'ar', ''), ('ar', 'arange out', 'm2', 'in'), ('ar', 'arange out', 'm1', 'in'),
               ('m1', 'result', 's1', 'in'), ('m2', 'result', 's2', 'in'), ('s2', 'out', 'm3', 'in'),
               ('m3', 'result', 'ad', 'operand', 0, 1), ('s1', 'out', 'ad', 'in'),
               ('ad', 'result', 'out', 'wobble')],
