@@ -1,5 +1,8 @@
 from dpg_system.torch_base_nodes import *
 import torch.fft
+import torch.nn.functional as F
+import re
+import math
 
 def register_torch_signal_processing_nodes():
     Node.app.register_node('t.window.blackman', TorchWindowNode_.factory)
@@ -17,6 +20,11 @@ def register_torch_signal_processing_nodes():
     Node.app.register_node('t.irfft', TorchFFTNode.factory)
     Node.app.register_node('t.fft', TorchFFTNode.factory)
     Node.app.register_node('t.ifft', TorchFFTNode.factory)
+    Node.app.register_node('t.stft', TorchSTFTNode.factory)
+    Node.app.register_node('t.istft', TorchSTFTNode.factory)
+    Node.app.register_node('t.interpolate', TorchInterpolateNode.factory)
+    Node.app.register_node('t.convolve', TorchConvolveNode.factory)
+    Node.app.register_node('t.correlate', TorchConvolveNode.factory)
 
 class TorchWindowNode_(TorchDeviceDtypeNode):
     op_dict = {
@@ -214,3 +222,243 @@ class TorchFFTNode(TorchWithDimNode):
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
             traceback.print_exc()
+
+
+class TorchSTFTNode(TorchNode):
+    # t.stft: a signal -> its spectrum at each moment (frequency bins x frames);
+    # t.istft: the complex spectrogram t.stft makes -> the signal again
+    windows = {'hann': torch.hann_window, 'hamming': torch.hamming_window,
+               'blackman': torch.blackman_window, 'rectangular': torch.ones}
+    forms = ['magnitude', 'power', 'decibels', 'complex']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchSTFTNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.inverse = label == 't.istft'
+        window = 256
+        hop = 0
+        rate = 44100.0
+        # t.stft <window> <hop>; t.istft <hop> (its window size is read from the spectrogram)
+        if self.inverse:
+            if len(args) > 0:
+                hop = max(any_to_int(args[0]), 0)
+        else:
+            if len(args) > 0:
+                window = max(any_to_int(args[0]), 2)
+            if len(args) > 1:
+                hop = max(any_to_int(args[1]), 0)
+        if self.inverse:
+            self.input = self.add_input('spectrogram', triggers_execution=True)
+            self.window_input = None
+            self.length_input = self.add_input('length', widget_type='input_int', default_value=0, min=0)
+        else:
+            self.input = self.add_input('signal', triggers_execution=True)
+            self.rate_input = self.add_input('sample rate', widget_type='drag_float', default_value=rate)
+            self.window_input = self.add_input('window', widget_type='input_int', default_value=window, min=2)
+        # 0 hops a quarter of the window, torch's default
+        self.hop_input = self.add_input('hop', widget_type='input_int', default_value=hop, min=0)
+        if self.inverse:
+            self.output = self.add_output('signal')
+        else:
+            self.output = self.add_output('spectrogram')
+            self.frequencies_output = self.add_output('frequencies')
+        self.shape_option = self.add_option('window shape', widget_type='combo', default_value='hann')
+        self.shape_option.widget.combo_items = list(self.windows.keys())
+        if not self.inverse:
+            self.form_option = self.add_option('output', widget_type='combo', default_value='magnitude')
+            self.form_option.widget.combo_items = self.forms
+        self.center_option = self.add_option('center', widget_type='checkbox', default_value=True)
+
+    def make_window(self, size, like):
+        maker = self.windows.get(self.shape_option(), torch.hann_window)
+        return maker(size, device=like.device, dtype=like.real.dtype if like.is_complex() else like.dtype)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        if self.inverse:
+            self.execute_inverse(input_tensor)
+            return
+        signal = float_like(input_tensor)
+        if signal.is_complex() or signal.ndim > 2:
+            if self.app.verbose:
+                print(self.label, 'takes a line of samples, or (channels, samples), got shape', list(signal.shape))
+            return
+        window = max(self.window_input(), 2)
+        hop = self.hop_input()
+        hop = hop if hop > 0 else max(window // 4, 1)
+        center = self.center_option()
+        length = signal.shape[-1]
+        if (center and length <= window // 2) or (not center and length < window):
+            if self.app.verbose:
+                print(self.label, 'a window of', window, 'needs a longer signal than', length, 'samples')
+            return
+        spectrum = torch.stft(signal, window, hop_length=hop, window=self.make_window(window, signal),
+                              center=center, return_complex=True)
+        form = self.form_option()
+        if form == 'power':
+            spectrum = spectrum.abs() ** 2
+        elif form == 'decibels':
+            # 10 log10 of power; a floor keeps silence from becoming -infinity
+            spectrum = 10.0 * torch.log10(torch.clamp(spectrum.abs() ** 2, min=1e-12))
+        elif form != 'complex':
+            spectrum = spectrum.abs()
+        rate = self.rate_input()
+        if rate > 0:
+            self.frequencies_output.send(torch.fft.rfftfreq(window, d=1.0 / rate, device=signal.device))
+        self.output.send(spectrum)
+
+    def execute_inverse(self, spectrum):
+        if not spectrum.is_complex() or spectrum.ndim not in [2, 3]:
+            if self.app.verbose:
+                print(self.label, 'needs the complex spectrogram from t.stft (output: complex), got',
+                      spectrum.dtype, list(spectrum.shape))
+            return
+        window = 2 * (spectrum.shape[-2] - 1)
+        if window < 2:
+            return
+        hop = self.hop_input()
+        hop = hop if hop > 0 else max(window // 4, 1)
+        length = self.length_input()
+        try:
+            self.output.send(torch.istft(spectrum, window, hop_length=hop, window=self.make_window(window, spectrum),
+                                         center=self.center_option(), length=length if length > 0 else None))
+        except RuntimeError as e:
+            # a hop or window that does not match the one t.stft used cannot be undone
+            if self.app.verbose:
+                print(self.label, e)
+
+
+class TorchInterpolateNode(TorchNode):
+    # menu name -> torch's mode for 1, 2 and 3 resized dims
+    modes = {'linear': ['linear', 'bilinear', 'trilinear'],
+             'cubic': ['bicubic', 'bicubic', 'trilinear'],
+             'nearest': ['nearest', 'nearest', 'nearest'],
+             'area': ['area', 'area', 'area']}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchInterpolateNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        size = ' '.join(str(any_to_int(a)) for a in args) if len(args) > 0 else '100'
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.size_input = self.add_input('size', widget_type='text_input', default_value=size)
+        self.output = self.add_output('resized')
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='linear')
+        self.mode_option.widget.combo_items = list(self.modes.keys())
+        self.align_option = self.add_option('align corners', widget_type='checkbox', default_value=True)
+
+    def sizes(self):
+        value = self.size_input()
+        if isinstance(value, str):
+            return [int(v) for v in re.findall(r'\d+', value)]
+        return [any_to_int(v) for v in np.ravel(np.asarray(value, dtype=object))]
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        sizes = [max(s, 1) for s in self.sizes()][:3]
+        resized_count = len(sizes)
+        if resized_count == 0 or input_tensor.ndim < resized_count:
+            if self.app.verbose:
+                print(self.label, 'cannot resize', resized_count, 'dims of shape', list(input_tensor.shape))
+            return
+        data = float_like(input_tensor)
+        if data.is_complex():
+            return
+        # the first dims are resized (time, or height and width); the rest ride along as channels
+        spatial = list(data.shape[:resized_count])
+        channels = list(data.shape[resized_count:])
+        channel_count = math.prod(channels)
+        grid = data.reshape(*spatial, channel_count).movedim(-1, 0).unsqueeze(0)
+        mode_name = self.mode_option() if self.mode_option() in self.modes else 'linear'
+        mode = self.modes[mode_name][resized_count - 1]
+        target = sizes
+        one_row = mode == 'bicubic' and resized_count == 1
+        if one_row:
+            # torch has no 1-D cubic: resize a picture one row high instead
+            grid = grid.unsqueeze(2)
+            target = [1] + sizes
+        corners = {}
+        if mode in ['linear', 'bilinear', 'bicubic', 'trilinear']:
+            corners['align_corners'] = self.align_option()
+        resized = F.interpolate(grid, size=target, mode=mode, **corners)
+        if one_row:
+            resized = resized.squeeze(2)
+        resized = resized.squeeze(0).movedim(0, -1).reshape(*sizes, *channels)
+        self.output.send(resized)
+
+
+class TorchConvolveNode(TorchNode):
+    modes = ['same', 'full', 'valid']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchConvolveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        # torch's conv1d correlates; t.convolve flips the kernel so it convolves, as np.convolve does
+        self.flip = label != 't.correlate'
+        mode = 'same'
+        kernel = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                kernel.append(float(v))
+            elif t == str and v in self.modes:
+                mode = v
+        self.kernel = torch.tensor(kernel) if len(kernel) > 0 else None
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.kernel_input = self.add_input('kernel' if self.flip else 'pattern')
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('convolved' if self.flip else 'correlated')
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value=mode)
+        self.mode_option.widget.combo_items = self.modes
+
+    def execute(self):
+        if self.kernel_input.fresh_input:
+            kernel = held_tensor(self.kernel_input())
+            self.kernel = kernel.flatten() if kernel is not None else None
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None or self.kernel is None or self.kernel.numel() == 0:
+            return
+        data = float_like(input_tensor)
+        if data.is_complex() or data.ndim == 0:
+            return
+        dim = self.dim_input()
+        if not -data.ndim <= dim < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range for shape', list(data.shape))
+            return
+        mode = self.mode_option() if self.mode_option() in self.modes else 'same'
+        moved = data.movedim(dim, -1)
+        length = moved.shape[-1]
+        k = self.kernel.numel()
+        if mode == 'valid' and length < k:
+            if self.app.verbose:
+                print(self.label, 'valid mode needs at least', k, 'values along the dim')
+            return
+        weights = self.kernel.to(device=data.device, dtype=data.dtype)
+        if self.flip:
+            weights = weights.flip(0)
+        rows = moved.reshape(-1, 1, length)
+        full = F.conv1d(F.pad(rows, (k - 1, k - 1)), weights.view(1, 1, k))
+        if mode == 'same':
+            # centred on the input, as np.convolve's 'same' is
+            size = max(length, k)
+            start = (length + k - 1 - size) // 2
+            full = full[..., start:start + size]
+        elif mode == 'valid':
+            full = full[..., k - 1:length]
+        self.output.send(full.reshape(*moved.shape[:-1], full.shape[-1]).movedim(-1, dim))

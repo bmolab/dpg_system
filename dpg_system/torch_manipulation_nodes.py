@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 from dpg_system.torch_base_nodes import *
 
@@ -38,6 +39,8 @@ def register_torch_manipulation_nodes():
     Node.app.register_node('t.triu', TorchTriangleNode.factory)
     Node.app.register_node('t.scatter', TorchScatterNode.factory)
     Node.app.register_node('t.scatter_hold', TorchScatterHoldNode.factory)
+    Node.app.register_node('t.pad', TorchPadNode.factory)
+    Node.app.register_node('t.unfold', TorchUnfoldNode.factory)
 
 
 class TorchSqueezeNode(TorchWithDimNode):
@@ -1202,3 +1205,113 @@ class TorchTriangleNode(TorchNode):
             self.output.send(output_tensor)
 
 
+
+
+class TorchPadNode(TorchNode):
+    modes = ['constant', 'replicate', 'reflect', 'circular']
+    # np.pad's names for the same modes
+    mode_aliases = {'edge': 'replicate', 'wrap': 'circular'}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchPadNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        before = 1
+        after = 1
+        mode = 'constant'
+        numbers = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                numbers.append(int(v))
+            elif t == str:
+                v = self.mode_aliases.get(v, v)
+                if v in self.modes:
+                    mode = v
+        if len(numbers) > 0:
+            before = after = numbers[0]
+        if len(numbers) > 1:
+            after = numbers[1]
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.before_input = self.add_input('before', widget_type='input_int', default_value=before)
+        self.after_input = self.add_input('after', widget_type='input_int', default_value=after)
+        self.value_input = self.add_input('value', widget_type='drag_float', default_value=0.0)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('padded')
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value=mode)
+        self.mode_option.widget.combo_items = self.modes
+
+    def execute(self):
+        input_tensor = self.input_to_tensor(allow_empty=True)
+        if input_tensor is None or input_tensor.ndim == 0:
+            return
+        dim = self.dim_input()
+        if not -input_tensor.ndim <= dim < input_tensor.ndim:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range for shape', list(input_tensor.shape))
+            return
+        before = max(self.before_input(), 0)
+        after = max(self.after_input(), 0)
+        mode = self.mode_aliases.get(self.mode_option(), self.mode_option())
+        if mode not in self.modes:
+            mode = 'constant'
+        moved = input_tensor.movedim(dim, -1)
+        length = moved.shape[-1]
+        if mode == 'constant':
+            padded = F.pad(moved, (before, after), value=self.value_input())
+        else:
+            if length == 0:
+                return
+            if mode == 'reflect' and max(before, after) >= length:
+                if self.app.verbose:
+                    print(self.label, 'reflect can add at most', length - 1, 'values at each end')
+                return
+            if mode == 'circular' and max(before, after) > length:
+                if self.app.verbose:
+                    print(self.label, 'circular can add at most', length, 'values at each end')
+                return
+            # these modes pad the last dim of a (batch, channel, length) tensor
+            rows = float_like(moved).reshape(-1, 1, length)
+            padded = F.pad(rows, (before, after), mode=mode)
+            padded = padded.reshape(*moved.shape[:-1], padded.shape[-1]).to(input_tensor.dtype)
+        self.output.send(padded.movedim(-1, dim))
+
+
+class TorchUnfoldNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchUnfoldNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        window, step = 4, 1
+        if len(args) > 0:
+            window = max(any_to_int(args[0]), 1)
+        if len(args) > 1:
+            step = max(any_to_int(args[1]), 1)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.window_input = self.add_input('window', widget_type='input_int', default_value=window)
+        self.step_input = self.add_input('step', widget_type='input_int', default_value=step)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('windows')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None or input_tensor.ndim == 0:
+            return
+        dim = self.dim_input()
+        if not -input_tensor.ndim <= dim < input_tensor.ndim:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range for shape', list(input_tensor.shape))
+            return
+        window = max(self.window_input(), 1)
+        if input_tensor.shape[dim] < window:
+            if self.app.verbose:
+                print(self.label, 'a window of', window, 'is longer than the', input_tensor.shape[dim], 'values')
+            return
+        # a copy: unfold gives a view sharing memory with the input, which a later node may change
+        self.output.send(input_tensor.unfold(dim, window, max(self.step_input(), 1)).clone())

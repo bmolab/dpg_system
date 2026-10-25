@@ -255,3 +255,35 @@ class TorchWithDimNode(TorchNode):
         if self.dim_input is not None:
             self.dim = self.dim_input()
 
+
+
+def run_with_cpu_fallback(op, *args, **kwargs):
+    """Run a torch op; when the tensors' device lacks it (MPS has no lstsq or
+    mode), run it on the CPU and move the results back to that device."""
+    try:
+        return op(*args, **kwargs)
+    except NotImplementedError:
+        device = next((a.device for a in args if isinstance(a, torch.Tensor)), None)
+        if device is None or device.type == 'cpu':
+            raise
+        cpu_args = [a.cpu() if isinstance(a, torch.Tensor) else a for a in args]
+        result = op(*cpu_args, **kwargs)
+        if isinstance(result, torch.Tensor):
+            return result.to(device)
+        return tuple(r.to(device) if isinstance(r, torch.Tensor) else r for r in result)
+
+
+def held_tensor(data):
+    """A cold inlet's data as a tensor, or None for nothing usable."""
+    if data is None:
+        return None
+    if isinstance(data, torch.Tensor):
+        return data
+    return any_to_tensor(data, validate=True)
+
+
+def float_like(tensor):
+    """Linear algebra wants floats: whole numbers become float32."""
+    if tensor.is_floating_point() or tensor.is_complex():
+        return tensor
+    return tensor.float()
