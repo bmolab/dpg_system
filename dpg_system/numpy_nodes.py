@@ -2,6 +2,7 @@ from copy import deepcopy
 import dearpygui.dearpygui as dpg
 from dpg_system.node import Node, NodeInput, LoadDialog, SaveDialog
 from dpg_system.conversion_utils import *
+import os
 import re
 import time
 import traceback
@@ -149,6 +150,22 @@ def register_numpy_nodes():
     Node.app.register_node('np.cumulative_trapezoid', NumpyTrapezoidNode.factory)
     Node.app.register_node('np.fft.fft', NumpyFftNode.factory)
     Node.app.register_node('np.fft.ifft', NumpyIfftNode.factory)
+    Node.app.register_node('np.save', NumpySaveNode.factory)
+    Node.app.register_node('np.savetxt', NumpySaveNode.factory)
+    Node.app.register_node('np.loadtxt', NumpyLoadTextNode.factory)
+    Node.app.register_node('np.random.normal', NumpyRandomArrayNode.factory)
+    Node.app.register_node('np.random.integers', NumpyRandomArrayNode.factory)
+    Node.app.register_node('np.random.choice', NumpyRandomChoiceNode.factory)
+    Node.app.register_node('np.random.permutation', NumpyRandomPermutationNode.factory)
+    Node.app.register_node('np.sliding_window_view', NumpySlidingWindowNode.factory)
+    Node.app.register_node('np.maximum.accumulate', NumpyRunningExtremeNode.factory)
+    Node.app.register_node('np.minimum.accumulate', NumpyRunningExtremeNode.factory)
+    Node.app.register_node('np.insert', NumpyInsertNode.factory)
+    Node.app.register_node('np.delete', NumpyDeleteNode.factory)
+    Node.app.register_node('np.append', NumpyAppendNode.factory)
+    Node.app.register_node('np.nanargmax', NumpyUnaryNode.factory)
+    Node.app.register_node('np.nanargmin', NumpyUnaryNode.factory)
+    Node.app.register_node('np.bincount', NumpyBincountNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -431,7 +448,7 @@ class NumpyNodeWithAxisNode(Node):
 
 
 class NumpyUnaryNode(NumpyNodeWithAxisNode):
-    operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median, 'np.amax': np.amax, 'np.amin': np.amin, 'np.argmax': np.argmax, 'np.argmin': np.argmin, 'np.nansum': np.nansum, 'np.nanmean': np.nanmean, 'np.nanmedian': np.nanmedian, 'np.ptp': np.ptp, 'np.nanmin': np.nanmin, 'np.nanmax': np.nanmax, 'np.nanstd': np.nanstd, 'np.nanvar': np.nanvar}
+    operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median, 'np.amax': np.amax, 'np.amin': np.amin, 'np.argmax': np.argmax, 'np.argmin': np.argmin, 'np.nansum': np.nansum, 'np.nanmean': np.nanmean, 'np.nanmedian': np.nanmedian, 'np.ptp': np.ptp, 'np.nanmin': np.nanmin, 'np.nanmax': np.nanmax, 'np.nanstd': np.nanstd, 'np.nanvar': np.nanvar, 'np.nanargmax': np.nanargmax, 'np.nanargmin': np.nanargmin}
 
     @staticmethod
     def factory(name, data, args=None):
@@ -461,7 +478,13 @@ class NumpyUnaryNode(NumpyNodeWithAxisNode):
             with warnings.catch_warnings():
                 # the nan- reductions warn on an all-nan slice; its nan is the answer
                 warnings.simplefilter('ignore', RuntimeWarning)
-                output_value = self.op(input_value, axis=self.call_axis)
+                try:
+                    output_value = self.op(input_value, axis=self.call_axis)
+                except ValueError as e:
+                    # nanargmax / nanargmin of an all-nan slice: no position to give
+                    if self.app.verbose:
+                        print(self.label, e)
+                    return
             self.output.send(output_value)
         else:
             if self.app.verbose:
@@ -2312,7 +2335,7 @@ class NumpyLoadNode(Node):
             self.load_file(path)
 
     def open_load_dialog(self):
-        LoadDialog(self, callback=self.load_dialog_callback, extensions=['.npz'])
+        LoadDialog(self, callback=self.load_dialog_callback, extensions=['.npz', '.npy'])
 
     def load_dialog_callback(self, load_path):
         if load_path != '':
@@ -2324,6 +2347,14 @@ class NumpyLoadNode(Node):
     def load_file(self, path):
         try:
             npz_data = np.load(path, allow_pickle=True)
+            if isinstance(npz_data, np.ndarray):
+                # a .npy file holds a single array: send it as one, under 'data'
+                npz_data = {'data': npz_data}
+                self.dict = npz_data
+                if self.app.verbose:
+                    print(f'{self.label}: loaded {path}, one array of shape {npz_data["data"].shape}')
+                self.data_output.send(self.dict)
+                return
             temp_dict = {key: npz_data[key] for key in npz_data.files}
             self.dict = deepcopy(temp_dict)
             npz_data.close()
@@ -4196,3 +4227,494 @@ class NumpyIfftNode(Node):
         if np.allclose(signal.imag, 0, atol=1e-9 * max(np.abs(signal).max(initial=0.0), 1.0)):
             signal = signal.real
         self.output.send(signal)
+
+
+class NumpySaveNode(Node):
+    # np.save writes .npy (or .npz, under the key 'data'); np.savetxt writes a
+    # text table (.csv). Arriving arrays are only held: the file is written when
+    # 'write' is clicked or banged, never on every input.
+    delimiters = {'comma': ',', 'tab': '\t', 'space': ' '}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpySaveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.text = label == 'np.savetxt'
+        self.extension = '.csv' if self.text else '.npy'
+        default_path = args[0] if len(args) > 0 else ''
+        self.array = None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.write_button = self.add_input('write', widget_type='button', callback=self.write)
+        self.save_as_button = self.add_input('save as', widget_type='button', callback=self.open_save_dialog)
+        self.path_option = self.add_option('path', widget_type='text_input', default_value=default_path)
+        self.delimiter_option = None
+        if self.text:
+            self.delimiter_option = self.add_option('delimiter', widget_type='combo', default_value='comma')
+            self.delimiter_option.widget.combo_items = list(self.delimiters.keys())
+        self.output = self.add_output('saved path')
+
+    def execute(self):
+        self.array = any_to_array(self.input())
+
+    def write(self, input=None):
+        path = self.path_option()
+        if path is None or path == '':
+            self.open_save_dialog()
+            return
+        self.write_file(path)
+
+    def open_save_dialog(self, input=None):
+        SaveDialog(self, callback=self.save_dialog_callback, extensions=['.csv', '.txt'] if self.text else ['.npy', '.npz'],
+                   default_filename='untitled' + self.extension)
+
+    def save_dialog_callback(self, save_path):
+        if save_path != '':
+            self.path_option.set(save_path)
+            self.write_file(save_path)
+
+    def write_file(self, path):
+        if self.array is None:
+            if self.app.verbose:
+                print(self.label, 'has no array to write yet')
+            return
+        if os.path.splitext(path)[1] == '':
+            path += self.extension
+        try:
+            if self.text:
+                if self.array.ndim > 2:
+                    print(f'{self.label}: a text table holds 1-D or 2-D arrays, not shape {self.array.shape}')
+                    return
+                delimiter = self.delimiters.get(self.delimiter_option(), ',')
+                np.savetxt(path, self.array, delimiter=delimiter, fmt='%.9g')
+            elif path.endswith('.npz'):
+                np.savez(path, data=self.array)
+            else:
+                np.save(path, self.array)
+        except Exception as e:
+            print(f'{self.label} error writing {path}: {type(e).__name__}: {e}')
+            return
+        self.output.send(path)
+
+
+class NumpyLoadTextNode(Node):
+    delimiters = {'any space': None, 'comma': ',', 'tab': '\t'}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLoadTextNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        default_path = args[0] if len(args) > 0 else ''
+        self.array = None
+        self.load_button = self.add_input('load', widget_type='button', callback=self.open_load_dialog)
+        self.add_input('send', widget_type='button', callback=self.send_array)
+        self.path_option = self.add_option('path', widget_type='text_input', default_value=default_path,
+                                           callback=self.path_changed)
+        self.delimiter_option = self.add_option('delimiter', widget_type='combo', default_value='comma',
+                                                callback=self.path_changed)
+        self.delimiter_option.widget.combo_items = list(self.delimiters.keys())
+        self.skip_option = self.add_option('skip rows', widget_type='input_int', default_value=0,
+                                           callback=self.path_changed)
+        self.output = self.add_output('array')
+
+    def custom_create(self, from_file=False):
+        self.path_changed()
+
+    def path_changed(self):
+        path = self.path_option()
+        if path is not None and path != '':
+            self.load_file(path)
+
+    def send_array(self, input=None):
+        if self.array is not None:
+            self.output.send(self.array)
+
+    def open_load_dialog(self, input=None):
+        LoadDialog(self, callback=self.load_dialog_callback, extensions=['.csv', '.txt', '.tsv'])
+
+    def load_dialog_callback(self, load_path):
+        if load_path != '':
+            self.path_option.set(load_path)
+            self.load_file(load_path)
+
+    def load_file(self, path):
+        delimiter = self.delimiters.get(self.delimiter_option(), ',')
+        skip = max(self.skip_option() or 0, 0)
+        try:
+            # genfromtxt rather than loadtxt: an empty or unreadable cell becomes nan
+            # instead of stopping the whole load
+            array = np.genfromtxt(path, delimiter=delimiter, skip_header=skip, dtype=float)
+        except Exception as e:
+            print(f'{self.label} error loading {path}: {type(e).__name__}: {e}')
+            return
+        self.array = array
+        self.output.send(array)
+
+
+def items_to_array(value):
+    """An array of things to choose from or shuffle. A list holding words stays a
+    list of words; any_to_array would read them as number words and give nothing."""
+    if isinstance(value, str):
+        value = value.split()
+    if isinstance(value, (list, tuple)) and any(isinstance(v, str) for v in value):
+        return np.array(value, dtype=object)
+    return any_to_array(value)
+
+
+class NumpyRandomBase(Node):
+    # a seed of -1 draws different numbers every time the patch opens; any other
+    # seed repeats the same sequence from the start
+    def add_seed_option(self):
+        self.rng = np.random.default_rng()
+        self.seed_option = self.add_option('seed', widget_type='input_int', default_value=-1,
+                                           callback=self.seed_changed)
+
+    def seed_changed(self):
+        seed = self.seed_option()
+        self.rng = np.random.default_rng(None if seed is None or seed < 0 else seed)
+
+
+class NumpyRandomArrayNode(NumpyRandomBase):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRandomArrayNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.integers = label == 'np.random.integers'
+        self.shape = [max(any_to_int(a), 0) for a in args] if len(args) > 0 else [10]
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.shape_input = self.add_input('shape', widget_type='text_input', widget_width=120,
+                                          default_value=' '.join(str(d) for d in self.shape),
+                                          callback=self.shape_changed)
+        if self.integers:
+            self.low_input = self.add_input('low', widget_type='input_int', default_value=0)
+            self.high_input = self.add_input('high', widget_type='input_int', default_value=10)
+        else:
+            self.low_input = self.add_input('mean', widget_type='drag_float', default_value=0.0)
+            self.high_input = self.add_input('spread', widget_type='drag_float', default_value=1.0)
+        self.output = self.add_output('random array')
+        self.add_seed_option()
+
+    def shape_changed(self):
+        shape = parse_ints(self.shape_input())
+        if len(shape) > 0:
+            self.shape = [max(d, 0) for d in shape]
+
+    def execute(self):
+        if self.shape_input.fresh_input:
+            self.shape_changed()
+        if self.integers:
+            low, high = self.low_input(), self.high_input()
+            if high <= low:
+                if self.app.verbose:
+                    print(self.label, 'high must be above low')
+                return
+            self.output.send(self.rng.integers(low, high, size=self.shape))
+        else:
+            self.output.send(self.rng.normal(self.low_input(), max(self.high_input(), 0.0),
+                                             size=self.shape).astype(np.float32))
+
+
+class NumpyRandomChoiceNode(NumpyRandomBase):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRandomChoiceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        # np.random.choice <n>: choose from 0 to n-1 until a list arrives at 'from'
+        self.choices = None
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                self.choices = np.arange(max(int(v), 1))
+        self.weights = None
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.from_input = self.add_input('from')
+        self.count_input = self.add_input('count', widget_type='input_int', default_value=1)
+        self.weights_input = self.add_input('weights')
+        self.output = self.add_output('chosen')
+        self.repeats_option = self.add_option('repeats', widget_type='checkbox', default_value=True)
+        self.add_seed_option()
+
+    def execute(self):
+        if self.from_input.fresh_input:
+            self.choices = items_to_array(self.from_input())
+        if self.weights_input.fresh_input:
+            self.weights = any_to_array(self.weights_input()).astype(float).ravel()
+        if self.choices is None or len(self.choices) == 0:
+            return
+        n = len(self.choices)
+        p = None
+        if self.weights is not None:
+            if self.weights.shape[0] != n or np.any(self.weights < 0) or self.weights.sum() == 0:
+                if self.app.verbose:
+                    print(self.label, 'needs one non-negative weight per choice, not all zero')
+                return
+            p = self.weights / self.weights.sum()
+        count = max(self.count_input(), 1)
+        replace = self.repeats_option()
+        if not replace and count > n:
+            count = n
+        chosen = self.rng.choice(self.choices, size=count, replace=replace, p=p, axis=0)
+        # a single pick is sent as the item itself, not a list of one
+        self.output.send(chosen[0] if count == 1 else chosen)
+
+
+class NumpyRandomPermutationNode(NumpyRandomBase):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRandomPermutationNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.output = self.add_output('shuffled')
+        self.add_seed_option()
+
+    def execute(self):
+        value = self.input()
+        # a message box sends 8 as the list [8]; shuffling one item means nothing, so
+        # a single whole number in a list is taken as n too
+        if isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 1:
+            single = np.ravel(np.asarray(value, dtype=object))[0]
+            if isinstance(single, (int, np.integer, float, np.floating)) and float(single).is_integer():
+                value = int(single)
+        if isinstance(value, (int, np.integer)) and not isinstance(value, bool):
+            # a whole number n: the numbers 0 to n-1 in random order
+            self.output.send(self.rng.permutation(max(int(value), 0)))
+            return
+        data = items_to_array(value)
+        if data.ndim == 0 or data.size == 0:
+            return
+        # shuffles the first axis: the elements of a list, the rows of a matrix
+        self.output.send(self.rng.permutation(data, axis=0))
+
+
+class NumpySlidingWindowNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpySlidingWindowNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        window, step = 4, 1
+        if len(args) > 0:
+            window = max(any_to_int(args[0]), 1)
+        if len(args) > 1:
+            step = max(any_to_int(args[1]), 1)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.window_input = self.add_input('window', widget_type='input_int', default_value=window)
+        self.step_input = self.add_input('step', widget_type='input_int', default_value=step)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('windows')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        axis = axis % data.ndim
+        window = max(self.window_input(), 1)
+        if data.shape[axis] < window:
+            if self.app.verbose:
+                print(self.label, 'a window of', window, 'is longer than the', data.shape[axis], 'values')
+            return
+        windows = np.lib.stride_tricks.sliding_window_view(data, window, axis=axis)
+        step = max(self.step_input(), 1)
+        if step > 1:
+            windows = np.take(windows, np.arange(0, windows.shape[axis], step), axis=axis)
+        # a copy: a view would share memory with the input, which a later node may change
+        self.output.send(np.array(windows))
+
+
+class NumpyRunningExtremeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRunningExtremeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.largest = label == 'np.maximum.accumulate'
+        axis = -1
+        if len(args) > 0:
+            axis = any_to_int(args[0])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=axis)
+        self.output = self.add_output('running max' if self.largest else 'running min')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        # fmax / fmin skip nan, so one gap does not wipe out the rest of the run
+        op = np.fmax if self.largest else np.fmin
+        self.output.send(op.accumulate(data, axis=axis))
+
+
+class NumpyInsertNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyInsertNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        index = 0
+        if len(args) > 0:
+            index = any_to_int(args[0])
+        self.values = None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.values_input = self.add_input('values')
+        self.index_input = self.add_input('index', widget_type='input_int', default_value=index)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=0)
+        self.output = self.add_output('inserted')
+
+    def execute(self):
+        if self.values_input.fresh_input:
+            self.values = any_to_array(self.values_input())
+        if self.values is None:
+            return
+        data = any_to_array(self.input())
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        n = data.shape[axis]
+        index = self.index_input()
+        # a negative index counts from the end; out of range goes to the nearest end
+        if index < 0:
+            index += n + 1
+        index = min(max(index, 0), n)
+        try:
+            self.output.send(np.insert(data, index, self.values, axis=axis))
+        except ValueError:
+            if self.app.verbose:
+                print(self.label, 'values of shape', self.values.shape, 'do not fit', data.shape)
+
+
+class NumpyDeleteNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyDeleteNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        indices = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                indices.append(int(v))
+        self.indices = np.array(indices, dtype=int)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.indices_input = self.add_input('indices')
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=0)
+        self.output = self.add_output('remaining')
+
+    def execute(self):
+        if self.indices_input.fresh_input:
+            self.indices = np.round(any_to_array(self.indices_input()).astype(float)).astype(int).ravel()
+        data = any_to_array(self.input())
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        n = data.shape[axis]
+        # -1 counts from the end; positions that do not exist are ignored
+        indices = np.where(self.indices < 0, self.indices + n, self.indices)
+        indices = indices[(indices >= 0) & (indices < n)]
+        self.output.send(np.delete(data, indices, axis=axis))
+
+
+class NumpyAppendNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyAppendNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        values = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                values.append(v)
+        self.values = np.array(values) if len(values) > 0 else None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.values_input = self.add_input('values')
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=0)
+        self.output = self.add_output('appended')
+
+    def execute(self):
+        if self.values_input.fresh_input:
+            self.values = any_to_array(self.values_input())
+        if self.values is None:
+            return
+        data = any_to_array(self.input())
+        values = self.values
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        # a single row onto a matrix: give it the missing axis
+        if values.ndim == data.ndim - 1:
+            values = np.expand_dims(values, axis)
+        try:
+            self.output.send(np.append(data, values, axis=axis))
+        except ValueError:
+            if self.app.verbose:
+                print(self.label, 'values of shape', self.values.shape, 'do not fit', data.shape,
+                      'along axis', axis)
+
+
+class NumpyBincountNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyBincountNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        length = 0
+        if len(args) > 0:
+            length = max(any_to_int(args[0]), 0)
+        self.weights = None
+        self.input = self.add_input('labels', triggers_execution=True)
+        self.weights_input = self.add_input('weights')
+        self.length_input = self.add_input('length', widget_type='input_int', default_value=length)
+        self.output = self.add_output('counts')
+
+    def execute(self):
+        if self.weights_input.fresh_input:
+            self.weights = any_to_array(self.weights_input()).astype(float).ravel()
+        labels = np.round(any_to_array(self.input()).astype(float)).astype(int).ravel()
+        if np.any(labels < 0):
+            if self.app.verbose:
+                print(self.label, 'labels must be 0 or more')
+            return
+        weights = self.weights
+        if weights is not None and weights.shape[0] != labels.shape[0]:
+            if self.app.verbose:
+                print(self.label, 'has', weights.shape[0], 'weights for', labels.shape[0], 'labels; counting instead')
+            weights = None
+        self.output.send(np.bincount(labels, weights=weights, minlength=max(self.length_input(), 0)))
