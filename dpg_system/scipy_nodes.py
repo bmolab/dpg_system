@@ -11,7 +11,9 @@ from scipy.spatial import ConvexHull, procrustes
 from scipy.spatial import QhullError
 from scipy import stats
 from scipy.cluster.vq import kmeans2
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, linear_sum_assignment
+from scipy.interpolate import griddata, RBFInterpolator
+from scipy.spatial.distance import cdist
 
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -40,6 +42,15 @@ def register_scipy_nodes():
     Node.app.register_node('scipy.kmeans', ScipyKMeansNode.factory)
     Node.app.register_node('scipy.procrustes', ScipyProcrustesNode.factory)
     Node.app.register_node('scipy.curve_fit', ScipyCurveFitNode.factory)
+    Node.app.register_node('scipy.linear_sum_assignment', ScipyAssignmentNode.factory)
+    Node.app.register_node('scipy.griddata', ScipyGridDataNode.factory)
+    Node.app.register_node('scipy.correlate', ScipyCorrelateLagNode.factory)
+    Node.app.register_node('scipy.coherence', ScipyCoherenceNode.factory)
+    Node.app.register_node('scipy.local_maxima', ScipyLocalMaximaNode.factory)
+    Node.app.register_node('scipy.zscore', ScipyZScoreNode.factory)
+    Node.app.register_node('scipy.linregress', ScipyLinregressNode.factory)
+    Node.app.register_node('scipy.spearmanr', ScipySpearmanNode.factory)
+    Node.app.register_node('scipy.entropy', ScipyEntropyNode.factory)
 
 
 class ScipyFindPeaksNode(Node):
@@ -994,3 +1005,425 @@ class ScipyCurveFitNode(Node):
         self.fitted_output.send(fitted)
         self.names_output.send(list(self.names))
         self.parameters_output.send(params)
+
+
+class ScipyAssignmentNode(Node):
+    # pairs the points of one frame with the reference (or the last frame) so that
+    # the total distance moved is as small as possible; with track on, identities
+    # carry from frame to frame
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyAssignmentNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.reference = None
+        self.input = self.add_input('points', triggers_execution=True)
+        self.reference_input = self.add_input('reference')
+        self.max_distance_input = self.add_input('max distance', widget_type='drag_float', default_value=0.0)
+        self.matched_output = self.add_output('matched')
+        self.tracked_output = self.add_output('tracked')
+        self.cost_output = self.add_output('cost')
+        self.track_option = self.add_option('track', widget_type='checkbox', default_value=False)
+        self.mode_option = self.add_option('input', widget_type='combo', default_value='points')
+        self.mode_option.widget.combo_items = ['points', 'cost matrix']
+
+    def execute(self):
+        if self.reference_input.fresh_input:
+            self.reference = any_to_array(self.reference_input()).astype(float)
+            if self.reference.ndim == 1:
+                self.reference = self.reference.reshape(-1, 1)
+        data = any_to_array(self.input()).astype(float)
+        if self.mode_option() == 'cost matrix':
+            if data.ndim != 2:
+                return
+            rows, cols = linear_sum_assignment(np.nan_to_num(data, nan=1e12, posinf=1e12))
+            matched = np.full(data.shape[0], -1, dtype=int)
+            matched[rows] = cols
+            self.cost_output.send(float(data[rows, cols].sum()))
+            self.matched_output.send(matched)
+            return
+        if data.ndim == 1:
+            data = data.reshape(-1, 1)
+        if self.reference is None or self.reference.size == 0:
+            # nothing to match yet: these points become the identities
+            if self.track_option():
+                self.reference = data.copy()
+            self.cost_output.send(0.0)
+            self.tracked_output.send(data)
+            self.matched_output.send(np.arange(data.shape[0]))
+            return
+        if self.reference.shape[1] != data.shape[1]:
+            if self.app.verbose:
+                print(self.label, 'points and reference need the same number of coordinates')
+            return
+        distances = cdist(self.reference, data) if data.shape[0] > 0 else np.zeros((self.reference.shape[0], 0))
+        max_distance = self.max_distance_input()
+        cost = distances.copy()
+        if max_distance > 0:
+            # too far to be the same thing: make that pairing all but impossible
+            cost[cost > max_distance] = 1e12
+        rows, cols = linear_sum_assignment(cost) if data.shape[0] > 0 else (np.zeros(0, int), np.zeros(0, int))
+        keep = cost[rows, cols] < 1e12
+        rows, cols = rows[keep], cols[keep]
+        matched = np.full(self.reference.shape[0], -1, dtype=int)
+        matched[rows] = cols
+        # one row per identity, in the reference's order; lost ones are nan; points
+        # matching no identity follow as new ones
+        tracked = np.full(self.reference.shape, np.nan)
+        tracked[rows] = data[cols]
+        new = np.setdiff1d(np.arange(data.shape[0]), cols)
+        tracked_all = np.vstack([tracked, data[new]]) if new.size > 0 else tracked
+        if self.track_option():
+            # lost identities keep their last place, so they can be found again
+            following = np.where(np.isnan(tracked_all[:self.reference.shape[0]]), self.reference, tracked_all[:self.reference.shape[0]])
+            self.reference = np.vstack([following, data[new]]) if new.size > 0 else following
+        self.cost_output.send(float(distances[rows, cols].sum()))
+        self.tracked_output.send(tracked_all)
+        self.matched_output.send(matched)
+
+
+class ScipyGridDataNode(Node):
+    methods = ['linear', 'nearest', 'cubic', 'smooth']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyGridDataNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        width, height = 32, 32
+        if len(args) > 0:
+            width = max(any_to_int(args[0]), 2)
+            height = width
+        if len(args) > 1:
+            height = max(any_to_int(args[1]), 2)
+        self.points = None
+        self.input = self.add_input('values', triggers_execution=True)
+        self.points_input = self.add_input('points')
+        self.width_input = self.add_input('width', widget_type='input_int', default_value=width)
+        self.height_input = self.add_input('height', widget_type='input_int', default_value=height)
+        self.x_min_input = self.add_input('x min', widget_type='drag_float', default_value=0.0)
+        self.x_max_input = self.add_input('x max', widget_type='drag_float', default_value=1.0)
+        self.y_min_input = self.add_input('y min', widget_type='drag_float', default_value=0.0)
+        self.y_max_input = self.add_input('y max', widget_type='drag_float', default_value=1.0)
+        self.output = self.add_output('grid')
+        self.method_option = self.add_option('method', widget_type='combo', default_value='linear')
+        self.method_option.widget.combo_items = self.methods
+        self.auto_range_option = self.add_option('auto range', widget_type='checkbox', default_value=True)
+        self.outside_option = self.add_option('outside', widget_type='combo', default_value='nearest')
+        self.outside_option.widget.combo_items = ['nearest', 'nan', 'zero']
+
+    def execute(self):
+        if self.points_input.fresh_input:
+            self.points = any_to_array(self.points_input()).astype(float)
+        if self.points is None or self.points.ndim != 2 or self.points.shape[1] != 2:
+            if self.app.verbose:
+                print(self.label, 'needs points as rows of x y')
+            return
+        values = any_to_array(self.input()).astype(float).ravel()
+        if values.size != self.points.shape[0]:
+            if self.app.verbose:
+                print(self.label, 'has', self.points.shape[0], 'points but', values.size, 'values')
+            return
+        keep = np.isfinite(values) & np.all(np.isfinite(self.points), axis=1)
+        points, values = self.points[keep], values[keep]
+        if points.shape[0] < 1:
+            return
+        if self.auto_range_option():
+            x_min, y_min = points.min(axis=0)
+            x_max, y_max = points.max(axis=0)
+        else:
+            x_min, x_max = self.x_min_input(), self.x_max_input()
+            y_min, y_max = self.y_min_input(), self.y_max_input()
+        width, height = max(self.width_input(), 2), max(self.height_input(), 2)
+        # one row per y, one column per x: the grid as a picture
+        gx, gy = np.meshgrid(np.linspace(x_min, x_max, width), np.linspace(y_min, y_max, height))
+        cells = np.column_stack([gx.ravel(), gy.ravel()])
+        method = self.method_option()
+        try:
+            if method == 'smooth':
+                # a thin-plate spline through every point: smooth, and fills everywhere
+                grid = RBFInterpolator(points, values, kernel='thin_plate_spline')(cells)
+            else:
+                if method not in ['linear', 'nearest', 'cubic']:
+                    method = 'linear'
+                grid = griddata(points, values, cells, method=method)
+        except Exception as e:
+            # too few points, or all in a line, for this method
+            if self.app.verbose:
+                print(self.label, e)
+            grid = griddata(points, values, cells, method='nearest')
+        outside = self.outside_option()
+        missing = np.isnan(grid)
+        if missing.any():
+            if outside == 'nearest':
+                grid[missing] = griddata(points, values, cells[missing], method='nearest')
+            elif outside == 'zero':
+                grid[missing] = 0.0
+        self.output.send(grid.reshape(height, width))
+
+
+class ScipyCorrelateLagNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyCorrelateLagNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        rate = 60.0
+        if len(args) > 0:
+            rate = any_to_float(args[0])
+        self.second = None
+        self.input = self.add_input('a', triggers_execution=True)
+        self.second_input = self.add_input('b')
+        self.rate_input = self.add_input('sample rate', widget_type='drag_float', default_value=rate)
+        self.max_lag_input = self.add_input('max lag', widget_type='drag_float', default_value=0.0)
+        self.lag_output = self.add_output('lag')
+        self.strength_output = self.add_output('strength')
+        self.correlation_output = self.add_output('correlation')
+        self.lags_output = self.add_output('lags')
+
+    def execute(self):
+        if self.second_input.fresh_input:
+            self.second = any_to_array(self.second_input()).astype(float).ravel()
+        if self.second is None or self.second.size < 2:
+            return
+        a = np.nan_to_num(any_to_array(self.input()).astype(float).ravel())
+        b = np.nan_to_num(self.second)
+        if a.size < 2:
+            return
+        # standardized, so the peak reads as a correlation from -1 to 1
+        a = (a - a.mean()) / (a.std() or 1.0)
+        b = (b - b.mean()) / (b.std() or 1.0)
+        correlation = signal.correlate(a, b, mode='full') / min(a.size, b.size)
+        lags = signal.correlation_lags(a.size, b.size, mode='full')
+        rate = self.rate_input() if self.rate_input() > 0 else 1.0
+        max_lag = self.max_lag_input()
+        window = np.abs(lags) <= max_lag * rate if max_lag > 0 else np.ones(lags.size, bool)
+        best = np.flatnonzero(window)[np.argmax(correlation[window])]
+        times = lags / rate
+        self.lags_output.send(times)
+        self.correlation_output.send(correlation)
+        self.strength_output.send(float(correlation[best]))
+        # positive: a happens later than b - a trails b by this many seconds
+        self.lag_output.send(float(times[best]))
+
+
+class ScipyCoherenceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyCoherenceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        window = 64
+        rate = 60.0
+        if len(args) > 0:
+            window = max(any_to_int(args[0]), 4)
+        if len(args) > 1:
+            rate = any_to_float(args[1])
+        self.second = None
+        self.input = self.add_input('a', triggers_execution=True)
+        self.second_input = self.add_input('b')
+        self.rate_input = self.add_input('sample rate', widget_type='drag_float', default_value=rate)
+        self.window_input = self.add_input('window', widget_type='input_int', default_value=window)
+        self.coherence_output = self.add_output('coherence')
+        self.frequencies_output = self.add_output('frequencies')
+
+    def execute(self):
+        if self.second_input.fresh_input:
+            self.second = any_to_array(self.second_input()).astype(float).ravel()
+        if self.second is None:
+            return
+        a = np.nan_to_num(any_to_array(self.input()).astype(float).ravel())
+        b = np.nan_to_num(self.second)
+        n = min(a.size, b.size)
+        if n < 4:
+            return
+        rate = self.rate_input() if self.rate_input() > 0 else 1.0
+        window = min(max(self.window_input(), 4), n)
+        frequencies, coherence = signal.coherence(a[:n], b[:n], fs=rate, nperseg=window)
+        self.frequencies_output.send(frequencies)
+        self.coherence_output.send(coherence)
+
+
+class ScipyLocalMaximaNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyLocalMaximaNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        size = 3
+        threshold = 0.5
+        if len(args) > 0:
+            size = max(any_to_int(args[0]), 3)
+        if len(args) > 1:
+            threshold = any_to_float(args[1])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.size_input = self.add_input('size', widget_type='input_int', default_value=size)
+        self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=threshold)
+        self.positions_output = self.add_output('positions')
+        self.values_output = self.add_output('values')
+        self.count_output = self.add_output('count')
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        if data.ndim < 1:
+            return
+        filled = np.nan_to_num(data, nan=-np.inf)
+        size = max(self.size_input(), 3)
+        # a peak is the highest point of its own neighbourhood, and above the threshold
+        peaks = (filled == ndimage.maximum_filter(filled, size=size, mode='nearest')) & \
+                (filled > self.threshold_input())
+        # a flat top gives several equal peaks side by side; keep one per flat top
+        labels, count = ndimage.label(peaks)
+        if count > 0:
+            positions = np.array(ndimage.center_of_mass(peaks, labels, np.arange(1, count + 1))).reshape(count, data.ndim)
+            spots = np.clip(np.round(positions).astype(int), 0, np.array(data.shape) - 1)
+            values = data[tuple(spots.T)]
+            order = np.argsort(-values, kind='stable')
+            positions, values = positions[order], values[order]
+        else:
+            positions = np.zeros((0, data.ndim))
+            values = np.zeros(0)
+        self.count_output.send(int(count))
+        self.values_output.send(values)
+        self.positions_output.send(positions)
+
+
+class ScipyZScoreNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyZScoreNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = 'None'
+        if len(args) > 0:
+            axis = str(args[0])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.axis_input = self.add_input('axis', widget_type='text_input', widget_width=60, default_value=axis)
+        self.output = self.add_output('z')
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        axis_text = str(self.axis_input()).strip()
+        axis = None
+        if axis_text not in ['', 'None', 'none']:
+            try:
+                axis = int(float(axis_text))
+            except ValueError:
+                axis = None
+        if axis is not None and not -data.ndim <= axis < data.ndim:
+            return
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            z = stats.zscore(data, axis=axis, nan_policy='omit')
+        # a variable that never changes has no spread: 0, not nan
+        self.output.send(np.where(np.isfinite(z) | np.isnan(data), z, 0.0))
+
+
+class ScipyLinregressNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyLinregressNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.x_value = None
+        self.input = self.add_input('y', triggers_execution=True)
+        self.x_input = self.add_input('x')
+        self.slope_output = self.add_output('slope')
+        self.intercept_output = self.add_output('intercept')
+        self.r_output = self.add_output('r')
+        self.p_output = self.add_output('p')
+
+    def execute(self):
+        if self.x_input.fresh_input:
+            self.x_value = any_to_array(self.x_input()).astype(float).ravel()
+        y = any_to_array(self.input()).astype(float).ravel()
+        x = self.x_value if self.x_value is not None else np.arange(y.size, dtype=float)
+        if x.size != y.size:
+            if self.app.verbose:
+                print(self.label, 'needs one x per y')
+            return
+        keep = np.isfinite(x) & np.isfinite(y)
+        x, y = x[keep], y[keep]
+        if x.size < 3 or np.ptp(x) == 0:
+            return
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            result = stats.linregress(x, y)
+        self.p_output.send(float(result.pvalue))
+        self.r_output.send(float(result.rvalue))
+        self.intercept_output.send(float(result.intercept))
+        self.slope_output.send(float(result.slope))
+
+
+class ScipySpearmanNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipySpearmanNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.second = None
+        self.input = self.add_input('a', triggers_execution=True)
+        self.second_input = self.add_input('b')
+        self.rho_output = self.add_output('rho')
+        self.p_output = self.add_output('p')
+
+    def execute(self):
+        if self.second_input.fresh_input:
+            self.second = any_to_array(self.second_input()).astype(float).ravel()
+        if self.second is None:
+            return
+        a = any_to_array(self.input()).astype(float).ravel()
+        if a.size != self.second.size or a.size < 3:
+            if self.app.verbose:
+                print(self.label, 'needs two lists of the same length, 3 or more')
+            return
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            result = stats.spearmanr(a, self.second, nan_policy='omit')
+        self.p_output.send(float(result.pvalue))
+        self.rho_output.send(float(result.statistic))
+
+
+class ScipyEntropyNode(Node):
+    bases = {'bits (2)': 2.0, 'natural (e)': np.e, 'digits (10)': 10.0}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyEntropyNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('counts', triggers_execution=True)
+        self.entropy_output = self.add_output('entropy')
+        self.evenness_output = self.add_output('evenness')
+        self.base_option = self.add_option('units', widget_type='combo', default_value='bits (2)')
+        self.base_option.widget.combo_items = list(self.bases.keys())
+
+    def execute(self):
+        counts = np.nan_to_num(any_to_array(self.input()).astype(float).ravel())
+        counts = np.clip(counts, 0.0, None)
+        if counts.sum() == 0:
+            return
+        base = self.bases.get(self.base_option(), 2.0)
+        h = float(stats.entropy(counts, base=base))
+        # 1 when every possibility is equally likely, 0 when one is certain
+        most = np.log(counts.size) / np.log(base) if counts.size > 1 else 0.0
+        self.evenness_output.send(h / most if most > 0 else 0.0)
+        self.entropy_output.send(h)
