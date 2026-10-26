@@ -3562,8 +3562,17 @@ class XYPadNode(Node):
         xy_pad 20             - persistent, range -20 to 20
         momentary_xy          - momentary (snaps back to 0,0), range -1.0 to 1.0
         momentary_xy 0.5      - momentary, range -0.5 to 0.5
+
+    The 'vectors' inlet draws on the pad: a list of rows, each [x, y] (an
+    arrow from the origin) or [x0, y0, x1, y1] (a thin guide line). Arrows
+    take ARROW_COLORS in turn, the first in the yellow of the dot; earlier
+    arrows are drawn on top, and thinner. A bang there sends the dot's
+    position, which the x and y options save with the patch.
     """
     title_bar_hideable = True
+    ARROW_COLORS = [(255, 255, 0, 255), (0, 200, 255, 255), (255, 80, 200, 255),
+                    (80, 255, 120, 255), (255, 150, 40, 255)]
+    GUIDE_COLOR = (170, 170, 170, 200)
 
     @staticmethod
     def factory(name, data, args=None):
@@ -3598,10 +3607,15 @@ class XYPadNode(Node):
         self.scatter_theme_tag = dpg.generate_uuid()
         self.crosshair_h_tag = dpg.generate_uuid()
         self.crosshair_v_tag = dpg.generate_uuid()
+        self.vectors_layer_tag = dpg.generate_uuid()
+        self.vector_rows = []
 
         # Display for the plot
         self.plot_display = self.add_display('')
         self.plot_display.submit_callback = self.submit_display
+
+        self.vectors_input = self.add_input('vectors', triggers_execution=True)
+        self.vectors_input.bang_repeats_previous = False
 
         # Outputs
         self.x_output = self.add_output('x out')
@@ -3627,6 +3641,29 @@ class XYPadNode(Node):
             'marker size', widget_type='drag_int', default_value=self.marker_size,
             callback=self._marker_size_changed
         )
+        self.marker_color_option = self.add_option(
+            'marker color', widget_type='color_picker', default_value=[1.0, 1.0, 0.0, 1.0],
+            callback=self._marker_size_changed
+        )
+        self.x_option = self.add_option('x', widget_type='drag_float', default_value=0.0,
+                                        callback=self._position_changed)
+        self.y_option = self.add_option('y', widget_type='drag_float', default_value=0.0,
+                                        callback=self._position_changed)
+
+    def _position_changed(self):
+        x, y = self.x_option(), self.y_option()
+        if x is None or y is None:
+            return
+        self.last_x, self.last_y = float(x), float(y)
+        if dpg.does_item_exist(self.scatter_tag):
+            dpg.set_value(self.scatter_tag, [[self.last_x], [self.last_y]])
+
+    def _move_marker(self, x, y):
+        dpg.set_value(self.scatter_tag, [[x], [y]])
+        self.last_x = x
+        self.last_y = y
+        self.x_option.set(x)
+        self.y_option.set(y)
 
     def submit_display(self):
         with dpg.plot(
@@ -3658,7 +3695,50 @@ class XYPadNode(Node):
             self._build_scatter_theme()
             dpg.add_scatter_series([0.0], [0.0], tag=self.scatter_tag, parent=self.y_axis_tag)
             dpg.bind_item_theme(self.scatter_tag, self.scatter_theme_tag)
+            dpg.add_draw_layer(tag=self.vectors_layer_tag)
         self._install_resize_handle()
+        self._draw_vectors()
+
+    def execute(self):
+        data = self.vectors_input()
+        if isinstance(data, str) and data == 'bang':
+            self.y_output.send(self.last_y)
+            self.x_output.send(self.last_x)
+            return
+        rows = any_to_list(data)
+        # A single vector arrives flat: [x, y] or [x0, y0, x1, y1].
+        if rows and not isinstance(rows[0], (list, tuple)):
+            rows = [rows]
+        self.vector_rows = rows if isinstance(rows, list) else []
+        self._draw_vectors()
+
+    def _draw_vectors(self):
+        if not dpg.does_item_exist(self.vectors_layer_tag):
+            return
+        dpg.delete_item(self.vectors_layer_tag, children_only=True)
+        # Drawing in a plot is in plot units, thickness and head size too:
+        # convert from pixels at 100%, and the plot scales them with the zoom.
+        unit = 2.0 * self.range_val / max(self.pad_width, 1)
+        arrows, guides = [], []
+        for row in self.vector_rows:
+            try:
+                values = [float(v) for v in row]
+            except (TypeError, ValueError):
+                continue
+            if len(values) == 2:
+                arrows.append(values)
+            elif len(values) == 4:
+                guides.append(values)
+        for values in guides:
+            dpg.draw_line(values[:2], values[2:], color=self.GUIDE_COLOR,
+                          thickness=unit, parent=self.vectors_layer_tag)
+        # Earlier arrows are drawn on top and thinner, so arrows lying along
+        # each other (a vector and its projection) all stay visible.
+        for i in reversed(range(len(arrows))):
+            color = self.ARROW_COLORS[i % len(self.ARROW_COLORS)]
+            # draw_arrow points at p1.
+            dpg.draw_arrow(arrows[i], [0.0, 0.0], color=color, thickness=(2 + 1.5 * i) * unit,
+                           size=(7 + 1.5 * i) * unit, parent=self.vectors_layer_tag)
 
     def _install_resize_handle(self):
         from dpg_system.node import ResizeHandle, _get_resize_handle_theme
@@ -3675,6 +3755,9 @@ class XYPadNode(Node):
         self.resize_handle = handle
 
     def custom_create(self, from_file):
+        # The marker theme was built before the options existed.
+        self._marker_size_changed()
+        self._position_changed()
         self.add_frame_task()
 
     def frame_task(self):
@@ -3693,10 +3776,7 @@ class XYPadNode(Node):
                     if plot_pos is not None:
                         x = max(-self.range_val, min(self.range_val, plot_pos[0]))
                         y = max(-self.range_val, min(self.range_val, plot_pos[1]))
-                        # Move the visual marker
-                        dpg.set_value(self.scatter_tag, [[x], [y]])
-                        self.last_x = x
-                        self.last_y = y
+                        self._move_marker(x, y)
                         self.y_output.send(y)
                         self.x_output.send(x)
             else:
@@ -3704,9 +3784,7 @@ class XYPadNode(Node):
                     self.dragging = False
                     if self.momentary_option():
                         # Momentary: snap back to center
-                        dpg.set_value(self.scatter_tag, [[0.0], [0.0]])
-                        self.last_x = 0.0
-                        self.last_y = 0.0
+                        self._move_marker(0.0, 0.0)
                         self.y_output.send(0.0)
                         self.x_output.send(0.0)
                     else:
@@ -3720,6 +3798,7 @@ class XYPadNode(Node):
         self.range_val = self.range_option()
         dpg.set_axis_limits(self.x_axis_tag, -self.range_val, self.range_val)
         dpg.set_axis_limits(self.y_axis_tag, -self.range_val, self.range_val)
+        self._draw_vectors()
 
     def _size_changed(self):
         # The options are the size at 100%; what is drawn follows the zoom.
@@ -3730,6 +3809,7 @@ class XYPadNode(Node):
         rh = getattr(self, 'resize_handle', None)
         if rh is not None and dpg.does_item_exist(rh.uuid):
             dpg.set_item_width(rh.uuid, self.zoomed(self.pad_width))
+        self._draw_vectors()
 
     def custom_zoom(self, ratio, exact):
         # Sized from the options rather than scaled, so every zoom is exact.
@@ -3742,11 +3822,22 @@ class XYPadNode(Node):
             with dpg.theme_component(dpg.mvScatterSeries):
                 dpg.add_theme_style(dpg.mvPlotStyleVar_Marker, dpg.mvPlotMarker_Circle, category=dpg.mvThemeCat_Plots)
                 dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, self.marker_size, category=dpg.mvThemeCat_Plots)
-                dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
-                dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, self._marker_color(), category=dpg.mvThemeCat_Plots)
+                dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, self._marker_color(), category=dpg.mvThemeCat_Plots)
+
+    def _marker_color(self):
+        # The option is 0..1; the theme takes 0..255. None until the options exist.
+        option = getattr(self, 'marker_color_option', None)
+        color = option() if option is not None else None
+        if color is None:
+            return (255, 255, 0, 255)
+        color = list(color) + [1.0] * (4 - len(color))
+        if max(color[:4]) <= 1.0:
+            color = [c * 255 for c in color[:4]]
+        return tuple(int(c) for c in color[:4])
 
     def _marker_size_changed(self):
-        self.marker_size = self.marker_size_option()
+        self.marker_size = self.marker_size_option() or self.marker_size
         self._build_scatter_theme()
         if dpg.does_item_exist(self.scatter_tag):
             dpg.bind_item_theme(self.scatter_tag, self.scatter_theme_tag)

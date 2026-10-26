@@ -693,13 +693,22 @@ dot product:
 A float for two vectors; an array for the larger cases.
 
 READING THE DEMO:
-in 1 is the vector a, which starts as [1 0], pointing along x; drag its
-numbers. in 2 is b, a vector of length 1 at the angle on the slider
-(make_direction turns the angle into [cos, sin]). The dot product reads
-1 at 0 degrees, 0 at 90, -1 at 180 - the cosine of the angle between
-them. Make a longer, [2 0], and every reading doubles. 'b' goes through
-'t bang array': the array is stored in in 2 first, then the bang makes
-a re-send, so turning the slider updates the answer.
+Two pads, one per vector, and both draw the whole picture. Drag the
+yellow dot on the left pad: it is the tip of a (yellow arrow), sent as
+[x, y] to in 1. Drag the blue dot on the right pad to turn b (blue
+arrow): its position is divided by its own length (np.linalg.norm), so b
+always has length 1 and only its direction counts; it goes to in 2. The
+magenta arrow is b times the dot product - the shadow a casts on b, with
+the grey line dropping from a's tip onto it. Its length is the answer: a
+long shadow when a points along b, none at right angles, and it flips
+behind the origin, negative, when a points away. With a of length 1 the
+answer is the cosine of the angle between them.
+
+'b' goes through 't bang array': the array is stored in in 2 first, then
+the bang makes a re-send, so moving either dot updates the answer. 't
+bang float' sets the dot product as the operand of '*', then bangs b
+through it. The pads save where their dots are; load_bang bangs each
+pad's vectors inlet, which sends that position, to start the picture.
 
 RELATED:
 np.inner is the same for vectors but pairs rows with rows for 2-D
@@ -708,31 +717,84 @@ arrays. np.matmul is the matrix product. np.linalg.norm gives a length
 vector at right angles to both. t.cosine_similarity gives the cosine
 directly, whatever the lengths."""
 
+# Gathers the pad's rows: a, b, the shadow of a on b, and the guide line
+# from the shadow's tip to a's (np.concatenate makes the four numbers).
+ARROWS_SUB = {
+    'name': 'arrows',
+    'host': 'pA',
+    'demo': [
+        {'key': 'ia', 'init': 'in a', 'pos': (40, 40), 'w': 120, 'h': 80},
+        {'key': 'ib', 'init': 'in b', 'pos': (200, 40), 'w': 120, 'h': 80},
+        {'key': 'ip', 'init': 'in shadow', 'pos': (360, 40), 'w': 150, 'h': 80},
+        {'key': 'cc', 'init': 'np.concatenate', 'pos': (360, 160), 'w': 170, 'h': 90},
+        {'key': 'cl', 'init': 'comment guide: [shadow tip, a tip]',
+         'pos': (550, 180), 'w': 300, 'h': 30},
+        {'key': 'pk', 'init': 'pak 4', 'pos': (40, 290), 'w': 160, 'h': 100},
+        {'key': 'cp', 'init': 'comment one row per arrow, then the guide',
+         'pos': (220, 320), 'w': 360, 'h': 30},
+        {'key': 'out', 'init': 'out rows', 'pos': (40, 430), 'w': 150, 'h': 80},
+    ],
+    'links': [('ia', 'a', 'pk', 'in 1'), ('ia', 'a', 'cc', 'in 2'),
+              ('ib', 'b', 'pk', 'in 2'),
+              ('ip', 'shadow', 'pk', 'in 3'), ('ip', 'shadow', 'cc', 'in'),
+              ('cc', 'out', 'pk', 'in 4'), ('pk', 'out', 'out', 'rows')],
+}
+
+PAD = {'momentary': False, 'range': 2.0, 'width': 260, 'height': 260, 'marker size': 7}
+
 demo = [
     {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'a', 'init': 'vector 2', 'pos': (30, 130), 'w': 120, 'h': 150,
-     'props': VEC([1.0, 0.0])},
-    {'key': 'c0', 'comment': True, 'text': 'a: drag its numbers', 'pos': (30, 290)},
-    {'key': 'sl', 'init': 'slider 360.0', 'pos': (330, 62), 'w': 220, 'h': 60,
-     'props': {'min': 0.0, 'max': 360.0, 'format': '%.0f', 'width': 200, '': 60.0}},
-    {'key': 'c1', 'comment': True, 'text': 'the angle of b, in degrees', 'pos': (330, 130)},
-    {'key': 'pB', 'init': 'p make_direction', 'pos': (330, 170), 'w': 200, 'h': 70},
-    {'key': 'lb2', 'init': 'list', 'pos': (330, 260), 'w': 220, 'h': 42, 'props': LIST},
-    {'key': 'c2', 'comment': True, 'text': 'b: length 1, at that angle', 'pos': (330, 310)},
-    {'key': 'tb', 'init': 't bang array', 'pos': (330, 350), 'w': 140, 'h': 46},
-    {'key': 'dt', 'init': 'np.dot', 'pos': (30, 420), 'w': 150, 'h': 70},
-    {'key': 'f1', 'init': 'float', 'pos': (30, 510), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c3', 'comment': True, 'text': 'a . b: 1 together, 0 at right angles, -1 opposite',
-     'pos': (180, 515)},
-] + see_also(580, ['np.inner', 'np.matmul', 'np.linalg.norm', 'np.cross',
-                   't.cosine_similarity'])
-links = [('lb', 'out', 'sl', ''), ('sl', 'float out', 'pB', 'angle'),
-         ('pB', 'direction', 'lb2', ''), ('pB', 'direction', 'tb', ''),
-         ('tb', 'array', 'dt', 'in 2', 1), ('tb', 'bang', 'a', 'in', 0),
-         ('a', 'out', 'dt', 'in 1'), ('dt', 'dot product', 'f1', '')]
+    {'key': 'tl', 'init': 't bang bang', 'pos': (140, 62), 'w': 140, 'h': 46},
+    {'key': 'js', 'init': 'joy_stick 2', 'pos': (30, 130), 'w': 268, 'h': 330,
+     'props': dict(PAD, x=1.2, y=0.5)},
+    {'key': 'c0', 'comment': True, 'text': 'a: drag the yellow dot', 'pos': (30, 470)},
+    {'key': 'jb', 'init': 'joy_stick 2', 'pos': (330, 130), 'w': 268, 'h': 330,
+     'props': dict(PAD, x=0.5, y=0.87, **{'marker color': [0.0, 0.78, 1.0, 1.0]})},
+    {'key': 'c1', 'comment': True, 'text': 'b: drag the blue dot to turn it',
+     'pos': (330, 470)},
+    {'key': 'pk', 'init': 'pack 2', 'pos': (30, 500), 'w': 140, 'h': 70},
+    {'key': 'a', 'init': 'vector 2', 'pos': (30, 590), 'w': 120, 'h': 120,
+     'props': VEC([1.2, 0.5])},
+    {'key': 'pkb', 'init': 'pack 2', 'pos': (330, 500), 'w': 140, 'h': 70},
+    {'key': 'tll', 'init': 't list list', 'pos': (330, 590), 'w': 140, 'h': 46},
+    {'key': 'nm', 'init': 'np.linalg.norm', 'pos': (480, 620), 'w': 170, 'h': 70},
+    {'key': 'dv', 'init': '/', 'pos': (330, 700), 'w': 120, 'h': 70},
+    {'key': 'c2', 'comment': True, 'text': 'divided by its length: b has length 1',
+     'pos': (470, 715)},
+    {'key': 'tb', 'init': 't bang array', 'pos': (330, 790), 'w': 140, 'h': 46},
+    {'key': 'bv', 'init': 'vector 2', 'pos': (480, 790), 'w': 120, 'h': 120,
+     'props': VEC([0.5, 0.87])},
+    {'key': 'dt', 'init': 'np.dot', 'pos': (30, 790), 'w': 150, 'h': 70},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 880), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c3', 'comment': True, 'text': 'a . b: the length of the shadow',
+     'pos': (170, 890)},
+    {'key': 'tf', 'init': 't bang float', 'pos': (30, 950), 'w': 140, 'h': 46},
+    {'key': 'ml', 'init': '*', 'pos': (330, 950), 'w': 120, 'h': 70},
+    {'key': 'c4', 'comment': True, 'text': 'b times a . b: the shadow of a on b',
+     'pos': (470, 965)},
+    {'key': 'pA', 'init': 'p arrows', 'pos': (30, 1040), 'w': 220, 'h': 110},
+    {'key': 'c5', 'comment': True, 'text': 'drawn on both pads', 'pos': (270, 1060)},
+] + see_also(1200, ['np.inner', 'np.matmul', 'np.linalg.norm', 'np.cross',
+                    't.cosine_similarity'])
+links = [('lb', 'out', 'tl', ''),
+         ('tl', 'bang', 'jb', 'vectors', 1), ('tl', 'bang', 'js', 'vectors', 0),
+         ('js', 'y out', 'pk', 'in 2', 1), ('js', 'x out', 'pk', 'in 1', 0),
+         ('pk', 'out', 'a', 'in'),
+         ('jb', 'y out', 'pkb', 'in 2', 1), ('jb', 'x out', 'pkb', 'in 1', 0),
+         ('pkb', 'out', 'tll', ''),
+         ('tll', 'list', 'nm', 'input', 1), ('nm', 'norm', 'dv', '###operand'),
+         ('tll', 'list', 'dv', 'in', 0), ('dv', 'result', 'tb', ''),
+         ('tb', 'array', 'dt', 'in 2', 1), ('tb', 'array', 'bv', 'in', 1),
+         ('tb', 'array', 'pA', 'b', 1), ('tb', 'bang', 'a', 'in', 0),
+         ('a', 'out', 'dt', 'in 1'), ('a', 'out', 'pA', 'a'),
+         ('dt', 'dot product', 'f1', ''), ('dt', 'dot product', 'tf', ''),
+         ('tf', 'float', 'ml', '###operand', 1), ('tf', 'bang', 'bv', 'in', 0),
+         ('bv', 'out', 'ml', 'in'),
+         ('ml', 'result', 'pA', 'shadow'),
+         ('pA', 'rows', 'js', 'vectors'), ('pA', 'rows', 'jb', 'vectors')]
 print(build('np.dot', 'np.dot - how much two vectors point the same way',
             body, demo, links, demo_width=DW(640), text_width=760, text_height=th(body),
-            subpatch=direction_sub('pB')))
+            subpatch=ARROWS_SUB))
 
 # ------------------------------------------------------------------ np.inner
 body = """Gives the inner product: for two vectors, the dot product; for two sets
