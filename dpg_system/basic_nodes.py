@@ -2984,7 +2984,7 @@ class DictKeysNode(Node):
 
     def execute(self):
         in_dict = self.input()
-        if type(in_dict) is dict:
+        if isinstance(in_dict, dict):   # an OrderedDict too, e.g. a model's weights from t.load
             keys = list(in_dict.keys())
             self.output.send(keys)
 

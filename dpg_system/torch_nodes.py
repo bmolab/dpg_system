@@ -33,6 +33,7 @@ from dpg_system.torchvision_nodes import *
 from dpg_system.torch_kornia_nodes import *
 from dpg_system.torch_loss_nodes import *
 from dpg_system.torch_voxel_nodes import *
+from dpg_system.torch_model_nodes import *
 
 torchaudio_avail = True
 try:
@@ -74,6 +75,7 @@ def register_torch_nodes():
     register_kornia_nodes()
     register_torch_loss_nodes()
     register_torch_voxel_nodes()
+    register_torch_model_nodes()
     if torchaudio_avail:
         register_torchaudio_nodes()
     if speech_analysis_avail:
