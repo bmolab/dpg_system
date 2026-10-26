@@ -1,11 +1,11 @@
 {
-    "height": 572,
+    "height": 624,
     "width": 1075,
     "position": [
         100,
         100
     ],
-    "id": 1684,
+    "id": 1832,
     "name": "nodes_torch_calc_matrices",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_calc_matrices.json",
     "nodes": {
@@ -552,8 +552,8 @@
         "17": {
             "init": "help_link t.linalg.solve t.linalg.solve",
             "name": "help_link",
-            "position_x": 572,
-            "position_y": 150,
+            "position_x": 24,
+            "position_y": 462,
             "width": 169,
             "height": 44,
             "properties": {
@@ -581,8 +581,8 @@
         "18": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 755,
-            "position_y": 154,
+            "position_x": 207,
+            "position_y": 466,
             "width": 212,
             "height": 28,
             "properties": {
@@ -622,7 +622,7 @@
             "init": "help_link t.linalg.lstsq t.linalg.lstsq",
             "name": "help_link",
             "position_x": 572,
-            "position_y": 202,
+            "position_y": 150,
             "width": 169,
             "height": 44,
             "properties": {
@@ -651,7 +651,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 755,
-            "position_y": 206,
+            "position_y": 154,
             "width": 280,
             "height": 28,
             "properties": {
@@ -691,7 +691,7 @@
             "init": "help_link t.linalg.svd t.linalg.svd",
             "name": "help_link",
             "position_x": 572,
-            "position_y": 254,
+            "position_y": 202,
             "width": 169,
             "height": 44,
             "properties": {
@@ -720,7 +720,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 755,
-            "position_y": 258,
+            "position_y": 206,
             "width": 231,
             "height": 28,
             "properties": {
@@ -760,7 +760,7 @@
             "init": "help_link t.linalg.qr t.linalg.qr",
             "name": "help_link",
             "position_x": 572,
-            "position_y": 306,
+            "position_y": 254,
             "width": 169,
             "height": 44,
             "properties": {
@@ -789,7 +789,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 755,
-            "position_y": 310,
+            "position_y": 258,
             "width": 274,
             "height": 28,
             "properties": {
@@ -829,7 +829,7 @@
             "init": "help_link t.linalg.eig t.linalg.eig",
             "name": "help_link",
             "position_x": 572,
-            "position_y": 358,
+            "position_y": 306,
             "width": 169,
             "height": 44,
             "properties": {
@@ -858,7 +858,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 755,
-            "position_y": 362,
+            "position_y": 310,
             "width": 268,
             "height": 28,
             "properties": {
@@ -895,6 +895,75 @@
             "presentation_state": "show_all"
         },
         "27": {
+            "init": "help_link t.linalg.eigh t.linalg.eigh",
+            "name": "help_link",
+            "position_x": 572,
+            "position_y": 358,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.linalg.eigh",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 755,
+            "position_y": 362,
+            "width": 280,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the principal axes of a symmetric matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the principal axes of a symmetric matrix",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
             "init": "help_link t.linalg.pca_low_rank t.linalg.pca_low_rank",
             "name": "help_link",
             "position_x": 572,
@@ -918,12 +987,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1536,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "30": {
             "name": "text_block",
             "annotation": true,
             "position_x": 755,
@@ -958,16 +1027,85 @@
                 }
             },
             "text": "the directions a cloud spreads along",
-            "id": 1573,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
-            "init": "help_link t.corrcoef t.corrcoef",
+        "31": {
+            "init": "help_link t.cov t.cov",
             "name": "help_link",
             "position_x": 572,
             "position_y": 462,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.cov",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 755,
+            "position_y": 466,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how pairs of variables vary together",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how pairs of variables vary together",
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "init": "help_link t.corrcoef t.corrcoef",
+            "name": "help_link",
+            "position_x": 572,
+            "position_y": 514,
             "width": 169,
             "height": 44,
             "properties": {
@@ -987,16 +1125,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1610,
+            "id": 1758,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "34": {
             "name": "text_block",
             "annotation": true,
             "position_x": 755,
-            "position_y": 466,
+            "position_y": 518,
             "width": 194,
             "height": 28,
             "properties": {
@@ -1027,7 +1165,7 @@
                 }
             },
             "text": "how the rows move together",
-            "id": 1647,
+            "id": 1795,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

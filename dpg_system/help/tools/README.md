@@ -441,6 +441,12 @@ made by `make_torch_model_example.py` (a tiny network trained to draw a sine wav
 saved runnable and as weights alone; fixed seed). As on np.save, the t.save demo
 has no path and no button node on write, so smoke never opens a save dialog; smoke
 reports its saved path as never sent.
+The second torch batch (t.cross, t.dot, t.outer, t.cov, t.linalg.eigh, t.gradient,
+t.trapezoid, t.cumulative_trapezoid, t.meshgrid, t.logical_and, t.logical_or,
+t.logical_xor, t.logical_not) is seeded by `seed_torch_batch2_help.py`, its demos
+following the numpy pages for the same operations. Covariances and eigenvalues are
+shown in heat maps (which print with a format) rather than lists, and the eigh demo
+points are float32-exact.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

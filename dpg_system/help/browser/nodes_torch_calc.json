@@ -1,11 +1,11 @@
 {
-    "height": 692,
+    "height": 756,
     "width": 823,
     "position": [
         100,
         100
     ],
-    "id": 1388,
+    "id": 1462,
     "name": "nodes_torch_calc",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_calc.json",
     "nodes": {
@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 324,
             "position_y": 206,
-            "width": 243,
-            "height": 28,
+            "width": 428,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.eq, t.ne, t.gt, t.ge, t.lt, t.le",
+                    "value": "t.eq, t.ne, t.gt, t.ge, t.lt, t.le, t.logical_and, t.logical_or,\nt.logical_xor, t.logical_not",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,12 +243,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 235,
+                    "value": 420,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.eq, t.ne, t.gt, t.ge, t.lt, t.le",
+            "text": "t.eq, t.ne, t.gt, t.ge, t.lt, t.le, t.logical_and, t.logical_or,\nt.logical_xor, t.logical_not",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
@@ -553,7 +553,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.cumsum, t.cumprod, t.cummax, t.cummin, t.logcumsumexp, t.diff,\nt.energy",
+                    "value": "t.cumsum, t.cumprod, t.cummax, t.cummin, t.logcumsumexp, t.diff,\nt.gradient, t.trapezoid, t.cumulative_trapezoid, t.energy",
                     "value_type": "str"
                 },
                 "1": {
@@ -577,7 +577,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.cumsum, t.cumprod, t.cummax, t.cummin, t.logcumsumexp, t.diff,\nt.energy",
+            "text": "t.cumsum, t.cumprod, t.cummax, t.cummin, t.logcumsumexp, t.diff,\nt.gradient, t.trapezoid, t.cumulative_trapezoid, t.energy",
             "id": 1203,
             "visibility": "show_all",
             "draggable": true,
@@ -648,7 +648,7 @@
             "presentation_state": "show_all"
         },
         "21": {
-            "init": "help_link nodes_torch_calc_matrices Matrices",
+            "init": "help_link nodes_torch_calc_vectors Vectors",
             "name": "help_link",
             "position_x": 24,
             "position_y": 574,
@@ -656,7 +656,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Matrices",
+                    "name": "Vectors",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -676,12 +676,12 @@
             "annotation": true,
             "position_x": 324,
             "position_y": 578,
-            "width": 415,
-            "height": 52,
+            "width": 175,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.matmul, t.einsum, t.linalg.norm, t.linalg.inv, t.linalg.det,\nt.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.linalg.svd,\nt.linalg.qr, t.linalg.eig, t.linalg.pca_low_rank, t.corrcoef",
+                    "value": "t.dot, t.cross, t.outer",
                     "value_type": "str"
                 },
                 "1": {
@@ -691,12 +691,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 407,
+                    "value": 167,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -705,8 +705,72 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.matmul, t.einsum, t.linalg.norm, t.linalg.inv, t.linalg.det,\nt.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.linalg.svd,\nt.linalg.qr, t.linalg.eig, t.linalg.pca_low_rank, t.corrcoef",
+            "text": "t.dot, t.cross, t.outer",
             "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link nodes_torch_calc_matrices Matrices",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 626,
+            "width": 286,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Matrices",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 324,
+            "position_y": 630,
+            "width": 428,
+            "height": 64,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.matmul, t.einsum, t.linalg.norm, t.linalg.inv, t.linalg.det,\nt.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.linalg.svd,\nt.linalg.qr, t.linalg.eig, t.linalg.eigh, t.linalg.pca_low_rank,\nt.cov, t.corrcoef",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 420,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.matmul, t.einsum, t.linalg.norm, t.linalg.inv, t.linalg.det,\nt.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.linalg.svd,\nt.linalg.qr, t.linalg.eig, t.linalg.eigh, t.linalg.pca_low_rank,\nt.cov, t.corrcoef",
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

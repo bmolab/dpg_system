@@ -361,7 +361,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range",
+                    "value": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range, t.meshgrid",
                     "value_type": "str"
                 },
                 "1": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range",
+            "text": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range, t.meshgrid",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,

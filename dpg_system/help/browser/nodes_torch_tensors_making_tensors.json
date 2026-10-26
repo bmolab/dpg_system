@@ -1,11 +1,11 @@
 {
-    "height": 832,
-    "width": 502,
+    "height": 572,
+    "width": 944,
     "position": [
         100,
         100
     ],
-    "id": 1610,
+    "id": 1684,
     "name": "nodes_torch_tensors_making_tensors",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_tensors_making_tensors.json",
     "nodes": {
@@ -552,8 +552,8 @@
         "17": {
             "init": "help_link t.ones_like t.ones_like",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 462,
+            "position_x": 466,
+            "position_y": 150,
             "width": 113,
             "height": 44,
             "properties": {
@@ -581,8 +581,8 @@
         "18": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 151,
-            "position_y": 466,
+            "position_x": 593,
+            "position_y": 154,
             "width": 249,
             "height": 28,
             "properties": {
@@ -621,8 +621,8 @@
         "19": {
             "init": "help_link t.rand_like t.rand_like",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 514,
+            "position_x": 466,
+            "position_y": 202,
             "width": 113,
             "height": 44,
             "properties": {
@@ -650,8 +650,8 @@
         "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 151,
-            "position_y": 518,
+            "position_x": 593,
+            "position_y": 206,
             "width": 311,
             "height": 28,
             "properties": {
@@ -690,8 +690,8 @@
         "21": {
             "init": "help_link t.linspace t.linspace",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 566,
+            "position_x": 466,
+            "position_y": 254,
             "width": 113,
             "height": 44,
             "properties": {
@@ -719,8 +719,8 @@
         "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 151,
-            "position_y": 570,
+            "position_x": 593,
+            "position_y": 258,
             "width": 274,
             "height": 28,
             "properties": {
@@ -759,8 +759,8 @@
         "23": {
             "init": "help_link t.logspace t.logspace",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 618,
+            "position_x": 466,
+            "position_y": 306,
             "width": 113,
             "height": 44,
             "properties": {
@@ -788,8 +788,8 @@
         "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 151,
-            "position_y": 622,
+            "position_x": 593,
+            "position_y": 310,
             "width": 212,
             "height": 28,
             "properties": {
@@ -828,8 +828,8 @@
         "25": {
             "init": "help_link t.arange t.arange",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 670,
+            "position_x": 466,
+            "position_y": 358,
             "width": 113,
             "height": 44,
             "properties": {
@@ -857,8 +857,8 @@
         "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 151,
-            "position_y": 674,
+            "position_x": 593,
+            "position_y": 362,
             "width": 280,
             "height": 28,
             "properties": {
@@ -897,8 +897,8 @@
         "27": {
             "init": "help_link t.range t.range",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 722,
+            "position_x": 466,
+            "position_y": 410,
             "width": 113,
             "height": 44,
             "properties": {
@@ -926,8 +926,8 @@
         "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 151,
-            "position_y": 726,
+            "position_x": 593,
+            "position_y": 414,
             "width": 280,
             "height": 28,
             "properties": {
@@ -959,6 +959,75 @@
             },
             "text": "values a fixed step apart, stop included",
             "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link t.meshgrid t.meshgrid",
+            "name": "help_link",
+            "position_x": 466,
+            "position_y": 462,
+            "width": 113,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.meshgrid",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 97,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 593,
+            "position_y": 466,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the x and y of every point on a grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the x and y of every point on a grid",
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

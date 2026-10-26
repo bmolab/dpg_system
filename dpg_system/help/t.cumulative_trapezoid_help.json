@@ -1,0 +1,387 @@
+{
+    "height": 1081,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "t.cumulative_trapezoid_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cumulative_trapezoid_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.cumulative_trapezoid - the area so far, at every sample",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 709,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.cumulative_trapezoid - the area so far, at every sample",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.cumulative_trapezoid - the area so far, at every sample"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 976,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the running total of the area under a curve: at each sample, the integral from the start up to that point. It starts at 0 and has one value per sample, so it lines up with the input.\n\nFrom speeds it gives the distance travelled so far - the position at each moment; from accelerations, the speed so far; from a joint's power, the work done so far. Each step adds the trapezoid between two neighbouring samples: their average times the spacing.\n\ntorch's own cumulative_trapezoid leaves out the starting 0 and so is one shorter; this node puts it back, as np.cumulative_trapezoid does. The answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nSYNTAX:\nt.cumulative_trapezoid <spacing: float>\nDefault: spacing 1.\n\nINPUTS and PARAMETERS:\n\nin:\nThe samples (a list or tensor). Every input is integrated and sent.\n\nspacing (float box, also an inlet):\nThe distance between samples - the time between frames (1/60 for 60 frames a second), so the totals come out per second.\n\ndim (int box, also an inlet):\nWhich way to integrate: -1 (the default) along each row, 0 down each column - one running total per joint for a buffer of frames x joints.\n\nOUTPUTS:\n\nrunning total:\nThe area so far at each sample, starting from 0, the same shape as the input.\n\nREADING THE DEMO:\nA speed rising steadily from 0 to 4 metres a second, sampled every half second. The distance so far is 0, 0.25, 1, 2.25 and 4 metres: growing faster and faster as the speed builds - the squares, as a steady acceleration gives. The last value is t.trapezoid's total.\n\nRELATED:\nt.trapezoid gives only the final total. t.cumsum is the running sum without the averaging. t.gradient goes the other way, from the running total back to the rate. np.cumulative_trapezoid is the numpy version.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 960,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the running total of the area under a curve: at each sample, the integral from the start up to that point. It starts at 0 and has one value per sample, so it lines up with the input.\n\nFrom speeds it gives the distance travelled so far - the position at each moment; from accelerations, the speed so far; from a joint's power, the work done so far. Each step adds the trapezoid between two neighbouring samples: their average times the spacing.\n\ntorch's own cumulative_trapezoid leaves out the starting 0 and so is one shorter; this node puts it back, as np.cumulative_trapezoid does. The answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nSYNTAX:\nt.cumulative_trapezoid <spacing: float>\nDefault: spacing 1.\n\nINPUTS and PARAMETERS:\n\nin:\nThe samples (a list or tensor). Every input is integrated and sent.\n\nspacing (float box, also an inlet):\nThe distance between samples - the time between frames (1/60 for 60 frames a second), so the totals come out per second.\n\ndim (int box, also an inlet):\nWhich way to integrate: -1 (the default) along each row, 0 down each column - one running total per joint for a buffer of frames x joints.\n\nOUTPUTS:\n\nrunning total:\nThe area so far at each sample, starting from 0, the same shape as the input.\n\nREADING THE DEMO:\nA speed rising steadily from 0 to 4 metres a second, sampled every half second. The distance so far is 0, 0.25, 1, 2.25 and 4 metres: growing faster and faster as the speed builds - the squares, as a steady acceleration gives. The last value is t.trapezoid's total.\n\nRELATED:\nt.trapezoid gives only the final total. t.cumsum is the running sum without the averaging. t.gradient goes the other way, from the running total back to the rate. np.cumulative_trapezoid is the numpy version."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment speeds, every half second",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "speeds, every half second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "speeds, every half second"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 2 3 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment the distance so far",
+            "name": "comment",
+            "id": 496,
+            "position_x": 380,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the distance so far",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the distance so far"
+        },
+        "8": {
+            "name": "t.cumulative_trapezoid",
+            "id": 533,
+            "position_x": 380,
+            "position_y": 92,
+            "width": 144,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.cumulative_trapezoid 0.5",
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 380,
+            "position_y": 240,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "11": {
+            "name": "help_link",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 414,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.trapezoid"
+        },
+        "12": {
+            "name": "help_link",
+            "id": 681,
+            "position_x": 158,
+            "position_y": 414,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.cumsum"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 263,
+            "position_y": 414,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.gradient"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 384,
+            "position_y": 414,
+            "width": 158,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.cumulative_trapezoid"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 524,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "running total",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}
