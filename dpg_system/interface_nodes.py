@@ -1392,6 +1392,24 @@ class GainNode(Node):
                 self.output.send(data * self.gain())
 
 
+def low_precision_as_shortest(data):
+    """float32 and float16 values as the shortest decimals that read back as the
+    same values - 1.4, not the 1.399999976158142 that turning them into Python
+    floats prints. For display only; None for anything else."""
+    if isinstance(data, torch.Tensor):
+        if data.dtype == torch.bfloat16:
+            data = data.float()     # numpy has no bfloat16
+        elif data.dtype not in (torch.float32, torch.float16):
+            return None
+        data = data.detach().cpu().numpy()
+    if isinstance(data, np.generic):
+        data = np.asarray(data)
+    if not isinstance(data, np.ndarray) or data.dtype not in (np.float32, np.float16):
+        return None
+    # str of a numpy float32 or float16 is its shortest round-trip decimal
+    return np.array([float(str(x)) for x in data.ravel()]).reshape(data.shape).tolist()
+
+
 class ValueNode(Node):
     title_bar_hideable = True
     @staticmethod
@@ -1659,7 +1677,11 @@ class ValueNode(Node):
                 # Display conversion
                 display_val = final_val
                 if isinstance(final_val, list) and getattr(self, 'widget_type', '') == 'text_input':
-                    display_val = any_to_string(final_val)
+                    # only the text changes: the list still sends final_val as it is
+                    shortest = low_precision_as_shortest(processed_data)
+                    if shortest is not None and not isinstance(shortest, list):
+                        shortest = [shortest]
+                    display_val = any_to_string(shortest if shortest is not None else final_val)
 
                 self.input.widget.set(display_val, propagate=False)
 

@@ -429,10 +429,12 @@ The first torch batch (t.matmul, t.einsum, t.linalg.norm, t.linalg.inv,
 t.linalg.det, t.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.std, t.var,
 t.argmin, t.quantile, t.mode, t.sort, t.topk, t.where, t.unique, t.isnan,
 t.isfinite, t.isinf, t.nan_to_num, t.pad, t.unfold, t.interpolate, t.stft,
-t.istft, t.convolve, t.correlate) is seeded by `seed_torch_help.py`. A list shows
-a float32 value as the double it really is (1.4 as 1.3999999761...), so the demo
-numbers are chosen to come out exact in float32 (0.25, 1.5, ...) or end in a single
-number, which a list prints with its format. sin works in degrees: the make_chirp_4096
+t.istft, t.convolve, t.correlate) is seeded by `seed_torch_help.py`. Its demo
+numbers were chosen to be exact in float32 (0.25, 1.5, ...) because a list then
+showed a float32 value as the double it really is (1.4 as 1.3999999761...); since
+2026-10-25 list and message displays show float32 and float16 values as their
+shortest decimal (low_precision_as_shortest in interface_nodes.py), so that is no
+longer needed - the data sent is unchanged. sin works in degrees: the make_chirp_4096
 and make_wave multipliers are degrees per sample. smoke reports the second
 t.linalg.det as ALWAYS ZERO: that matrix flattens the plane, so its determinant is 0.
 t.model, t.save and t.load are seeded by `seed_torch_model_help.py`. t.model runs
