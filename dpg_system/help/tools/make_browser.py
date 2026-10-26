@@ -190,7 +190,8 @@ TREE = {
                                                       't.imag']),
         ('Reducing to an answer', ['t.mean', 't.median', 't.nanmean', 't.nanmedian', 't.sum', 't.nansum', 't.prod',
                                    't.std', 't.var', 't.quantile', 't.mode', 't.max', 't.min', 't.argmax',
-                                   't.argmin', 't.any', 't.all', 't.count_nonzero', 't.argwhere']),
+                                   't.argmin', 't.any', 't.all', 't.count_nonzero', 't.argwhere',
+                                   't.scatter_reduce']),
         ('Sorting and counting', ['t.sort', 't.argsort', 't.topk', 't.unique', 't.histc', 't.bincount',
                                   't.bucketize']),
         ('Missing values', ['t.isnan', 't.isfinite', 't.isinf', 't.nan_to_num', 't.where']),
@@ -213,7 +214,7 @@ TREE = {
                        't.narrow']),
         ('Writing into', ['t.scatter', 't.scatter_hold']),
         ('Rearranging', ['t.roll', 't.flip', 't.repeat', 't.tile', 't.diag', 't.tril', 't.triu']),
-        ('Padding and windows', ['t.pad', 't.unfold', 't.max_pool', 't.avg_pool', 't.interpolate']),
+        ('Padding and windows', ['t.pad', 't.unfold', 't.max_pool', 't.avg_pool', 't.interpolate', 't.interp']),
     ]),
     'nodes_torch_activation': ('Activations', 'Curves applied to every element.', [
         ('Fixed curves', ['t.nn.relu', 't.nn.relu6', 't.nn.sigmoid', 't.nn.tanh', 't.nn.logsigmoid', 't.nn.softsign',
@@ -235,7 +236,7 @@ TREE = {
                                    't.special.sinc']),
     ]),
     'nodes_torch_signal': ('Signal processing', 'Frequency, timescale and estimation on tensors.', [
-        ('Spectra', ['t.fft', 't.ifft', 't.rfft', 't.irfft', 't.stft', 't.istft']),
+        ('Spectra', ['t.fft', 't.ifft', 't.rfft', 't.irfft', 't.stft', 't.istft', 't.hilbert']),
         ('Convolution', ['t.convolve', 't.correlate']),
         ('Windows', ['t.window.hann', 't.window.hamming', 't.window.general_hamming', 't.window.blackman',
                      't.window.nuttall', 't.window.bartlett', 't.window.cosine', 't.window.gaussian',

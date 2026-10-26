@@ -453,6 +453,12 @@ The third torch batch (t.multinomial, t.randperm, t.one_hot, t.max_pool, t.avg_p
 is seeded by `seed_torch_batch3_help.py`. The random demos draw unseeded, so smoke
 sees different values each run; the avg_pool data is chosen so the means are whole
 or halves.
+The fourth torch batch (t.interp, t.hilbert, t.scatter_reduce) is seeded by
+`seed_torch_batch4_help.py`; t.hilbert reuses scipy.hilbert's make_swell. The same
+batch gave t.fft and t.rfft a frequencies outlet and a sample rate option: their
+text was edited inside the live pages, because make_torch_signal_help.py's output no
+longer matches them (they were relaid out and highlighted since) - the generator
+carries the same text, so the two agree if it is ever run again.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

@@ -1,0 +1,583 @@
+{
+    "height": 1121,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "t.scatter_reduce_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.scatter_reduce_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.scatter_reduce - one answer per group",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 488,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.scatter_reduce - one answer per group",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.scatter_reduce - one answer per group"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gathers values by a group label and reduces each group to one answer: the sum, the mean, the largest, the smallest or the product of the values that carry that label.\n\nLabel 24 joints by limb and it gives a total, or an average, or a peak per limb in one step - how hard the left arm is working, how fast the head is moving, each gang of joints' combined torque. Label points by the cluster they fell into (scipy.kmeans) and it gives each cluster's centre (mean). Label frames by the section of a piece and it gives each section's total. Labels need not be in order or grouped together.\n\nIt works along a dim - 0 by default, so for a stack of joints (24 x 3) the labels name the rows and whole vectors are reduced. The answer stays on the input's device; on the Mac's GPU the reductions it lacks run on the cpu and the answer is moved back.\n\nSYNTAX:\nt.scatter_reduce <reduce> <group count>\nDefaults: sum; as many groups as the largest label needs.\n\nEXAMPLE:\nt.scatter_reduce mean 5\n\nINPUTS and PARAMETERS:\n\nvalues:\nThe values to reduce (a list or tensor). Every input is reduced and sent - the only inlet that makes the node send.\n\ngroups:\nOne label per value along the dim: whole numbers from 0. Held: send them first.\n\ngroup count (int box, also an inlet):\nHow many groups there are, so the answer is the same length whatever labels arrive. -1 takes the largest label plus one. A group with no values gets 0.\n\ndim (int box, also an inlet):\nThe dim the labels run along: 0 (the default) for rows.\n\nreduce:\nAn option, under the node: sum (the default), mean, max, min or prod.\n\nOUTPUTS:\n\nper group:\nOne answer per group, in label order: 0 first.\n\nREADING THE DEMO:\nSix joints' speeds, 1 2 3 4 5 5, labelled by limb: 0 the left arm (joints 1, 3 and 6), 1 the right arm (joints 2 and 5), 2 the head (joint 4). The sums per limb are 9, 7 and 4; the means 3, 3.5 and 4.\n\nRELATED:\nt.sum and t.mean reduce everything, or a whole dim, to one answer. t.bincount counts how many carry each label. scipy.kmeans makes the labels for clusters.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gathers values by a group label and reduces each group to one answer: the sum, the mean, the largest, the smallest or the product of the values that carry that label.\n\nLabel 24 joints by limb and it gives a total, or an average, or a peak per limb in one step - how hard the left arm is working, how fast the head is moving, each gang of joints' combined torque. Label points by the cluster they fell into (scipy.kmeans) and it gives each cluster's centre (mean). Label frames by the section of a piece and it gives each section's total. Labels need not be in order or grouped together.\n\nIt works along a dim - 0 by default, so for a stack of joints (24 x 3) the labels name the rows and whole vectors are reduced. The answer stays on the input's device; on the Mac's GPU the reductions it lacks run on the cpu and the answer is moved back.\n\nSYNTAX:\nt.scatter_reduce <reduce> <group count>\nDefaults: sum; as many groups as the largest label needs.\n\nEXAMPLE:\nt.scatter_reduce mean 5\n\nINPUTS and PARAMETERS:\n\nvalues:\nThe values to reduce (a list or tensor). Every input is reduced and sent - the only inlet that makes the node send.\n\ngroups:\nOne label per value along the dim: whole numbers from 0. Held: send them first.\n\ngroup count (int box, also an inlet):\nHow many groups there are, so the answer is the same length whatever labels arrive. -1 takes the largest label plus one. A group with no values gets 0.\n\ndim (int box, also an inlet):\nThe dim the labels run along: 0 (the default) for rows.\n\nreduce:\nAn option, under the node: sum (the default), mean, max, min or prod.\n\nOUTPUTS:\n\nper group:\nOne answer per group, in label order: 0 first.\n\nREADING THE DEMO:\nSix joints' speeds, 1 2 3 4 5 5, labelled by limb: 0 the left arm (joints 1, 3 and 6), 1 the right arm (joints 2 and 5), 2 the head (joint 4). The sums per limb are 9, 7 and 4; the means 3, 3.5 and 4.\n\nRELATED:\nt.sum and t.mean reduce everything, or a whole dim, to one answer. t.bincount counts how many carry each label. scipy.kmeans makes the labels for clusters."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment six joint speeds",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "six joint speeds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "six joint speeds"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment their limbs, held",
+            "name": "comment",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "their limbs, held",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "their limbs, held"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 0 2 1 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment sum per limb",
+            "name": "comment",
+            "id": 644,
+            "position_x": 440,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sum per limb",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sum per limb"
+        },
+        "12": {
+            "name": "t.scatter_reduce",
+            "id": 681,
+            "position_x": 440,
+            "position_y": 92,
+            "width": 160,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 660,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment mean per limb",
+            "name": "comment",
+            "id": 755,
+            "position_x": 440,
+            "position_y": 260,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mean per limb",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mean per limb"
+        },
+        "15": {
+            "name": "t.scatter_reduce",
+            "id": 792,
+            "position_x": 440,
+            "position_y": 295,
+            "width": 160,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.scatter_reduce mean",
+            "highlight": true
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 660,
+            "position_y": 295,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 514,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.sum"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 112,
+            "position_y": 514,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.mean"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 202,
+            "position_y": 514,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.bincount"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 323,
+            "position_y": 514,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.kmeans"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 624,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "groups"
+        },
+        "3": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "groups"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "values"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "values"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "per group",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "per group",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

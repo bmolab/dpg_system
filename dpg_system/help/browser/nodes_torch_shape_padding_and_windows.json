@@ -1,11 +1,11 @@
 {
-    "height": 468,
-    "width": 447,
+    "height": 520,
+    "width": 503,
     "position": [
         100,
         100
     ],
-    "id": 1092,
+    "id": 1166,
     "name": "nodes_torch_shape_padding_and_windows",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_shape_padding_and_windows.json",
     "nodes": {
@@ -476,6 +476,75 @@
             },
             "text": "resample to a new length, or resize",
             "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link t.interp t.interp",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 120,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.interp",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 104,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 158,
+            "position_y": 414,
+            "width": 305,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "look up values between the points of a table",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "look up values between the points of a table",
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
