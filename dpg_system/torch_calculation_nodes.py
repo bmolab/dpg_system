@@ -54,6 +54,18 @@ def register_torch_calculation_nodes():
     Node.app.register_node('t.linalg.lstsq', TorchLinalgSolveNode.factory)
     Node.app.register_node('t.matmul', TorchMatMulNode.factory)
     Node.app.register_node('t.einsum', TorchEinsumNode.factory)
+    Node.app.register_node('t.cross', TorchVectorProductNode.factory)
+    Node.app.register_node('t.dot', TorchVectorProductNode.factory)
+    Node.app.register_node('t.outer', TorchVectorProductNode.factory)
+    Node.app.register_node('t.cov', TorchCovNode.factory)
+    Node.app.register_node('t.linalg.eigh', TorchEighNode.factory)
+    Node.app.register_node('t.gradient', TorchGradientNode.factory)
+    Node.app.register_node('t.trapezoid', TorchTrapezoidNode.factory)
+    Node.app.register_node('t.cumulative_trapezoid', TorchTrapezoidNode.factory)
+    Node.app.register_node('t.logical_and', TorchLogicalNode.factory)
+    Node.app.register_node('t.logical_or', TorchLogicalNode.factory)
+    Node.app.register_node('t.logical_xor', TorchLogicalNode.factory)
+    Node.app.register_node('t.logical_not', TorchLogicalNode.factory)
 
     Node.app.register_node('t.gcd', TorchLCMGCDNode.factory)
     Node.app.register_node('t.lcm', TorchLCMGCDNode.factory)
@@ -1300,3 +1312,251 @@ class TorchModeNode(TorchWithDimNode):
         values, indices = run_with_cpu_fallback(torch.mode, input_tensor, self.dim, keep)
         self.index_output.send(indices)
         self.output.send(values)
+
+
+class TorchVectorProductNode(TorchNode):
+    # t.cross, t.dot and t.outer work on the vectors along the last dim (or the
+    # dim chosen), so a stack of 24 vectors against one vector gives 24 answers
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchVectorProductNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.operand = None
+        self.input = self.add_input('in 1', triggers_execution=True)
+        self.operand_input = self.add_input('in 2')
+        self.dim_input = None
+        if label != 't.outer':
+            dim = any_to_int(args[0]) if len(args) > 0 else -1
+            self.dim_input = self.add_input('dim', widget_type='input_int', default_value=dim)
+        names = {'t.cross': 'cross product', 't.dot': 'dot product', 't.outer': 'outer product'}
+        self.output = self.add_output(names.get(label, 'result'))
+
+    def execute(self):
+        if self.operand_input.fresh_input:
+            self.operand = held_tensor(self.operand_input())
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None or self.operand is None:
+            return
+        a = float_like(input_tensor)
+        b = self.data_to_tensor(self.operand, match_tensor=a)
+        try:
+            if self.label == 't.outer':
+                # every pair of entries of the last dims multiplied: n x m
+                result = a.unsqueeze(-1) * b.unsqueeze(-2)
+            else:
+                dim = self.dim_input()
+                a, b = torch.broadcast_tensors(a, b)
+                if self.label == 't.cross':
+                    if a.shape[dim] != 3:
+                        if self.app.verbose:
+                            print(self.label, 'needs 3-vectors along dim', dim, 'got shape', list(a.shape))
+                        return
+                    result = torch.linalg.cross(a, b, dim=dim)
+                else:
+                    result = torch.linalg.vecdot(a, b, dim=dim)
+        except (RuntimeError, IndexError) as e:
+            if self.app.verbose:
+                print(self.label, 'shapes do not fit:', list(a.shape), 'and', list(b.shape), e)
+            return
+        self.output.send(result)
+
+
+class TorchCovNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchCovNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        variables = 'columns'
+        if len(args) > 0 and args[0] in ['rows', 'columns']:
+            variables = args[0]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.output = self.add_output('covariance')
+        self.variables_option = self.add_option('variables', widget_type='combo', default_value=variables)
+        self.variables_option.widget.combo_items = ['columns', 'rows']
+        self.correction_option = self.add_option('correction', widget_type='input_int', default_value=1)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        data = float_like(input_tensor)
+        if data.ndim != 2:
+            if self.app.verbose:
+                print(self.label, 'needs a 2-D tensor of observations, got shape', list(data.shape))
+            return
+        # torch.cov takes each row as a variable; the default here is columns (frames x channels)
+        if self.variables_option() != 'rows':
+            data = data.t()
+        if data.shape[1] < 2:
+            if self.app.verbose:
+                print(self.label, 'needs at least 2 observations of each variable')
+            return
+        self.output.send(torch.cov(data, correction=self.correction_option()))
+
+
+class TorchEighNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchEighNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('matrix', triggers_execution=True)
+        self.output = self.add_output('eigenvalues')
+        self.vector_output = self.add_output('eigenvectors')
+        self.order_option = self.add_option('order', widget_type='combo', default_value='largest first')
+        self.order_option.widget.combo_items = ['largest first', 'smallest first']
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        matrix = float_like(input_tensor)
+        if matrix.ndim < 2 or matrix.shape[-1] != matrix.shape[-2]:
+            if self.app.verbose:
+                print(self.label, 'needs a square matrix (or a stack of them), got shape', list(matrix.shape))
+            return
+        # eigh reads only the lower triangle: it assumes the matrix is symmetric
+        values, vectors = run_with_cpu_fallback(torch.linalg.eigh, matrix)
+        if self.order_option() == 'largest first':     # the principal axis first
+            values = values.flip(-1)
+            vectors = vectors.flip(-1)
+        self.vector_output.send(vectors)
+        self.output.send(values)
+
+
+class TorchGradientNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchGradientNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        spacing = 1.0
+        dim = -1
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                spacing = float(v)
+        if len(args) > 1:
+            v, t = decode_arg(args, 1)
+            if t in [int, float]:
+                dim = int(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.spacing_input = self.add_input('spacing', widget_type='drag_float', default_value=spacing)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=dim)
+        self.output = self.add_output('gradient')
+        self.edge_order_option = self.add_option('edge order', widget_type='combo', default_value='1')
+        self.edge_order_option.widget.combo_items = ['1', '2']
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        data = float_like(input_tensor)
+        dim = self.dim_input()
+        if not -data.ndim <= dim < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range for shape', list(data.shape))
+            return
+        edge_order = 2 if self.edge_order_option() == '2' else 1
+        if data.shape[dim] < edge_order + 1:
+            if self.app.verbose:
+                print(self.label, 'needs at least', edge_order + 1, 'values along the dim')
+            return
+        spacing = self.spacing_input()
+        if spacing == 0:
+            return
+        self.output.send(torch.gradient(data, spacing=float(spacing), dim=dim, edge_order=edge_order)[0])
+
+
+class TorchTrapezoidNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchTrapezoidNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.cumulative = label == 't.cumulative_trapezoid'
+        spacing = 1.0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                spacing = float(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.spacing_input = self.add_input('spacing', widget_type='drag_float', default_value=spacing)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('running total' if self.cumulative else 'area')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        data = float_like(input_tensor)
+        dim = self.dim_input()
+        if not -data.ndim <= dim < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range for shape', list(data.shape))
+            return
+        spacing = float(self.spacing_input())
+        if not self.cumulative:
+            self.output.send(torch.trapezoid(data, dx=spacing, dim=dim))
+            return
+        # the area so far at every sample, starting from 0: the same length as the input
+        totals = torch.cumulative_trapezoid(data, dx=spacing, dim=dim)
+        shape = list(data.shape)
+        shape[dim] = 1
+        self.output.send(torch.cat([torch.zeros(shape, dtype=totals.dtype, device=totals.device), totals], dim=dim))
+
+
+class TorchLogicalNode(TorchNode):
+    operations = {'t.logical_and': torch.logical_and, 't.logical_or': torch.logical_or,
+                  't.logical_xor': torch.logical_xor, 't.logical_not': torch.logical_not}
+    output_types = {'bool': torch.bool, 'int': torch.int64, 'float': torch.float32}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchLogicalNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = self.operations.get(label, torch.logical_and)
+        self.unary = label == 't.logical_not'
+        self.operand = None
+        self.input = self.add_input('in', triggers_execution=True)
+        if not self.unary:
+            self.operand_input = self.add_input('in 2')
+        self.output = self.add_output('result')
+        self.output_type_option = self.add_option('output_type', widget_type='combo', default_value='bool')
+        self.output_type_option.widget.combo_items = list(self.output_types.keys())
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        if self.unary:
+            result = self.op(input_tensor)
+        else:
+            if self.operand_input.fresh_input:
+                self.operand = held_tensor(self.operand_input())
+            if self.operand is None:
+                return
+            # anything not zero counts as true, whatever its type
+            b = self.operand.to(input_tensor.device)
+            try:
+                result = self.op(input_tensor, b)
+            except RuntimeError:
+                if self.app.verbose:
+                    print(self.label, 'shapes do not broadcast:', list(input_tensor.shape), list(b.shape))
+                return
+        self.output.send(result.to(self.output_types.get(self.output_type_option(), torch.bool)))

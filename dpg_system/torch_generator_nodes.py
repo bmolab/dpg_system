@@ -19,6 +19,7 @@ def register_torch_generator_nodes():
     Node.app.register_node('t.zeros', TorchGeneratorNode.factory)
     Node.app.register_node('t.full', TorchFullNode.factory)
     Node.app.register_node('t.linspace', TorchLinSpaceNode.factory)
+    Node.app.register_node('t.meshgrid', TorchMeshgridNode.factory)
     Node.app.register_node('t.logspace', TorchLinSpaceNode.factory)
     Node.app.register_node('t.range', TorchRangeNode.factory)
     Node.app.register_node('t.arange', TorchRangeNode.factory)
@@ -843,3 +844,35 @@ class TorchEyeNode(TorchDeviceDtypeNode):
     def execute(self):
         out_array = torch.eye(n=self.n, device=self.device, dtype=self.dtype, requires_grad=self.requires_grad)
         self.output.send(out_array)
+
+
+class TorchMeshgridNode(TorchNode):
+    # every (x, y) pair laid out as two grids, on x's device
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchMeshgridNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.y_value = None
+        self.input = self.add_input('x', triggers_execution=True)
+        self.y_input = self.add_input('y')
+        self.x_output = self.add_output('X')
+        self.y_output = self.add_output('Y')
+        self.indexing_option = self.add_option('indexing', widget_type='combo', default_value='xy')
+        self.indexing_option.widget.combo_items = ['xy', 'ij']
+
+    def execute(self):
+        if self.y_input.fresh_input:
+            self.y_value = held_tensor(self.y_input())
+        x_tensor = self.input_to_tensor()
+        if x_tensor is None:
+            return
+        x = x_tensor.reshape(-1)
+        # without y the grid is square, x by x
+        y = self.y_value.reshape(-1).to(device=x.device, dtype=x.dtype) if self.y_value is not None else x
+        indexing = 'ij' if self.indexing_option() == 'ij' else 'xy'
+        grid_x, grid_y = torch.meshgrid(x, y, indexing=indexing)
+        self.y_output.send(grid_y)
+        self.x_output.send(grid_x)
