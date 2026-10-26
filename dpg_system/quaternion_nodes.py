@@ -30,6 +30,7 @@ def register_quaternion_nodes():
     Node.app.register_node('matrix_to_rotvec', MatrixToAxisAngleNode.factory)
     Node.app.register_node('quaternion_norm', NormalizeQuaternionNode.factory)
     Node.app.register_node('quaternion_relative', QuaternionRelativeNode.factory)
+    Node.app.register_node('quaternion_multiply', QuaternionMultiplyNode.factory)
     Node.app.register_node('tracker_align', TrackerAlignNode.factory)
     Node.app.register_node('swing_twist', SwingTwistNode.factory)
 
@@ -1088,6 +1089,51 @@ class QuaternionRelativeNode(Node):
         self.output.send(q_diff)
 
 
+class QuaternionMultiplyNode(Node):
+    """Compose two rotations: a * b, scalar first, so b is applied first and a
+    after it. Either side can be inverted first. Torch broadcasting applies, so
+    one quaternion times many, or a row of per-sensor offsets times a whole take
+    of frames, work alike. The product is not flipped to a positive scalar part,
+    so a smoothly turning stream stays continuous, and gradients pass through."""
+    @staticmethod
+    def factory(name, data, args=None):
+        return QuaternionMultiplyNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.b = None
+        self.a_input = self.add_input('a', triggers_execution=True)
+        self.b_input = self.add_input('b')
+        self.invert_a = self.add_option('invert a', widget_type='checkbox', default_value=False)
+        self.invert_b = self.add_option('invert b', widget_type='checkbox', default_value=False)
+        self.output = self.add_output('a * b')
+
+    def execute(self):
+        if self.b_input.fresh_input:
+            b = self.b_input()
+            self.b = b if isinstance(b, torch.Tensor) else any_to_tensor(b, validate=True)
+        a = self.a_input()
+        a = a if isinstance(a, torch.Tensor) else any_to_tensor(a, validate=True)
+        b = self.b
+        if a is None or b is None:
+            return
+        if a.shape[-1] != 4 or b.shape[-1] != 4:
+            if self.app.verbose:
+                print('quaternion_multiply expects quaternions of 4 values, scalar first')
+            return
+        if b.device != a.device or b.dtype != a.dtype:
+            b = b.to(device=a.device, dtype=a.dtype)
+        conj = torch.tensor([1.0, -1.0, -1.0, -1.0], dtype=a.dtype, device=a.device)
+        if self.invert_a():
+            a = a * conj
+        if self.invert_b():
+            b = b * conj
+        try:
+            self.output.send(quaternion_raw_multiply(a, b))
+        except RuntimeError as e:
+            print(f'quaternion_multiply: shapes {tuple(a.shape)} and {tuple(b.shape)} do not broadcast: {e}')
+
+
 class TrackerAlignNode(Node):
     # Root (pelvis_anchor) quaternion index by pose size, mirroring
     # MoCapNode.joint_map / active_joint_map['pelvis_anchor']:
@@ -1409,10 +1455,97 @@ class SwingTwistNode(Node):
         reference = reference / np.linalg.norm(reference)
         return np.arctan2(np.sum(np.cross(direction, reference) * up, axis=-1), direction @ reference)
 
+    @staticmethod
+    def decompose_t(q, axis):
+        """Torch twin of decompose. Gradients pass through."""
+        q = q / (torch.linalg.vector_norm(q, dim=-1, keepdim=True) + 1e-12)
+        w = q[..., 0]
+        v = q[..., 1:]
+        p = v @ axis
+        twist = torch.cat([w[..., None], p[..., None] * axis], dim=-1)
+        n = torch.linalg.vector_norm(twist, dim=-1, keepdim=True)
+        degenerate = n < 1e-10
+        identity = torch.zeros_like(twist)
+        identity[..., 0] = 1.0
+        twist = torch.where(degenerate, identity, twist / torch.where(degenerate, torch.ones_like(n), n))
+        twist = torch.where(twist[..., 0:1] < 0, -twist, twist)
+        angle = 2.0 * torch.atan2(twist[..., 1:] @ axis, twist[..., 0])
+        conj = twist * twist.new_tensor([1.0, -1.0, -1.0, -1.0])
+        swing = quaternion_multiply_wxyz_t(q, conj)
+        direction = rotate_vector_wxyz_t(q, axis)
+        return swing, twist, angle, direction
+
+    @staticmethod
+    def level_bank_t(q, axis, up, direction):
+        """Torch twin of level_bank."""
+        side_neutral = torch.linalg.cross(up, axis, dim=-1)
+        side_now = rotate_vector_wxyz_t(q, side_neutral)
+        side_level = torch.linalg.cross(up.expand_as(direction), direction, dim=-1)
+        reach = torch.linalg.vector_norm(side_level, dim=-1)
+        side_level = side_level / (reach[..., None] + 1e-12)
+        bank = torch.atan2((torch.linalg.cross(side_level, side_now, dim=-1) * direction).sum(-1),
+                           (side_level * side_now).sum(-1))
+        return bank, reach
+
+    @staticmethod
+    def azimuth_from_t(axis, up, direction):
+        """Torch twin of azimuth_from."""
+        reference = axis - (axis @ up) * up
+        if torch.linalg.vector_norm(reference) < 1e-6:
+            reference = torch.roll(up, 1)
+        reference = reference / torch.linalg.vector_norm(reference)
+        return torch.atan2((torch.linalg.cross(direction, reference.expand_as(direction), dim=-1) * up).sum(-1),
+                           direction @ reference)
+
+    def execute_torch(self, q):
+        # the same steps as execute, kept in torch so a tensor stays on its
+        # device and a loss built from the twist can be traced back
+        if q.shape[-1] != 4:
+            if self.app.verbose:
+                print('swing_twist expects quaternions of 4 values, scalar first')
+            return
+        if not q.is_floating_point():
+            q = q.float()
+        self.last_q = q.detach().cpu().numpy()
+        if self.neutral is not None:
+            neutral = q.new_tensor(self.neutral)
+            q = quaternion_multiply_wxyz_t(neutral * q.new_tensor([1.0, -1.0, -1.0, -1.0]), q)
+        axis = q.new_tensor(self.axis_vectors[self.twist_axis()])
+        up = torch.zeros(3, dtype=q.dtype, device=q.device)
+        up[self.up_index[self.up_axis()]] = 1.0
+        swing, twist, angle, direction = self.decompose_t(q, axis)
+
+        if self.twist_reference() == 'level':
+            bank, reach = self.level_bank_t(q, axis, up, direction)
+            weight = (reach / self.vertical_blend).clamp(0.0, 1.0) ** 2
+            angle = torch.atan2(weight * torch.sin(bank) + (1.0 - weight) * torch.sin(angle),
+                                weight * torch.cos(bank) + (1.0 - weight) * torch.cos(angle))
+            half = 0.5 * angle
+            twist = torch.cat([torch.cos(half)[..., None], torch.sin(half)[..., None] * axis], dim=-1)
+            swing = quaternion_multiply_wxyz_t(q, twist * q.new_tensor([1.0, -1.0, -1.0, -1.0]))
+
+        elevation = torch.asin((direction @ up).clamp(-1.0, 1.0))
+        azimuth = self.azimuth_from_t(axis, up, direction)
+        if self.degrees():
+            angle = angle * self.degree_factor
+            elevation = elevation * self.degree_factor
+            azimuth = azimuth * self.degree_factor
+
+        self.twist_quat_output.send(twist)
+        self.swing_quat_output.send(swing)
+        self.twist_output.send(angle)
+        self.elevation_output.send(elevation)
+        self.azimuth_output.send(azimuth)
+        self.direction_output.send(direction)
+
     def execute(self):
         if not self.input.fresh_input:
             return
-        q = any_to_array(self.input()).astype(np.float64)
+        data = self.input()
+        if isinstance(data, torch.Tensor):
+            self.execute_torch(data)
+            return
+        q = any_to_array(data).astype(np.float64)
         if q.shape[-1] != 4:
             if self.app.verbose:
                 print('swing_twist expects quaternions of 4 values, scalar first')
@@ -1478,3 +1611,23 @@ def rotate_vector_wxyz_np(q, vec):
     vec = np.broadcast_to(vec, u.shape)
     t = 2.0 * np.cross(u, vec)
     return vec + w * t + np.cross(u, t)
+
+
+def quaternion_multiply_wxyz_t(a, b):
+    """Torch twin of quaternion_multiply_wxyz_np."""
+    aw, ax, ay, az = a.unbind(-1)
+    bw, bx, by, bz = b.unbind(-1)
+    return torch.stack([
+        aw * bw - ax * bx - ay * by - az * bz,
+        aw * bx + ax * bw + ay * bz - az * by,
+        aw * by - ax * bz + ay * bw + az * bx,
+        aw * bz + ax * by - ay * bx + az * bw], dim=-1)
+
+
+def rotate_vector_wxyz_t(q, vec):
+    """Torch twin of rotate_vector_wxyz_np."""
+    w = q[..., 0:1]
+    u = q[..., 1:]
+    vec = vec.expand_as(u)
+    t = 2.0 * torch.linalg.cross(u, vec, dim=-1)
+    return vec + w * t + torch.linalg.cross(u, t, dim=-1)

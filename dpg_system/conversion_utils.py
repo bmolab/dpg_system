@@ -728,11 +728,14 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False, 
     # .to() handles device/dtype and is efficient (no-op if already correct).
     tensor_ = tensor_.to(device=device, dtype=dtype)
 
-    # Handle requires_grad specifically
-    if tensor_.requires_grad != requires_grad:
+    # Handle requires_grad specifically. Only ever switch it on: switching it
+    # off in place would cut the caller's tensor out of training (and raises
+    # on a computed tensor), so a tensor that already carries gradients
+    # passes through with them.
+    if requires_grad and not tensor_.requires_grad:
         # Only floats and complex types can require grad
         if tensor_.is_floating_point() or tensor_.is_complex():
-            tensor_.requires_grad_(requires_grad)
+            tensor_.requires_grad_(True)
 
     return tensor_
 

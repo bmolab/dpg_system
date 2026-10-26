@@ -303,7 +303,7 @@ class TorchCDistanceNode(TorchNode):
             return
         try:
             if input_tensor.ndim < 2 and self.points_2 is None:
-                self.output.send(torch.linalg.vector_norm(input_tensor.float()).item())
+                self.output.send(scalar_or_graph(torch.linalg.vector_norm(input_tensor.float())))
                 return
             a = input_tensor.float()
             a = a.reshape(1, -1) if a.ndim < 2 else a
@@ -346,7 +346,7 @@ class TorchDistanceNode(TorchNode):
                 # t.length: distance from the origin.
                 euclidean_length = torch.dist(input_tensor, torch.zeros_like(input_tensor))
 
-            self.output.send(euclidean_length.item())
+            self.output.send(scalar_or_graph(euclidean_length))
 
 
 class TorchDiffNode(TorchWithDimNode):
@@ -838,7 +838,7 @@ class CosineSimilarityNode(TorchNode):
             if self.vector_2 is not None:
                 try:
                     similarity = self.cos(vector_1, self.vector_2)
-                    self.output.send(similarity.item() if similarity.numel() == 1 else similarity)
+                    self.output.send(scalar_or_graph(similarity))
                 except Exception as e:
                     print(f'{self.label}: {type(e).__name__}: {e}')
                     traceback.print_exc()
