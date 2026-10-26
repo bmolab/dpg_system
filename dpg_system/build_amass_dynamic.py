@@ -20,7 +20,7 @@ and adds these arrays:
     com_pos             (T, 3)      body CoM position  (processor.current_com)
     com_vel             (T, 3)      body CoM velocity  (processor.prob_prev_com_vel)
     com_acc             (T, 3)      body CoM accel     (processor.prob_prev_com_acc)
-    rotation_band       (T, 22, 7, 3) rotation bands 
+    rotation_band       (T, 31, 7, 3) rotation bands 
 
   File-level metadata:
     max_torque          (24, 3)     processor.max_torque_array — the per-joint
