@@ -435,6 +435,12 @@ numbers are chosen to come out exact in float32 (0.25, 1.5, ...) or end in a sin
 number, which a list prints with its format. sin works in degrees: the make_chirp_4096
 and make_wave multipliers are degrees per sample. smoke reports the second
 t.linalg.det as ALWAYS ZERO: that matrix flattens the plane, so its determinant is 0.
+t.model, t.save and t.load are seeded by `seed_torch_model_help.py`. t.model runs
+help/data/t_model_example.pt and t.load reads help/data/t_load_example.pt, both
+made by `make_torch_model_example.py` (a tiny network trained to draw a sine wave,
+saved runnable and as weights alone; fixed seed). As on np.save, the t.save demo
+has no path and no button node on write, so smoke never opens a save dialog; smoke
+reports its saved path as never sent.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

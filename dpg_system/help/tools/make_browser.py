@@ -158,7 +158,7 @@ TREE = {
     ]),
     'nodes_torch': ('PyTorch', 't. nodes work on torch tensors; k. and tv. nodes are under Video and images.', [
         ('', [
-            ('page:nodes_torch_tensors', 'Tensors', 'getting data into torch, making tensors, random tensors'),
+            ('page:nodes_torch_tensors', 'Tensors', 'getting data into torch, making tensors, trained models, files'),
             ('page:nodes_torch_calc', 'Calculation', 'rounding, comparing, reducing, distances, linear algebra'),
             ('page:nodes_torch_shape', 'Shape and selection', 'reshaping, joining, rolling and picking parts'),
             ('page:nodes_torch_activation', 'Activations', 'activation curves, softmax and special functions'),
@@ -168,6 +168,7 @@ TREE = {
     'nodes_torch_tensors': ('Tensors', 'Getting data into torch, and making tensors from nothing.', [
         ('Tensors', ['tensor', 't.detach', 't.info', 't.numel', 't.contiguous', 't.is_contiguous']),
         ('Buffers', ['t.buffer', 't.rolling_buffer']),
+        ('Models and files', ['t.model', 't.save', 't.load']),
         ('Making tensors', ['t.zeros', 't.ones', 't.full', 't.eye', 't.rand', 't.zeros_like', 't.ones_like',
                             't.rand_like', 't.linspace', 't.logspace', 't.arange', 't.range']),
         ('Random fills', ['t.uniform', 't.normal', 't.log_normal', 't.cauchy', 't.exponential', 't.geometric',

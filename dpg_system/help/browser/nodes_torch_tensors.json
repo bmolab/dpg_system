@@ -1,11 +1,11 @@
 {
-    "height": 512,
-    "width": 663,
+    "height": 564,
+    "width": 675,
     "position": [
         100,
         100
     ],
-    "id": 1092,
+    "id": 1166,
     "name": "nodes_torch_tensors",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_tensors.json",
     "nodes": {
@@ -140,7 +140,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 126,
+            "width": 138,
             "height": 44,
             "properties": {
                 "0": {
@@ -150,7 +150,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 110,
+                    "value": 122,
                     "value_type": "int"
                 }
             },
@@ -162,7 +162,7 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
+            "position_x": 176,
             "position_y": 154,
             "width": 372,
             "height": 40,
@@ -204,7 +204,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
-            "width": 126,
+            "width": 138,
             "height": 44,
             "properties": {
                 "0": {
@@ -214,7 +214,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 110,
+                    "value": 122,
                     "value_type": "int"
                 }
             },
@@ -226,7 +226,7 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
+            "position_x": 176,
             "position_y": 206,
             "width": 194,
             "height": 28,
@@ -264,21 +264,21 @@
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link nodes_torch_tensors_making_tensors Making tensors",
+            "init": "help_link nodes_torch_tensors_models_and_files Models and files",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
-            "width": 126,
+            "width": 138,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Making tensors",
+                    "name": "Models and files",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 110,
+                    "value": 122,
                     "value_type": "int"
                 }
             },
@@ -290,8 +290,72 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
+            "position_x": 176,
             "position_y": 258,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.model, t.save, t.load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.model, t.save, t.load",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link nodes_torch_tensors_making_tensors Making tensors",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 138,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Making tensors",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 122,
+                    "value_type": "int"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 176,
+            "position_y": 310,
             "width": 440,
             "height": 40,
             "properties": {
@@ -322,17 +386,17 @@
                 }
             },
             "text": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range",
-            "id": 907,
+            "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "13": {
             "init": "help_link nodes_torch_tensors_random_fills Random fills",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 306,
-            "width": 126,
+            "position_y": 358,
+            "width": 138,
             "height": 44,
             "properties": {
                 "0": {
@@ -342,20 +406,20 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 110,
+                    "value": 122,
                     "value_type": "int"
                 }
             },
-            "id": 944,
+            "id": 1018,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "14": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 310,
+            "position_x": 176,
+            "position_y": 362,
             "width": 397,
             "height": 40,
             "properties": {
@@ -386,17 +450,17 @@
                 }
             },
             "text": "t.uniform, t.normal, t.log_normal, t.cauchy, t.exponential,\nt.geometric, t.bernoulli, t.poisson",
-            "id": 981,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "15": {
             "init": "help_link nodes_torch_tensors_distributions Distributions",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
-            "width": 126,
+            "position_y": 410,
+            "width": 138,
             "height": 44,
             "properties": {
                 "0": {
@@ -406,20 +470,20 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 110,
+                    "value": 122,
                     "value_type": "int"
                 }
             },
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 362,
+            "position_x": 176,
+            "position_y": 414,
             "width": 459,
             "height": 88,
             "properties": {
@@ -450,7 +514,7 @@
                 }
             },
             "text": "t.dist.uniform, t.dist.normal, t.dist.log_normal, t.dist.half_normal,\nt.dist.cauchy, t.dist.half_cauchy, t.dist.laplace,\nt.dist.gumbel / t.dist.gumble, t.dist.exponential, t.dist.gamma,\nt.dist.chi2, t.dist.fisher_snedecor, t.dist.weibull, t.dist.pareto,\nt.dist.beta, t.dist.kumaraswamy, t.dist.von_mises, t.dist.bernoulli,\nt.dist.continuous_bernoulli, t.dist.poisson",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
