@@ -20,6 +20,8 @@ def register_torch_signal_processing_nodes():
     Node.app.register_node('t.irfft', TorchFFTNode.factory)
     Node.app.register_node('t.fft', TorchFFTNode.factory)
     Node.app.register_node('t.ifft', TorchFFTNode.factory)
+    Node.app.register_node('t.interp', TorchInterpNode.factory)
+    Node.app.register_node('t.hilbert', TorchHilbertNode.factory)
     Node.app.register_node('t.stft', TorchSTFTNode.factory)
     Node.app.register_node('t.istft', TorchSTFTNode.factory)
     Node.app.register_node('t.interpolate', TorchInterpolateNode.factory)
@@ -205,6 +207,13 @@ class TorchFFTNode(TorchWithDimNode):
         self.norm = self.add_input('norm', widget_type='combo', default_value=norm)
         self.norm.widget.combo_items = ['forward', 'backward', 'ortho']
         self.output = self.add_output('fft tensor out')
+        # the forward transforms also say which frequency each bin is; added
+        # after the old outlet so saved links keep their places
+        self.frequencies_output = None
+        self.rate_option = None
+        if self.label in ('t.fft', 't.rfft'):
+            self.frequencies_output = self.add_output('frequencies')
+            self.rate_option = self.add_option('sample rate', widget_type='drag_float', default_value=1.0)
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -218,6 +227,12 @@ class TorchFFTNode(TorchWithDimNode):
                 fft_tensor = self.op(input_tensor, dim=self.dim, norm=self.norm())
             else:
                 fft_tensor = self.op(input_tensor, norm=self.norm())
+            if self.frequencies_output is not None:
+                n = input_tensor.shape[self.dim if self.dim_specified else -1]
+                rate = self.rate_option()
+                spacing = 1.0 / rate if rate is not None and rate > 0 else 1.0
+                freq_op = torch.fft.rfftfreq if self.label == 't.rfft' else torch.fft.fftfreq
+                self.frequencies_output.send(freq_op(n, d=spacing, device=input_tensor.device))
             self.output.send(fft_tensor)
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
@@ -462,3 +477,118 @@ class TorchConvolveNode(TorchNode):
         elif mode == 'valid':
             full = full[..., k - 1:length]
         self.output.send(full.reshape(*moved.shape[:-1], full.shape[-1]).movedim(-1, dim))
+
+
+class TorchInterpNode(TorchNode):
+    # np.interp on tensors: the table fp at positions xp, read at any positions x,
+    # straight lines between the entries and the end values beyond them
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchInterpNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.xp_value = None
+        self.fp_value = None
+        self.input = self.add_input('x', triggers_execution=True)
+        self.xp_input = self.add_input('xp')
+        self.fp_input = self.add_input('fp')
+        self.output = self.add_output('values')
+
+    def execute(self):
+        if self.xp_input.fresh_input:
+            self.xp_value = held_tensor(self.xp_input())
+        if self.fp_input.fresh_input:
+            self.fp_value = held_tensor(self.fp_input())
+        x = self.input_to_tensor(allow_empty=True)
+        if x is None or self.fp_value is None or self.fp_value.ndim == 0 or self.fp_value.shape[0] == 0:
+            return
+        x = float_like(x)
+        device = x.device
+        fp = self.fp_value.to(device=device, dtype=x.dtype if x.is_floating_point() else torch.float32)
+        n = fp.shape[0]
+        # without xp the table is indexed by position: 0, 1, 2 ...
+        if self.xp_value is not None:
+            xp = self.xp_value.reshape(-1).to(device=device, dtype=fp.dtype)
+        else:
+            xp = torch.arange(n, device=device, dtype=fp.dtype)
+        if xp.shape[0] != n:
+            if self.app.verbose:
+                print(self.label, 'xp has', xp.shape[0], 'positions but fp has', n, 'values')
+            return
+        if n > 1 and torch.any(xp[1:] < xp[:-1]):
+            # unsorted positions would give nonsense: put the table in order
+            xp, order = torch.sort(xp, stable=True)
+            fp = fp[order]
+        table = fp.reshape(n, -1)
+        flat = x.reshape(-1).to(fp.dtype)
+        if n == 1:
+            result = table[0].expand(flat.shape[0], -1)
+        else:
+            right = torch.searchsorted(xp, flat.contiguous()).clamp(1, n - 1)
+            left = right - 1
+            span = xp[right] - xp[left]
+            weight = torch.where(span > 0, (flat - xp[left]) / torch.where(span > 0, span, 1.0),
+                                 torch.zeros_like(flat)).clamp(0.0, 1.0)
+            result = table[left] + weight.unsqueeze(-1) * (table[right] - table[left])
+        self.output.send(result.reshape(x.shape + fp.shape[1:]))
+
+
+class TorchHilbertNode(TorchNode):
+    # scipy.hilbert on tensors: the analytic signal, made with an FFT that keeps
+    # the positive frequencies (doubled) and drops the negative ones
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchHilbertNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        rate = any_to_float(args[0]) if len(args) > 0 else 60.0
+        self.input = self.add_input('in', triggers_execution=True)
+        self.rate_input = self.add_input('sample rate', widget_type='drag_float', default_value=rate)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.envelope_output = self.add_output('envelope')
+        self.phase_output = self.add_output('phase')
+        self.frequency_output = self.add_output('frequency')
+        self.centre_option = self.add_option('remove mean', widget_type='checkbox', default_value=True)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        data = float_like(input_tensor)
+        if data.is_complex():
+            if self.app.verbose:
+                print(self.label, 'needs a real signal')
+            return
+        dim = self.dim_input()
+        if not -data.ndim <= dim < data.ndim or data.shape[dim] < 2:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range or too short for shape', list(data.shape))
+            return
+        data = torch.nan_to_num(data)
+        # phase means swinging about a centre: take the average level away first
+        if self.centre_option():
+            data = data - data.mean(dim=dim, keepdim=True)
+        moved = data.movedim(dim, -1)
+        n = moved.shape[-1]
+        gain = torch.zeros(n, device=moved.device, dtype=moved.dtype)
+        gain[0] = 1.0
+        if n % 2 == 0:
+            gain[1:n // 2] = 2.0
+            gain[n // 2] = 1.0
+        else:
+            gain[1:(n + 1) // 2] = 2.0
+        analytic = torch.fft.ifft(torch.fft.fft(moved, dim=-1) * gain, dim=-1)
+        phase = torch.angle(analytic)
+        rate = self.rate_input()
+        if rate is not None and rate > 0:
+            # how fast the phase turns, in cycles per second; each step is taken the
+            # short way round, and the first repeats the second so the length is kept
+            step = torch.remainder(phase[..., 1:] - phase[..., :-1] + math.pi, 2 * math.pi) - math.pi
+            turning = step * rate / (2 * math.pi)
+            self.frequency_output.send(torch.cat([turning[..., :1], turning], dim=-1).movedim(-1, dim))
+        self.phase_output.send(torch.rad2deg(phase).movedim(-1, dim))
+        self.envelope_output.send(torch.abs(analytic).movedim(-1, dim))

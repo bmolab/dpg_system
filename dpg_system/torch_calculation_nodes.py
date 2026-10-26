@@ -66,6 +66,7 @@ def register_torch_calculation_nodes():
     Node.app.register_node('t.logical_or', TorchLogicalNode.factory)
     Node.app.register_node('t.logical_xor', TorchLogicalNode.factory)
     Node.app.register_node('t.logical_not', TorchLogicalNode.factory)
+    Node.app.register_node('t.scatter_reduce', TorchScatterReduceNode.factory)
 
     Node.app.register_node('t.gcd', TorchLCMGCDNode.factory)
     Node.app.register_node('t.lcm', TorchLCMGCDNode.factory)
@@ -1560,3 +1561,85 @@ class TorchLogicalNode(TorchNode):
                     print(self.label, 'shapes do not broadcast:', list(input_tensor.shape), list(b.shape))
                 return
         self.output.send(result.to(self.output_types.get(self.output_type_option(), torch.bool)))
+
+
+class TorchScatterReduceNode(TorchNode):
+    # one result per group: values labelled by group number (24 joints by limb,
+    # points by cluster) summed, averaged, or the largest, smallest or product
+    reductions = {'sum': 'sum', 'mean': 'mean', 'max': 'amax', 'min': 'amin', 'prod': 'prod'}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchScatterReduceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        reduce = 'sum'
+        count = -1
+        for i in range(len(args)):
+            value, kind = decode_arg(args, i)
+            if kind is str and value in self.reductions:
+                reduce = value
+            elif kind is int:
+                count = value
+        self.groups = None
+        self.input = self.add_input('values', triggers_execution=True)
+        self.groups_input = self.add_input('groups')
+        self.count_input = self.add_input('group count', widget_type='input_int', default_value=count)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=0)
+        self.output = self.add_output('per group')
+        self.reduce_option = self.add_option('reduce', widget_type='combo', default_value=reduce)
+        self.reduce_option.widget.combo_items = list(self.reductions.keys())
+
+    def execute(self):
+        if self.groups_input.fresh_input:
+            self.groups = held_tensor(self.groups_input())
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None or self.groups is None:
+            return
+        values = float_like(input_tensor)
+        if values.ndim == 0:
+            values = values.reshape(1)
+        dim = self.dim_input()
+        if not -values.ndim <= dim < values.ndim:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range for shape', list(values.shape))
+            return
+        groups = self.groups.reshape(-1)
+        if groups.is_floating_point() and not torch.all(groups == groups.round()):
+            if self.app.verbose:
+                print(self.label, 'group labels must be whole numbers')
+            return
+        groups = groups.long().to(values.device)
+        if groups.shape[0] != values.shape[dim]:
+            if self.app.verbose:
+                print(self.label, 'needs one group label per value along dim', dim, '- got', groups.shape[0],
+                      'labels for', values.shape[dim])
+            return
+        count = self.count_input()
+        if count is None or count <= 0:
+            count = int(groups.max().item()) + 1 if groups.numel() > 0 else 0
+        if groups.numel() > 0 and (groups.min() < 0 or groups.max() >= count):
+            if self.app.verbose:
+                print(self.label, 'group labels must run from 0 to', count - 1)
+            return
+        moved = values.movedim(dim, 0)
+        reduce = self.reductions.get(self.reduce_option(), 'sum')
+
+        def reduce_on(device_values, device_groups):
+            # a group with no members comes out 0
+            result = torch.zeros((count,) + tuple(device_values.shape[1:]), dtype=device_values.dtype,
+                                 device=device_values.device)
+            if reduce == 'sum':
+                return result.index_add_(0, device_groups, device_values)
+            return result.index_reduce_(0, device_groups, device_values, reduce, include_self=False)
+
+        try:
+            result = reduce_on(moved, groups)
+        except (NotImplementedError, RuntimeError):
+            if moved.device.type == 'cpu':
+                raise
+            # a device without this reduction: do it on the cpu and move it back
+            result = reduce_on(moved.cpu(), groups.cpu()).to(moved.device)
+        self.output.send(result.movedim(0, dim))
