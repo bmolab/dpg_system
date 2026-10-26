@@ -141,6 +141,14 @@
   "context_tracker": [
     "context_tracker"
   ],
+  "_cv_motion_nodes": [
+    "--- cv_motion_nodes.py ---"
+  ],
+  "cv_optical_flow": [
+    "cv_optical_flow",
+    "cv_flow_features",
+    "cv_flow_visualize"
+  ],
   "_depthanything_nodes": [
     "--- depthanything_nodes.py ---"
   ],

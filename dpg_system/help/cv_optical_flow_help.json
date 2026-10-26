@@ -1,0 +1,415 @@
+{
+    "height": 1231,
+    "width": 1639,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "cv_optical_flow_help",
+    "path": "/Users/dorsamolaverdikhani/Documents/Projects/bmo-lab/dpg_system/dpg_system/help/cv_optical_flow_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment cv optical flow - movement between frames",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cv optical flow - movement between frames",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cv optical flow - movement between frames"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 791,
+            "position_y": 45,
+            "width": 808,
+            "height": 1126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These three nodes turn movement between video frames into data.\n\nTHE NODES:\n\ncv_optical_flow      compare consecutive pictures and produce a motion field\ncv_flow_features     reduce that field to five useful numbers\ncv_flow_visualize    turn the field into an RGB direction-and-speed picture\n\nSTART WITH CONSECUTIVE FRAMES:\ncv_optical_flow remembers the preceding picture. The first picture after the\nnode is created, reset, or given a new image size only fills that memory, so it\nproduces no output. Each later picture is compared with the one before it.\n\nThe input may be a grayscale array or an RGB/RGBA image. cv_camera supplies the\nexpected uint8 RGB images directly. Floating-point images are treated as 0..1\nand converted to bytes before processing.\n\nTHE FLOW IS A VECTOR AT EVERY PIXEL:\nThe result is a float32 array shaped (height, width, 2). The last dimension is\n(dx, dy): horizontal and vertical displacement in pixels per PROCESSED frame.\nPositive dx points right and positive dy points down in image coordinates.\n\n'process width' makes the calculation cheaper by shrinking wide pictures while\nkeeping their aspect ratio. Zero uses the original size. Flow distances are in\npixels of that processed image, so changing the width also changes the numeric\nscale of the result.\n\nTHE FARNEBACK CONTROLS TRADE SPEED FOR STABILITY:\n'pyramid scale' controls the size of each successive image-pyramid layer.\n'pyramid levels' controls how many scales are examined. More levels can follow\nlarger movement but cost more. 'window size' averages over a wider region;\nlarger windows are smoother but lose detail. 'iterations' spends more work\nrefining the estimate. The defaults are a useful starting point for a camera.\n\nPress 'reset' after a discontinuity such as seeking a movie or switching\nsources, otherwise the next field describes the cut rather than real motion.\n\ncv_flow_features MAKES FIVE NUMBERS:\n'motion energy' is the mean vector magnitude across every pixel. 'horizontal\nmotion' and 'vertical motion' are signed means of dx and dy. Opposite movement\ncan cancel in those signed outputs even while motion energy stays high.\n\n'active fraction' is the fraction of pixels whose magnitude is greater than\n'motion threshold'. 'max motion' is the largest magnitude in the frame. All\ndistance-like values are pixels per processed frame, not pixels per second.\n\ncv_flow_visualize MAKES DIRECTION VISIBLE:\nHue represents direction and brightness represents magnitude. 'full brightness\nat' says which magnitude reaches maximum brightness; smaller values reveal\nsubtle movement and larger values preserve detail in fast movement. The output\nis an ordinary uint8 RGB image shaped (height, width, 3).\n\nTHE EXAMPLE:\nTurn the toggle on to start the camera, then move in front of it. The flow goes\nboth to the feature node (motion energy is printed) and to the visualization,\nwhich is drawn by mgl_image. Turn the toggle off when finished to release the\ncamera.\n\nSYNTAX:\ncv_optical_flow\ncv_flow_features\ncv_flow_visualize\n\nINPUTS and PARAMETERS:\n\nRGB image (cv_optical_flow):\nGrayscale, RGB, or RGBA NumPy image. A new frame triggers the calculation.\n\nreset:\nForget the previous frame. The next frame becomes the new starting point.\n\nprocess width (0=original):\nDownsample wider inputs to this width before calculating flow.\n\npyramid scale / pyramid levels / window size / iterations:\nFarneback quality, motion-range, smoothing, and refinement controls.\n\nflow (cv_flow_features and cv_flow_visualize):\nA float32 (height, width, 2) array carrying dx and dy.\n\nmotion threshold (px/frame):\nMinimum magnitude counted by active fraction.\n\nfull brightness at (px/frame):\nMagnitude mapped to full brightness in the RGB visualization.\n\nOUTPUTS:\n\nflow (dx,dy):\nDense float32 motion vectors shaped (height, width, 2).\n\nmotion energy / horizontal motion / vertical motion / active fraction / max motion:\nFive scalar summaries of the field.\n\nRGB image:\nDirection as hue and magnitude as brightness, shaped (height, width, 3).\n\nRELATED:\ncv_camera and cv_capture for live pictures.\ncv_image for still images (send changing images to measure motion).\nmgl_image and the other image nodes for displaying or processing the result.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1110,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These three nodes turn movement between video frames into data.\n\nTHE NODES:\n\ncv_optical_flow      compare consecutive pictures and produce a motion field\ncv_flow_features     reduce that field to five useful numbers\ncv_flow_visualize    turn the field into an RGB direction-and-speed picture\n\nSTART WITH CONSECUTIVE FRAMES:\ncv_optical_flow remembers the preceding picture. The first picture after the\nnode is created, reset, or given a new image size only fills that memory, so it\nproduces no output. Each later picture is compared with the one before it.\n\nThe input may be a grayscale array or an RGB/RGBA image. cv_camera supplies the\nexpected uint8 RGB images directly. Floating-point images are treated as 0..1\nand converted to bytes before processing.\n\nTHE FLOW IS A VECTOR AT EVERY PIXEL:\nThe result is a float32 array shaped (height, width, 2). The last dimension is\n(dx, dy): horizontal and vertical displacement in pixels per PROCESSED frame.\nPositive dx points right and positive dy points down in image coordinates.\n\n'process width' makes the calculation cheaper by shrinking wide pictures while\nkeeping their aspect ratio. Zero uses the original size. Flow distances are in\npixels of that processed image, so changing the width also changes the numeric\nscale of the result.\n\nTHE FARNEBACK CONTROLS TRADE SPEED FOR STABILITY:\n'pyramid scale' controls the size of each successive image-pyramid layer.\n'pyramid levels' controls how many scales are examined. More levels can follow\nlarger movement but cost more. 'window size' averages over a wider region;\nlarger windows are smoother but lose detail. 'iterations' spends more work\nrefining the estimate. The defaults are a useful starting point for a camera.\n\nPress 'reset' after a discontinuity such as seeking a movie or switching\nsources, otherwise the next field describes the cut rather than real motion.\n\ncv_flow_features MAKES FIVE NUMBERS:\n'motion energy' is the mean vector magnitude across every pixel. 'horizontal\nmotion' and 'vertical motion' are signed means of dx and dy. Opposite movement\ncan cancel in those signed outputs even while motion energy stays high.\n\n'active fraction' is the fraction of pixels whose magnitude is greater than\n'motion threshold'. 'max motion' is the largest magnitude in the frame. All\ndistance-like values are pixels per processed frame, not pixels per second.\n\ncv_flow_visualize MAKES DIRECTION VISIBLE:\nHue represents direction and brightness represents magnitude. 'full brightness\nat' says which magnitude reaches maximum brightness; smaller values reveal\nsubtle movement and larger values preserve detail in fast movement. The output\nis an ordinary uint8 RGB image shaped (height, width, 3).\n\nTHE EXAMPLE:\nTurn the toggle on to start the camera, then move in front of it. The flow goes\nboth to the feature node (motion energy is printed) and to the visualization,\nwhich is drawn by mgl_image. Turn the toggle off when finished to release the\ncamera.\n\nSYNTAX:\ncv_optical_flow\ncv_flow_features\ncv_flow_visualize\n\nINPUTS and PARAMETERS:\n\nRGB image (cv_optical_flow):\nGrayscale, RGB, or RGBA NumPy image. A new frame triggers the calculation.\n\nreset:\nForget the previous frame. The next frame becomes the new starting point.\n\nprocess width (0=original):\nDownsample wider inputs to this width before calculating flow.\n\npyramid scale / pyramid levels / window size / iterations:\nFarneback quality, motion-range, smoothing, and refinement controls.\n\nflow (cv_flow_features and cv_flow_visualize):\nA float32 (height, width, 2) array carrying dx and dy.\n\nmotion threshold (px/frame):\nMinimum magnitude counted by active fraction.\n\nfull brightness at (px/frame):\nMagnitude mapped to full brightness in the RGB visualization.\n\nOUTPUTS:\n\nflow (dx,dy):\nDense float32 motion vectors shaped (height, width, 2).\n\nmotion energy / horizontal motion / vertical motion / active fraction / max motion:\nFive scalar summaries of the field.\n\nRGB image:\nDirection as hue and magnitude as brightness, shaped (height, width, 3).\n\nRELATED:\ncv_camera and cv_capture for live pictures.\ncv_image for still images (send changing images to measure motion).\nmgl_image and the other image nodes for displaying or processing the result."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "cv_camera",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on/off",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "name": "cv_optical_flow",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 285,
+            "width": 101,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "cv_flow_features",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 530,
+            "width": 144,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "print",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 725,
+            "width": 88,
+            "height": 28,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "identifier",
+                    "value": "motion energy",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "precision",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "name": "cv_flow_visualize",
+            "id": 533,
+            "position_x": 330,
+            "position_y": 530,
+            "width": 113,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "mgl_context",
+            "id": 570,
+            "position_x": 330,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 480,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_display_width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "node_display_height",
+                    "value": 225,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "match_texture_to_window",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "mgl_image",
+            "id": 607,
+            "position_x": 330,
+            "position_y": 405,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 469,
+            "position_y": 835,
+            "width": 292,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "turn on to claim the camera; turn off\nwhen finished so other programs can use it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "turn on to claim the camera; turn off\nwhen finished so other programs can use it"
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 469,
+            "position_y": 660,
+            "width": 243,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the first frame stores a baseline;\nflow begins with the second frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the first frame stores a baseline;\nflow begins with the second frame"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 783,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on/off"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "RGB image"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flow (dx,dy)",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "flow"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flow (dx,dy)",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "flow"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "motion energy",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "RGB image",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture"
+        }
+    }
+}
