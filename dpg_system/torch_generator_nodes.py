@@ -20,6 +20,8 @@ def register_torch_generator_nodes():
     Node.app.register_node('t.full', TorchFullNode.factory)
     Node.app.register_node('t.linspace', TorchLinSpaceNode.factory)
     Node.app.register_node('t.meshgrid', TorchMeshgridNode.factory)
+    Node.app.register_node('t.multinomial', TorchMultinomialNode.factory)
+    Node.app.register_node('t.randperm', TorchRandPermNode.factory)
     Node.app.register_node('t.logspace', TorchLinSpaceNode.factory)
     Node.app.register_node('t.range', TorchRangeNode.factory)
     Node.app.register_node('t.arange', TorchRangeNode.factory)
@@ -876,3 +878,116 @@ class TorchMeshgridNode(TorchNode):
         grid_x, grid_y = torch.meshgrid(x, y, indexing=indexing)
         self.y_output.send(grid_y)
         self.x_output.send(grid_x)
+
+
+class TorchRandomBase(TorchNode):
+    # a seed of -1 draws different numbers every time the patch opens; any other
+    # seed repeats the same sequence from the start, as the np.random nodes do.
+    # torch keeps one generator per device, so one is made for each device used.
+    def add_seed_option(self):
+        self.generators = {}
+        self.seed_option = self.add_option('seed', widget_type='input_int', default_value=-1,
+                                           callback=self.seed_changed)
+
+    def seed_changed(self):
+        self.generators = {}
+
+    def generator_for(self, device):
+        seed = self.seed_option()
+        if seed is None or seed < 0:
+            return None
+        key = str(device)
+        if key not in self.generators:
+            try:
+                generator = torch.Generator(device=device)
+            except RuntimeError:
+                return None     # a device without its own generators draws unseeded
+            generator.manual_seed(int(seed))
+            self.generators[key] = generator
+        return self.generators[key]
+
+
+class TorchMultinomialNode(TorchRandomBase):
+    # draws indices at random, each as likely as its probability: the way a model's
+    # softmax output is played, one choice at a time
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchMultinomialNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        count = max(any_to_int(args[0]), 1) if len(args) > 0 else 1
+        self.input = self.add_input('probabilities', triggers_execution=True)
+        self.count_input = self.add_input('count', widget_type='input_int', default_value=count)
+        self.temperature_input = self.add_input('temperature', widget_type='drag_float', default_value=1.0)
+        self.output = self.add_output('chosen')
+        self.repeats_option = self.add_option('repeats', widget_type='checkbox', default_value=True)
+        self.add_seed_option()
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        probs = float_like(input_tensor)
+        if probs.ndim == 0 or probs.ndim > 2:
+            if self.app.verbose:
+                print(self.label, 'needs a list of probabilities (or one row per distribution), got shape',
+                      list(probs.shape))
+            return
+        if torch.any(probs < 0) or torch.any(probs.sum(-1) <= 0) or not torch.all(torch.isfinite(probs)):
+            if self.app.verbose:
+                print(self.label, 'needs non-negative, finite probabilities, not all zero')
+            return
+        temperature = self.temperature_input()
+        if temperature is not None and temperature > 0 and temperature != 1.0:
+            # below 1 the likely choices grow likelier; above 1 the choices even out
+            probs = probs.pow(1.0 / temperature)
+            if torch.any(probs.sum(-1) <= 0) or not torch.all(torch.isfinite(probs)):
+                return
+        count = max(self.count_input(), 1)
+        replace = bool(self.repeats_option())
+        if not replace:
+            count = min(count, probs.shape[-1])
+        chosen = torch.multinomial(probs, count, replacement=replace, generator=self.generator_for(probs.device))
+        if count == 1:
+            # a single pick is sent as the index itself (one per row for rows)
+            chosen = chosen.squeeze(-1)
+        self.output.send(chosen)
+
+
+class TorchRandPermNode(TorchRandomBase):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchRandPermNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.output = self.add_output('shuffled')
+        self.add_seed_option()
+
+    def execute(self):
+        value = self.input()
+        if isinstance(value, torch.Tensor) and value.numel() > 1:
+            data = value
+        else:
+            # a whole number n (a message box sends 8 as [8]): 0 to n-1 in random order
+            n = None
+            if isinstance(value, torch.Tensor):
+                n = value.item() if value.numel() == 1 else None
+            elif isinstance(value, (list, tuple)) and len(value) == 1:
+                n = value[0]
+            elif isinstance(value, (int, float)) and not isinstance(value, bool):
+                n = value
+            if n is not None and isinstance(n, (int, float)) and float(n).is_integer():
+                n = max(int(n), 0)
+                self.output.send(torch.randperm(n, generator=self.generator_for('cpu')))
+                return
+            data = self.input_to_tensor()
+            if data is None or data.ndim == 0:
+                return
+        # shuffles the first dim: the elements of a list, the rows of a matrix
+        order = torch.randperm(data.shape[0], generator=self.generator_for('cpu')).to(data.device)
+        self.output.send(data[order])

@@ -41,6 +41,9 @@ def register_torch_manipulation_nodes():
     Node.app.register_node('t.scatter_hold', TorchScatterHoldNode.factory)
     Node.app.register_node('t.pad', TorchPadNode.factory)
     Node.app.register_node('t.unfold', TorchUnfoldNode.factory)
+    Node.app.register_node('t.max_pool', TorchPoolNode.factory)
+    Node.app.register_node('t.avg_pool', TorchPoolNode.factory)
+    Node.app.register_node('t.one_hot', TorchOneHotNode.factory)
 
 
 class TorchSqueezeNode(TorchWithDimNode):
@@ -1315,3 +1318,108 @@ class TorchUnfoldNode(TorchNode):
             return
         # a copy: unfold gives a view sharing memory with the input, which a later node may change
         self.output.send(input_tensor.unfold(dim, window, max(self.step_input(), 1)).clone())
+
+
+class TorchOneHotNode(TorchNode):
+    # class 2 of 4 becomes 0 0 1 0: the form most models take a label in
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchOneHotNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        classes = any_to_int(args[0]) if len(args) > 0 else -1
+        self.input = self.add_input('indices', triggers_execution=True)
+        self.classes_input = self.add_input('classes', widget_type='input_int', default_value=classes)
+        self.output = self.add_output('one hot')
+        self.output_type_option = self.add_option('output_type', widget_type='combo', default_value='float')
+        self.output_type_option.widget.combo_items = ['float', 'int', 'bool']
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        if input_tensor.is_floating_point():
+            if not torch.all(input_tensor == input_tensor.round()):
+                if self.app.verbose:
+                    print(self.label, 'needs whole-number class indices')
+                return
+        indices = input_tensor.long()
+        classes = self.classes_input()
+        if torch.any(indices < 0) or (classes is not None and classes > 0 and torch.any(indices >= classes)):
+            if self.app.verbose:
+                print(self.label, 'class indices must run from 0 to', (classes - 1) if classes > 0 else 'the largest')
+            return
+        # -1 classes: as many as the largest index needs
+        result = F.one_hot(indices, num_classes=classes if classes is not None and classes > 0 else -1)
+        output_type = self.output_type_option()
+        if output_type == 'float':
+            result = result.float()
+        elif output_type == 'bool':
+            result = result.bool()
+        self.output.send(result)
+
+
+class TorchPoolNode(TorchNode):
+    # t.max_pool and t.avg_pool: the largest value, or the mean, of each window
+    # along a dim - or of each tile of the last two dims, for an image
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchPoolNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.max = label == 't.max_pool'
+        window = max(any_to_int(args[0]), 1) if len(args) > 0 else 2
+        step = max(any_to_int(args[1]), 1) if len(args) > 1 else window
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.window_input = self.add_input('window', widget_type='input_int', default_value=window)
+        self.step_input = self.add_input('step', widget_type='input_int', default_value=step)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('pooled')
+        self.over_option = self.add_option('pool over', widget_type='combo', default_value='one dim')
+        self.over_option.widget.combo_items = ['one dim', 'last two dims']
+        self.partial_option = self.add_option('partial window', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None or input_tensor.ndim == 0:
+            return
+        data = float_like(input_tensor)
+        window = max(self.window_input(), 1)
+        step = max(self.step_input(), 1)
+        ceil_mode = bool(self.partial_option())
+        try:
+            if self.over_option() == 'last two dims':
+                if data.ndim < 2 or data.shape[-1] < window or data.shape[-2] < window:
+                    if self.app.verbose:
+                        print(self.label, 'needs at least', window, 'x', window, 'values, got shape', list(data.shape))
+                    return
+                lead = data.shape[:-2]
+                flat = data.reshape(-1, 1, data.shape[-2], data.shape[-1])
+                pool = F.max_pool2d if self.max else F.avg_pool2d
+                pooled = pool(flat, window, step, ceil_mode=ceil_mode)
+                result = pooled.reshape(*lead, pooled.shape[-2], pooled.shape[-1])
+            else:
+                dim = self.dim_input()
+                if not -data.ndim <= dim < data.ndim:
+                    if self.app.verbose:
+                        print(self.label, 'dim', dim, 'out of range for shape', list(data.shape))
+                    return
+                if data.shape[dim] < window:
+                    if self.app.verbose:
+                        print(self.label, 'a window of', window, 'is longer than the', data.shape[dim], 'values')
+                    return
+                moved = data.movedim(dim, -1)
+                lead = moved.shape[:-1]
+                flat = moved.reshape(-1, 1, moved.shape[-1])
+                pool = F.max_pool1d if self.max else F.avg_pool1d
+                pooled = pool(flat, window, step, ceil_mode=ceil_mode)
+                result = pooled.reshape(*lead, pooled.shape[-1]).movedim(-1, dim)
+        except RuntimeError as e:
+            if self.app.verbose:
+                print(self.label, 'could not pool shape', list(data.shape), e)
+            return
+        self.output.send(result)
