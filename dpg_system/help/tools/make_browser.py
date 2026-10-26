@@ -91,7 +91,7 @@ TREE = {
                     'cmy_to_hsv', 'hsl_to_rgb', 'hsl_to_cmy', 'hsl_to_hsv', 'hsv_to_rgb', 'hsv_to_cmy',
                     'hsv_to_hsl']),
         ('Rotations', ['quaternion_to_euler', 'quaternion_to_6d', 'quaternion_diff', 'quaternion_norm',
-                       'tracker_align', 'swing_twist', 'continuous_rotation',
+                       'tracker_align', 'swing_twist', 'quaternion_multiply', 'continuous_rotation',
                        'scipy.slerp', 'scipy.rotation_mean', 'scipy.align_vectors', 'scipy.rotation_apply']),
     ]),
     'nodes_signal': ('Signals and filters', 'Streams of values: making them, smoothing them, reacting to them.', [
@@ -169,6 +169,7 @@ TREE = {
         ('Tensors', ['tensor', 't.detach', 't.info', 't.numel', 't.contiguous', 't.is_contiguous']),
         ('Buffers', ['t.buffer', 't.rolling_buffer']),
         ('Models and files', ['t.model', 't.save', 't.load']),
+        ('Learning', ['t.param', 't.optimize']),
         ('Making tensors', ['t.zeros', 't.ones', 't.full', 't.eye', 't.rand', 't.zeros_like', 't.ones_like',
                             't.rand_like', 't.linspace', 't.logspace', 't.arange', 't.range', 't.meshgrid',
                             't.one_hot']),

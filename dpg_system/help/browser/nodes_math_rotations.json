@@ -1,11 +1,11 @@
 {
-    "height": 800,
+    "height": 852,
     "width": 835,
     "position": [
         100,
         100
     ],
-    "id": 1536,
+    "id": 1610,
     "name": "nodes_math_rotations",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math_rotations.json",
     "nodes": {
@@ -550,7 +550,7 @@
             "presentation_state": "show_all"
         },
         "17": {
-            "init": "help_link continuous_rotation continuous_rotation",
+            "init": "help_link quaternion_multiply quaternion_multiply",
             "name": "help_link",
             "position_x": 24,
             "position_y": 482,
@@ -558,7 +558,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "continuous_rotation",
+                    "name": "quaternion_multiply",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -583,6 +583,75 @@
             "annotation": true,
             "position_x": 201,
             "position_y": 486,
+            "width": 194,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one rotation after another",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one rotation after another",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link continuous_rotation continuous_rotation",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 534,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "continuous_rotation",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 538,
             "width": 188,
             "height": 28,
             "properties": {
@@ -613,16 +682,16 @@
                 }
             },
             "text": "undo the wrap in an angle",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "21": {
             "init": "help_link scipy.slerp scipy.slerp",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 534,
+            "position_y": 586,
             "width": 163,
             "height": 44,
             "properties": {
@@ -642,16 +711,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1240,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "22": {
             "name": "text_block",
             "annotation": true,
             "position_x": 201,
-            "position_y": 538,
+            "position_y": 590,
             "width": 243,
             "height": 28,
             "properties": {
@@ -682,16 +751,16 @@
                 }
             },
             "text": "turn smoothly between orientations",
-            "id": 1277,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "23": {
             "init": "help_link scipy.rotation_mean scipy.rotation_mean",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 586,
+            "position_y": 638,
             "width": 163,
             "height": 44,
             "properties": {
@@ -711,16 +780,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1314,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "24": {
             "name": "text_block",
             "annotation": true,
             "position_x": 201,
-            "position_y": 590,
+            "position_y": 642,
             "width": 249,
             "height": 28,
             "properties": {
@@ -751,16 +820,16 @@
                 }
             },
             "text": "the average of several orientations",
-            "id": 1351,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "25": {
             "init": "help_link scipy.align_vectors scipy.align_vectors",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 638,
+            "position_y": 690,
             "width": 163,
             "height": 44,
             "properties": {
@@ -780,16 +849,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1388,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "26": {
             "name": "text_block",
             "annotation": true,
             "position_x": 201,
-            "position_y": 642,
+            "position_y": 694,
             "width": 360,
             "height": 28,
             "properties": {
@@ -820,16 +889,16 @@
                 }
             },
             "text": "the best rotation from one set of points onto another",
-            "id": 1425,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "27": {
             "init": "help_link scipy.rotation_apply scipy.rotation_apply",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 690,
+            "position_y": 742,
             "width": 163,
             "height": 44,
             "properties": {
@@ -849,16 +918,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1462,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "28": {
             "name": "text_block",
             "annotation": true,
             "position_x": 201,
-            "position_y": 694,
+            "position_y": 746,
             "width": 188,
             "height": 28,
             "properties": {
@@ -889,7 +958,7 @@
                 }
             },
             "text": "turn points by a rotation",
-            "id": 1499,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

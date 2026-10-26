@@ -459,6 +459,11 @@ batch gave t.fft and t.rfft a frequencies outlet and a sample rate option: their
 text was edited inside the live pages, because make_torch_signal_help.py's output no
 longer matches them (they were relaid out and highlighted since) - the generator
 carries the same text, so the two agree if it is ever run again.
+The learning nodes (t.param, t.optimize) and quaternion_multiply are seeded by
+`seed_torch_learning_help.py`; t.optimize builds its points in a make_points
+subpatcher. Both learning demos train every frame from load. The 'throw the numbers
+off' message on the t.param page only sends when clicked, so smoke lists it as never
+sent.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add
