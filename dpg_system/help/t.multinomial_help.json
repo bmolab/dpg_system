@@ -1,0 +1,636 @@
+{
+    "height": 1271,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "t.multinomial_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.multinomial_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.multinomial - choose at random, by probability",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 598,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.multinomial - choose at random, by probability",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.multinomial - choose at random, by probability"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Picks indices at random, each as likely as its probability: with 0.125 0.125 0.25 0.5, index 3 comes up half the time and index 0 one time in eight.\n\nIt is how a trained network that predicts \"what comes next\" is played. Such a network (t.model) ends with a score for every possible next note, word, gesture or pose;\nt.nn.softmax turns the scores into probabilities, and t.multinomial picks one - the likely choices most of the time, the unlikely ones now and then, so the result is neither fixed nor arbitrary. Feed each choice back in, and the network writes a sequence. Without a network it is weighted chance: a pose to move to, a clip, a direction, each as often as you choose.\n\nThe probabilities need not add up to 1 - 1 1 2 4 means the same as the list above - but none may be negative and not all may be 0. Give one row per distribution (a 2-D tensor) and each row gets its own pick, in one step. The picks are made on the probabilities' device.\n\nSYNTAX:\nt.multinomial <count>\nDefault: count 1.\n\nINPUTS and PARAMETERS:\n\nprobabilities:\nHow likely each index is: a list or tensor, or one row per distribution. Every input picks and sends.\n\ncount (int box, also an inlet):\nHow many to pick. 1 (the default) sends the index itself (one per row for rows); more sends them as a list.\n\ntemperature (float box, also an inlet):\nReshapes the probabilities before the pick: each is raised to the power 1/temperature. 1 (the default) leaves them as they are. Below 1 the likely choices grow likelier - near 0 the most likely is chosen almost every time. Above 1 the choices even out - the music grows more surprising. It is the main control for playing a generative model.\n\nrepeats:\nAn option, under the node. On (the default), an index can be picked again within one count. Off, each at most once per count - like dealing cards (count is then at most the number of choices).\n\nseed:\nAn option, under the node. -1 (the default) draws different numbers every time the patch opens. Any other number starts the same sequence every time - the same \"random\" piece on every run, which is what you want for rehearsal, comparison and debugging.\n\nOUTPUTS:\n\nchosen:\nThe index picked, or the list of indices.\n\nREADING THE DEMO:\nTop: 16 picks from 0 1 2 3 with probabilities 0.125 0.125 0.25 0.5, twice a second:\nabout eight 3s, four 2s, and two each of 0 and 1 - different every time.\n\nBottom: a model's scores for four notes, 0 1 2 3, made into probabilities by t.nn.softmax (0.03 0.09 0.24 0.64), and one note picked from them. Drag temperature down towards 0.1 and the top note takes over; up towards 5 and all four come up almost equally.\n\nRELATED:\nnp.random.choice picks from a list of items. t.nn.softmax turns scores into probabilities; t.model runs the network that makes the scores. t.argmax always takes the most likely, with no chance at all.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Picks indices at random, each as likely as its probability: with 0.125 0.125 0.25 0.5, index 3 comes up half the time and index 0 one time in eight.\n\nIt is how a trained network that predicts \"what comes next\" is played. Such a network (t.model) ends with a score for every possible next note, word, gesture or pose;\nt.nn.softmax turns the scores into probabilities, and t.multinomial picks one - the likely choices most of the time, the unlikely ones now and then, so the result is neither fixed nor arbitrary. Feed each choice back in, and the network writes a sequence. Without a network it is weighted chance: a pose to move to, a clip, a direction, each as often as you choose.\n\nThe probabilities need not add up to 1 - 1 1 2 4 means the same as the list above - but none may be negative and not all may be 0. Give one row per distribution (a 2-D tensor) and each row gets its own pick, in one step. The picks are made on the probabilities' device.\n\nSYNTAX:\nt.multinomial <count>\nDefault: count 1.\n\nINPUTS and PARAMETERS:\n\nprobabilities:\nHow likely each index is: a list or tensor, or one row per distribution. Every input picks and sends.\n\ncount (int box, also an inlet):\nHow many to pick. 1 (the default) sends the index itself (one per row for rows); more sends them as a list.\n\ntemperature (float box, also an inlet):\nReshapes the probabilities before the pick: each is raised to the power 1/temperature. 1 (the default) leaves them as they are. Below 1 the likely choices grow likelier - near 0 the most likely is chosen almost every time. Above 1 the choices even out - the music grows more surprising. It is the main control for playing a generative model.\n\nrepeats:\nAn option, under the node. On (the default), an index can be picked again within one count. Off, each at most once per count - like dealing cards (count is then at most the number of choices).\n\nseed:\nAn option, under the node. -1 (the default) draws different numbers every time the patch opens. Any other number starts the same sequence every time - the same \"random\" piece on every run, which is what you want for rehearsal, comparison and debugging.\n\nOUTPUTS:\n\nchosen:\nThe index picked, or the list of indices.\n\nREADING THE DEMO:\nTop: 16 picks from 0 1 2 3 with probabilities 0.125 0.125 0.25 0.5, twice a second:\nabout eight 3s, four 2s, and two each of 0 and 1 - different every time.\n\nBottom: a model's scores for four notes, 0 1 2 3, made into probabilities by t.nn.softmax (0.03 0.09 0.24 0.64), and one note picked from them. Drag temperature down towards 0.1 and the top note takes over; up towards 5 and all four come up almost equally.\n\nRELATED:\nnp.random.choice picks from a list of items. t.nn.softmax turns scores into probabilities; t.model runs the network that makes the scores. t.argmax always takes the most likely, with no chance at all."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment probabilities for 0 1 2 3",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "probabilities for 0 1 2 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "probabilities for 0 1 2 3"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.125 0.125 0.25 0.5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment 16 picks",
+            "name": "comment",
+            "id": 496,
+            "position_x": 520,
+            "position_y": 53,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "16 picks",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "16 picks"
+        },
+        "8": {
+            "name": "t.multinomial",
+            "id": 533,
+            "position_x": 520,
+            "position_y": 92,
+            "width": 160,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.multinomial 16",
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 520,
+            "position_y": 270,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment a model's scores for four notes",
+            "name": "comment",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 360,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a model's scores for four notes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a model's scores for four notes"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 180,
+            "position_y": 395,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 2 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "t.nn.softmax",
+            "id": 681,
+            "position_x": 180,
+            "position_y": 465,
+            "width": 111,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment their probabilities",
+            "name": "comment",
+            "id": 718,
+            "position_x": 180,
+            "position_y": 580,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "their probabilities",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "their probabilities"
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 180,
+            "position_y": 615,
+            "width": 238,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 230,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 40,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment one note: drag temperature",
+            "name": "comment",
+            "id": 792,
+            "position_x": 520,
+            "position_y": 360,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one note: drag temperature",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one note: drag temperature"
+        },
+        "16": {
+            "name": "t.multinomial",
+            "id": 829,
+            "position_x": 520,
+            "position_y": 395,
+            "width": 160,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 520,
+            "position_y": 575,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 774,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.random.choice"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 197,
+            "position_y": 774,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.softmax"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 333,
+            "position_y": 774,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.model"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 430,
+            "position_y": 774,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.argmax"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 884,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "probabilities"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "chosen",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "probabilities"
+        },
+        "7": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "chosen",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

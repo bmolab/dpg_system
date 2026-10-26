@@ -1,11 +1,11 @@
 {
-    "height": 564,
+    "height": 624,
     "width": 675,
     "position": [
         100,
         100
     ],
-    "id": 1166,
+    "id": 1240,
     "name": "nodes_torch_tensors",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_tensors.json",
     "nodes": {
@@ -356,12 +356,12 @@
             "annotation": true,
             "position_x": 176,
             "position_y": 310,
-            "width": 440,
-            "height": 40,
+            "width": 446,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range, t.meshgrid",
+                    "value": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range, t.meshgrid,\nt.one_hot",
                     "value_type": "str"
                 },
                 "1": {
@@ -371,12 +371,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 432,
+                    "value": 438,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -385,22 +385,22 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range, t.meshgrid",
+            "text": "t.zeros, t.ones, t.full, t.eye, t.rand, t.zeros_like, t.ones_like,\nt.rand_like, t.linspace, t.logspace, t.arange, t.range, t.meshgrid,\nt.one_hot",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "13": {
-            "init": "help_link nodes_torch_tensors_random_fills Random fills",
+            "init": "help_link nodes_torch_tensors_random_choices Random choices",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
+            "position_y": 366,
             "width": 138,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Random fills",
+                    "name": "Random choices",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -419,7 +419,71 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 176,
-            "position_y": 362,
+            "position_y": 370,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.multinomial, t.randperm",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.multinomial, t.randperm",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link nodes_torch_tensors_random_fills Random fills",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 418,
+            "width": 138,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Random fills",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 122,
+                    "value_type": "int"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 176,
+            "position_y": 422,
             "width": 397,
             "height": 40,
             "properties": {
@@ -450,16 +514,16 @@
                 }
             },
             "text": "t.uniform, t.normal, t.log_normal, t.cauchy, t.exponential,\nt.geometric, t.bernoulli, t.poisson",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "init": "help_link nodes_torch_tensors_distributions Distributions",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 470,
             "width": 138,
             "height": 44,
             "properties": {
@@ -474,16 +538,16 @@
                     "value_type": "int"
                 }
             },
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 176,
-            "position_y": 414,
+            "position_y": 474,
             "width": 459,
             "height": 88,
             "properties": {
@@ -514,7 +578,7 @@
                 }
             },
             "text": "t.dist.uniform, t.dist.normal, t.dist.log_normal, t.dist.half_normal,\nt.dist.cauchy, t.dist.half_cauchy, t.dist.laplace,\nt.dist.gumbel / t.dist.gumble, t.dist.exponential, t.dist.gamma,\nt.dist.chi2, t.dist.fisher_snedecor, t.dist.weibull, t.dist.pareto,\nt.dist.beta, t.dist.kumaraswamy, t.dist.von_mises, t.dist.bernoulli,\nt.dist.continuous_bernoulli, t.dist.poisson",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

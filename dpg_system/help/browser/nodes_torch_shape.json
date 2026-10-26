@@ -484,12 +484,12 @@
             "annotation": true,
             "position_x": 207,
             "position_y": 414,
-            "width": 218,
+            "width": 366,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.pad, t.unfold, t.interpolate",
+                    "value": "t.pad, t.unfold, t.max_pool, t.avg_pool, t.interpolate",
                     "value_type": "str"
                 },
                 "1": {
@@ -499,7 +499,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 210,
+                    "value": 358,
                     "value_type": "int"
                 },
                 "3": {
@@ -513,7 +513,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.pad, t.unfold, t.interpolate",
+            "text": "t.pad, t.unfold, t.max_pool, t.avg_pool, t.interpolate",
             "id": 1129,
             "visibility": "show_all",
             "draggable": true,

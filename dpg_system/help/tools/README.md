@@ -447,6 +447,10 @@ t.logical_xor, t.logical_not) is seeded by `seed_torch_batch2_help.py`, its demo
 following the numpy pages for the same operations. Covariances and eigenvalues are
 shown in heat maps (which print with a format) rather than lists, and the eigh demo
 points are float32-exact.
+The third torch batch (t.multinomial, t.randperm, t.one_hot, t.max_pool, t.avg_pool)
+is seeded by `seed_torch_batch3_help.py`. The random demos draw unseeded, so smoke
+sees different values each run; the avg_pool data is chosen so the means are whole
+or halves.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add
