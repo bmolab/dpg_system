@@ -203,7 +203,7 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
     fps = 60.0
     for key in ('mocap_framerate', 'motioncapture_framerate', 'framerate'):
         if key in d:
-            fps = round(float(d[key]))
+            fps = float(d[key])
             break
     dt = 1.0 / fps
 
