@@ -464,6 +464,13 @@ The learning nodes (t.param, t.optimize) and quaternion_multiply are seeded by
 subpatcher. Both learning demos train every frame from load. The 'throw the numbers
 off' message on the t.param page only sends when clicked, so smoke lists it as never
 sent.
+The Shadow magnetization nodes (shadow_mag_correct, elbow_hinge, elbow_turn,
+hang_symmetry) are seeded by `seed_shadow_mag_help.py`. The elbow and hang pages read a
+synthetic take, help/data/elbow_hinge_example.npz, written by
+`make_elbow_hinge_example.py`; smoke flags the clean take's loss and turn as always zero
+(and the synthetic turned take's spread, and the mirrored hang's loss and shift), which
+is the point. shadow_mag_correct's demo runs on a click (--click). The full learning
+setup on a real take is examples/shadow_mag_learning.json.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

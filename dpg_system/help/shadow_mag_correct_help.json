@@ -1,0 +1,519 @@
+{
+    "height": 1521,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "shadow_mag_correct_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/shadow_mag_correct_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment shadow_mag_correct - a learnable magnetization fix for the arms",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 783,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shadow_mag_correct - a learnable magnetization fix for the arms",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shadow_mag_correct - a learnable magnetization fix for the arms"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1416,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Corrects the Shadow arm sensors. First, if it is given one, the take's T-pose turn (elbow_turn measures it): how far each elbow was turned when the suit was calibrated. Then four corrections per arm, each an angle worked out afresh every frame:\n\n  roll   the upper arm turned about its own bone\n  yaw    the upper arm turned about vertical\n  fyaw   the forearm turned about vertical\n  hang   the whole arm turned sideways about the chest's forward axis, coming in as\n         the arm drops from 25 to 55 degrees below level\n\nEach angle is a weighted sum of numbers that say how the sensor sits. Six are the world's two horizontal axes, seen from inside the sensor: the shape a magnetization (hard-iron) error takes, which unlike a heading stays defined when the arm hangs straight down. The roll also uses two about the body: how high the arm is, and how far the elbow is bent past 62 degrees (the middle of elbow_turn's band, where the turn sets the roll) - for a strap, cable or muscle that pulls the sensor round as the arm moves. The hang is one number per arm: lowered arms that sit to one side together (a good T-pose, then an asymmetric hang) is a common Shadow error. The corrected upper arm and forearm are written back into the shoulder, elbow and wrist; the hand keeps where it was in the world, except under 'hang', which carries it with the arm.\n\nThe 42 weights are meant to be learned: t.param holds them and t.optimize tunes them to keep the elbows on their hinges (elbow_hinge) and the lowered arms centred (hang_symmetry). Give it one pose and it corrects\nthat pose; give it a whole take and it corrects every frame at once, keeping the trail for t.optimize.\n\nSYNTAX:\nshadow_mag_correct\n\nINPUTS and PARAMETERS:\n\npose in:\nShadow quaternions, scalar first: one pose (37 or 20 joints, 4 each) or a take (frames, joints, 4). Numpy in gives numpy out; a tensor stays a tensor.\n\nweights:\n42 numbers, in radians, 21 per arm, left arm then right: roll (6 field numbers, then arm height and elbow bend), yaw (6), fyaw (6), hang (1; positive moves a hanging arm toward the dancer's left). A shorter list fills the rest with 0; the older 40- and 36-number layouts are still accepted. New weights\nre-correct the pose already held, so a paused body follows the learning.\n\nturn:\nTwo numbers in degrees, left then right: the take's T-pose turn, from elbow_turn. It is undone before the learned corrections. Also re-corrects the held pose.\n\ncorrect (checkbox, also an inlet):\nOff passes the pose through untouched - for comparing.\n\namount (float box, also an inlet):\nScales the correction, turn included: 0 none, 1 all of it.\n\nroll, yaw, fyaw, hang:\nOptions, under the node: switch each correction on or off.\n\nturn fade:\nAn option, in degrees of elbow bend (0 by default). With the arm straight nothing shows the turn; above 0 the turn comes in smoothly from none with the arm straight to all of it at this bend. 0 undoes all of it everywhere.\n\nOUTPUTS:\n\npose out:\nThe corrected pose or take, in the layout it came in.\n\nREADING THE DEMO:\nAt rest every sensor is level, so the first feature is 1, and 0.35 - the first of the 42 weights, the rest 0 - turns the left upper arm 0.35 radians (20 degrees) about its bone. Click the button: the left_shoulder row of the angles shows the roll, and the left_elbow row the opposite turn, so the forearm stays where it was in the world.\n\nRELATED:\nelbow_hinge and hang_symmetry measure the errors the weights are learned against;\nt.param and t.optimize learn them. elbow_turn measures the turn. shadow_arm_correct is the hand-dialled arm fix; mag_yaw_correct sets constant yaw offsets. The full learning setup on a real take is examples/shadow_mag_learning.json.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1400,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Corrects the Shadow arm sensors. First, if it is given one, the take's T-pose turn (elbow_turn measures it): how far each elbow was turned when the suit was calibrated. Then four corrections per arm, each an angle worked out afresh every frame:\n\n  roll   the upper arm turned about its own bone\n  yaw    the upper arm turned about vertical\n  fyaw   the forearm turned about vertical\n  hang   the whole arm turned sideways about the chest's forward axis, coming in as\n         the arm drops from 25 to 55 degrees below level\n\nEach angle is a weighted sum of numbers that say how the sensor sits. Six are the world's two horizontal axes, seen from inside the sensor: the shape a magnetization (hard-iron) error takes, which unlike a heading stays defined when the arm hangs straight down. The roll also uses two about the body: how high the arm is, and how far the elbow is bent past 62 degrees (the middle of elbow_turn's band, where the turn sets the roll) - for a strap, cable or muscle that pulls the sensor round as the arm moves. The hang is one number per arm: lowered arms that sit to one side together (a good T-pose, then an asymmetric hang) is a common Shadow error. The corrected upper arm and forearm are written back into the shoulder, elbow and wrist; the hand keeps where it was in the world, except under 'hang', which carries it with the arm.\n\nThe 42 weights are meant to be learned: t.param holds them and t.optimize tunes them to keep the elbows on their hinges (elbow_hinge) and the lowered arms centred (hang_symmetry). Give it one pose and it corrects\nthat pose; give it a whole take and it corrects every frame at once, keeping the trail for t.optimize.\n\nSYNTAX:\nshadow_mag_correct\n\nINPUTS and PARAMETERS:\n\npose in:\nShadow quaternions, scalar first: one pose (37 or 20 joints, 4 each) or a take (frames, joints, 4). Numpy in gives numpy out; a tensor stays a tensor.\n\nweights:\n42 numbers, in radians, 21 per arm, left arm then right: roll (6 field numbers, then arm height and elbow bend), yaw (6), fyaw (6), hang (1; positive moves a hanging arm toward the dancer's left). A shorter list fills the rest with 0; the older 40- and 36-number layouts are still accepted. New weights\nre-correct the pose already held, so a paused body follows the learning.\n\nturn:\nTwo numbers in degrees, left then right: the take's T-pose turn, from elbow_turn. It is undone before the learned corrections. Also re-corrects the held pose.\n\ncorrect (checkbox, also an inlet):\nOff passes the pose through untouched - for comparing.\n\namount (float box, also an inlet):\nScales the correction, turn included: 0 none, 1 all of it.\n\nroll, yaw, fyaw, hang:\nOptions, under the node: switch each correction on or off.\n\nturn fade:\nAn option, in degrees of elbow bend (0 by default). With the arm straight nothing shows the turn; above 0 the turn comes in smoothly from none with the arm straight to all of it at this bend. 0 undoes all of it everywhere.\n\nOUTPUTS:\n\npose out:\nThe corrected pose or take, in the layout it came in.\n\nREADING THE DEMO:\nAt rest every sensor is level, so the first feature is 1, and 0.35 - the first of the 42 weights, the rest 0 - turns the left upper arm 0.35 radians (20 degrees) about its bone. Click the button: the left_shoulder row of the angles shows the roll, and the left_elbow row the opposite turn, so the forearm stays where it was in the world.\n\nRELATED:\nelbow_hinge and hang_symmetry measure the errors the weights are learned against;\nt.param and t.optimize learn them. elbow_turn measures the turn. shadow_arm_correct is the hand-dialled arm fix; mag_yaw_correct sets constant yaw offsets. The full learning setup on a real take is examples/shadow_mag_learning.json."
+        },
+        "3": {
+            "init": "comment click to send the pose",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send the pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send the pose"
+        },
+        "4": {
+            "name": "button",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment every joint at rest",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 160,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every joint at rest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every joint at rest"
+        },
+        "6": {
+            "name": "active_pose",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 195,
+            "width": 321,
+            "height": 350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment 20 degrees of roll, left upper arm",
+            "name": "comment",
+            "id": 496,
+            "position_x": 400,
+            "position_y": 53,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "20 degrees of roll, left upper arm",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "20 degrees of roll, left upper arm"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 400,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.35",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "load_bang",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 150,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment corrected",
+            "name": "comment",
+            "id": 607,
+            "position_x": 400,
+            "position_y": 230,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "corrected",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "corrected"
+        },
+        "11": {
+            "name": "shadow_mag_correct",
+            "id": 644,
+            "position_x": 400,
+            "position_y": 265,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "12": {
+            "init": "comment each joint as angles",
+            "name": "comment",
+            "id": 681,
+            "position_x": 640,
+            "position_y": 230,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each joint as angles",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each joint as angles"
+        },
+        "13": {
+            "name": "quaternion_to_euler",
+            "id": 718,
+            "position_x": 640,
+            "position_y": 265,
+            "width": 125,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "14": {
+            "name": "vector",
+            "id": 755,
+            "position_x": 640,
+            "position_y": 330,
+            "width": 160,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 634,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link elbow_turn"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 151,
+            "position_y": 634,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link elbow_hinge"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 279,
+            "position_y": 634,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link hang_symmetry"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 423,
+            "position_y": 634,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.param"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 520,
+            "position_y": 634,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.optimize"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 641,
+            "position_y": 634,
+            "width": 127,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link shadow_arm_correct"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 30,
+            "position_y": 678,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link mag_yaw_correct"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 788,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "weights"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "euler angles",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

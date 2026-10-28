@@ -195,6 +195,11 @@ clip gradient:
 An option. Above 0, a step is never steeper than this, which steadies a loss with
 occasional wild frames.
 
+pull to zero:
+An option. Above 0, adds this much of the sum of the squared parameters to the loss,
+so numbers only grow where the loss really asks for it - a guard against a learned
+correction drifting where the loss cannot see.
+
 autosave every:
 An option. Above 0, every this many steps the t.param nodes that have a path write
 their numbers.

@@ -119,7 +119,7 @@ TREE = {
     ]),
     'nodes_body': ('Body and motion', 'Capturing a moving body, cleaning it up, and asking what it is doing.', [
         ('Sensors', ['shadow', 'shadow_sensor', 'movesense', 'pipo_motion', 'vive_tracker']),
-        ('Cleaning and correcting', ['mag_offset', 'mag_yaw_correct', 'shadow_arm_correct', 'cadence_filter', 'check_burst', 'sensor_to_root', 'tracker_align',
+        ('Cleaning and correcting', ['mag_offset', 'mag_yaw_correct', 'shadow_arm_correct', 'shadow_mag_correct', 'elbow_hinge', 'elbow_turn', 'hang_symmetry', 'cadence_filter', 'check_burst', 'sensor_to_root', 'tracker_align',
                                      'noise_review', 'json_npz_frame_picker']),
         ('Poses and joints', ['pose', 'active_pose', 'active_joints', 'target_pose', 'pose_adjust', 'calibrate_pose', 'body_to_joints', 'quaternion_diff_and_axis', 'take']),
         ('SMPL bodies', ['shadow_to_smpl', 'smpl_pose', 'smpl_body', 'smpl_take', 'smpl_beta_editor', 'smpl_pose_adjust', 'smpl_mag_yaw_correct', 'floor_zero', 'smpl_pose_to_joints']),
