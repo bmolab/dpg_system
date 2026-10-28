@@ -64,7 +64,7 @@ class TorchParamNode(TorchDeviceDtypeNode):
         self.input = self.add_input('in', triggers_execution=True)
         self.learn_input = self.add_input('learn', widget_type='checkbox', default_value=True,
                                           callback=self.update_tracking)
-        self.save_button = self.add_input('save', widget_type='button', callback=self.save)
+        self.save_button = self.add_input('save', widget_type='button', callback=self.save_to_file)
         self.reset_button = self.add_input('reset', widget_type='button', callback=self.reset)
         self.output = self.add_output('values')
         self.initial_option = self.add_option('initial value', widget_type='drag_float', default_value=0.0)
@@ -205,7 +205,7 @@ class TorchParamNode(TorchDeviceDtypeNode):
         if self.app.verbose:
             print(f'{self.label}: read {tuple(values.shape)} values from {path}')
 
-    def save(self, input=None):
+    def save_to_file(self, input=None):
         path = self.path_option()
         if path is None or path == '':
             SaveDialog(self, callback=self.save_dialog_callback, extensions=['.pt'],
@@ -281,6 +281,7 @@ class TorchOptimizeNode(TorchNode):
         self.rate_option = self.add_option('learning rate', widget_type='drag_float', default_value=rate,
                                            callback=self.rate_changed)
         self.clip_option = self.add_option('clip gradient', widget_type='drag_float', default_value=0.0)
+        self.pull_option = self.add_option('pull to zero', widget_type='drag_float', default_value=0.0)
         self.autosave_option = self.add_option('autosave every', widget_type='drag_int', default_value=0, min=0)
 
         self.loss_output = self.add_output('loss')
@@ -411,6 +412,11 @@ class TorchOptimizeNode(TorchNode):
         if self.optimizer is None or len(params) != len(self.params) \
                 or any(a is not b for a, b in zip(params, self.params)):
             self.build_optimizer(params)
+        pull = self.pull_option()
+        if pull is not None and pull > 0:
+            # a gentle cost on the size of the numbers, so they only grow where
+            # the loss really asks for it
+            loss = loss + float(pull) * sum(p.pow(2).sum() for p in self.params)
         self.optimizer.zero_grad(set_to_none=True)
         try:
             loss.backward()

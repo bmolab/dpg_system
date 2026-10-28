@@ -47,6 +47,73 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   upper-arm yaw magnetization [~]. Elevation part [O] (below). Confound: "low-arm" frames include
   active dance poses, not just true rest, so real asymmetric posture is mixed in.
 
+- **T-pose elbow turn (2026-10-27).** Calibration zeroes how a sensor is strapped on, but it bakes
+  in the T-pose POSTURE: shoulder and wrist can hold the T-pose while the elbow turns a long way
+  (more in trained, mobile dancers), and the upper-arm sensor takes that turn as its zero. Measured
+  per take from the direction a bent forearm points around the upper arm (a real elbow bends
+  forward; AMASS/SMPL elbows bend about rest vertical, axis y 0.94). Moderate bend (45–80°), arm
+  low: jathiswaram L 42.7 / R 42.3 (symmetric, as a postural habit should be), padam 45 / 53;
+  steps between takes (25–60°), consistent with recalibration before most takes. This is most of
+  the opening-hold candy-wrapper twist in jathiswaram (shoulder twist 98/−104 raw). The
+  elbow-hinge test is blind to it (it turns the whole hinge), so "forearm on its hinge arc" does
+  not rule it out. Node `elbow_turn`; `shadow_mag_correct` 'turn' inlet. **VIDEO check pending**:
+  the T-pose is filmed — predicted inside-of-elbow turned up ~40° both arms in jathiswaram, ~13° L
+  vs ~40° R in take 1. The forearm sensor takes part of the turn as its own twist (invisible to
+  the hinge; shows at the hand — what `--wtwist` dialled).
+- **Cause split of the varying roll error (forearm-azimuth lens, all 11 takes).** RIGHT upper-arm
+  roll error grows with arm height (+15–17° raised) and with elbow bend (jathiswaram R turn 39 →
+  76 from moderate to deep bend), identically in every facing ⇒ body-relative (strap/cable pull or
+  muscle under the sensor), not magnetization; no hysteresis after overhead (not a slipped sensor).
+  LEFT has a facing-dependent component (arm near horizontal: −16° facing front vs +12° facing
+  away; few facing-away frames) ⇒ magnetization. Shoulder blades move little (sd 3–7°) and carry
+  only 6–8° twist in the opening hold — not the wrapper's source; blade errors cannot show in the
+  hinge anyway.
+- **Learned correction with body terms (shadow_mag_correct, 40 weights).** Pooled training on 10
+  takes, held-out padam: heading-only 9.1/9.5 → 9.3/9.0 (with turn); + arm height and elbow bend on
+  the ROLL only → 7.4/7.1. Body features on all three corrections, or the full arm direction,
+  overfit (held-out R worsened). Off-hinge rms in degrees, L/R.
+- **Fitted-circle loss drifts in roll; straight arms see nothing (2026-10-27).** Trained against the
+  take-FITTED hinge circle (turn + 40 weights, jathiswaram), scatter fell 10.2/9.7 → 6.1/6.4 but the
+  shoulder twist got WORSE where the fitted circle is blind: opening hold 107/−79, straight arms
+  −114/+88 (old cos-bend feature extrapolating to bend 0), all frames beyond ±40°: 65%/43%
+  (raw 73/72; DanceDB 98% within ±31 straight, ±40 bent). Fixes: (1) loss against the FORWARD
+  circle (elbow bends about local vertical) — pins roll at every bend: hold 59/−27, deep bend
+  17/17, beyond ±40° 24%/15%; (2) bend feature = smooth max(cos 62.5° − cos bend, 0), zero
+  below elbow_turn's band; (3) 'turn fade' (30°): the turn comes in over the first 30° of bend.
+  Straight arms are UNOBSERVED by every hinge lens: jathiswaram raw straight shoulder twist is
+  already typical (−13/+16; constant turn → −55/+58), naatadavu's is not (L +45, what a constant
+  offset predicts). Fade 30 vs 0 is a judgement until VIDEO of straight-arm sections. Small-bend
+  turn readings (12–30°) drift L up / R down — likely carrying angle, not roll; don't trust them.
+- **Asymmetric hang = shared sideways shift of both lowered arms (2026-10-27).** David: "good
+  T-pose, then when the arms are lowered a clear asymmetry to the hang" — the most common visible
+  Shadow error. Measured as the mean of the two upper arms' angles in the chest's front plane
+  (mirror-symmetric pair = 0, splay free): −16 to −20° (toward the dancer's RIGHT) with both arms
+  >50° below level, in EVERY Subject 7 take and every facing (body-relative, not magnetization;
+  unchanged across recalibrations, so not the T-pose turn). By arm height (all takes): above level
+  0 to +2°, 0–30° below −1 to −2°, 30–50° below −6°, 50°+ below −16 to −18°. Elbow hinge cannot
+  see it (the forearm hangs consistently; R's 28° "abduction" reads as a forward bend).
+  Correction: `shadow_mag_correct` 'hang' term (whole arm about the chest forward axis, faded in
+  25–55° below level, elbow/wrist locals unchanged); loss `hang_symmetry`. Trained on jathiswaram
+  with David's flagged ranges: 16.3° per arm; held-out takes' hang shift −16…−19 → −1…−8, hinge
+  unchanged. Cause unknown (suit/skeleton solver? both arms, same direction) [~].
+  **Follow-up (same day).** (i) Zero at the T-pose CONFIRMED: Subject 2 take 3's three pretend
+  T-poses at facings 144/−72/−23 read +1.0/−0.6/+1.9; the arms-down stretches around them −8.5 to
+  −10.6 (beware: requiring both arms at the same height hides a bank; mean-height bins of
+  choreography near level read −15 in S7 but are not T-poses). (ii) ARCHIVE, 48 takes / 6 subjects:
+  arms-down bank toward the dancer's RIGHT in essentially every take (−20 to +2: S7 −16..−20, S2
+  −8..−11, S1 −3..−8, S3 −1..−7, S6 −11..+2, S4 −7..+1); T-pose frames ≈0 everywhere. Same sign
+  across suits/people ⇒ a body-fixed lopsided cause, not independent sensor magnetization (that
+  would give random signs); facing-independent. (iii) TIMING (S2 pretend T-poses): most appears
+  during the lowering, but it keeps growing ~5° over ~2 s with the arms still, and fades over ~1 s
+  after returning to T-pose ⇒ a fusion-filter component being pulled toward a wrong reference.
+  A baked-in COMPASS HEADING error cannot make it (it would swing the hanging arms forward/back in
+  opposite directions; not seen). Candidate fitting all of David's field notes: a magnetic or
+  current-carrying part of the suit low and off-centre (hub/battery/cable bundle) disturbing the
+  field near the HANGING arms only, with filters that use the full 3D field direction (Toronto dip
+  ~70°). Untested — studio test plan in `HANG_BANK_STUDIO_TESTS.md` (belt reversal, field probe,
+  root tilt, turn with arms down, sensor swap). Upper arms bank MORE than forearms in S7/S2
+  (−17/−9, −11/−6), which argues against the belt for the large effect.
+
 ## DISPROVEN / dead-ends [X] — do not repeat
 
 - **"Chest roll-bleed 68%"** — AXIS ERROR. Trunk-sensor local-x is LATERAL, not forward; the 68% was
@@ -54,7 +121,7 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
 - **Core/trunk lateral roll as the hang cause** — lateral roll is small everywhere (≤6.5°, 14–36%);
   not the dramatic culprit.
 - **"Constant mounting tilt offset" as the hang source** — ruled out: separate recalibration zeroes any
-  constant offset.
+  constant offset. (It does NOT zero a T-pose posture offset — see the T-pose elbow turn, above.)
 - **Symmetry-based upper-arm fit** (auto-crossings `fit_upper_arm_from_crossings.py`, pooled
   `pooled_arm_fit.py`) — FAILED: this dance is rarely truly bilateral, crossings are impure (~28°
   median residual), fitting them wrecks the genuinely-clean windows. Symmetry is exhausted as a
@@ -94,6 +161,13 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
 | `fit_upper_arm_from_crossings.py`, `pooled_arm_fit.py` | symmetry-based upper-arm fit | [X] failed |
 | `assess_sensor_magnetization.py` | per-sensor roll-bleed scan | [X] only trunk-upright valid |
 | `correct_chest_roll_check.py` | chest-roll check | superseded (axis error) |
+
+Nodes in `dpg_system/shadow_mag_nodes.py`: `elbow_turn` (per-take T-pose turn, measured) [~];
+`elbow_hinge` (off-hinge loss for t.optimize; circle forward (default) or fitted) [V diagnostic];
+`shadow_mag_correct` (turn with 'turn fade' + 42 learned weights: heading on roll/yaw/fyaw, arm
+height + bend past 62.5° on roll, 1 hang per arm) [~]; `hang_symmetry` (shared-shift loss) [~]. Demo:
+`examples/shadow_mag_learning.json`. Note: `correct_upper_arm_offset.correct()` with its heading-yaw
+step raises the forearm-azimuth scatter on jathiswaram from ~14° to ~36° (breaks the hinge).
 
 `shadow_arm_correct` node (motion_cap_nodes.py) = live/interactive wrapper that imports & calls
 `correct_upper_arm_offset.py` — same math, sliders + render. Inherits its fixes.

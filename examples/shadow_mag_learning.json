@@ -1,0 +1,2016 @@
+{
+    "height": 1262,
+    "width": 1422,
+    "position": [
+        100,
+        67
+    ],
+    "id": 274,
+    "name": "shadow_mag_learning",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 306,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment learning a magnetization correction for the Shadow arms",
+            "name": "comment",
+            "id": 410,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 684,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "learning a magnetization correction for the Shadow arms",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "learning a magnetization correction for the Shadow arms"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 428,
+            "sid": 3,
+            "position_x": 1022,
+            "position_y": 45,
+            "width": 708,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Learns a magnetization correction for the Shadow arms and shows it on the body.\n\nTOP: the take plays through shadow_mag_correct into the SMPL mesh. Untick 'correct' on that node (or drag 'amount') to compare with the raw take.\n\nBOTTOM: the same take, every 6th frame, is corrected with the same weights and judged by elbow_hinge: how far each forearm leaves the circle of an elbow that bends forward - an impossible pose, so it measures error, not plausibility. (Its 'circle' option can fit the circle to the take instead, but that cannot see the upper arm's roll, and the learning drifts into twisted shoulders.) Tick 'train' on t.optimize and it learns every frame; 'rms' shows the off-hinge angle per arm (left, right) falling, and the body above changes as it learns. Untick 'train' to stop.\n\nFIRST, THE T-POSE TURN: elbow_turn reads the whole take and measures how far each elbow was turned in that take's calibration T-pose (a dancer can turn the elbow a long way while shoulder and wrist hold the pose). It is constant for the take and changes at each calibration; the hinge cannot see it, so it is measured, not learned, and both shadow_mag_correct nodes take it at their 'turn' inlet. On jathiswaram it is about 43 degrees on both arms - most of the candy-wrapper twist at the shoulders. With the arm straight nothing shows the turn, and undoing all of it there twists straight arms instead; 'turn fade' (30) brings it in over the first 30 degrees of elbow bend. Set it to 0 to apply the whole turn everywhere.\n\nThe weights are 40 numbers in t.param, per arm (left then right): upper-arm roll (8), upper-arm yaw (6) and forearm yaw (6). Each depends on how the earth's field sits in that sensor's frame (magnetization); the roll also on arm height and on elbow bend past 62 degrees (a strap, cable or muscle pulling the sensor round). Click save on t.param to keep them in Subject7_mag_weights.pt; they are read back when this patch opens.\n\nSwap the take in the take node and np.load to try another; held-out takes are the honest test. Learned on one take the weights overfit it a little: learn on several.\n\nTHE HANG: with both arms lowered, Shadow often hangs them shifted to one side together (a good T-pose, an asymmetric hang). hang_symmetry measures that shared shift in the flagged ranges (frame numbers of the full take; 'every 6' matches t[] ::6) and its loss is added to the hinge's; shadow_mag_correct's 'hang' weights (the last of each arm's 21) turn the whole arm about the chest's forward axis as it drops below 25-55 degrees. t.param now holds 42.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "Learns a magnetization correction for the Shadow arms and shows it on the body.\n\nTOP: the take plays through shadow_mag_correct into the SMPL mesh. Untick 'correct' on that node (or drag 'amount') to compare with the raw take.\n\nBOTTOM: the same take, every 6th frame, is corrected with the same weights and judged by elbow_hinge: how far each forearm leaves the circle of an elbow that bends forward - an impossible pose, so it measures error, not plausibility. (Its 'circle' option can fit the circle to the take instead, but that cannot see the upper arm's roll, and the learning drifts into twisted shoulders.) Tick 'train' on t.optimize and it learns every frame; 'rms' shows the off-hinge angle per arm (left, right) falling, and the body above changes as it learns. Untick 'train' to stop.\n\nFIRST, THE T-POSE TURN: elbow_turn reads the whole take and measures how far each elbow was turned in that take's calibration T-pose (a dancer can turn the elbow a long way while shoulder and wrist hold the pose). It is constant for the take and changes at each calibration; the hinge cannot see it, so it is measured, not learned, and both shadow_mag_correct nodes take it at their 'turn' inlet. On jathiswaram it is about 43 degrees on both arms - most of the candy-wrapper twist at the shoulders. With the arm straight nothing shows the turn, and undoing all of it there twists straight arms instead; 'turn fade' (30) brings it in over the first 30 degrees of elbow bend. Set it to 0 to apply the whole turn everywhere.\n\nThe weights are 40 numbers in t.param, per arm (left then right): upper-arm roll (8), upper-arm yaw (6) and forearm yaw (6). Each depends on how the earth's field sits in that sensor's frame (magnetization); the roll also on arm height and on elbow bend past 62 degrees (a strap, cable or muscle pulling the sensor round). Click save on t.param to keep them in Subject7_mag_weights.pt; they are read back when this patch opens.\n\nSwap the take in the take node and np.load to try another; held-out takes are the honest test. Learned on one take the weights overfit it a little: learn on several.\n\nTHE HANG: with both arms lowered, Shadow often hangs them shifted to one side together (a good T-pose, an asymmetric hang). hang_symmetry measures that shared shift in the flagged ranges (frame numbers of the full take; 'every 6' matches t[] ::6) and its loss is added to the hinge's; shadow_mag_correct's 'hang' weights (the last of each arm's 21) turn the whole arm about the chest's forward axis as it drops below 25-55 degrees. t.param now holds 42."
+        },
+        "3": {
+            "init": "comment the take, playing",
+            "name": "comment",
+            "id": 453,
+            "sid": 4,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the take, playing",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "the take, playing"
+        },
+        "4": {
+            "name": "take",
+            "id": 464,
+            "sid": 5,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 181,
+            "height": 253,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on/off",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "2": {
+                    "name": "frame",
+                    "value": 9814,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "dump",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "5": {
+                    "name": "record",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "6": {
+                    "name": "stop",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "7": {
+                    "name": "record positions",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "8": {
+                    "name": "save",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "9": {
+                    "name": "path",
+                    "value": "$HOME/Projects/BMO_Lab/GRANTS/NFRF_2023/Anonomized_shadow/Subject7_Bharathanatyam/beta/Subject7_take_jathiswaram_a_beta.npz",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "comment corrected",
+            "name": "comment",
+            "id": 519,
+            "sid": 6,
+            "position_x": 260,
+            "position_y": 53,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "corrected",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "corrected"
+        },
+        "6": {
+            "name": "shadow_mag_correct",
+            "id": 530,
+            "sid": 7,
+            "position_x": 260,
+            "position_y": 92,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "correct",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "amount",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "roll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "yaw",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "fyaw",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "turn fade",
+                    "value": 30.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "init": "comment to SMPL",
+            "name": "comment",
+            "id": 561,
+            "sid": 8,
+            "position_x": 500,
+            "position_y": 53,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "to SMPL",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "to SMPL"
+        },
+        "8": {
+            "name": "shadow_to_smpl",
+            "id": 572,
+            "sid": 9,
+            "position_x": 500,
+            "position_y": 92,
+            "width": 179,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_format",
+                    "value": "quaternions",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "output_up_axis",
+                    "value": "Z-up",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "floor_height",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the body",
+            "name": "comment",
+            "id": 596,
+            "sid": 10,
+            "position_x": 740,
+            "position_y": 53,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the body",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "the body"
+        },
+        "10": {
+            "name": "mgl_context",
+            "id": 607,
+            "sid": 11,
+            "position_x": 739,
+            "position_y": 90,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 960,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 960,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_display_width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "node_display_height",
+                    "value": 480,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "match_texture_to_window",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "6": {
+                    "name": "display_mode",
+                    "value": "window",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "node_mouse_events",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "8": {
+                    "name": "samples",
+                    "value": "4",
+                    "value_type": "string"
+                },
+                "9": {
+                    "name": "default_light",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "10": {
+                    "name": "light_pos",
+                    "value": [
+                        2.0,
+                        5.0,
+                        5.0
+                    ],
+                    "value_type": "list"
+                },
+                "11": {
+                    "name": "light_intensity",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "default_camera",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "13": {
+                    "name": "camera_fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "camera_pos",
+                    "value": [
+                        0.0,
+                        0.0,
+                        3.0
+                    ],
+                    "value_type": "list"
+                },
+                "15": {
+                    "name": "camera_target",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "16": {
+                    "name": "camera_near",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "camera_far",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "clear_color",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                },
+                "19": {
+                    "name": "win_size",
+                    "value": [
+                        960.0,
+                        960.0
+                    ],
+                    "value_type": "list"
+                },
+                "20": {
+                    "name": "win_pos",
+                    "value": [
+                        1151.0,
+                        230.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "11": {
+            "name": "mgl_smpl_mesh",
+            "id": 697,
+            "sid": 12,
+            "position_x": 753,
+            "position_y": 343,
+            "width": 154,
+            "height": 224,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "mode",
+                    "value": "solid",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "cull",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "point_size",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "round",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "gender",
+                    "value": "female",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "opacity",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "model_path",
+                    "value": "assets/",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "up_axis",
+                    "value": "Y",
+                    "value_type": "string"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the same take, every 6th frame",
+            "name": "comment",
+            "id": 743,
+            "sid": 13,
+            "position_x": 28,
+            "position_y": 480,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same take, every 6th frame",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "the same take, every 6th frame"
+        },
+        "13": {
+            "name": "load_bang",
+            "id": 754,
+            "sid": 14,
+            "position_x": 28,
+            "position_y": 515,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "14": {
+            "name": "np.load",
+            "id": 761,
+            "sid": 15,
+            "position_x": 28,
+            "position_y": 580,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "send",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "2": {
+                    "name": "path",
+                    "value": "$HOME/Projects/BMO_Lab/GRANTS/NFRF_2023/Anonomized_shadow/Subject7_Bharathanatyam/beta/Subject7_take_jathiswaram_a_beta.npz",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "init": "dict_extract quats",
+            "name": "dict_extract",
+            "id": 777,
+            "sid": 16,
+            "position_x": 28,
+            "position_y": 710,
+            "width": 82,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "key count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "include key in output",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "key 0",
+                    "value": "quats",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "key 1",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "key 2",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "key 3",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "key 4",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "key 5",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "key 6",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "9": {
+                    "name": "key 7",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "10": {
+                    "name": "key 8",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "11": {
+                    "name": "key 9",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "12": {
+                    "name": "key 10",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "13": {
+                    "name": "key 11",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "14": {
+                    "name": "key 12",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "15": {
+                    "name": "key 13",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "16": {
+                    "name": "key 14",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "17": {
+                    "name": "key 15",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "18": {
+                    "name": "key 16",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "19": {
+                    "name": "key 17",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "20": {
+                    "name": "key 18",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "21": {
+                    "name": "key 19",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "22": {
+                    "name": "key 20",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "23": {
+                    "name": "key 21",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "24": {
+                    "name": "key 22",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "25": {
+                    "name": "key 23",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "26": {
+                    "name": "key 24",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "27": {
+                    "name": "key 25",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "28": {
+                    "name": "key 26",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "29": {
+                    "name": "key 27",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "30": {
+                    "name": "key 28",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "31": {
+                    "name": "key 29",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "32": {
+                    "name": "key 30",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "33": {
+                    "name": "key 31",
+                    "value": "",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "init": "t[] ::6",
+            "name": "t[]",
+            "id": 948,
+            "sid": 17,
+            "position_x": 28,
+            "position_y": 800,
+            "width": 256,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "indices",
+                    "value": "::6",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "comment the weights",
+            "name": "comment",
+            "id": 958,
+            "sid": 18,
+            "position_x": 260,
+            "position_y": 480,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the weights",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "the weights"
+        },
+        "18": {
+            "init": "t.param 42",
+            "name": "t.param",
+            "id": 969,
+            "sid": 19,
+            "position_x": 260,
+            "position_y": 515,
+            "width": 88,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "learn",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "save",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "2": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "3": {
+                    "name": "initial value",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "low",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "high",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "path",
+                    "value": "$HOME/Projects/BMO_Lab/GRANTS/NFRF_2023/Anonomized_shadow/Subject7_Bharathanatyam/beta/Subject7_mag_weights.pt",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "init": "comment T-pose turn, left right",
+            "name": "comment",
+            "id": 1000,
+            "sid": 20,
+            "position_x": 520,
+            "position_y": 480,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "T-pose turn, left right",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "T-pose turn, left right"
+        },
+        "20": {
+            "name": "elbow_turn",
+            "id": 1011,
+            "sid": 21,
+            "position_x": 520,
+            "position_y": 515,
+            "width": 76,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "bend from",
+                    "value": 45.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bend to",
+                    "value": 80.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "arm low only",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "21": {
+            "name": "list",
+            "id": 1031,
+            "sid": 22,
+            "position_x": 520,
+            "position_y": 650,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[42.7, 42.3]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "22": {
+            "init": "comment corrected",
+            "name": "comment",
+            "id": 1060,
+            "sid": 23,
+            "position_x": 260,
+            "position_y": 915,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "corrected",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "corrected"
+        },
+        "23": {
+            "name": "shadow_mag_correct",
+            "id": 1071,
+            "sid": 24,
+            "position_x": 260,
+            "position_y": 950,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "correct",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "amount",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "roll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "yaw",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "fyaw",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "turn fade",
+                    "value": 30.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "24": {
+            "init": "comment off the elbow hinge",
+            "name": "comment",
+            "id": 1102,
+            "sid": 25,
+            "position_x": 520,
+            "position_y": 915,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "off the elbow hinge",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "off the elbow hinge"
+        },
+        "25": {
+            "name": "elbow_hinge",
+            "id": 1113,
+            "sid": 26,
+            "position_x": 520,
+            "position_y": 950,
+            "width": 76,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "robust width",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "arms",
+                    "value": "both",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "circle",
+                    "value": "forward",
+                    "value_type": "string"
+                }
+            }
+        },
+        "26": {
+            "init": "comment tick train to learn",
+            "name": "comment",
+            "id": 1133,
+            "sid": 27,
+            "position_x": 838,
+            "position_y": 587,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick train to learn",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "tick train to learn"
+        },
+        "27": {
+            "name": "t.optimize",
+            "id": 1144,
+            "sid": 28,
+            "position_x": 838,
+            "position_y": 622,
+            "width": 88,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "train",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "step",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "2": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "3": {
+                    "name": "step on",
+                    "value": "every frame",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "steps",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "optimizer",
+                    "value": "adam",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "learning rate",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "clip gradient",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "pull to zero",
+                    "value": 0.0010000000474974513,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "autosave every",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "28": {
+            "init": "comment rms off hinge, left right",
+            "name": "comment",
+            "id": 1187,
+            "sid": 29,
+            "position_x": 520,
+            "position_y": 1070,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rms off hinge, left right",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "rms off hinge, left right"
+        },
+        "29": {
+            "name": "list",
+            "id": 1198,
+            "sid": 30,
+            "position_x": 520,
+            "position_y": 1105,
+            "width": 134,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[7.364, 8.464]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 104,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "30": {
+            "init": "comment loss",
+            "name": "comment",
+            "id": 1222,
+            "sid": 31,
+            "position_x": 840,
+            "position_y": 760,
+            "width": 33,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "loss",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "loss"
+        },
+        "31": {
+            "name": "plot",
+            "id": 1233,
+            "sid": 32,
+            "position_x": 840,
+            "position_y": 795,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 400,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 400.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "32": {
+            "name": "close",
+            "id": 1279,
+            "sid": 33,
+            "position_x": 24,
+            "position_y": 1215,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "33": {
+            "name": "mgl_orbit_camera",
+            "id": 1335,
+            "sid": 35,
+            "position_x": 750,
+            "position_y": 191,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fov",
+                    "value": 60.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "target",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "2": {
+                    "name": "distance",
+                    "value": 3.5884604454040527,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "yaw",
+                    "value": 6.900000095367432,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "elevation",
+                    "value": 19.399999618530273,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "projection",
+                    "value": "perspective",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "near",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "far",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "drag_speed",
+                    "value": 0.30000001192092896,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "zoom_speed",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "34": {
+            "name": "smpl_beta_editor",
+            "id": 1388,
+            "sid": 37,
+            "position_x": 1145,
+            "position_y": 640,
+            "width": 229,
+            "height": 322,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "save",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "2": {
+                    "name": "load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "3": {
+                    "name": "solve \u03b21",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "4": {
+                    "name": "clear solve ref",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "5": {
+                    "name": "beta_0 size",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "beta_1 weight",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "beta_2 arm_ratio",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "beta_3 leg_ratio",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "beta_4",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "beta_5 upper lower",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "beta_6",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "12": {
+                    "name": "beta_7 torso length",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "13": {
+                    "name": "beta_8 shoulders",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "14": {
+                    "name": "beta_9 breadth",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "15": {
+                    "name": "gender",
+                    "value": "female",
+                    "value_type": "string"
+                },
+                "16": {
+                    "name": "total_mass",
+                    "value": 75.0,
+                    "value_type": "float"
+                },
+                "17": {
+                    "name": "solve_target \u03b21",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "18": {
+                    "name": "file_path",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "19": {
+                    "name": "solve_reg",
+                    "value": 9.999999747378752e-05,
+                    "value_type": "float"
+                }
+            }
+        },
+        "35": {
+            "init": "comment both arms lowered: shifted together?",
+            "name": "comment",
+            "id": 1488,
+            "sid": 31,
+            "position_x": 260,
+            "position_y": 1180,
+            "width": 33,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "both arms lowered: shifted together?",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "both arms lowered: shifted together?"
+        },
+        "36": {
+            "name": "hang_symmetry",
+            "position_x": 260,
+            "position_y": 1215,
+            "width": 200,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "ranges",
+                    "value": "0-1721, 3767-4000, 5512-5734, 10430-11242, 16968-17082, 21195-21697, 35762-36237",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "every",
+                    "value": 6,
+                    "value_type": "int"
+                }
+            },
+            "id": 1538
+        },
+        "37": {
+            "init": "comment hang shift, degrees",
+            "name": "comment",
+            "id": 1588,
+            "sid": 31,
+            "position_x": 520,
+            "position_y": 1180,
+            "width": 33,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hang shift, degrees",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "hang shift, degrees"
+        },
+        "38": {
+            "name": "list",
+            "id": 1638,
+            "sid": 30,
+            "position_x": 520,
+            "position_y": 1215,
+            "width": 134,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[7.364, 8.464]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 104,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "39": {
+            "init": "comment hinge + hang",
+            "name": "comment",
+            "id": 1688,
+            "sid": 31,
+            "position_x": 720,
+            "position_y": 915,
+            "width": 33,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hinge + hang",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "hinge + hang"
+        },
+        "40": {
+            "name": "+",
+            "position_x": 720,
+            "position_y": 950,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 0.0",
+            "id": 1738
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 464,
+            "source_node_name": "take",
+            "source_output_index": 0,
+            "source_output_name": "quaternions",
+            "dest_node": 530,
+            "dest_node_name": "shadow_mag_correct",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "1": {
+            "source_node": 464,
+            "source_node_name": "take",
+            "source_output_index": 1,
+            "source_output_name": "positions",
+            "dest_node": 572,
+            "dest_node_name": "shadow_to_smpl",
+            "dest_input_index": 1,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 530,
+            "source_node_name": "shadow_mag_correct",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 572,
+            "dest_node_name": "shadow_to_smpl",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "3": {
+            "source_node": 572,
+            "source_node_name": "shadow_to_smpl",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 697,
+            "dest_node_name": "mgl_smpl_mesh",
+            "dest_input_index": 1,
+            "dest_input_name": "pose"
+        },
+        "4": {
+            "source_node": 572,
+            "source_node_name": "shadow_to_smpl",
+            "source_output_index": 1,
+            "source_output_name": "trans",
+            "dest_node": 697,
+            "dest_node_name": "mgl_smpl_mesh",
+            "dest_input_index": 2,
+            "dest_input_name": "trans"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "mgl_context",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 1335,
+            "dest_node_name": "mgl_orbit_camera",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "mgl_context",
+            "source_output_index": 2,
+            "source_output_name": "ui",
+            "dest_node": 1335,
+            "dest_node_name": "mgl_orbit_camera",
+            "dest_input_index": 6,
+            "dest_input_name": "ui"
+        },
+        "7": {
+            "source_node": 754,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 761,
+            "dest_node_name": "np.load",
+            "dest_input_index": 1,
+            "dest_input_name": "send"
+        },
+        "8": {
+            "source_node": 761,
+            "source_node_name": "np.load",
+            "source_output_index": 0,
+            "source_output_name": "dict out",
+            "dest_node": 777,
+            "dest_node_name": "dict_extract",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "9": {
+            "source_node": 777,
+            "source_node_name": "dict_extract",
+            "source_output_index": 0,
+            "source_output_name": "quats",
+            "dest_node": 1011,
+            "dest_node_name": "elbow_turn",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "10": {
+            "source_node": 777,
+            "source_node_name": "dict_extract",
+            "source_output_index": 0,
+            "source_output_name": "quats",
+            "dest_node": 948,
+            "dest_node_name": "t[]",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "11": {
+            "source_node": 948,
+            "source_node_name": "t[]",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1071,
+            "dest_node_name": "shadow_mag_correct",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "12": {
+            "source_node": 969,
+            "source_node_name": "t.param",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 530,
+            "dest_node_name": "shadow_mag_correct",
+            "dest_input_index": 1,
+            "dest_input_name": "weights"
+        },
+        "13": {
+            "source_node": 969,
+            "source_node_name": "t.param",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 1071,
+            "dest_node_name": "shadow_mag_correct",
+            "dest_input_index": 1,
+            "dest_input_name": "weights"
+        },
+        "14": {
+            "source_node": 1011,
+            "source_node_name": "elbow_turn",
+            "source_output_index": 0,
+            "source_output_name": "turn",
+            "dest_node": 530,
+            "dest_node_name": "shadow_mag_correct",
+            "dest_input_index": 2,
+            "dest_input_name": "turn"
+        },
+        "15": {
+            "source_node": 1011,
+            "source_node_name": "elbow_turn",
+            "source_output_index": 0,
+            "source_output_name": "turn",
+            "dest_node": 1071,
+            "dest_node_name": "shadow_mag_correct",
+            "dest_input_index": 2,
+            "dest_input_name": "turn"
+        },
+        "16": {
+            "source_node": 1011,
+            "source_node_name": "elbow_turn",
+            "source_output_index": 0,
+            "source_output_name": "turn",
+            "dest_node": 1031,
+            "dest_node_name": "list",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "17": {
+            "source_node": 1071,
+            "source_node_name": "shadow_mag_correct",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 1113,
+            "dest_node_name": "elbow_hinge",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "18": {
+            "source_node": 1113,
+            "source_node_name": "elbow_hinge",
+            "source_output_index": 2,
+            "source_output_name": "rms",
+            "dest_node": 1198,
+            "dest_node_name": "list",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "19": {
+            "source_node": 1144,
+            "source_node_name": "t.optimize",
+            "source_output_index": 0,
+            "source_output_name": "loss",
+            "dest_node": 1233,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "20": {
+            "source_node": 1144,
+            "source_node_name": "t.optimize",
+            "source_output_index": 3,
+            "source_output_name": "again",
+            "dest_node": 969,
+            "dest_node_name": "t.param",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "21": {
+            "source_node": 1335,
+            "source_node_name": "mgl_orbit_camera",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 697,
+            "dest_node_name": "mgl_smpl_mesh",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "22": {
+            "source_node": 1388,
+            "source_node_name": "smpl_beta_editor",
+            "source_output_index": 0,
+            "source_output_name": "config",
+            "dest_node": 697,
+            "dest_node_name": "mgl_smpl_mesh",
+            "dest_input_index": 3,
+            "dest_input_name": "config"
+        },
+        "23": {
+            "source_node": 1113,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "loss",
+            "dest_node": 1738,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "24": {
+            "source_node": 1071,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 1538,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "25": {
+            "source_node": 1538,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "loss",
+            "dest_node": 1738,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "26": {
+            "source_node": 1738,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1144,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "loss"
+        },
+        "27": {
+            "source_node": 1538,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shift",
+            "dest_node": 1638,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

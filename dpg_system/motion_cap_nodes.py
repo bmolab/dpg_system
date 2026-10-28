@@ -67,6 +67,8 @@ def register_motion_cap_nodes():
     Node.app.register_node('mag_yaw_correct', MagYawCorrectionNode.factory)
     Node.app.register_node('shadow_arm_correct', ShadowArmCorrectNode.factory)
     Node.app.register_node('shadow_sensor', ShadowSensorNode.factory)
+    from dpg_system.shadow_mag_nodes import register_shadow_mag_nodes
+    register_shadow_mag_nodes()
     Node.app.register_node('mag_offset', MagOffsetNode.factory)
 
 def find_process_id(process_name):
