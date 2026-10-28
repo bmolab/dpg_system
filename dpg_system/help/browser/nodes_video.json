@@ -1,11 +1,11 @@
 {
-    "height": 364,
+    "height": 416,
     "width": 675,
     "position": [
         100,
         100
     ],
-    "id": 944,
+    "id": 981,
     "name": "nodes_video",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_video.json",
     "nodes": {
@@ -264,7 +264,7 @@
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link nodes_video_understanding Understanding",
+            "init": "help_link nodes_video_motion Motion",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
@@ -272,7 +272,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Understanding",
+                    "name": "Motion",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -288,10 +288,34 @@
             "presentation_state": "show_all"
         },
         "10": {
+            "init": "help_link nodes_video_understanding Understanding",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 138,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Understanding",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 122,
+                    "value_type": "int"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
             "name": "text_block",
             "annotation": true,
             "position_x": 176,
-            "position_y": 258,
+            "position_y": 310,
             "width": 268,
             "height": 28,
             "properties": {
@@ -322,7 +346,7 @@
                 }
             },
             "text": "vision_describe models, depth_anything",
-            "id": 907,
+            "id": 944,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

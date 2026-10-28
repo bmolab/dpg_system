@@ -137,6 +137,7 @@ TREE = {
     'nodes_video': ('Video and images', 'Pictures in, pictures changed.', [
         ('Sources', ['cv_camera', 'cv_image', 'movie_player', 'movie_clip_dict', 'ndi_receiver', 'visca_camera']),
         ('Image processing', ['k.rgb_to_grayscale', 'k.sobel', 'tv.Grayscale', 'tv.gaussian_blur', 'tv.adjust_brightness']),
+        ('Motion', ['cv_optical_flow']),
         ('Understanding', ['vision_describe', 'depth_anything']),
     ]),
     'nodes_numpy': ('NumPy', 'np. nodes work on numpy arrays.', [
