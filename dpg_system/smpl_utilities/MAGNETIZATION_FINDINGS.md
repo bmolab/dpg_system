@@ -108,6 +108,10 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   below.] (iii) TIMING (S2 pretend T-poses): most appears
   during the lowering, but it keeps growing ~5° over ~2 s with the arms still, and fades over ~1 s
   after returning to T-pose ⇒ a fusion-filter component being pulled toward a wrong reference.
+  [CORRECTED 2026-10-29: the "growing" rested on 3 noisy drops in one take. Over all still holds
+  (`hang_bank_analysis/creep.py`) the bank is complete ~0.5 s after the arms arrive: old fusion
+  then RELAXES toward 0 by +1.3° over 4 s (23 holds, 78%, interval +0.9..+2.4); new fusion no
+  change (−0.3, 116 holds, interval −1.0..+0.4). The bank arrives with the movement, not after.]
   A baked-in COMPASS HEADING error cannot make it (it would swing the hanging arms forward/back in
   opposite directions; not seen). Candidate fitting all of David's field notes: a magnetic or
   current-carrying part of the suit low and off-centre (hub/battery/cable bundle) disturbing the
@@ -140,8 +144,8 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   S9 retakes +1.1. Take-to-take scatter in clean sessions is about ±3°, so single takes under ~4°
   mean little; session medians do.
   (i) **ALGORITHM [~, strong].** Shadow changed its fusion algorithm on 2025-12-18. Every
-  pre-update session is negative (the large consistent right-leaning bank, and the 2 s creep,
-  measured on S2); post-update sessions range −8..+9 with both signs. The large systematic bank
+  pre-update session is negative (the large consistent right-leaning bank, which relaxes ~1–2°
+  toward 0 in the seconds after the arms come down); post-update sessions range −8..+9 with both signs. The large systematic bank
   is a property of the OLD fusion; the update shrank it, but S11 (March 2026) still read −7..−12.
   (ii) **SESSION DRIFT [~].** Fitting bank against recording time: 13 of 18 sessions drift toward
   the dancer's LEFT, typically +4..+6° per hour (S2–S7, S12, S13, S15, S19, S20, S9r, S22; flat or
@@ -161,6 +165,11 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   the stilts.
   (v) **LOCATION.** No step at the 2026-07-06 move (S18 +5 old space; S19 +2 → +9 and S20 +3 new).
   Frame-by-frame floor-position effects untested (within one session only, origins differ).
+  (vii) **NO CREEP (2026-10-29, `creep.py`).** After the arms come down and hold still, the bank
+  is complete within ~0.5 s. Old fusion: relaxes toward 0 by +1.3° over the next 3.5 s (23 holds,
+  78% toward the left, interval +0.9..+2.4), consistent with an error made during the movement
+  that gravity slowly corrects. New fusion: flat (−0.3°, 116 holds, 46%, interval −1.0..+0.4).
+  The earlier "grows ~5° over 2 s" (3 drops, S2 take 3) is withdrawn.
   (vi) **FORWARD/BACK.** Hanging upper arms mostly sit forward together (choreography). The
   left/right difference changes sign between takes in 2025; in S12, S18, S19, S20 the RIGHT arm
   sits 5–20° further forward in nearly every take; October sessions show no consistent difference.
@@ -200,7 +209,7 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
 - **Hang bank: new magnetization since 2026-08-13?** Fresh `mag_offset` sweep of arm, shoulder-blade
   and chest sensors on all three suits.
 - **Hang bank: floor position** in the new space (within one session, against the known
-  interference areas), and whether the 2 s creep still exists under the new fusion algorithm.
+  interference areas).
 
 ---
 

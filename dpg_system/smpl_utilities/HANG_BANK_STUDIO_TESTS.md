@@ -9,7 +9,8 @@ hang" and "Hang bank timeline" entries, 2026-10-27 to 10-29). The analysis scrip
 
 - **What it looks like:** a good T-pose, then once the arms are lowered both arms hang shifted
   to one side together, as if the pair has turned about the chest's forward axis. It reads 0 in
-  a T-pose and appears as soon as the arms come down.
+  a T-pose and arrives with the lowering itself: it is complete about half a second after the
+  arms come down, and doesn't grow while they hold still.
 - **It is mostly a property of Shadow's old fusion algorithm.** Shadow changed its fusion on
   2025-12-18. Every session before that leans toward the dancer's right, by 3 to 18° (Subject 7,
   16 to 20°). Sessions since then range from about −8 to +9°, with both signs, and most are
@@ -40,7 +41,7 @@ hang" and "Hang bank timeline" entries, 2026-10-27 to 10-29). The analysis scrip
 Record one short take per condition, and name it after the condition (e.g. `hang_start`):
 
 1. T-pose, still, 5 s.
-2. Arms down, relaxed and still, 10 s. Hold still: any creep shows over the first 2–3 s.
+2. Arms down, relaxed and still, 10 s. Holding still keeps the reading clean of choreography.
 3. T-pose, still, 5 s.
 4. Arms down again, 10 s.
 5. Optional: with the arms down, turn slowly through a full circle (about 20 s).
