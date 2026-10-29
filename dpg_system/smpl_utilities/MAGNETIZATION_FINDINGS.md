@@ -103,7 +103,9 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   arms-down bank toward the dancer's RIGHT in essentially every take (−20 to +2: S7 −16..−20, S2
   −8..−11, S1 −3..−8, S3 −1..−7, S6 −11..+2, S4 −7..+1); T-pose frames ≈0 everywhere. Same sign
   across suits/people ⇒ a body-fixed lopsided cause, not independent sensor magnetization (that
-  would give random signs); facing-independent. (iii) TIMING (S2 pretend T-poses): most appears
+  would give random signs); facing-independent. [CORRECTED 2026-10-29: the same sign holds only for
+  2025, the old Shadow fusion algorithm; 2026 sessions take both signs. See the timeline entry
+  below.] (iii) TIMING (S2 pretend T-poses): most appears
   during the lowering, but it keeps growing ~5° over ~2 s with the arms still, and fades over ~1 s
   after returning to T-pose ⇒ a fusion-filter component being pulled toward a wrong reference.
   A baked-in COMPASS HEADING error cannot make it (it would swing the hanging arms forward/back in
@@ -112,7 +114,56 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   field near the HANGING arms only, with filters that use the full 3D field direction (Toronto dip
   ~70°). Untested — studio test plan in `HANG_BANK_STUDIO_TESTS.md` (belt reversal, field probe,
   root tilt, turn with arms down, sensor swap). Upper arms bank MORE than forearms in S7/S2
-  (−17/−9, −11/−6), which argues against the belt for the large effect.
+  (−17/−9, −11/−6), which argues against the belt for the large effect. [WITHDRAWN 2026-10-29:
+  the forearm number mixes in a separate effect. In S4, S1 and S5 the forearms shift −10 to −18
+  with the upper arms near 0; hanging forearms angle forward 30–45°, so a forearm heading error
+  (the validated forearm magnetization) reads as a sideways shift. Not comparable to the upper arm.]
+- **Hang bank timeline: algorithm, session drift, sensors (2026-10-29).** Upper-arm bank (same
+  measure as above, both upper arms >50° below level) for every session with arm data, 2025–2026,
+  scripts in `hang_bank_analysis/` (`bank_2026.py`, `bank_post.py`,
+  `session_drift.py`, `s13_stilts.py`, `hang_foreaft.py`). Session medians, negative = toward the dancer's right:
+
+  | Session | Recorded | Bank | Notes |
+  |---|---|---|---|
+  | S1–S7 | 2025-06-19 … 11-07 | −3 to −18 | all negative; S7 −16..−20 |
+  | S11 | 2026-03-06 | −7 to −12 | |
+  | S12 | 2026-03-17 | +7 to +14 | right arm 15–20° further forward in every take |
+  | S13 | 2026-03-19 | −10 → +13 | stilts takes 1–4; drifts through the session |
+  | S14, S16, Gaia suits 1+2 | 2026-04-09 … 05-29 | about 0 | |
+  | S15, S17 | 2026-04-16, 05-08 | −5 to +3, −7 to 0 | S17 in steps (≈0 for takes 4–8) |
+  | S18 | 2026-06-16 | +5 | day before the magnetometer recalibration |
+  | S19 | 2026-07-23 | +6 | first session in the new space (moved 2026-07-06) |
+  | S20 | 2026-08-14 | +3 | day after the 08-13 check found the arm sensors clean |
+  | S21, S9 retakes, S22 | 2026-10-05 … 10-22 | −2, 0, −3 | |
+
+  T-pose frames stay ≈0 throughout. Calibration-pose takes (controlled arms-down): S20 +3.5,
+  S9 retakes +1.1. Take-to-take scatter in clean sessions is about ±3°, so single takes under ~4°
+  mean little; session medians do.
+  (i) **ALGORITHM [~, strong].** Shadow changed its fusion algorithm on 2025-12-18. Every
+  pre-update session is negative (the large consistent right-leaning bank, and the 2 s creep,
+  measured on S2); post-update sessions range −8..+9 with both signs. The large systematic bank
+  is a property of the OLD fusion; the update shrank it, but S11 (March 2026) still read −7..−12.
+  (ii) **SESSION DRIFT [~].** Fitting bank against recording time: 13 of 18 sessions drift toward
+  the dancer's LEFT, typically +4..+6° per hour (S2–S7, S12, S13, S15, S19, S20, S9r, S22; flat or
+  slightly negative S1, S14, S17, S18, S21; S11 excluded, its files lost their recording times).
+  Under both algorithms. Possible warm-up choreography confound. Candidates: sensor warming
+  (magnetometer/gyro offsets shift with temperature), battery discharge changing currents in belt
+  and cables, the filter's magnetic reference adapting. Test: protocol take at start/middle/end.
+  (iii) **NOT THE SENSORS' OWN MAGNETIZATION (post-update residual).** The June 1 sweep had the
+  upper-arm sensors at ≤2.9 µT (suit 1 left, 5%), others ≤1.4 µT; 08-13 confirmed them clean
+  (<2%, ~1 µT ≈ 1° of tilt). S20, the next day, still read +3 with the right arm forward ⇒ that
+  residual comes from the field around the arm, the solver, or the body. The 2025 sensor state is
+  unknown (no sweep before 2026-06-01). Sign change between August (+3..+6) and October (−2..−3):
+  new magnetization or a different suit, only a fresh sweep can tell.
+  (iv) **STILTS (S13).** Root 0.6 m higher in takes 1–4 (stilts); the recalibration after removing
+  them did not reset the bank (take 4 −4, takes 5–6 −3/−6), which then climbs steadily to about +4
+  (+15°/h, steepest of any session). Not set by the calibration in this session, not flipped by
+  the stilts.
+  (v) **LOCATION.** No step at the 2026-07-06 move (S18 +5 old space; S19 +2 → +9 and S20 +3 new).
+  Frame-by-frame floor-position effects untested (within one session only, origins differ).
+  (vi) **FORWARD/BACK.** Hanging upper arms mostly sit forward together (choreography). The
+  left/right difference changes sign between takes in 2025; in S12, S18, S19, S20 the RIGHT arm
+  sits 5–20° further forward in nearly every take; October sessions show no consistent difference.
 
 ## DISPROVEN / dead-ends [X] — do not repeat
 
@@ -130,6 +181,13 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   degenerates for near-vertical bones (roll≈yaw) and is swamped by motion for mobile limbs (gave 146°+).
   Tilt-bleed is only cleanly measurable for near-upright trunk sensors.
 - **VPoser as a correction objective** — plausibility ≠ correctness; rewards plausible-but-wrong poses.
+- **Rotated root (or any) sensor at calibration as the hang cause** (2026-10-28, `hang_bank_analysis/calib_sim.py`):
+  per-sensor calibration absorbs how a sensor sits exactly; root and whole-body tilt are shared by
+  chest and arms and cancel in the chest-relative bank. Only an arm-vs-torso turn about the forward
+  axis during the T-pose produces it (1:1, invisible in T-pose).
+- **Calibration posture as the hang cause** — that arm-vs-torso turn would need 5–20° of visible
+  asymmetry. David checks arm alignment before every calibration and would notice 5°; S7 video
+  T-poses are clean; S13's recalibration did not reset the bank.
 
 ## OPEN [O] — need video or more data
 
@@ -137,6 +195,12 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   asymmetric posture vs tilt-bleed — **VIDEO adjudicates** (is the relaxed right arm really raised?).
 - **Does any properly-combined heading-dependent correction improve the *rendered* defect?** Never
   cleanly demonstrated (yaw and twist fixes did not).
+- **Hang bank: cause of the within-session leftward drift** (warming, battery, filter, or
+  choreography) — start/middle/end protocol takes; see `HANG_BANK_STUDIO_TESTS.md`.
+- **Hang bank: new magnetization since 2026-08-13?** Fresh `mag_offset` sweep of arm, shoulder-blade
+  and chest sensors on all three suits.
+- **Hang bank: floor position** in the new space (within one session, against the known
+  interference areas), and whether the 2 s creep still exists under the new fusion algorithm.
 
 ---
 
