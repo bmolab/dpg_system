@@ -176,14 +176,36 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   that corner has strong magnetic interference and sessions avoid it ⇒ the floor test picks up a
   real field effect; the bank does respond to a strong local field, but sessions spend little time
   there, so it doesn't drive session-level offsets.
+  (vi) **FORWARD/BACK.** Hanging upper arms mostly sit forward together (choreography). The
+  left/right difference changes sign between takes in 2025; in S12, S18, S19, S20 the RIGHT arm
+  sits 5–20° further forward in nearly every take; October sessions show no consistent difference.
   (vii) **NO CREEP (2026-10-29, `creep.py`).** After the arms come down and hold still, the bank
   is complete within ~0.5 s. Old fusion: relaxes toward 0 by +1.3° over the next 3.5 s (23 holds,
   78% toward the left, interval +0.9..+2.4), consistent with an error made during the movement
   that gravity slowly corrects. New fusion: flat (−0.3°, 116 holds, 46%, interval −1.0..+0.4).
   The earlier "grows ~5° over 2 s" (3 drops, S2 take 3) is withdrawn.
-  (vi) **FORWARD/BACK.** Hanging upper arms mostly sit forward together (choreography). The
-  left/right difference changes sign between takes in 2025; in S12, S18, S19, S20 the RIGHT arm
-  sits 5–20° further forward in nearly every take; October sessions show no consistent difference.
+  (viii) **WHAT THE UPDATE CHANGED (developer, via David, 2026-10-29):** the 2025-12-18 Shadow
+  release is "a new sensor fusion algorithm which decouples magnetic heading from tilt/roll". The
+  hang bank is a TILT error (both arms turned about the chest's forward axis), so the old
+  algorithm could put magnetic errors there - the "full 3D field direction" candidate above,
+  now all but confirmed for 2025. It fits: zero at the T-pose (calibration absorbs whatever the
+  T-pose orientation produces), appears on lowering (the arm turns 90° against a mostly vertical
+  field), facing-independent (a disturbance carried by the sensor turns with the body), relaxes
+  1-2° afterwards (gravity winning back tilt). It does NOT explain why 2025 always leaned right.
+  **Test of the decoupling (`hang_heading.py`):** under the new algorithm a magnetic error should
+  be heading only - a turn about the vertical, which moves only arms hanging partly FORWARD
+  sideways (by heading error × sin of the forward angle). Per session, frames binned by how far
+  forward both arms hang, fit bank = a + h·sin(forward); a = bank with the arms straight down
+  (tilt part), h = heading error. OLD fusion: flat, the tilt part carries it (S7 a −17.4, h +1;
+  S5 −6.2/−5.5; S3 −3.7/+0.9) - as expected. NEW fusion: S12 is a clean heading case (a −1.3,
+  h +22.7: −2 with arms straight down, +9 at 30° forward; also its right arm sits forward), and
+  S11/S13/S17 carry some heading (h +6..+8), BUT most sessions still have a tilt part of 3-10°
+  (S11 −9.6, S18 +5.1, S13 −4.8, S17 −4.7, S20 +3.8, S22 −3.3). ⇒ the post-update residual is
+  mostly still a tilt, not heading: either the decoupling is incomplete or that part is not
+  magnetic (solver, skeleton, soft tissue). The tilt-type hang term remains the right
+  correction form for new takes; a heading-only correction would fit S12 only.
+  **Practical:** hang weights learned on S7 are an old-algorithm correction - train per take, or
+  at least separately before and after 2025-12-18.
 
 ## DISPROVEN / dead-ends [X] — do not repeat
 
