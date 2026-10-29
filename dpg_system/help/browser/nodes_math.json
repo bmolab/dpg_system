@@ -553,7 +553,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, continuous_rotation,\nscipy.slerp, scipy.rotation_mean, scipy.align_vectors,\nscipy.rotation_apply",
+                    "value": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, quaternion_multiply,\ncontinuous_rotation, scipy.slerp, scipy.rotation_mean,\nscipy.align_vectors, scipy.rotation_apply",
                     "value_type": "str"
                 },
                 "1": {
@@ -577,7 +577,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, continuous_rotation,\nscipy.slerp, scipy.rotation_mean, scipy.align_vectors,\nscipy.rotation_apply",
+            "text": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, quaternion_multiply,\ncontinuous_rotation, scipy.slerp, scipy.rotation_mean,\nscipy.align_vectors, scipy.rotation_apply",
             "id": 1203,
             "visibility": "show_all",
             "draggable": true,

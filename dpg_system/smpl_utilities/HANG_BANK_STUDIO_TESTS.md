@@ -38,7 +38,9 @@ hang" and "Hang bank timeline" entries, 2026-10-27 to 10-29). The analysis scrip
 
 ## Recording protocol (use for every test take)
 
-Record one short take per condition, and name it after the condition (e.g. `hang_start`):
+Record one short take per condition, and name it after the condition (e.g. `hang_start`).
+Record with `shadow_sensors` (with pose on, direct out on) into `take_dict`, so each take keeps
+every sensor's accelerometer, magnetometer and gyroscope alongside the pose:
 
 1. T-pose, still, 5 s.
 2. Arms down, relaxed and still, 10 s. Holding still keeps the reading clean of choreography.
@@ -78,8 +80,9 @@ of all three suits, as on 2026-06-18 and 08-13. Compare with those sweeps.
 In one session, record the protocol take (steps 1–4) at several marked spots: the middle of the
 floor, near each of the areas known to have interference, and one well away from them. Keep
 the facing the same.
-- **Bank changes with position:** the floor field is involved. The hanging arms sit lower, closer
-  to the floor, than the T-pose arms.
+- **Bank changes with position:** the floor field is involved. The archive already shows this
+  in the known interference corner of the new space (tracker x about +1.5 to +3.5 m, z about +0.5
+  to +2.5 m). The hanging arms sit lower, closer to the floor, than the T-pose arms.
 - **Bank the same everywhere:** rule out the floor.
 
 ### 4. Turn with the arms down

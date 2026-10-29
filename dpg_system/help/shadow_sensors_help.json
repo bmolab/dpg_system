@@ -1,0 +1,231 @@
+{
+    "height": 1371,
+    "width": 1385,
+    "position": [
+        100,
+        100
+    ],
+    "id": 533,
+    "name": "shadow_sensors_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/shadow_sensors_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment shadow_sensors - every sensor, for recording",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shadow_sensors - every sensor, for recording",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shadow_sensors - every sensor, for recording"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 537,
+            "position_y": 45,
+            "width": 808,
+            "height": 1266,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "shadow_sensors reads every sensor in a Shadow suit at once - accelerometer, magnetometer and gyroscope - together with the pose, for recording.\n\nWHY RECORD THE SENSORS:\nThe pose Shadow sends is its estimate after combining the sensors. When the pose is wrong, the sensor readings show why. The accelerometer of a still limb gives its true tilt from gravity alone, with no magnetometer and no fusion involved; the change in that tilt between two poses does not depend on the calibration at all. Comparing it with the change Shadow reports separates an error in the calibration from an error in the fusion. The magnetometer shows the field each sensor sat in at that moment.\n\nONE MESSAGE, BOTH KINDS OF DATA:\nThe node asks Shadow for the pose and the sensor channels in a single request, so each frame's pose and readings come from the same message - nothing has to be matched up afterwards.\n\nRECORDING:\nPatch 'frame' into take_dict's take data in and record. Each frame is a dictionary:\n  quats       37 rows of w x y z, as the shadow node sends\n  positions   37 rows, metres\n  accel       37 rows x y z, in the sensor's own frame\n  mag         37 rows x y z\n  gyro        37 rows x y z\n  time        seconds since the node connected, when the message arrived\nSaved, each becomes an array with one row per frame. Joints that Shadow works out rather than measures read zero in accel, mag and gyro.\n\n'direct out' sends every message as it arrives instead of once per app frame, so the recording keeps Shadow's own frame rate and its timing; leave it off for viewing.\n\nCONNECTING:\nIt opens its own connection to the Shadow application on this machine, port 32076, separate from any shadow node, so it can run beside a capture patch. Shadow must already be running; 'reconnect' tries again.\n\nSYNTAX:\nshadow_sensors\n\nEXAMPLE:\nshadow_sensors\n\nINPUTS and PARAMETERS:\n\nreconnect:\nClose the connection and open it again.\n\nbody:\nWhich suit, 0 to 3.\n\ndata:\na / m / g (accelerometer in g, magnetometer in microtesla, gyroscope in degrees per second), sensor (calibrated), or raw - as in shadow_sensor. Changing it reconnects.\n\nwith pose:\nAsk for the pose as well. Off, the frame carries only the sensor readings.\n\ndirect out:\nSend each message as it arrives, for recording at Shadow's own rate.\n\nOUTPUTS:\n\nframe:\nThe dictionary above, for take_dict.\n\nquaternions / accelerometer / magnetometer / gyroscope:\nThe same arrays, one outlet each, for watching live.\n\nRELATED:\nshadow_sensor shows one sensor and feeds mag_offset. take_dict records the frames and saves them to a file. shadow is the pose alone.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1250,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "shadow_sensors reads every sensor in a Shadow suit at once - accelerometer, magnetometer and gyroscope - together with the pose, for recording.\n\nWHY RECORD THE SENSORS:\nThe pose Shadow sends is its estimate after combining the sensors. When the pose is wrong, the sensor readings show why. The accelerometer of a still limb gives its true tilt from gravity alone, with no magnetometer and no fusion involved; the change in that tilt between two poses does not depend on the calibration at all. Comparing it with the change Shadow reports separates an error in the calibration from an error in the fusion. The magnetometer shows the field each sensor sat in at that moment.\n\nONE MESSAGE, BOTH KINDS OF DATA:\nThe node asks Shadow for the pose and the sensor channels in a single request, so each frame's pose and readings come from the same message - nothing has to be matched up afterwards.\n\nRECORDING:\nPatch 'frame' into take_dict's take data in and record. Each frame is a dictionary:\n  quats       37 rows of w x y z, as the shadow node sends\n  positions   37 rows, metres\n  accel       37 rows x y z, in the sensor's own frame\n  mag         37 rows x y z\n  gyro        37 rows x y z\n  time        seconds since the node connected, when the message arrived\nSaved, each becomes an array with one row per frame. Joints that Shadow works out rather than measures read zero in accel, mag and gyro.\n\n'direct out' sends every message as it arrives instead of once per app frame, so the recording keeps Shadow's own frame rate and its timing; leave it off for viewing.\n\nCONNECTING:\nIt opens its own connection to the Shadow application on this machine, port 32076, separate from any shadow node, so it can run beside a capture patch. Shadow must already be running; 'reconnect' tries again.\n\nSYNTAX:\nshadow_sensors\n\nEXAMPLE:\nshadow_sensors\n\nINPUTS and PARAMETERS:\n\nreconnect:\nClose the connection and open it again.\n\nbody:\nWhich suit, 0 to 3.\n\ndata:\na / m / g (accelerometer in g, magnetometer in microtesla, gyroscope in degrees per second), sensor (calibrated), or raw - as in shadow_sensor. Changing it reconnects.\n\nwith pose:\nAsk for the pose as well. Off, the frame carries only the sensor readings.\n\ndirect out:\nSend each message as it arrives, for recording at Shadow's own rate.\n\nOUTPUTS:\n\nframe:\nThe dictionary above, for take_dict.\n\nquaternions / accelerometer / magnetometer / gyroscope:\nThe same arrays, one outlet each, for watching live.\n\nRELATED:\nshadow_sensor shows one sensor and feeds mag_offset. take_dict records the frames and saves them to a file. shadow is the pose alone."
+        },
+        "3": {
+            "name": "shadow_sensors",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 117,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 196,
+            "position_y": 62,
+            "width": 311,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "needs a running suit\none message carries the pose and every sensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 303,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "needs a running suit\none message carries the pose and every sensor"
+        },
+        "5": {
+            "name": "take_dict",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 280,
+            "width": 140,
+            "height": 511,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 196,
+            "position_y": 280,
+            "width": 298,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "record, then save\neach key becomes one array, a row per frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "record, then save\neach key becomes one array, a row per frame"
+        },
+        "7": {
+            "name": "close",
+            "id": 496,
+            "position_x": 24,
+            "position_y": 821,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frame",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take data in"
+        }
+    }
+}

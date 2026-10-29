@@ -171,9 +171,11 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   and by tenths of a degree ⇒ floor position moves the bank ≤1–2° within a session; it does not
   make the 3–9° session offsets or the 2025 banks. FACING, same test: a once-per-turn variation in
   7 of 11 sessions (S12, S15, S17, S18, S19, S20, S21), 0.6–2.4° ⇒ sensor magnetization present
-  but minor in 2026. One lead [O]: the new-space corner at tracker x ≈ +1.5..+3.5 m,
-  z ≈ +0.5..+2.5 m reads negative in both sessions that went there (S20 −2 to −9, S9r 0 to −3.5);
-  few seconds per cell, and assumes the tracker frame matched between sessions.
+  but minor in 2026. The new-space corner at tracker x ≈ +1.5..+3.5 m, z ≈ +0.5..+2.5 m reads
+  negative in both sessions that went there (S20 −2 to −9, S9r 0 to −3.5). David (2026-10-29):
+  that corner has strong magnetic interference and sessions avoid it ⇒ the floor test picks up a
+  real field effect; the bank does respond to a strong local field, but sessions spend little time
+  there, so it doesn't drive session-level offsets.
   (vii) **NO CREEP (2026-10-29, `creep.py`).** After the arms come down and hold still, the bank
   is complete within ~0.5 s. Old fusion: relaxes toward 0 by +1.3° over the next 3.5 s (23 holds,
   78% toward the left, interval +0.9..+2.4), consistent with an error made during the movement
@@ -217,8 +219,9 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   choreography) — start/middle/end protocol takes; see `HANG_BANK_STUDIO_TESTS.md`.
 - **Hang bank: new magnetization since 2026-08-13?** Fresh `mag_offset` sweep of arm, shoulder-blade
   and chest sensors on all three suits.
-- **Hang bank: the new-space corner** (tracker x ≈ +1.5..+3.5, z ≈ +0.5..+2.5 m) — is it one of the
-  known interference areas? Studio test 3 (protocol take at marked spots) settles it.
+- **Hang bank: sensor-level check** — record takes with `shadow_sensors` (pose + every sensor's
+  accelerometer/magnetometer/gyroscope in one message, 2026-10-29): gravity tilt change vs Shadow's
+  reported change separates calibration from fusion error; the magnetometer shows the field.
 
 ---
 

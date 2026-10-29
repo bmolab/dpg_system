@@ -730,6 +730,9 @@
   "shadow_sensor": [
     "shadow_sensor"
   ],
+  "shadow_sensors": [
+    "shadow_sensors"
+  ],
   "take": [
     "take",
     "take_dict"

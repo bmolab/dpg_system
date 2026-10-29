@@ -172,6 +172,95 @@ links = [('ss', 'magnetometer', 'mo', 'magnetometer')]
 print(build('shadow_sensor', 'shadow_sensor - one sensor, before fusion', body, demo, links,
             demo_width=620, text_width=800, text_height=1000))
 
+# -------------------------------------------------------------- shadow_sensors
+body = """shadow_sensors reads every sensor in a Shadow suit at once - accelerometer,
+magnetometer and gyroscope - together with the pose, for recording.
+
+WHY RECORD THE SENSORS:
+The pose Shadow sends is its estimate after combining the sensors. When the
+pose is wrong, the sensor readings show why. The accelerometer of a still limb
+gives its true tilt from gravity alone, with no magnetometer and no fusion
+involved; the change in that tilt between two poses does not depend on the
+calibration at all. Comparing it with the change Shadow reports separates an
+error in the calibration from an error in the fusion. The magnetometer shows
+the field each sensor sat in at that moment.
+
+ONE MESSAGE, BOTH KINDS OF DATA:
+The node asks Shadow for the pose and the sensor channels in a single request,
+so each frame's pose and readings come from the same message - nothing has to
+be matched up afterwards.
+
+RECORDING:
+Patch 'frame' into take_dict's take data in and record. Each frame is a
+dictionary:
+  quats       37 rows of w x y z, as the shadow node sends
+  positions   37 rows, metres
+  accel       37 rows x y z, in the sensor's own frame
+  mag         37 rows x y z
+  gyro        37 rows x y z
+  time        seconds since the node connected, when the message arrived
+Saved, each becomes an array with one row per frame. Joints that Shadow works
+out rather than measures read zero in accel, mag and gyro.
+
+'direct out' sends every message as it arrives instead of once per app frame,
+so the recording keeps Shadow's own frame rate and its timing; leave it off
+for viewing.
+
+CONNECTING:
+It opens its own connection to the Shadow application on this machine, port
+32076, separate from any shadow node, so it can run beside a capture patch.
+Shadow must already be running; 'reconnect' tries again.
+
+SYNTAX:
+shadow_sensors
+
+EXAMPLE:
+shadow_sensors
+
+INPUTS and PARAMETERS:
+
+reconnect:
+Close the connection and open it again.
+
+body:
+Which suit, 0 to 3.
+
+data:
+a / m / g (accelerometer in g, magnetometer in microtesla, gyroscope in degrees
+per second), sensor (calibrated), or raw - as in shadow_sensor. Changing it
+reconnects.
+
+with pose:
+Ask for the pose as well. Off, the frame carries only the sensor readings.
+
+direct out:
+Send each message as it arrives, for recording at Shadow's own rate.
+
+OUTPUTS:
+
+frame:
+The dictionary above, for take_dict.
+
+quaternions / accelerometer / magnetometer / gyroscope:
+The same arrays, one outlet each, for watching live.
+
+RELATED:
+shadow_sensor shows one sensor and feeds mag_offset.
+take_dict records the frames and saves them to a file.
+shadow is the pose alone."""
+
+demo = [
+    {'key': 'ss', 'init': 'shadow_sensors', 'pos': (30, 62), 'w': 160, 'h': 190},
+    {'key': 'c0', 'comment': True, 'text': 'needs a running suit\none message carries the pose and every sensor',
+     'pos': (330, 62)},
+    {'key': 'td', 'init': 'take_dict', 'pos': (30, 280), 'w': 181, 'h': 511},
+    {'key': 'c1', 'comment': True, 'text': 'record, then save\neach key becomes one array, a row per frame',
+     'pos': (330, 280)},
+]
+links = [('ss', 'frame', 'td', 'take data in')]
+print(build('shadow_sensors', 'shadow_sensors - every sensor, for recording', body, demo, links,
+            demo_width=620, text_width=800, text_height=1250))
+
 # ------------------------------------------------------------------------ pose
 # A quaternion stream every pose demo below shares: a swinging angle about x,
 # packed to x y z and turned into one w x y z quaternion (an array, which is

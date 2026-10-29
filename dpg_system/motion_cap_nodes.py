@@ -67,6 +67,7 @@ def register_motion_cap_nodes():
     Node.app.register_node('mag_yaw_correct', MagYawCorrectionNode.factory)
     Node.app.register_node('shadow_arm_correct', ShadowArmCorrectNode.factory)
     Node.app.register_node('shadow_sensor', ShadowSensorNode.factory)
+    Node.app.register_node('shadow_sensors', ShadowSensorsNode.factory)
     from dpg_system.shadow_mag_nodes import register_shadow_mag_nodes
     register_shadow_mag_nodes()
     Node.app.register_node('mag_offset', MagOffsetNode.factory)
@@ -2635,6 +2636,229 @@ class ShadowSensorNode(MoCapNode):
         self.mag_out.send(m)
         self.accel_out.send(a)
         self.gyro_out.send(g)
+
+
+def shadow_sensors_service_loop():
+    # Same pattern as shadow_sensor_service_loop, for ShadowSensorsNode.
+    while True:
+        was_client = False
+        for node in ShadowSensorsNode.sensors_nodes:
+            if node.client is not None:
+                node.receive_data()
+                was_client = True
+        if was_client:
+            time.sleep(.001)
+        else:
+            time.sleep(.05)
+
+
+class ShadowSensorsNode(MoCapNode):
+    # Every sensor of a suit at once, for recording. One Configurable request
+    # carries the pose (<Lq/><c/>) and each sensor's accelerometer /
+    # magnetometer / gyroscope, so a frame's pose and sensor readings come from
+    # the same Shadow message - no matching up afterwards. The 'frame' outlet
+    # is a dict that take_dict records directly; saved, each key becomes a
+    # (frames, 37, ...) array. Rows follow the shadow joint order (as the
+    # `shadow` node's quaternions); joints Shadow derives rather than measures
+    # read zero. Opens its own connection, like shadow_sensor.
+    sensors_nodes = []
+    _service_thread = None
+    POSE_VALUES = 8         # <Lq/> 4 (w x y z) + <c/> 4 (positions in values 5..7, cm)
+    SENSOR_VALUES = 9       # [ax ay az mx my mz gx gy gz] in every data mode
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ShadowSensorsNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        self.num_bodies = 1
+        super().__init__(label, data, args)
+
+        self.__mutex = threading.Lock()
+        self.client = None
+        try:
+            self.client = shadow.Client("", 32076)
+        except Exception:
+            self.client = None
+
+        # [body, shadow_joint_index, ...]
+        self.quats = np.zeros((4, 37, 4))
+        self.quats[..., 0] = 1.0
+        self.positions = np.zeros((4, 37, 3))
+        self.accel = np.zeros((4, 37, 3))
+        self.mag = np.zeros((4, 37, 3))
+        self.gyro = np.zeros((4, 37, 3))
+        self.message_time = 0.0
+        self.t0 = None
+        self.joints_mapped = False
+        self.jointMap = [[0, 0]] * 37 * 4
+        self.new_data = False
+        self._size_warned = False
+        self._reconnect_requested = False
+
+        self._data_modes = {
+            'a / m / g': "<a/><m/><g/>",
+            'sensor (calibrated)': "<sensor/>",
+            'raw': "<raw/>",
+        }
+        self._data_mode = 'a / m / g'
+        self._with_pose = True
+        self._xml_definition = self._build_xml()
+        if self.client:
+            if self.client.writeData(self._xml_definition):
+                print(f"shadow_sensors: sent '{self._data_mode}' channel definition")
+
+        self.reconnect_button = self.add_input('reconnect', widget_type='button', callback=self.request_reconnect)
+        self.body_index = self.add_property('body', widget_type='input_int', default_value=0)
+        self.data_mode_property = self.add_property('data', widget_type='combo', default_value=self._data_mode, callback=self.change_channels)
+        self.data_mode_property.widget.combo_items = list(self._data_modes.keys())
+        self.with_pose_property = self.add_property('with pose', widget_type='checkbox', default_value=True, callback=self.change_channels)
+        self.direct_out = self.add_property('direct out', widget_type='checkbox', default_value=False, callback=self.direct_out_changed)
+
+        self.frame_out = self.add_output('frame')
+        self.quats_out = self.add_output('quaternions')
+        self.accel_out = self.add_output('accelerometer')
+        self.mag_out = self.add_output('magnetometer')
+        self.gyro_out = self.add_output('gyroscope')
+
+        ShadowSensorsNode.sensors_nodes.append(self)
+        if ShadowSensorsNode._service_thread is None:
+            ShadowSensorsNode._service_thread = threading.Thread(target=shadow_sensors_service_loop, daemon=True)
+            ShadowSensorsNode._service_thread.start()
+        self.add_frame_task()
+
+    def direct_out_changed(self):
+        if self.direct_out():
+            self.remove_frame_tasks()
+        else:
+            self.add_frame_task()
+
+    def request_reconnect(self):
+        # Defer the socket op to the service thread to avoid racing readData().
+        self._reconnect_requested = True
+
+    def _build_xml(self):
+        channels = ("<Lq/><c/>" if self._with_pose else "") + self._data_modes.get(self._data_mode, "<a/><m/><g/>")
+        return (
+            "<?xml version=\"1.0\"?>"
+            "<configurable inactive=\"1\">"
+            f"{channels}"
+            "</configurable>"
+        )
+
+    def change_channels(self):
+        # A new channel set needs a new channel definition: reconnect (on the
+        # service thread, so we don't race readData()).
+        mode = self.data_mode_property()
+        pose = self.with_pose_property()
+        # restore_properties fires these during load with values that may not
+        # be set yet
+        self._data_mode = mode if mode in self._data_modes else 'a / m / g'
+        self._with_pose = True if pose is None else bool(pose)
+        self._xml_definition = self._build_xml()
+        self._reconnect_requested = True
+
+    def _perform_reconnect(self):
+        try:
+            if self.client is not None:
+                try:
+                    self.client.close()
+                except Exception:
+                    pass
+                self.client = None
+            self.client = shadow.Client("", 32076)
+            self.joints_mapped = False
+            self.jointMap = [[0, 0]] * 37 * 4
+            self._size_warned = False
+            self._xml_definition = self._build_xml()
+            if self.client.writeData(self._xml_definition):
+                print(f"shadow_sensors: reconnected, sent '{self._data_mode}'" + (" with pose" if self._with_pose else "") + " channel definition")
+        except Exception as e:
+            print(f"shadow_sensors: reconnect failed: {e}")
+            self.client = None
+
+    def receive_data(self):
+        if self._reconnect_requested:
+            self._reconnect_requested = False
+            self._perform_reconnect()
+            if self.client is None:
+                return
+        if self.client:
+            data = self.client.readData()
+            if data is not None:
+                self.take_message(data)
+
+    def take_message(self, data):
+        # One message from the Configurable service: the joint name map (xml)
+        # or a frame of values.
+        if data.startswith(b'<?xml'):
+            name_map = ShadowSensorNode.parse_name_map(self, data)
+            for it in name_map:
+                thisName = name_map[it]
+                for idx, name_index in enumerate(JointTranslator.shadow_joint_index_to_name):
+                    shadow_name = JointTranslator.bmolab_joint_to_shadow_limb[JointTranslator.shadow_joint_index_to_name[name_index]]
+                    if thisName[0] == shadow_name:
+                        self.jointMap[it] = [idx + 1, thisName[1]]
+                        break
+            self.joints_mapped = True
+            return
+        configData = shadow.Format.Configurable(data)
+        if not configData:
+            return
+        base = self.POSE_VALUES if self._with_pose else 0
+        expected = base + self.SENSOR_VALUES
+        now = time.perf_counter()
+        lock = ScopedLock(self.__mutex)
+        for key in configData:
+            master_key = self.jointMap[key][0] - 1          # keys start at 1
+            body_index = self.jointMap[key][1]
+            if master_key < 0 or body_index >= 4:
+                continue
+            v = configData[key].access()
+            if len(v) < expected:
+                if not self._size_warned:
+                    print(f"shadow_sensors: expected {expected} values per joint, got {len(v)} - channel layout differs from what was asked for")
+                    self._size_warned = True
+                continue
+            if self._with_pose:
+                self.quats[body_index, master_key] = v[0:4]
+                self.positions[body_index, master_key] = [v[5] / 100, v[6] / 100, v[7] / 100]
+            self.accel[body_index, master_key] = v[base:base + 3]
+            self.mag[body_index, master_key] = v[base + 3:base + 6]
+            self.gyro[body_index, master_key] = v[base + 6:base + 9]
+        if self.t0 is None:
+            self.t0 = now
+        self.message_time = now - self.t0
+        self.new_data = True
+        lock = None
+        if self.direct_out():
+            self.frame_task()
+
+    def frame_task(self):
+        if not self.new_data:
+            return
+        self.new_data = False
+        body = self.body_index()
+        body = 0 if body is None else int(body)
+        if body < 0 or body >= 4:
+            return
+        lock = ScopedLock(self.__mutex)
+        frame = {}
+        if self._with_pose:
+            frame['quats'] = self.quats[body].copy()
+            frame['positions'] = self.positions[body].copy()
+        frame['accel'] = self.accel[body].copy()
+        frame['mag'] = self.mag[body].copy()
+        frame['gyro'] = self.gyro[body].copy()
+        frame['time'] = self.message_time
+        lock = None
+        self.gyro_out.send(frame['gyro'])
+        self.mag_out.send(frame['mag'])
+        self.accel_out.send(frame['accel'])
+        if self._with_pose:
+            self.quats_out.send(frame['quats'])
+        self.frame_out.send(frame)
 
 
 class MagOffsetNode(MoCapNode):

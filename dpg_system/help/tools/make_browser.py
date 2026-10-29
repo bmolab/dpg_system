@@ -118,7 +118,7 @@ TREE = {
         ('Speech analysis', ['speech_envelope', 'speech_pitch', 'speech_spectral']),
     ]),
     'nodes_body': ('Body and motion', 'Capturing a moving body, cleaning it up, and asking what it is doing.', [
-        ('Sensors', ['shadow', 'shadow_sensor', 'movesense', 'pipo_motion', 'vive_tracker']),
+        ('Sensors', ['shadow', 'shadow_sensor', 'shadow_sensors', 'movesense', 'pipo_motion', 'vive_tracker']),
         ('Cleaning and correcting', ['mag_offset', 'mag_yaw_correct', 'shadow_arm_correct', 'shadow_mag_correct', 'elbow_hinge', 'elbow_turn', 'hang_symmetry', 'cadence_filter', 'check_burst', 'sensor_to_root', 'tracker_align',
                                      'noise_review', 'json_npz_frame_picker']),
         ('Poses and joints', ['pose', 'active_pose', 'active_joints', 'target_pose', 'pose_adjust', 'calibrate_pose', 'body_to_joints', 'quaternion_diff_and_axis', 'take']),
