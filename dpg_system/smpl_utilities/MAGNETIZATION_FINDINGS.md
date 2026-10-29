@@ -164,7 +164,16 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   (+15°/h, steepest of any session). Not set by the calibration in this session, not flipped by
   the stilts.
   (v) **LOCATION.** No step at the 2026-07-06 move (S18 +5 old space; S19 +2 → +9 and S20 +3 new).
-  Frame-by-frame floor-position effects untested (within one session only, origins differ).
+  **Floor position (2026-10-29, `floor_position.py`):** hanging frames, each take's median removed
+  (so time drift and between-take choreography can't pose as position), 0.5 m cells of the
+  tracker position (`trans_raw`, room-fixed, in the new space), null = position track slid in time
+  within each take. Spread of the bank across cells 0.7–2.3°, beating chance only in S17, S20, S21
+  and by tenths of a degree ⇒ floor position moves the bank ≤1–2° within a session; it does not
+  make the 3–9° session offsets or the 2025 banks. FACING, same test: a once-per-turn variation in
+  7 of 11 sessions (S12, S15, S17, S18, S19, S20, S21), 0.6–2.4° ⇒ sensor magnetization present
+  but minor in 2026. One lead [O]: the new-space corner at tracker x ≈ +1.5..+3.5 m,
+  z ≈ +0.5..+2.5 m reads negative in both sessions that went there (S20 −2 to −9, S9r 0 to −3.5);
+  few seconds per cell, and assumes the tracker frame matched between sessions.
   (vii) **NO CREEP (2026-10-29, `creep.py`).** After the arms come down and hold still, the bank
   is complete within ~0.5 s. Old fusion: relaxes toward 0 by +1.3° over the next 3.5 s (23 holds,
   78% toward the left, interval +0.9..+2.4), consistent with an error made during the movement
@@ -208,8 +217,8 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   choreography) — start/middle/end protocol takes; see `HANG_BANK_STUDIO_TESTS.md`.
 - **Hang bank: new magnetization since 2026-08-13?** Fresh `mag_offset` sweep of arm, shoulder-blade
   and chest sensors on all three suits.
-- **Hang bank: floor position** in the new space (within one session, against the known
-  interference areas).
+- **Hang bank: the new-space corner** (tracker x ≈ +1.5..+3.5, z ≈ +0.5..+2.5 m) — is it one of the
+  known interference areas? Studio test 3 (protocol take at marked spots) settles it.
 
 ---
 
