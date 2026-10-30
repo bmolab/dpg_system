@@ -1,0 +1,406 @@
+{
+    "height": 1371,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "shadow_heading_adjust_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/shadow_heading_adjust_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment shadow_heading_adjust - dial in an upper-arm heading error by hand",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 819,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shadow_heading_adjust - dial in an upper-arm heading error by hand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shadow_heading_adjust - dial in an upper-arm heading error by hand"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1266,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Turns each upper arm about vertical by an angle you set, holding the forearm and hand where they are in the world: the correction for an upper-arm sensor whose compass heading is wrong.\n\nA magnetized sensor's heading error is not constant. It depends on which way the sensor faces, rising and falling once per turn of the dancer, so with the arm out to the side it shows as the arm sitting too far forward facing one way and too far back facing the other, and with the arm hanging it only twists the arm. Each arm gets that wave and a constant:\n\n  swing    how large the once-per-turn error is, in degrees\n  phase    the heading where it peaks, in degrees\n  offset   a constant turn about vertical, in degrees\n\nThe angle applied is swing x sin(heading - phase) + offset, where heading is how far the upper arm's sensor is turned about vertical. Play a take where the dancer turns, with the arms out to the side, and dial each arm until it stops swinging forward and back as the dancer comes round.\n\nIt is for exploring by eye before learning. Swing and phase are exactly the correction shadow_mag_correct's yaw weights make: the 'yaw weights' outlet sends the 42 numbers with the yaw slots filled (everything else 0), to start t.param from. The offset has no counterpart in those weights.\n\nSYNTAX:\nshadow_heading_adjust\n\nINPUTS and PARAMETERS:\n\npose in:\nShadow quaternions, scalar first: one pose (37 or 20 joints, 4 each) or a take (frames, joints, 4). Numpy in gives numpy out.\n\nadjust (checkbox, also an inlet):\nOff passes the pose through untouched - for comparing.\n\nleft swing, left phase, left offset, right swing, right phase, right offset (float boxes, also inlets):\nDegrees. Each change re-adjusts the pose already held, so a paused body follows the knobs.\n\nOUTPUTS:\n\npose out:\nThe adjusted pose or take, in the layout it came in.\n\nangles:\nThe angle each upper arm was turned, left then right, in degrees: two numbers for a pose, one pair per frame for a take.\n\nyaw weights:\n42 numbers for shadow_mag_correct's weights or t.param: swing and phase as its yaw weights.\n\nREADING THE DEMO:\nAt rest the sensor's heading is 0, so with swing 0 only the offset acts: 20 degrees turns the left upper arm about vertical. Click the button: the left_shoulder row of the angles shows the turn, and the left_elbow row the opposite, so the forearm stays where it was.\n\nRELATED:\nshadow_mag_correct carries the same correction as learnable yaw weights, with the hang, roll and forearm corrections; t.param and t.optimize learn them.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1250,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Turns each upper arm about vertical by an angle you set, holding the forearm and hand where they are in the world: the correction for an upper-arm sensor whose compass heading is wrong.\n\nA magnetized sensor's heading error is not constant. It depends on which way the sensor faces, rising and falling once per turn of the dancer, so with the arm out to the side it shows as the arm sitting too far forward facing one way and too far back facing the other, and with the arm hanging it only twists the arm. Each arm gets that wave and a constant:\n\n  swing    how large the once-per-turn error is, in degrees\n  phase    the heading where it peaks, in degrees\n  offset   a constant turn about vertical, in degrees\n\nThe angle applied is swing x sin(heading - phase) + offset, where heading is how far the upper arm's sensor is turned about vertical. Play a take where the dancer turns, with the arms out to the side, and dial each arm until it stops swinging forward and back as the dancer comes round.\n\nIt is for exploring by eye before learning. Swing and phase are exactly the correction shadow_mag_correct's yaw weights make: the 'yaw weights' outlet sends the 42 numbers with the yaw slots filled (everything else 0), to start t.param from. The offset has no counterpart in those weights.\n\nSYNTAX:\nshadow_heading_adjust\n\nINPUTS and PARAMETERS:\n\npose in:\nShadow quaternions, scalar first: one pose (37 or 20 joints, 4 each) or a take (frames, joints, 4). Numpy in gives numpy out.\n\nadjust (checkbox, also an inlet):\nOff passes the pose through untouched - for comparing.\n\nleft swing, left phase, left offset, right swing, right phase, right offset (float boxes, also inlets):\nDegrees. Each change re-adjusts the pose already held, so a paused body follows the knobs.\n\nOUTPUTS:\n\npose out:\nThe adjusted pose or take, in the layout it came in.\n\nangles:\nThe angle each upper arm was turned, left then right, in degrees: two numbers for a pose, one pair per frame for a take.\n\nyaw weights:\n42 numbers for shadow_mag_correct's weights or t.param: swing and phase as its yaw weights.\n\nREADING THE DEMO:\nAt rest the sensor's heading is 0, so with swing 0 only the offset acts: 20 degrees turns the left upper arm about vertical. Click the button: the left_shoulder row of the angles shows the turn, and the left_elbow row the opposite, so the forearm stays where it was.\n\nRELATED:\nshadow_mag_correct carries the same correction as learnable yaw weights, with the hang, roll and forearm corrections; t.param and t.optimize learn them."
+        },
+        "3": {
+            "init": "comment click to send the pose",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send the pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send the pose"
+        },
+        "4": {
+            "name": "button",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment every joint at rest",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 160,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every joint at rest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every joint at rest"
+        },
+        "6": {
+            "name": "active_pose",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 195,
+            "width": 321,
+            "height": 350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment 20 degrees about vertical, left upper arm",
+            "name": "comment",
+            "id": 496,
+            "position_x": 400,
+            "position_y": 53,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "20 degrees about vertical, left upper arm",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "20 degrees about vertical, left upper arm"
+        },
+        "8": {
+            "name": "shadow_heading_adjust",
+            "id": 533,
+            "position_x": 400,
+            "position_y": 92,
+            "width": 166,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "left offset",
+                    "value": 20.0,
+                    "value_type": "float"
+                }
+            },
+            "highlight": true
+        },
+        "9": {
+            "init": "comment each joint as angles",
+            "name": "comment",
+            "id": 570,
+            "position_x": 640,
+            "position_y": 93,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each joint as angles",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each joint as angles"
+        },
+        "10": {
+            "name": "quaternion_to_euler",
+            "id": 607,
+            "position_x": 640,
+            "position_y": 133,
+            "width": 125,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "vector",
+            "id": 644,
+            "position_x": 640,
+            "position_y": 185,
+            "width": 160,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 634,
+            "width": 127,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link shadow_mag_correct"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 212,
+            "position_y": 634,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.param"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 309,
+            "position_y": 634,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.optimize"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 430,
+            "position_y": 634,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link hang_symmetry"
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 744,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "3": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "euler angles",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

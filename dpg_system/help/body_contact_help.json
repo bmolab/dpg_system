@@ -1,0 +1,481 @@
+{
+    "height": 1471,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "body_contact_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/body_contact_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment body_contact - hands out of the body, and on it where they touch",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 795,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "body_contact - hands out of the body, and on it where they touch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "body_contact - hands out of the body, and on it where they touch"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1366,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Keeps the forearms and hands out of the torso, and on its surface where they should be touching. A real pose never puts a hand inside the body, whichever arm a sensor error has moved, so this is an absolute reference - where pose_symmetry can only compare one arm with the other.\n\nTHE BODY:\nThe torso is an oval cylinder from the pelvis to the upper spine, turned with the chest:\n'torso width' and 'torso depth' are its half-width and half-depth in cm. The forearms and hands are points along them, placed by the Shadow skeleton, with 'arm radius' of thickness. Sizes are for an average adult; set them for the dancer.\n\nWHAT COUNTS:\nIn every frame, how deep any forearm or hand point is inside the torso (a hand clear of the body counts nothing). In the frames flagged as 'contact ranges' - hands resting on the hips, say - how far each wrist is from the surface, in or out.\n\nIts loss is for t.optimize, added to the others with +, to learn shadow_mag_correct's weights.\n\nSYNTAX:\nbody_contact\n\nINPUTS and PARAMETERS:\n\ntake in:\nShadow quaternions, (frames, 37 or 20 joints, 4), scalar first. A tensor carrying gradients keeps them.\n\ncontact ranges:\nAn option: frames where the wrists rest on the body, like 1-827, 15428-15741. Empty checks penetration only.\n\nevery:\nAn option: if the take was thinned (t[] ::6), the step, so the ranges still name frames of the full take.\n\ntorso width, torso depth:\nOptions, in cm (13, 10): the torso's half-width and half-depth.\n\narm radius:\nAn option, in cm (4): the thickness of the forearm and hand.\n\ncontact weight:\nAn option (1): how much the contact counts against the penetration.\n\nrobust width:\nAn option, in cm (1). Misses smaller than this count by their square, larger ones only in proportion.\n\nOUTPUTS:\n\nloss:\nOne number for t.optimize; smaller is better.\n\ninside:\nTwo numbers, left then right: the percentage of frames with that forearm or hand inside the torso.\n\ncontact gap:\nTwo numbers, left then right, in cm: each wrist's typical distance from the surface in the contact ranges; negative is inside. Sent only when there are contact ranges.\n\nREADING THE DEMO:\nA made-up take of both arms hanging, swaying in and out together: as mirror images, clear of the body (0 and 0), then with both turned 15 degrees toward the dancer's right - the left arm swings in through the body for most of the take (about 71), the right one out (0).\n\nRELATED:\npose_symmetry compares the arms with each other; hang_symmetry measures the shared shift of hanging arms; shadow_mag_correct is the correction. The full setup on a real take is examples/shadow_mag_learning.json.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1350,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Keeps the forearms and hands out of the torso, and on its surface where they should be touching. A real pose never puts a hand inside the body, whichever arm a sensor error has moved, so this is an absolute reference - where pose_symmetry can only compare one arm with the other.\n\nTHE BODY:\nThe torso is an oval cylinder from the pelvis to the upper spine, turned with the chest:\n'torso width' and 'torso depth' are its half-width and half-depth in cm. The forearms and hands are points along them, placed by the Shadow skeleton, with 'arm radius' of thickness. Sizes are for an average adult; set them for the dancer.\n\nWHAT COUNTS:\nIn every frame, how deep any forearm or hand point is inside the torso (a hand clear of the body counts nothing). In the frames flagged as 'contact ranges' - hands resting on the hips, say - how far each wrist is from the surface, in or out.\n\nIts loss is for t.optimize, added to the others with +, to learn shadow_mag_correct's weights.\n\nSYNTAX:\nbody_contact\n\nINPUTS and PARAMETERS:\n\ntake in:\nShadow quaternions, (frames, 37 or 20 joints, 4), scalar first. A tensor carrying gradients keeps them.\n\ncontact ranges:\nAn option: frames where the wrists rest on the body, like 1-827, 15428-15741. Empty checks penetration only.\n\nevery:\nAn option: if the take was thinned (t[] ::6), the step, so the ranges still name frames of the full take.\n\ntorso width, torso depth:\nOptions, in cm (13, 10): the torso's half-width and half-depth.\n\narm radius:\nAn option, in cm (4): the thickness of the forearm and hand.\n\ncontact weight:\nAn option (1): how much the contact counts against the penetration.\n\nrobust width:\nAn option, in cm (1). Misses smaller than this count by their square, larger ones only in proportion.\n\nOUTPUTS:\n\nloss:\nOne number for t.optimize; smaller is better.\n\ninside:\nTwo numbers, left then right: the percentage of frames with that forearm or hand inside the torso.\n\ncontact gap:\nTwo numbers, left then right, in cm: each wrist's typical distance from the surface in the contact ranges; negative is inside. Sent only when there are contact ranges.\n\nREADING THE DEMO:\nA made-up take of both arms hanging, swaying in and out together: as mirror images, clear of the body (0 and 0), then with both turned 15 degrees toward the dancer's right - the left arm swings in through the body for most of the take (about 71), the right one out (0).\n\nRELATED:\npose_symmetry compares the arms with each other; hang_symmetry measures the shared shift of hanging arms; shadow_mag_correct is the correction. The full setup on a real take is examples/shadow_mag_learning.json."
+        },
+        "3": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "4": {
+            "name": "load_bang",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 88,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment a made-up take",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a made-up take",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a made-up take"
+        },
+        "6": {
+            "name": "np.load",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "path",
+                    "value": "dpg_system/help/data/elbow_hinge_example.npz",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment mirrored, then shifted",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 230,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mirrored, then shifted",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mirrored, then shifted"
+        },
+        "8": {
+            "name": "dict_extract",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 265,
+            "width": 82,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "dict_extract hanging shifted"
+        },
+        "9": {
+            "init": "comment % of frames inside, left right",
+            "name": "comment",
+            "id": 570,
+            "position_x": 440,
+            "position_y": 53,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "% of frames inside, left right",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "% of frames inside, left right"
+        },
+        "10": {
+            "name": "body_contact",
+            "id": 607,
+            "position_x": 440,
+            "position_y": 92,
+            "width": 82,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 660,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "body_contact",
+            "id": 681,
+            "position_x": 440,
+            "position_y": 265,
+            "width": 82,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 660,
+            "position_y": 265,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 430,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 464,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link pose_symmetry"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 174,
+            "position_y": 464,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link hang_symmetry"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 318,
+            "position_y": 464,
+            "width": 127,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link shadow_mag_correct"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 500,
+            "position_y": 464,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link elbow_hinge"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 628,
+            "position_y": 464,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.optimize"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 574,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "send"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dict out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "hanging",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shifted",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "inside",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "inside",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,5 +1,5 @@
 {
-    "height": 564,
+    "height": 576,
     "width": 718,
     "position": [
         100,
@@ -229,11 +229,11 @@
             "position_x": 219,
             "position_y": 206,
             "width": 452,
-            "height": 64,
+            "height": 76,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "mag_offset, mag_yaw_correct, shadow_arm_correct, shadow_mag_correct,\nelbow_hinge, elbow_turn, hang_symmetry, cadence_filter, check_burst,\nsensor_to_root / root inference, tracker_align, noise_review,\njson_npz_frame_picker",
+                    "value": "mag_offset, mag_yaw_correct, shadow_arm_correct, shadow_mag_correct,\nshadow_heading_adjust, elbow_hinge, elbow_turn, hang_symmetry,\npose_symmetry, body_contact, cadence_filter, check_burst,\nsensor_to_root / root inference, tracker_align, noise_review,\njson_npz_frame_picker",
                     "value_type": "str"
                 },
                 "1": {
@@ -248,7 +248,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 48,
+                    "value": 60,
                     "value_type": "int"
                 },
                 "4": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "mag_offset, mag_yaw_correct, shadow_arm_correct, shadow_mag_correct,\nelbow_hinge, elbow_turn, hang_symmetry, cadence_filter, check_burst,\nsensor_to_root / root inference, tracker_align, noise_review,\njson_npz_frame_picker",
+            "text": "mag_offset, mag_yaw_correct, shadow_arm_correct, shadow_mag_correct,\nshadow_heading_adjust, elbow_hinge, elbow_turn, hang_symmetry,\npose_symmetry, body_contact, cadence_filter, check_burst,\nsensor_to_root / root inference, tracker_align, noise_review,\njson_npz_frame_picker",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
@@ -267,7 +267,7 @@
             "init": "help_link nodes_body_poses_and_joints Poses and joints",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 274,
+            "position_y": 286,
             "width": 181,
             "height": 44,
             "properties": {
@@ -291,7 +291,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 278,
+            "position_y": 290,
             "width": 459,
             "height": 52,
             "properties": {
@@ -331,7 +331,7 @@
             "init": "help_link nodes_body_smpl_bodies SMPL bodies",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 334,
+            "position_y": 346,
             "width": 181,
             "height": 44,
             "properties": {
@@ -355,7 +355,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 338,
+            "position_y": 350,
             "width": 459,
             "height": 52,
             "properties": {
@@ -395,7 +395,7 @@
             "init": "help_link nodes_body_effort_and_dynamics Effort and dynamics",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 394,
+            "position_y": 406,
             "width": 181,
             "height": 44,
             "properties": {
@@ -419,7 +419,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 398,
+            "position_y": 410,
             "width": 459,
             "height": 40,
             "properties": {
@@ -459,7 +459,7 @@
             "init": "help_link nodes_body_drawing_bodies Drawing bodies",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 446,
+            "position_y": 458,
             "width": 181,
             "height": 44,
             "properties": {
@@ -483,7 +483,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 450,
+            "position_y": 462,
             "width": 440,
             "height": 52,
             "properties": {

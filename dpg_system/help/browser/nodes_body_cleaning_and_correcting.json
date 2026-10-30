@@ -1,11 +1,11 @@
 {
-    "height": 572,
-    "width": 1276,
+    "height": 624,
+    "width": 1319,
     "position": [
         100,
         100
     ],
-    "id": 1684,
+    "id": 1906,
     "name": "nodes_body_cleaning_and_correcting",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_body_cleaning_and_correcting.json",
     "nodes": {
@@ -412,7 +412,7 @@
             "presentation_state": "show_all"
         },
         "13": {
-            "init": "help_link elbow_hinge elbow_hinge",
+            "init": "help_link shadow_heading_adjust shadow_heading_adjust",
             "name": "help_link",
             "position_x": 24,
             "position_y": 358,
@@ -420,7 +420,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "elbow_hinge",
+                    "name": "shadow_heading_adjust",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -445,6 +445,75 @@
             "annotation": true,
             "position_x": 268,
             "position_y": 362,
+            "width": 292,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "dial in an upper-arm heading error by hand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "dial in an upper-arm heading error by hand",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link elbow_hinge elbow_hinge",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "elbow_hinge",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 268,
+            "position_y": 414,
             "width": 311,
             "height": 28,
             "properties": {
@@ -475,16 +544,16 @@
                 }
             },
             "text": "how far the forearms leave their elbow hinges",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "init": "help_link elbow_turn elbow_turn",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 462,
             "width": 230,
             "height": 44,
             "properties": {
@@ -504,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 268,
-            "position_y": 414,
+            "position_y": 466,
             "width": 372,
             "height": 28,
             "properties": {
@@ -544,16 +613,16 @@
                 }
             },
             "text": "how far each elbow was turned in the calibration T-pose",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
             "init": "help_link hang_symmetry hang_symmetry",
             "name": "help_link",
-            "position_x": 700,
-            "position_y": 150,
+            "position_x": 24,
+            "position_y": 514,
             "width": 230,
             "height": 44,
             "properties": {
@@ -573,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 944,
-            "position_y": 154,
+            "position_x": 268,
+            "position_y": 518,
             "width": 292,
             "height": 28,
             "properties": {
@@ -613,16 +682,154 @@
                 }
             },
             "text": "lowered arms that sit to one side together",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
-            "init": "help_link cadence_filter cadence_filter",
+        "21": {
+            "init": "help_link pose_symmetry pose_symmetry",
+            "name": "help_link",
+            "position_x": 700,
+            "position_y": 150,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "pose_symmetry",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 944,
+            "position_y": 154,
+            "width": 237,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "arms that should be mirror images",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "arms that should be mirror images",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link body_contact body_contact",
             "name": "help_link",
             "position_x": 700,
             "position_y": 202,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "body_contact",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 944,
+            "position_y": 206,
+            "width": 335,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hands out of the body, and on it where they touch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 327,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hands out of the body, and on it where they touch",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link cadence_filter cadence_filter",
+            "name": "help_link",
+            "position_x": 700,
+            "position_y": 254,
             "width": 230,
             "height": 44,
             "properties": {
@@ -642,16 +849,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1240,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "26": {
             "name": "text_block",
             "annotation": true,
             "position_x": 944,
-            "position_y": 206,
+            "position_y": 258,
             "width": 188,
             "height": 28,
             "properties": {
@@ -682,16 +889,16 @@
                 }
             },
             "text": "remove a recording rhythm",
-            "id": 1277,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "27": {
             "init": "help_link check_burst check_burst",
             "name": "help_link",
             "position_x": 700,
-            "position_y": 254,
+            "position_y": 306,
             "width": 230,
             "height": 44,
             "properties": {
@@ -711,16 +918,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1314,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "28": {
             "name": "text_block",
             "annotation": true,
             "position_x": 944,
-            "position_y": 258,
+            "position_y": 310,
             "width": 169,
             "height": 28,
             "properties": {
@@ -751,16 +958,16 @@
                 }
             },
             "text": "flag implausible jumps",
-            "id": 1351,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "29": {
             "init": "help_link sensor_to_root sensor_to_root / root inference",
             "name": "help_link",
             "position_x": 700,
-            "position_y": 306,
+            "position_y": 358,
             "width": 230,
             "height": 44,
             "properties": {
@@ -780,16 +987,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1388,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "30": {
             "name": "text_block",
             "annotation": true,
             "position_x": 944,
-            "position_y": 310,
+            "position_y": 362,
             "width": 280,
             "height": 40,
             "properties": {
@@ -820,16 +1027,16 @@
                 }
             },
             "text": "where the body actually is\n(sensor_to_root, tracker_root_inference)",
-            "id": 1425,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "31": {
             "init": "help_link tracker_align tracker_align",
             "name": "help_link",
             "position_x": 700,
-            "position_y": 358,
+            "position_y": 410,
             "width": 230,
             "height": 44,
             "properties": {
@@ -849,16 +1056,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1462,
+            "id": 1684,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "32": {
             "name": "text_block",
             "annotation": true,
             "position_x": 944,
-            "position_y": 362,
+            "position_y": 414,
             "width": 261,
             "height": 28,
             "properties": {
@@ -889,16 +1096,16 @@
                 }
             },
             "text": "putting a tracker in the suit's world",
-            "id": 1499,
+            "id": 1721,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "33": {
             "init": "help_link noise_review noise_review",
             "name": "help_link",
             "position_x": 700,
-            "position_y": 410,
+            "position_y": 462,
             "width": 230,
             "height": 44,
             "properties": {
@@ -918,16 +1125,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1536,
+            "id": 1758,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "34": {
             "name": "text_block",
             "annotation": true,
             "position_x": 944,
-            "position_y": 414,
+            "position_y": 466,
             "width": 200,
             "height": 28,
             "properties": {
@@ -958,16 +1165,16 @@
                 }
             },
             "text": "looking at what was flagged",
-            "id": 1573,
+            "id": 1795,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
+        "35": {
             "init": "help_link json_npz_frame_picker json_npz_frame_picker",
             "name": "help_link",
             "position_x": 700,
-            "position_y": 462,
+            "position_y": 514,
             "width": 230,
             "height": 44,
             "properties": {
@@ -987,16 +1194,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1610,
+            "id": 1832,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "36": {
             "name": "text_block",
             "annotation": true,
             "position_x": 944,
-            "position_y": 466,
+            "position_y": 518,
             "width": 181,
             "height": 28,
             "properties": {
@@ -1027,7 +1234,7 @@
                 }
             },
             "text": "reviewing flagged frames",
-            "id": 1647,
+            "id": 1869,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

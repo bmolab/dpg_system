@@ -3,7 +3,7 @@
     python3 dpg_system/help/tools/seed_shadow_mag_help.py [--force] [stem ...]
     python3 dpg_system/help/tools/relayout.py --minimal dpg_system/help/<stem>_help.json
 
-shadow_mag_correct, elbow_hinge, elbow_turn, hang_symmetry. The elbow pages read the synthetic take
+shadow_mag_correct, elbow_hinge, elbow_turn, hang_symmetry, shadow_heading_adjust, pose_symmetry, body_contact. The elbow pages read the synthetic take
 help/data/elbow_hinge_example.npz (make_elbow_hinge_example.py writes it). The full
 learning setup on a real take is examples/shadow_mag_learning.json. Not a make_*
 script: rebuild.py never runs it, and it will not write over an existing page
@@ -50,7 +50,7 @@ sets the roll) - for a strap, cable or muscle that pulls the sensor round as the
 moves. The hang is one number per arm: lowered arms that sit to one side together
 (a good T-pose, then an asymmetric hang) is a common Shadow error. The corrected upper
 arm and forearm are written back into the shoulder, elbow and wrist; the hand keeps
-where it was in the world, except under 'hang', which carries it with the arm.
+where it was in the world, under 'hang' too.
 
 The 42 weights are meant to be learned: t.param holds them and t.optimize tunes them
 to keep the elbows on their hinges (elbow_hinge) and the lowered arms centred
@@ -359,6 +359,260 @@ held(53) + [
 [('lb', 'out', 'nl', 'send'), ('nl', 'dict out', 'de', 'dict in'), ('de', 'hanging', 'h1', 'take in'),
  ('de', 'shifted', 'h2', 'take in'), ('h1', 'shift', 'l1', ''), ('h2', 'shift', 'l2', '')],
 ['shadow_mag_correct', 'elbow_hinge', 't.optimize'], 430, 1150)
+
+
+
+page('shadow_heading_adjust', 'shadow_heading_adjust - dial in an upper-arm heading error by hand',
+"""
+Turns each upper arm about vertical by an angle you set, holding the forearm and hand where
+they are in the world: the correction for an upper-arm sensor whose compass heading is wrong.
+
+A magnetized sensor's heading error is not constant. It depends on which way the sensor
+faces, rising and falling once per turn of the dancer, so with the arm out to the side it
+shows as the arm sitting too far forward facing one way and too far back facing the other,
+and with the arm hanging it only twists the arm. Each arm gets that wave and a constant:
+
+  swing    how large the once-per-turn error is, in degrees
+  phase    the heading where it peaks, in degrees
+  offset   a constant turn about vertical, in degrees
+
+The angle applied is swing x sin(heading - phase) + offset, where heading is how far the
+upper arm's sensor is turned about vertical. Play a take where the dancer turns, with the arms
+out to the side, and dial each arm until it stops swinging forward and back as the dancer
+comes round.
+
+It is for exploring by eye before learning. Swing and phase are exactly the correction
+shadow_mag_correct's yaw weights make: the 'yaw weights' outlet sends the 42 numbers with the
+yaw slots filled (everything else 0), to start t.param from. The offset has no counterpart in
+those weights.
+
+SYNTAX:
+shadow_heading_adjust
+
+INPUTS and PARAMETERS:
+
+pose in:
+Shadow quaternions, scalar first: one pose (37 or 20 joints, 4 each) or a take
+(frames, joints, 4). Numpy in gives numpy out.
+
+adjust (checkbox, also an inlet):
+Off passes the pose through untouched - for comparing.
+
+left swing, left phase, left offset, right swing, right phase, right offset (float boxes,
+also inlets):
+Degrees. Each change re-adjusts the pose already held, so a paused body follows the knobs.
+
+OUTPUTS:
+
+pose out:
+The adjusted pose or take, in the layout it came in.
+
+angles:
+The angle each upper arm was turned, left then right, in degrees: two numbers for a pose,
+one pair per frame for a take.
+
+yaw weights:
+42 numbers for shadow_mag_correct's weights or t.param: swing and phase as its yaw weights.
+
+READING THE DEMO:
+At rest the sensor's heading is 0, so with swing 0 only the offset acts: 20 degrees turns the
+left upper arm about vertical. Click the button: the left_shoulder row of the angles shows
+the turn, and the left_elbow row the opposite, so the forearm stays where it was.
+
+RELATED:
+shadow_mag_correct carries the same correction as learnable yaw weights, with the hang, roll
+and forearm corrections; t.param and t.optimize learn them.
+""",
+[
+    C('c1', 'click to send the pose', 28, 53),
+    N('bt', 'button', 28, 92, 45, 42),
+    C('c2', 'every joint at rest', 28, 160),
+    N('ap', 'active_pose', 28, 195, 321, 350),
+    C('c3', '20 degrees about vertical, left upper arm', 400, 53),
+    N('ha', 'shadow_heading_adjust', 400, 92, 200, 230, {'left offset': 20.0}),
+    C('c5', 'each joint as angles', 640, 53),
+    N('qe', 'quaternion_to_euler', 640, 92, 125, 42, {'degrees': True}),
+    N('vc', 'vector', 640, 157, 200, 126),
+],
+[('bt', '', 'ap', 'in'), ('ap', 'out', 'ha', 'pose in'), ('ha', 'pose out', 'qe', 'quaternion'),
+ ('qe', 'euler angles', 'vc', 'in')],
+['shadow_mag_correct', 't.param', 't.optimize', 'hang_symmetry'], 600, 1250)
+
+
+
+page('pose_symmetry', 'pose_symmetry - arms that should be mirror images',
+"""
+Measures how far the arms depart from mirror images in the frames where the dancer holds
+a symmetric pose - hands on hips, arms in a matching gesture. There, the left upper arm
+and forearm should point as the mirrored right ones do, so every difference is error: to
+the side, in height, and forward or back, for each segment. Unlike hang_symmetry, which
+sees only the shared sideways shift of hanging arms, it says something about each arm on
+its own, at whatever arm position the pose has.
+
+Its loss is for t.optimize, added to elbow_hinge's and hang_symmetry's with +, to learn
+shadow_mag_correct's weights. Flag the frames by eye from the video.
+
+WHICH ARM IS WRONG:
+Symmetry alone cannot say. Two arms wrong the same way are mirror images too, so learning
+against symmetry alone can make the pose symmetric by moving the good arm as well - in a
+real take, both hands lifted off the hips. Pair it with body_contact, which knows where
+the body is, or choose a reference arm (below) if one arm is known to be right.
+
+SYNTAX:
+pose_symmetry
+
+INPUTS and PARAMETERS:
+
+take in:
+Shadow quaternions, (frames, 37 or 20 joints, 4), scalar first. A tensor carrying
+gradients keeps them.
+
+ranges:
+An option: the frames of the symmetric pose, like 1-827, 15428-15741. Required.
+
+every:
+An option: if the take was thinned (t[] ::6), the step, so the ranges still name frames
+of the full take.
+
+segments:
+An option: 'upper arms and forearms' (the default) or 'upper arms'.
+
+reference:
+An option: 'both arms' (the default) pulls both toward each other; 'left arm' or 'right
+arm' takes that arm as right and moves only the other toward it.
+
+robust width:
+An option, in degrees (4). Misses smaller than this count by their square, larger ones
+only in proportion - a moment where the dancer breaks the pose pulls little.
+
+OUTPUTS:
+
+loss:
+One number for t.optimize; smaller is better.
+
+asymmetry:
+Six numbers in degrees, the left arm minus the mirrored right: upper arm to the side (+
+left further out), height (+ left higher), forward (+ left further forward), then the
+same for the forearm.
+
+frames used:
+How many frames it read.
+
+READING THE DEMO:
+A made-up take of both arms hanging and swaying together: as mirror images (all 0), then
+with both turned 15 degrees toward the dancer's right - the left arm in, the right out,
+so the left reads 30 degrees less far out and lower than the mirrored right.
+
+RELATED:
+body_contact keeps the hands out of the body and on it where they should touch;
+hang_symmetry measures the shared shift of hanging arms; shadow_mag_correct is the
+correction. The full setup on a real take is examples/shadow_mag_learning.json.
+""",
+held(53) + [
+    C('c1', 'a made-up take', 180, 53),
+    N('nl', 'np.load', 180, 92, 170, 110, {'path': EXAMPLE}),
+    C('c2', 'mirrored, then shifted', 180, 230),
+    N('de', 'dict_extract hanging shifted', 180, 265, 210, 90),
+    C('c3', 'left minus mirrored right, degrees', 440, 53),
+    N('p1', 'pose_symmetry', 440, 92, 170, 110, {'ranges': '0-599'}),
+    N('l1', 'list', 660, 92, 160, 42, LIST),
+    N('p2', 'pose_symmetry', 440, 265, 170, 110, {'ranges': '0-599'}),
+    N('l2', 'list', 660, 265, 160, 42, LIST),
+],
+[('lb', 'out', 'nl', 'send'), ('nl', 'dict out', 'de', 'dict in'), ('de', 'hanging', 'p1', 'take in'),
+ ('de', 'shifted', 'p2', 'take in'), ('p1', 'asymmetry', 'l1', ''), ('p2', 'asymmetry', 'l2', '')],
+['hang_symmetry', 'body_contact', 'shadow_mag_correct', 'elbow_hinge', 't.optimize'], 430, 1300)
+
+
+page('body_contact', 'body_contact - hands out of the body, and on it where they touch',
+"""
+Keeps the forearms and hands out of the torso, and on its surface where they should be
+touching. A real pose never puts a hand inside the body, whichever arm a sensor error has
+moved, so this is an absolute reference - where pose_symmetry can only compare one arm
+with the other.
+
+THE BODY:
+The torso is an oval cylinder from the pelvis to the upper spine, turned with the chest:
+'torso width' and 'torso depth' are its half-width and half-depth in cm. The forearms and
+hands are points along them, placed by the Shadow skeleton, with 'arm radius' of
+thickness. Sizes are for an average adult; set them for the dancer.
+
+WHAT COUNTS:
+In every frame, how deep any forearm or hand point is inside the torso (a hand clear of
+the body counts nothing). In the frames flagged as 'contact ranges' - hands resting on
+the hips, say - how far each wrist is from the surface, in or out.
+
+Its loss is for t.optimize, added to the others with +, to learn shadow_mag_correct's
+weights.
+
+SYNTAX:
+body_contact
+
+INPUTS and PARAMETERS:
+
+take in:
+Shadow quaternions, (frames, 37 or 20 joints, 4), scalar first. A tensor carrying
+gradients keeps them.
+
+contact ranges:
+An option: frames where the wrists rest on the body, like 1-827, 15428-15741. Empty
+checks penetration only.
+
+every:
+An option: if the take was thinned (t[] ::6), the step, so the ranges still name frames
+of the full take.
+
+torso width, torso depth:
+Options, in cm (13, 10): the torso's half-width and half-depth.
+
+arm radius:
+An option, in cm (4): the thickness of the forearm and hand.
+
+contact weight:
+An option (1): how much the contact counts against the penetration.
+
+robust width:
+An option, in cm (1). Misses smaller than this count by their square, larger ones only in
+proportion.
+
+OUTPUTS:
+
+loss:
+One number for t.optimize; smaller is better.
+
+inside:
+Two numbers, left then right: the percentage of frames with that forearm or hand inside
+the torso.
+
+contact gap:
+Two numbers, left then right, in cm: each wrist's typical distance from the surface in
+the contact ranges; negative is inside. Sent only when there are contact ranges.
+
+READING THE DEMO:
+A made-up take of both arms hanging, swaying in and out together: as mirror images,
+clear of the body (0 and 0), then with both turned 15 degrees toward the dancer's right
+- the left arm swings in through the body for most of the take (about 71), the right one
+out (0).
+
+RELATED:
+pose_symmetry compares the arms with each other; hang_symmetry measures the shared
+shift of hanging arms; shadow_mag_correct is the correction. The full setup on a real
+take is examples/shadow_mag_learning.json.
+""",
+held(53) + [
+    C('c1', 'a made-up take', 180, 53),
+    N('nl', 'np.load', 180, 92, 170, 110, {'path': EXAMPLE}),
+    C('c2', 'mirrored, then shifted', 180, 230),
+    N('de', 'dict_extract hanging shifted', 180, 265, 210, 90),
+    C('c3', '% of frames inside, left right', 440, 53),
+    N('b1', 'body_contact', 440, 92, 170, 110),
+    N('l1', 'list', 660, 92, 160, 42, LIST),
+    N('b2', 'body_contact', 440, 265, 170, 110),
+    N('l2', 'list', 660, 265, 160, 42, LIST),
+],
+[('lb', 'out', 'nl', 'send'), ('nl', 'dict out', 'de', 'dict in'), ('de', 'hanging', 'b1', 'take in'),
+ ('de', 'shifted', 'b2', 'take in'), ('b1', 'inside', 'l1', ''), ('b2', 'inside', 'l2', '')],
+['pose_symmetry', 'hang_symmetry', 'shadow_mag_correct', 'elbow_hinge', 't.optimize'], 430, 1350)
 
 
 def main():
