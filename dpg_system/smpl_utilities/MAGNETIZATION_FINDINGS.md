@@ -116,7 +116,8 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   opposite directions; not seen). Candidate fitting all of David's field notes: a magnetic or
   current-carrying part of the suit low and off-centre (hub/battery/cable bundle) disturbing the
   field near the HANGING arms only, with filters that use the full 3D field direction (Toronto dip
-  ~70°). Untested — studio test plan in `HANG_BANK_STUDIO_TESTS.md` (belt reversal, field probe,
+  ~70°). [RULED OUT 2026-10-29 for the 2025 bank: an earth-field-referenced
+  coupling makes a bank that swings with facing; see the timeline entry (viii).] Untested — studio test plan in `HANG_BANK_STUDIO_TESTS.md` (belt reversal, field probe,
   root tilt, turn with arms down, sensor swap). Upper arms bank MORE than forearms in S7/S2
   (−17/−9, −11/−6), which argues against the belt for the large effect. [WITHDRAWN 2026-10-29:
   the forearm number mixes in a separate effect. In S4, S1 and S5 the forearms shift −10 to −18
@@ -187,11 +188,49 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   (viii) **WHAT THE UPDATE CHANGED (developer, via David, 2026-10-29):** the 2025-12-18 Shadow
   release is "a new sensor fusion algorithm which decouples magnetic heading from tilt/roll". The
   hang bank is a TILT error (both arms turned about the chest's forward axis), so the old
-  algorithm could put magnetic errors there - the "full 3D field direction" candidate above,
-  now all but confirmed for 2025. It fits: zero at the T-pose (calibration absorbs whatever the
-  T-pose orientation produces), appears on lowering (the arm turns 90° against a mostly vertical
-  field), facing-independent (a disturbance carried by the sensor turns with the body), relaxes
-  1-2° afterwards (gravity winning back tilt). It does NOT explain why 2025 always leaned right.
+  algorithm could in principle put magnetic errors there - the "full 3D field direction"
+  candidate above. [CORRECTED same day: first written as "all but confirmed"; the model below
+  rules it out as the source of the 2025 bank.]
+  **Magnetic model tested (`fusion_model_sim.py`) [X]:** sensor offset b (sensor frame) + a fusion
+  that weighs field against gravity (Wahba, coupling k), calibrated at a T-pose, arm then hung
+  at every facing. A field error pulls tilt toward/away from magnetic NORTH, which is fixed in
+  the room, so the bank it makes swings once per turn: 10 µT gives 0.6-0.9° steady vs 10-13°
+  swing; wherever the steady part exceeds ~8° the swing is 25-55° and/or T-poses at other
+  facings are off, and it needs 30-50 µT (sweeps found ≤3 µT on the upper arms in 2026). The
+  2025 bank is ~16° steady across facings with T-poses ≈0 everywhere ⇒ not earth-field coupling
+  of a sensor or body-borne disturbance; something body-referenced in the old algorithm made it.
+  Its physical source stays unknown from quaternions alone.
+  **Correction model for old-fusion sessions (`bank_shape.py`, `session_estimator.py`):** the
+  bank against arm height, as a fraction of the fully-lowered value, has one shape in the
+  sessions where it is clear (S1, S2, S3, S5, S7): ≈0-0.3 at or above level, rising from ~20°
+  below, complete by ~55° below - close to the hang term's 25→55° ramp. So: one number per
+  session × that ramp. Session estimate, takes resampled: mean, median, np.robust_mean (3 MAD,
+  as the node) and the pseudo-Huber value agree within ~0.5° except lopsided S2 (mean −8.0 vs
+  median −9.1 / robust −9.2); resample spread ~0.8° for all; odd-vs-even-take agreement best for
+  np.robust_mean (0.43°), median 0.60, mean 1.27; densest-point worst (2.18). Values: S7 −17.9,
+  S2 −9.2, S5 −6.9, S1 −3.5, S3 −2.7. Use np.robust_mean over all of a session's takes. No
+  estimator removes a dancer's real relaxed asymmetry (present in every frame) - only video or
+  deliberate symmetric holds can. Applied with `shadow_mag_correct` 'hang from' = 'fixed bank'
+  (2026-10-29): both arms undo the session value through the hang ramp; S7 jathiswaram −15.9 →
+  +0.5 with −17.9; arms above 25° below level untouched (≤0.09°, round-off).
+  **Ramp judged at the corrected height (2026-10-29):** the bank being undone lifts one arm and
+  lowers the other (S7: right arm reads ~57° below level, splayed 32° out, while the left reads
+  83°), so judging each arm's ramp by its RAW height gave a right arm raised to 25-35° almost none
+  of the correction (David saw "only the left arm moves"). Each arm's ramp is now judged where the
+  full correction would put it - consistent with the shape above, measured against the pair's
+  average height. S7 at raw 25-35° below: right 2.4° → 14.7° applied; the left, which the bank
+  pushes down, gets correspondingly less at raw 35-55°.
+  **Not axial rotation, not a vertical sensor axis (`bank_vs_twist.py`, `overhead_bank.py`):**
+  hanging frames binned by the upper arms' axial rotation - the shared bank stays flat across
+  the range hanging arms take (S7 −17..−21 in every band; S2/S5 vary a few degrees only in thin
+  bands; per-arm sideways shifts with rotation mirror L/R = posture). Arms OVERHEAD (the one
+  raised position that also points the sensor's long axis vertically) show much less under the
+  old fusion: S7 −4.7 vs −17.9 hanging, S5 +0.1 vs −7.5, S1 −3.3 vs −5.4, S3 +0.7, S6 +2.3 (S2
+  −6.6 from 290 frames). The error is specific to arms pointing down - consistent with a hang
+  ramp that is 0 at and above level. Raised arms at in-between angles have no mirror reference,
+  so a bank there can't be read from quaternions; the known raised-arm error is the height-
+  scaled upper-arm roll (the roll term).
+  Why 2025 always leaned right: still unexplained.
   **Test of the decoupling (`hang_heading.py`):** under the new algorithm a magnetic error should
   be heading only - a turn about the vertical, which moves only arms hanging partly FORWARD
   sideways (by heading error × sin of the forward angle). Per session, frames binned by how far
@@ -202,10 +241,12 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   S11/S13/S17 carry some heading (h +6..+8), BUT most sessions still have a tilt part of 3-10°
   (S11 −9.6, S18 +5.1, S13 −4.8, S17 −4.7, S20 +3.8, S22 −3.3). ⇒ the post-update residual is
   mostly still a tilt, not heading: either the decoupling is incomplete or that part is not
-  magnetic (solver, skeleton, soft tissue). The tilt-type hang term remains the right
+  magnetic (solver, skeleton, soft tissue) - as the old-algorithm bank itself is not, per the
+  model above. The tilt-type hang term remains the right
   correction form for new takes; a heading-only correction would fit S12 only.
-  **Practical:** hang weights learned on S7 are an old-algorithm correction - train per take, or
-  at least separately before and after 2025-12-18.
+  **Practical:** hang weights learned on S7 are an old-algorithm correction. Old-fusion sessions:
+  'fixed bank' with the session's np.robust_mean. New-fusion takes: learn the hang per take (the
+  residual changes sign and drifts within a session).
 
 ## DISPROVEN / dead-ends [X] — do not repeat
 

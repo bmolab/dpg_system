@@ -38,7 +38,8 @@ Then four corrections per arm, each an angle worked out afresh every frame:
   yaw    the upper arm turned about vertical
   fyaw   the forearm turned about vertical
   hang   the whole arm turned sideways about the chest's forward axis, coming in as
-         the arm drops from 25 to 55 degrees below level
+         the arm drops from 25 to 55 degrees below level (judged where
+         the correction puts the arm, so the error can't hide an arm)
 
 Each angle is a weighted sum of numbers that say how the sensor sits. Six are the
 world's two horizontal axes, seen from inside the sensor: the shape a magnetization
@@ -77,6 +78,11 @@ turn:
 Two numbers in degrees, left then right: the take's T-pose turn, from elbow_turn.
 It is undone before the learned corrections. Also re-corrects the held pose.
 
+fixed bank (float box, also an inlet):
+Degrees, as hang_symmetry's shift reads it (+ toward the dancer's left). Used only when
+'hang from' is 'fixed bank': both arms then undo this bank instead of taking the hang
+from the weights. Also re-corrects the held pose.
+
 correct (checkbox, also an inlet):
 Off passes the pose through untouched - for comparing.
 
@@ -90,6 +96,14 @@ turn fade:
 An option, in degrees of elbow bend (0 by default). With the arm straight nothing
 shows the turn; above 0 the turn comes in smoothly from none with the arm straight
 to all of it at this bend. 0 undoes all of it everywhere.
+
+hang from:
+An option: 'weights' (the default) learns the hang with the rest; 'fixed bank' takes it
+from the 'fixed bank' inlet instead. Use 'fixed bank' for takes recorded with Shadow's
+fusion before 2025-12-18, where a session's bank is steady: measure it once over all of
+the session's takes (np.robust_mean of hang_symmetry's shift per take, or of the banks of
+every arms-down frame) and apply that one number to every take of the session. The other
+corrections can still be learned alongside; the hang weights are then ignored.
 
 OUTPUTS:
 

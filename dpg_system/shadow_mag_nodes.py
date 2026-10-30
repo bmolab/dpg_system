@@ -158,11 +158,12 @@ def body_features(G, sh, el):
     return torch.cat([height, deep], dim=-1)
 
 
-def hang_valve(G, sh):
-    """0 with the upper arm above HANG_FROM degrees below level, 1 past HANG_TO, smooth between."""
+def hang_valve(G, sh, upper=None):
+    """0 with the upper arm above HANG_FROM degrees below level, 1 past HANG_TO, smooth between.
+    upper: the upper arm's world orientation to judge by, in place of G[sh]."""
     _, _, bax = skeleton()
     bax = bax.to(device=G[sh].device, dtype=G[sh].dtype)
-    ua = rotate_vector_wxyz_t(G[sh], bax[sh])
+    ua = rotate_vector_wxyz_t(G[sh] if upper is None else upper, bax[sh])
     below = -rotate_vector_wxyz_t(conj(G[CHEST]), ua)[..., 1]
     lo, hi = math.sin(math.radians(HANG_FROM)), math.sin(math.radians(HANG_TO))
     x = ((below - lo) / (hi - lo)).clamp(0.0, 1.0)
@@ -211,7 +212,11 @@ def correct_pose(q, weights, amount=1.0, terms=('roll', 'yaw', 'fyaw', 'hang'), 
             # the whole arm turned sideways about the chest's forward axis: positive moves a
             # hanging arm toward the dancer's left. Elbow and wrist locals are unchanged.
             forward = rotate_vector_wxyz_t(G[CHEST], q.new_tensor([0.0, 0.0, 1.0]))
-            H = axis_angle_q(forward, hang_valve(G, sh) * w_hang[0])
+            # judge the arm's height where the correction would put it: the bank being undone
+            # lifts one arm and lowers the other, so the raw height would give the lifted arm
+            # less of the correction than its partner
+            corrected = quaternion_multiply_wxyz_t(axis_angle_q(forward, w_hang[0].expand(Gs2.shape[:-1])), Gs2)
+            H = axis_angle_q(forward, hang_valve(G, sh, corrected) * w_hang[0])
             Gs2 = quaternion_multiply_wxyz_t(H, Gs2)
             Ge2 = quaternion_multiply_wxyz_t(H, Ge2)
             Gw2 = quaternion_multiply_wxyz_t(H, Gw2)
@@ -260,7 +265,10 @@ class ShadowMagCorrectNode(Node):
     (37 or 20 joints) or a whole take. Weights come from t.param (42 numbers,
     radians: per arm, left then right, roll 8, yaw 6, fyaw 6, hang 1; the older 40- and
     36-number layouts are accepted too); the 'turn' inlet takes elbow_turn's per-take T-pose
-    turn (degrees, left right). New weights or turn re-correct the pose already held. Numpy in gives numpy out, so it sits
+    turn (degrees, left right). With 'hang from' set to 'fixed bank', the hang is not learned:
+    both arms undo the 'fixed bank' inlet's value instead (degrees, as hang_symmetry's shift
+    reads it), for sessions with a known, steady bank. New weights, turn or fixed bank
+    re-correct the pose already held. Numpy in gives numpy out, so it sits
     in a render chain unchanged; a tensor in stays a tensor, so t.optimize can
     trace a loss back through it."""
     @staticmethod
@@ -277,10 +285,16 @@ class ShadowMagCorrectNode(Node):
         self.weights_input = self.add_input('weights', triggers_execution=True)
         self.turn = None
         self.turn_input = self.add_input('turn', triggers_execution=True)
+        self.bank_input = self.add_input('fixed bank', widget_type='drag_float', default_value=0.0,
+                                         triggers_execution=True)
         self.on_input = self.add_input('correct', widget_type='checkbox', default_value=True)
         self.amount_input = self.add_input('amount', widget_type='drag_float', default_value=1.0,
                                            min=0.0, max=1.0)
         self.term_options = {t: self.add_option(t, widget_type='checkbox', default_value=True) for t in TERMS}
+        # where the hang angle comes from: the learned weights, or the 'fixed bank' inlet -
+        # a session's measured bank, undone on both arms
+        self.hang_from_option = self.add_option('hang from', widget_type='combo', default_value='weights')
+        self.hang_from_option.widget.combo_items = ['weights', 'fixed bank']
         # degrees of elbow bend over which the turn comes in; 0 applies all of it, arm straight too
         self.turn_fade_option = self.add_option('turn fade', widget_type='drag_float', default_value=0.0,
                                                 min=0.0, max=90.0)
@@ -297,7 +311,8 @@ class ShadowMagCorrectNode(Node):
         if data is None:
             return
         on = self.on_input()
-        if (on is not None and not any_to_bool(on)) or (self.weights is None and self.turn is None):
+        fixed = self.hang_from_option() == 'fixed bank'
+        if (on is not None and not any_to_bool(on)) or (self.weights is None and self.turn is None and not fixed):
             self.pose_output.send(data)
             return
         q, how = as_pose_tensor(data)
@@ -314,6 +329,13 @@ class ShadowMagCorrectNode(Node):
                 print('shadow_mag_correct: weights must be up to 42 numbers (per arm: roll 8, yaw 6, fyaw 6, hang 1)')
                 self.pose_output.send(data)
                 return
+        if fixed:
+            bank = self.bank_input()
+            bank = 0.0 if bank is None else any_to_float(bank)
+            # the bank reads + toward the dancer's left; a positive hang weight moves the arm
+            # that way, so undoing it takes the opposite angle, the same on both arms
+            w = w.clone()
+            w[:, PER_ARM - 1] = -math.radians(bank)
         turn = as_turn(self.turn, q.device, q.dtype)
         if self.turn is not None and turn is None:
             print('shadow_mag_correct: turn must be two numbers in degrees, left then right')
