@@ -68,7 +68,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Learns a magnetization correction for the Shadow arms and shows it on the body.\n\nTOP: the take plays through shadow_mag_correct into the SMPL mesh. Untick 'correct' on that node (or drag 'amount') to compare with the raw take.\n\nBOTTOM: the same take, every 6th frame, is corrected with the same weights and judged by elbow_hinge: how far each forearm leaves the circle of an elbow that bends forward - an impossible pose, so it measures error, not plausibility. (Its 'circle' option can fit the circle to the take instead, but that cannot see the upper arm's roll, and the learning drifts into twisted shoulders.) Tick 'train' on t.optimize and it learns every frame; 'rms' shows the off-hinge angle per arm (left, right) falling, and the body above changes as it learns. Untick 'train' to stop.\n\nFIRST, THE T-POSE TURN: elbow_turn reads the whole take and measures how far each elbow was turned in that take's calibration T-pose (a dancer can turn the elbow a long way while shoulder and wrist hold the pose). It is constant for the take and changes at each calibration; the hinge cannot see it, so it is measured, not learned, and both shadow_mag_correct nodes take it at their 'turn' inlet. On jathiswaram it is about 43 degrees on both arms - most of the candy-wrapper twist at the shoulders. With the arm straight nothing shows the turn, and undoing all of it there twists straight arms instead; 'turn fade' (30) brings it in over the first 30 degrees of elbow bend. Set it to 0 to apply the whole turn everywhere.\n\nThe weights are 40 numbers in t.param, per arm (left then right): upper-arm roll (8), upper-arm yaw (6) and forearm yaw (6). Each depends on how the earth's field sits in that sensor's frame (magnetization); the roll also on arm height and on elbow bend past 62 degrees (a strap, cable or muscle pulling the sensor round). Click save on t.param to keep them in Subject7_mag_weights.pt; they are read back when this patch opens.\n\nSwap the take in the take node and np.load to try another; held-out takes are the honest test. Learned on one take the weights overfit it a little: learn on several.\n\nTHE HANG: with both arms lowered, Shadow often hangs them shifted to one side together (a good T-pose, an asymmetric hang). hang_symmetry measures that shared shift in the flagged ranges (frame numbers of the full take; 'every 6' matches t[] ::6) and its loss is added to the hinge's; shadow_mag_correct's 'hang' weights (the last of each arm's 21) turn the whole arm about the chest's forward axis as it drops below 25-55 degrees. t.param now holds 42.",
+                    "value": "Learns a magnetization correction for the Shadow arms and shows it on the body.\n\nTOP: the take plays through shadow_mag_correct into the SMPL mesh. Untick 'correct' on that node (or drag 'amount') to compare with the raw take.\n\nBOTTOM: the same take, every 6th frame, is corrected with the same weights and judged by elbow_hinge: how far each forearm leaves the circle of an elbow that bends forward - an impossible pose, so it measures error, not plausibility. (Its 'circle' option can fit the circle to the take instead, but that cannot see the upper arm's roll, and the learning drifts into twisted shoulders.) Tick 'train' on t.optimize and it learns every frame; 'rms' shows the off-hinge angle per arm (left, right) falling, and the body above changes as it learns. Untick 'train' to stop.\n\nFIRST, THE T-POSE TURN: elbow_turn reads the whole take and measures how far each elbow was turned in that take's calibration T-pose (a dancer can turn the elbow a long way while shoulder and wrist hold the pose). It is constant for the take and changes at each calibration; the hinge cannot see it, so it is measured, not learned, and both shadow_mag_correct nodes take it at their 'turn' inlet. On jathiswaram it is about 43 degrees on both arms - most of the candy-wrapper twist at the shoulders. With the arm straight nothing shows the turn, and undoing all of it there twists straight arms instead; 'turn fade' (30) brings it in over the first 30 degrees of elbow bend. Set it to 0 to apply the whole turn everywhere.\n\nThe weights are 40 numbers in t.param, per arm (left then right): upper-arm roll (8), upper-arm yaw (6) and forearm yaw (6). Each depends on how the earth's field sits in that sensor's frame (magnetization); the roll also on arm height and on elbow bend past 62 degrees (a strap, cable or muscle pulling the sensor round). Click save on t.param to keep them in Subject7_mag_weights.pt; they are read back when this patch opens.\n\nSwap the take in the take node and np.load to try another; held-out takes are the honest test. Learned on one take the weights overfit it a little: learn on several.\n\nTHE HANG: with both arms lowered, Shadow often hangs them shifted to one side together (a good T-pose, an asymmetric hang). hang_symmetry measures that shared shift in the flagged ranges (frame numbers of the full take; 'every 6' matches t[] ::6) and its loss is added to the hinge's; shadow_mag_correct's 'hang' weights (the last of each arm's 21) turn the whole arm about the chest's forward axis as it drops below 25-55 degrees. t.param now holds 42.\n\nHANDS ON HIPS (2026-10-29): pose_symmetry takes the frames where the dancer holds hands on hips symmetrically (its ranges, flagged by eye) and compares each arm with the mirrored other - sideways, height and forward/back, upper arm and forearm. Its loss joins the sum through the second '+'. It is linked to the corrector before hang_symmetry so its loss is in place when the sum fires. hang_symmetry's ranges now leave those holds out (they were 0-1721, 3767-4000, 5512-5734, 10430-11242, 16968-17082, 21195-21697, 35762-36237). pose_symmetry's reference is the left arm: symmetry alone let training make both arms wrong the same way (both wrists floated off the hips); in these holds the raw left wrist sits on the hip and the right floats, so the right arm is pulled to the mirrored left.\n\nBODY CONTACT (2026-10-29): body_contact keeps forearms and hands out of the torso (an oval cylinder 13 x 10 cm half-width x half-depth, pelvis to upper spine, arm radius 4 cm) in every frame, and holds the wrists on the torso surface in its contact ranges (the hands-on-hips holds). Its loss joins through the third '+'. Its lists: % of frames each forearm/hand is inside (left, right), and each wrist's median gap in the holds (cm, negative = inside). With contact as the absolute reference, pose_symmetry is back to 'both arms'.",
                     "value_type": "string"
                 },
                 "1": {
@@ -92,7 +92,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "Learns a magnetization correction for the Shadow arms and shows it on the body.\n\nTOP: the take plays through shadow_mag_correct into the SMPL mesh. Untick 'correct' on that node (or drag 'amount') to compare with the raw take.\n\nBOTTOM: the same take, every 6th frame, is corrected with the same weights and judged by elbow_hinge: how far each forearm leaves the circle of an elbow that bends forward - an impossible pose, so it measures error, not plausibility. (Its 'circle' option can fit the circle to the take instead, but that cannot see the upper arm's roll, and the learning drifts into twisted shoulders.) Tick 'train' on t.optimize and it learns every frame; 'rms' shows the off-hinge angle per arm (left, right) falling, and the body above changes as it learns. Untick 'train' to stop.\n\nFIRST, THE T-POSE TURN: elbow_turn reads the whole take and measures how far each elbow was turned in that take's calibration T-pose (a dancer can turn the elbow a long way while shoulder and wrist hold the pose). It is constant for the take and changes at each calibration; the hinge cannot see it, so it is measured, not learned, and both shadow_mag_correct nodes take it at their 'turn' inlet. On jathiswaram it is about 43 degrees on both arms - most of the candy-wrapper twist at the shoulders. With the arm straight nothing shows the turn, and undoing all of it there twists straight arms instead; 'turn fade' (30) brings it in over the first 30 degrees of elbow bend. Set it to 0 to apply the whole turn everywhere.\n\nThe weights are 40 numbers in t.param, per arm (left then right): upper-arm roll (8), upper-arm yaw (6) and forearm yaw (6). Each depends on how the earth's field sits in that sensor's frame (magnetization); the roll also on arm height and on elbow bend past 62 degrees (a strap, cable or muscle pulling the sensor round). Click save on t.param to keep them in Subject7_mag_weights.pt; they are read back when this patch opens.\n\nSwap the take in the take node and np.load to try another; held-out takes are the honest test. Learned on one take the weights overfit it a little: learn on several.\n\nTHE HANG: with both arms lowered, Shadow often hangs them shifted to one side together (a good T-pose, an asymmetric hang). hang_symmetry measures that shared shift in the flagged ranges (frame numbers of the full take; 'every 6' matches t[] ::6) and its loss is added to the hinge's; shadow_mag_correct's 'hang' weights (the last of each arm's 21) turn the whole arm about the chest's forward axis as it drops below 25-55 degrees. t.param now holds 42."
+            "text": "Learns a magnetization correction for the Shadow arms and shows it on the body.\n\nTOP: the take plays through shadow_mag_correct into the SMPL mesh. Untick 'correct' on that node (or drag 'amount') to compare with the raw take.\n\nBOTTOM: the same take, every 6th frame, is corrected with the same weights and judged by elbow_hinge: how far each forearm leaves the circle of an elbow that bends forward - an impossible pose, so it measures error, not plausibility. (Its 'circle' option can fit the circle to the take instead, but that cannot see the upper arm's roll, and the learning drifts into twisted shoulders.) Tick 'train' on t.optimize and it learns every frame; 'rms' shows the off-hinge angle per arm (left, right) falling, and the body above changes as it learns. Untick 'train' to stop.\n\nFIRST, THE T-POSE TURN: elbow_turn reads the whole take and measures how far each elbow was turned in that take's calibration T-pose (a dancer can turn the elbow a long way while shoulder and wrist hold the pose). It is constant for the take and changes at each calibration; the hinge cannot see it, so it is measured, not learned, and both shadow_mag_correct nodes take it at their 'turn' inlet. On jathiswaram it is about 43 degrees on both arms - most of the candy-wrapper twist at the shoulders. With the arm straight nothing shows the turn, and undoing all of it there twists straight arms instead; 'turn fade' (30) brings it in over the first 30 degrees of elbow bend. Set it to 0 to apply the whole turn everywhere.\n\nThe weights are 40 numbers in t.param, per arm (left then right): upper-arm roll (8), upper-arm yaw (6) and forearm yaw (6). Each depends on how the earth's field sits in that sensor's frame (magnetization); the roll also on arm height and on elbow bend past 62 degrees (a strap, cable or muscle pulling the sensor round). Click save on t.param to keep them in Subject7_mag_weights.pt; they are read back when this patch opens.\n\nSwap the take in the take node and np.load to try another; held-out takes are the honest test. Learned on one take the weights overfit it a little: learn on several.\n\nTHE HANG: with both arms lowered, Shadow often hangs them shifted to one side together (a good T-pose, an asymmetric hang). hang_symmetry measures that shared shift in the flagged ranges (frame numbers of the full take; 'every 6' matches t[] ::6) and its loss is added to the hinge's; shadow_mag_correct's 'hang' weights (the last of each arm's 21) turn the whole arm about the chest's forward axis as it drops below 25-55 degrees. t.param now holds 42.\n\nHANDS ON HIPS (2026-10-29): pose_symmetry takes the frames where the dancer holds hands on hips symmetrically (its ranges, flagged by eye) and compares each arm with the mirrored other - sideways, height and forward/back, upper arm and forearm. Its loss joins the sum through the second '+'. It is linked to the corrector before hang_symmetry so its loss is in place when the sum fires. hang_symmetry's ranges now leave those holds out (they were 0-1721, 3767-4000, 5512-5734, 10430-11242, 16968-17082, 21195-21697, 35762-36237). pose_symmetry's reference is the left arm: symmetry alone let training make both arms wrong the same way (both wrists floated off the hips); in these holds the raw left wrist sits on the hip and the right floats, so the right arm is pulled to the mirrored left.\n\nBODY CONTACT (2026-10-29): body_contact keeps forearms and hands out of the torso (an oval cylinder 13 x 10 cm half-width x half-depth, pelvis to upper spine, arm radius 4 cm) in every frame, and holds the wrists on the torso surface in its contact ranges (the hands-on-hips holds). Its loss joins through the third '+'. Its lists: % of frames each forearm/hand is inside (left, right), and each wrist's median gap in the holds (cm, negative = inside). With contact as the absolute reference, pose_symmetry is back to 'both arms'."
         },
         "3": {
             "init": "comment the take, playing",
@@ -1604,7 +1604,7 @@
             "properties": {
                 "0": {
                     "name": "ranges",
-                    "value": "0-1721, 3767-4000, 5512-5734, 10430-11242, 16968-17082, 21195-21697, 35762-36237",
+                    "value": "828-1051, 1126-1721, 3797-4000, 5512-5734, 10430-11242, 16968-17082, 21195-21343, 35762-35944",
                     "value_type": "str"
                 },
                 "1": {
@@ -1729,6 +1729,224 @@
             },
             "init": "+ 0.0",
             "id": 1738
+        },
+        "41": {
+            "name": "pose_symmetry",
+            "position_x": 260,
+            "position_y": 1360,
+            "width": 200,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "ranges",
+                    "value": "1-827, 1052-1125, 3720-3796, 4748-5028, 12516-12545, 15428-15741, 21344-21702, 35945-36247",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "every",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "reference",
+                    "value": "both arms",
+                    "value_type": "str"
+                }
+            },
+            "id": 1739
+        },
+        "42": {
+            "name": "list",
+            "id": 1740,
+            "position_x": 520,
+            "position_y": 1360,
+            "width": 134,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 104,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "43": {
+            "name": "+",
+            "position_x": 720,
+            "position_y": 1060,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 0.0",
+            "id": 1741
+        },
+        "44": {
+            "name": "body_contact",
+            "position_x": 260,
+            "position_y": 1505,
+            "width": 200,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "contact ranges",
+                    "value": "1-827, 1052-1125, 3720-3796, 4748-5028, 12516-12545, 15428-15741, 21344-21702, 35945-36247",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "every",
+                    "value": 6,
+                    "value_type": "int"
+                }
+            },
+            "id": 1742
+        },
+        "45": {
+            "name": "list",
+            "id": 1743,
+            "position_x": 520,
+            "position_y": 1505,
+            "width": 134,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 104,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "46": {
+            "name": "list",
+            "id": 1744,
+            "position_x": 520,
+            "position_y": 1560,
+            "width": 134,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 104,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "47": {
+            "name": "+",
+            "position_x": 720,
+            "position_y": 1170,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 0.0",
+            "id": 1745
         }
     },
     "links": {
@@ -1977,12 +2195,82 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "pose out",
-            "dest_node": 1538,
+            "dest_node": 1739,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "take in"
         },
         "25": {
+            "source_node": 1739,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "loss",
+            "dest_node": 1741,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "26": {
+            "source_node": 1739,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "asymmetry",
+            "dest_node": 1740,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "27": {
+            "source_node": 1071,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 1742,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "28": {
+            "source_node": 1742,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "loss",
+            "dest_node": 1745,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "29": {
+            "source_node": 1742,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "inside",
+            "dest_node": 1743,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "30": {
+            "source_node": 1742,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "contact gap",
+            "dest_node": 1744,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "31": {
+            "source_node": 1071,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 1538,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "32": {
             "source_node": 1538,
             "source_node_name": "",
             "source_output_index": 0,
@@ -1992,8 +2280,28 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "26": {
+        "33": {
             "source_node": 1738,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1741,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "34": {
+            "source_node": 1741,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1745,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "35": {
+            "source_node": 1745,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "result",
@@ -2002,7 +2310,7 @@
             "dest_input_index": 0,
             "dest_input_name": "loss"
         },
-        "27": {
+        "36": {
             "source_node": 1538,
             "source_node_name": "",
             "source_output_index": 0,

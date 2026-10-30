@@ -247,6 +247,53 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   **Practical:** hang weights learned on S7 are an old-algorithm correction. Old-fusion sessions:
   'fixed bank' with the session's np.robust_mean. New-fusion takes: learn the hang per take (the
   residual changes sign and drifts within a session).
+- **The hang is not one shared shift: right-arm heading, hands on hips, body contact (2026-10-29).**
+  David, watching jathiswaram: a fixed-bank-like shift plus a right-arm error at every height; and
+  a recurring symmetric hands-on-hips pose that the fixed bank can make symmetric only by making
+  other poses awkward. Scripts in `hang_bank_analysis/`.
+  (i) **Right-arm HEADING error [V-ish] (`right_arm_constant.py`, `fore_aft_by_take.py`):** with
+  the arms at similar heights, S7's right upper arm sits 19-24° further BACK than the left at and
+  above level in nearly every take (−10..−13 hanging), and reads 1-6° higher at every height (the
+  latter in old and new sessions alike). Against facing it is mostly a once-per-turn swing (S7
+  28.5°, S1 14.4, S2 13.6; per arm S7 right 15.2 vs left 7.7, S2 17.4 vs 9.0) ⇒ a magnetized
+  upper-arm heading, mostly right, looking constant because the dancer mostly faces one way. S1, S2,
+  S5 (old fusion) show it; S15/S21 (new) ~0 at level. Manual tool: `shadow_heading_adjust`
+  (per arm swing × sin(heading − phase) + offset about vertical, forearm held; swing/phase = the
+  yaw term's weights, 'yaw weights' outlet seeds t.param). Starting values pooled over S7's 12
+  takes (`heading_start_values.py`): left swing −12 phase +33, right +28 phase −54 (fitted on the
+  scoring measure; jathiswaram alone gives ~40° with the arms reversed - choreography tied to
+  facing).
+  (ii) **Hands-on-hips holds (David's ranges 1-827, 1052-1125, 3720-3796, 4748-5028, 12516-12545,
+  15428-15741, 21344-21702, 35945-36247; `akimbo_asymmetry.py`):** left minus mirrored right,
+  upper arm −41.5 side / −39.6 height / −13.0 fwd, forearm −14 / +13 / −17, elbow bend L 116 vs
+  R 128. The flagged HANG ranges contained four of these holds - hang training had been fitting
+  them. The fixed bank overshoots sideways here, leaves fwd untouched, and swings the hands.
+  (iii) **`pose_symmetry` loss** (both arms' segment directions vs the mirrored other, every
+  component, in flagged ranges). Training hinge + hang + pose_symmetry (`joint_training.py`):
+  holds −41.5/−39.6 → −3.8/−3.4, hang centred, learned hang L −2.8 / R +37.7; carries to other S7
+  takes (`joint_holdout.py`; thatabavu −38/−38 → −4/+4, padam −40/−24 → −9/0) at a left-hinge cost.
+  (iv) **Hand bug, fixed:** the hang term turned the HAND with the arm; with ~38° on the right that
+  rotated hands that read symmetric raw (palm +6.6/+7.9 → +41/+40). The hang term now turns upper
+  arm and forearm only; hands stay where their sensors put them (clean hangs: hand direction
+  symmetric raw, broken when carried).
+  (v) **Symmetry can't say which arm is wrong.** Wrist positions from the skeleton (Shadow's
+  positions are the definition.xml skeleton, matched exactly): raw holds left wrist on the hip
+  (26 cm above the hip joint, at the side), right floating (13 out, 12 higher). Symmetry alone (B)
+  floated BOTH (left moved 13 out, 23 forward). 'reference left arm' (C) copied the left's own
+  errors - David: "arm penetrations into the body, mostly by the left hand, now copied on the
+  right".
+  (vi) **`body_contact` loss [~, current]:** oval torso (13 × 10 cm half-width × half-depth,
+  pelvis to upper spine, chest-oriented), forearm/hand points with 4 cm radius. Raw S7: left
+  forearm/hand inside in ~45% of frames, right ~1-2%; hanging left −4.5 cm inside, right 15 cm
+  off; holds left wrist −5.8, right +4.4 - both arms shifted right, left pushed in, right out (the
+  original bank picture). Training hinge + hang + pose_symmetry (both arms) + body_contact
+  (`contact_training.py`, E): holds wrist gaps −0.3/−0.0 cm, deep (>3 cm) left penetration 36% →
+  8%, learned hang L +12.2 / R +22.9, hang centred; holds upper arm −20/−19 (the elbow bends differ
+  ~12° and no term changes elbow bend); shallow right overlaps 2% → 19% (mostly <3 cm; torso size
+  dependent). Verified in the app: the sum t.optimize gets = hinge + hang + pose + contact of the
+  same step, 860/860 steps. Wired into examples/shadow_mag_learning.json.
+  **Open:** an elbow-bend correction (right elbow reads ~12° more bent in the holds); hand heading
+  (palms face −60° apart when hanging - the validated hand magnetization); torso size per dancer.
 
 ## DISPROVEN / dead-ends [X] — do not repeat
 
@@ -282,6 +329,8 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
   choreography) — start/middle/end protocol takes; see `HANG_BANK_STUDIO_TESTS.md`.
 - **Hang bank: new magnetization since 2026-08-13?** Fresh `mag_offset` sweep of arm, shoulder-blade
   and chest sensors on all three suits.
+- **Hands-on-hips: elbow bend and hand heading** — no correction term changes elbow bend (right
+  reads ~12° more bent in S7's holds) or hand heading; body_contact's torso size is generic.
 - **Hang bank: sensor-level check** — record takes with `shadow_sensors` (pose + every sensor's
   accelerometer/magnetometer/gyroscope in one message, 2026-10-29): gravity tilt change vs Shadow's
   reported change separates calibration from fusion error; the magnetometer shows the field.

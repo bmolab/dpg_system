@@ -47,6 +47,9 @@ def register_shadow_mag_nodes():
     Node.app.register_node('elbow_hinge', ElbowHingeNode.factory)
     Node.app.register_node('elbow_turn', ElbowTurnNode.factory)
     Node.app.register_node('hang_symmetry', HangSymmetryNode.factory)
+    Node.app.register_node('shadow_heading_adjust', ShadowHeadingAdjustNode.factory)
+    Node.app.register_node('pose_symmetry', PoseSymmetryNode.factory)
+    Node.app.register_node('body_contact', BodyContactNode.factory)
 
 
 # Shadow (37) joint indices of the arm chains
@@ -209,8 +212,10 @@ def correct_pose(q, weights, amount=1.0, terms=('roll', 'yaw', 'fyaw', 'hang'), 
         if 'fyaw' in terms:
             Ge2 = quaternion_multiply_wxyz_t(axis_angle_q(up, fe @ w_fyaw), Ge2)
         if 'hang' in terms:
-            # the whole arm turned sideways about the chest's forward axis: positive moves a
-            # hanging arm toward the dancer's left. Elbow and wrist locals are unchanged.
+            # upper arm and forearm turned sideways together about the chest's forward axis:
+            # positive moves a hanging arm toward the dancer's left. The elbow local is unchanged;
+            # the hand stays where its own sensor puts it (the hands read symmetric when the arms
+            # do not - turning them with the arm broke hands resting on the hips).
             forward = rotate_vector_wxyz_t(G[CHEST], q.new_tensor([0.0, 0.0, 1.0]))
             # judge the arm's height where the correction would put it: the bank being undone
             # lifts one arm and lowers the other, so the raw height would give the lifted arm
@@ -219,7 +224,6 @@ def correct_pose(q, weights, amount=1.0, terms=('roll', 'yaw', 'fyaw', 'hang'), 
             H = axis_angle_q(forward, hang_valve(G, sh, corrected) * w_hang[0])
             Gs2 = quaternion_multiply_wxyz_t(H, Gs2)
             Ge2 = quaternion_multiply_wxyz_t(H, Ge2)
-            Gw2 = quaternion_multiply_wxyz_t(H, Gw2)
         out[..., sh, :] = quaternion_multiply_wxyz_t(conj(G[parent[sh]]), Gs2)
         out[..., el, :] = quaternion_multiply_wxyz_t(conj(Gs2), Ge2)
         out[..., wr, :] = quaternion_multiply_wxyz_t(conj(Ge2), Gw2)
@@ -345,6 +349,185 @@ class ShadowMagCorrectNode(Node):
         fade = self.turn_fade_option()
         fade = 0.0 if fade is None else float(fade)
         self.pose_output.send(give_back(correct_pose(q, w, amount, terms, turn, fade), how))
+
+
+_offsets = None
+
+
+def bone_offsets():
+    """Each joint's offset from its parent, in the parent's frame, in cm (definition.xml)."""
+    global _offsets
+    if _offsets is None:
+        from xml.etree import ElementTree as ET
+        from dpg_system.smpl_utilities.diag_magnetometer_deviation import LIMB_TO_IDX
+        off = np.zeros((37, 3))
+
+        def walk(node):
+            idx = LIMB_TO_IDX.get(node.get('id'))
+            t = node.get('translate')
+            if idx is not None and t:
+                off[idx] = [float(v) for v in t.split()]
+            for child in node:
+                walk(child)
+        walk(ET.parse(Path(__file__).parent / 'definition.xml').getroot())
+        _offsets = torch.tensor(off)
+    return _offsets
+
+
+PELVIS, UPPER_SPINE = 4, 17
+FINGERS = {'L': 6, 'R': 20}
+
+
+def joint_positions(q, joints, scale=1.0):
+    """World positions (cm, relative to the root) of the joints, from local quats (..., 37, 4)."""
+    parent, order, _ = skeleton()
+    off = bone_offsets().to(device=q.device, dtype=q.dtype) * scale
+    needed = set()
+    for j in joints:
+        while j >= 0 and j not in needed:
+            needed.add(j)
+            j = parent[j]
+    G = world_orientations(q, list(needed))
+    P = {}
+    for j in order:
+        if j in needed:
+            p = parent[j]
+            P[j] = q.new_zeros(q.shape[:-2] + (3,)) if p < 0 else P[p] + rotate_vector_wxyz_t(G[p], off[j])
+    return P, G
+
+
+def torso_frame(q, scale=1.0):
+    """The torso's axis (pelvis to upper spine) and the chest's sideways and forward directions,
+    per frame: (A, axis, length, u, x, z)."""
+    P, G = joint_positions(q, [PELVIS, UPPER_SPINE, CHEST], scale)
+    A, B = P[PELVIS], P[UPPER_SPINE]
+    axis = B - A
+    length = torch.linalg.vector_norm(axis, dim=-1, keepdim=True) + 1e-9
+    xc = rotate_vector_wxyz_t(G[CHEST], q.new_tensor([1.0, 0.0, 0.0]))
+    zc = rotate_vector_wxyz_t(G[CHEST], q.new_tensor([0.0, 0.0, 1.0]))
+    return A, axis, length, axis / length, xc, zc
+
+
+def torso_gap(frame, p, width=14.0, depth=10.0):
+    """Distance (cm) of points p (..., [k,] 3) outside the torso: an oval cylinder (half-width x
+    half-depth, in the chest's frame) along the frame's axis, rounded past its ends. Negative
+    inside. With an extra point axis k, the frame broadcasts over it."""
+    A, axis, length, u, xc, zc = frame
+    if p.dim() == A.dim() + 1:
+        A, axis, length, u, xc, zc = (x[..., None, :] for x in (A, axis, length, u, xc, zc))
+    t = (((p - A) * u).sum(-1, keepdim=True) / length).clamp(0.0, 1.0)
+    h = p - (A + t * axis)
+    hl, hd, hv = (h * xc).sum(-1), (h * zc).sum(-1), (h * u).sum(-1)
+    radial = torch.sqrt(hl * hl + hd * hd + 1e-9)
+    # the oval's radius in this point's direction
+    r = width * depth * radial / torch.sqrt((depth * hl) ** 2 + (width * hd) ** 2 + 1e-9)
+    return radial - r + hv.abs()
+
+
+def arm_gaps(q, width=14.0, depth=10.0, arm=4.0, scale=1.0, samples=6):
+    """Per arm, how close the forearm and hand come to the torso surface (cm; negative = inside),
+    and how far the wrist itself is from it: two (..., 2) tensors, left then right."""
+    joints = [j for side in 'LR' for j in (ARMS[side][1], ARMS[side][2], FINGERS[side])]
+    P, _ = joint_positions(q, joints, scale)
+    frame = torso_frame(q, scale)
+    t = q.new_tensor(np.linspace(0.0, 1.0, samples))[:, None]
+    w, d, r = width * scale, depth * scale, arm * scale
+    closest, wrist = [], []
+    for side in 'LR':
+        el, wr, fi = ARMS[side][1], ARMS[side][2], FINGERS[side]
+        fore = P[el][..., None, :] + t * (P[wr] - P[el])[..., None, :]
+        hand = P[wr][..., None, :] + t[1:] * (P[fi] - P[wr])[..., None, :]
+        g = torso_gap(frame, torch.cat([fore, hand], dim=-2), w, d)
+        closest.append(g.min(-1).values - r)
+        wrist.append(torso_gap(frame, P[wr], w, d) - r)
+    return torch.stack(closest, dim=-1), torch.stack(wrist, dim=-1)
+
+
+def heading_weights(swing, phase):
+    """A once-per-turn heading error, swing * sin(heading - phase) (degrees), as the six yaw
+    weights of correct_pose (radians): at a sensor turned by 'heading' about vertical from its
+    rest, features() reads (cos h, 0, sin h, -sin h, 0, cos h), and these weights give exactly
+    that wave; split over both world axes, so a tilted sensor is treated evenly."""
+    a, p = math.radians(swing) / 2.0, math.radians(phase)
+    return [-a * math.sin(p), 0.0, a * math.cos(p), -a * math.cos(p), 0.0, -a * math.sin(p)]
+
+
+def adjust_heading(q, yaw, offset):
+    """q: (..., 37, 4) local quats; yaw: (2, 6) correct_pose yaw weights (radians), offset: (2,)
+    radians. Turns each upper arm about vertical by yaw . features + offset, the forearm held
+    where it was in the world (so the hand does not move): the error of an upper-arm sensor whose
+    heading is wrong. Returns (corrected quats, (..., 2) angles applied)."""
+    parent, _, _ = skeleton()
+    up = q.new_tensor([0.0, 1.0, 0.0])
+    G = world_orientations(q, [j for chain in ARMS.values() for j in chain[:2]])
+    out = q.clone()
+    angles = []
+    for a, (sh, el, wr) in enumerate(ARMS.values()):
+        angle = features(G[sh]) @ yaw[a] + offset[a]
+        Gs2 = quaternion_multiply_wxyz_t(axis_angle_q(up, angle), G[sh])
+        out[..., sh, :] = quaternion_multiply_wxyz_t(conj(G[parent[sh]]), Gs2)
+        out[..., el, :] = quaternion_multiply_wxyz_t(conj(Gs2), G[el])
+        angles.append(angle)
+    return out, torch.stack(angles, dim=-1)
+
+
+class ShadowHeadingAdjustNode(Node):
+    """Hand-dialled heading correction for the upper arms: each arm turned about vertical by a
+    once-per-turn wave (swing, phase) plus a constant offset, all in degrees, the forearm held in
+    the world. The shape of a magnetized upper-arm sensor's heading error - for exploring it by
+    eye before learning it. Swing and phase are the same correction as shadow_mag_correct's yaw
+    weights; the 'yaw weights' outlet gives them (42 numbers, yaw slots filled) to seed t.param.
+    The offset has no counterpart there."""
+    @staticmethod
+    def factory(name, data, args=None):
+        return ShadowHeadingAdjustNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.pose = None
+        self.pose_input = self.add_input('pose in', triggers_execution=True)
+        self.on_input = self.add_input('adjust', widget_type='checkbox', default_value=True, triggers_execution=True)
+        self.knobs = {}
+        for side in ('left', 'right'):
+            for what, lo, hi in (('swing', -90.0, 90.0), ('phase', -180.0, 180.0), ('offset', -90.0, 90.0)):
+                self.knobs[(side, what)] = self.add_input(f'{side} {what}', widget_type='drag_float',
+                                                          default_value=0.0, min=lo, max=hi,
+                                                          triggers_execution=True)
+        self.pose_output = self.add_output('pose out')
+        self.angle_output = self.add_output('angles')
+        self.weights_output = self.add_output('yaw weights')
+
+    def value(self, side, what):
+        v = self.knobs[(side, what)]()
+        return 0.0 if v is None else any_to_float(v)
+
+    def execute(self):
+        if self.pose_input.fresh_input:
+            self.pose = self.pose_input()
+        swing = [self.value(s, 'swing') for s in ('left', 'right')]
+        phase = [self.value(s, 'phase') for s in ('left', 'right')]
+        offset = [self.value(s, 'offset') for s in ('left', 'right')]
+        w42 = [0.0] * N_WEIGHTS
+        for a in range(2):
+            w42[a * PER_ARM + N_ROLL:a * PER_ARM + N_ROLL + N_HEADING] = heading_weights(swing[a], phase[a])
+        self.weights_output.send(np.array(w42))
+        data = self.pose
+        if data is None:
+            return
+        on = self.on_input()
+        if on is not None and not any_to_bool(on):
+            self.pose_output.send(data)
+            return
+        q, how = as_pose_tensor(data)
+        if q is None:
+            if self.app.verbose:
+                print('shadow_heading_adjust: expects Shadow quaternions, (37, 4) or (20, 4) per frame')
+            self.pose_output.send(data)
+            return
+        yaw = q.new_tensor([w42[a * PER_ARM + N_ROLL:a * PER_ARM + N_ROLL + N_HEADING] for a in range(2)])
+        out, angles = adjust_heading(q, yaw, q.new_tensor([math.radians(o) for o in offset]))
+        self.angle_output.send(np.degrees(angles.detach().cpu().numpy()))
+        self.pose_output.send(give_back(out, how))
 
 
 class ElbowHingeNode(Node):
@@ -579,4 +762,197 @@ class HangSymmetryNode(Node):
         # used cannot drag the answer the way a mean would
         loss = torch.mean(sig ** 2 * (torch.sqrt(1 + (shift / sig) ** 2) - 1)) / sig ** 2
         self.shift_output.send(round(float(torch.rad2deg(shift.detach().median())), 2))
+        self.loss_output.send(loss)
+
+
+class BodyContactNode(Node):
+    """Keeps the hands out of the body, and on it where they should touch, over a take.
+
+    The torso is an oval cylinder from the pelvis to the upper spine, turned with the chest;
+    the forearms and hands are points along them with a thickness, placed by the Shadow
+    skeleton. A forearm or hand inside the torso is impossible in any frame, so every frame's
+    penetration counts. In the frames flagged as 'contact ranges' (hands resting on the hips,
+    say) the wrists should touch the surface, so a gap counts there too, either way. Absolute,
+    so unlike pose_symmetry it can tell which arm is wrong. A loss for t.optimize."""
+    @staticmethod
+    def factory(name, data, args=None):
+        return BodyContactNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.pose_input = self.add_input('take in', triggers_execution=True)
+        self.ranges_option = self.add_option('contact ranges', widget_type='text_input', default_value='')
+        self.every_option = self.add_option('every', widget_type='drag_int', default_value=1, min=1)
+        self.width_option = self.add_option('torso width', widget_type='drag_float', default_value=13.0, min=1.0)
+        self.depth_option = self.add_option('torso depth', widget_type='drag_float', default_value=10.0, min=1.0)
+        self.arm_option = self.add_option('arm radius', widget_type='drag_float', default_value=4.0, min=0.0)
+        self.contact_weight_option = self.add_option('contact weight', widget_type='drag_float', default_value=1.0, min=0.0)
+        self.robust_option = self.add_option('robust width', widget_type='drag_float', default_value=1.0)
+        self.loss_output = self.add_output('loss')
+        self.inside_output = self.add_output('inside')
+        self.gap_output = self.add_output('contact gap')
+
+    def number(self, option, default):
+        v = option()
+        return default if v is None else float(v)
+
+    def execute(self):
+        q, how = as_pose_tensor(self.pose_input())
+        if q is None or q.ndim != 3 or q.shape[0] < 2:
+            if self.app.verbose:
+                print('body_contact: expects a take of Shadow quaternions, (frames, 37 or 20, 4)')
+            return
+        width, depth = self.number(self.width_option, 13.0), self.number(self.depth_option, 10.0)
+        arm = self.number(self.arm_option, 4.0)
+        closest, wrist = arm_gaps(q, width, depth, arm)
+        sig = max(1e-3, self.number(self.robust_option, 1.0))
+        huber = lambda x: torch.mean(sig ** 2 * (torch.sqrt(1 + (x / sig) ** 2) - 1)) / sig ** 2
+        # inside anywhere: only how deep, nothing for a hand clear of the body
+        loss = huber(torch.relu(-closest))
+        ranges = parse_ranges(self.ranges_option())
+        gap = None
+        if len(ranges) > 0:
+            every = self.every_option()
+            frame = torch.arange(len(q), device=q.device) * (1 if every is None else max(1, int(every)))
+            use = torch.zeros(len(q), dtype=torch.bool, device=q.device)
+            for a, b in ranges:
+                use |= (frame >= a) & (frame <= b)
+            if use.any():
+                loss = loss + self.number(self.contact_weight_option, 1.0) * huber(wrist[use])
+                gap = wrist[use].detach().median(0).values.cpu().numpy()
+        self.inside_output.send(np.round((closest.detach() < 0).double().mean(0).cpu().numpy() * 100, 1))
+        if gap is not None:
+            self.gap_output.send(np.round(gap, 2))
+        self.loss_output.send(loss)
+
+
+class PoseSymmetryNode(Node):
+    """How far the arms depart from mirror images, over the frames of a take where the dancer
+    holds a symmetric pose (flagged as 'ranges').
+
+    In a pose held symmetrically - hands on hips, arms in a matching gesture - the left upper
+    arm and forearm point as the mirrored right ones do. Every difference is error, in every
+    direction: sideways, height and forward/back, for each segment - so unlike hang_symmetry,
+    which sees only the shared sideways shift of hanging arms, it constrains each arm on its
+    own, at whatever arm configuration the pose has. A loss for t.optimize, alongside
+    elbow_hinge and hang_symmetry; shadow_mag_correct is the correction it drives."""
+    @staticmethod
+    def factory(name, data, args=None):
+        return PoseSymmetryNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.pose_input = self.add_input('take in', triggers_execution=True)
+        # the uncorrected take, for 'halfway': link it before the corrector so it is held when the
+        # corrected take arrives
+        self.raw_input = self.add_input('raw take')
+        self.ranges_option = self.add_option('ranges', widget_type='text_input', default_value='')
+        self.every_option = self.add_option('every', widget_type='drag_int', default_value=1, min=1)
+        self.segments_option = self.add_option('segments', widget_type='combo', default_value='upper arms and forearms')
+        self.segments_option.widget.combo_items = ['upper arms and forearms', 'upper arms']
+        # symmetry alone cannot say which arm is wrong: two arms wrong the same way are mirror
+        # images too. 'halfway' pulls both to the symmetric pose midway between the two as recorded
+        # (each wrong by half the difference); a reference arm is taken as right, and only the other
+        # is pulled to it; 'both arms' only asks for symmetry.
+        self.reference_option = self.add_option('reference', widget_type='combo', default_value='both arms')
+        self.reference_option.widget.combo_items = ['both arms', 'halfway', 'left arm', 'right arm']
+        self.width_option = self.add_option('robust width', widget_type='drag_float', default_value=4.0)
+        self.loss_output = self.add_output('loss')
+        self.asymmetry_output = self.add_output('asymmetry')
+        self.count_output = self.add_output('frames used')
+
+    @staticmethod
+    def differences(q, ranges, every=1, forearms=True, reference='both arms', raw=None):
+        """q: (F, 37, 4) -> (n, segments, 3) left minus mirrored right segment directions in the
+        chest frame (x, y, z; about radians for small differences) for the frames in the
+        ranges, and the mask of frames used. reference 'left arm' or 'right arm' holds that arm
+        out of the gradient, so only the other arm is moved toward it. 'halfway' (raw: the
+        uncorrected take, same frames) instead gives each arm's difference from the midway pose,
+        the mean of the recorded left and mirrored right: (n, 2 x segments, 3)."""
+        _, _, bax = skeleton()
+        bax = bax.to(device=q.device, dtype=q.dtype)
+        joints = [ARMS['L'][0], ARMS['R'][0]] + ([ARMS['L'][1], ARMS['R'][1]] if forearms else [])
+        G = world_orientations(q, [CHEST] + joints)
+        C = conj(G[CHEST])
+        mirror = q.new_tensor([-1.0, 1.0, 1.0])
+        diffs = []
+        if reference == 'halfway' and raw is not None:
+            R = world_orientations(raw, [CHEST] + joints)
+            CR = conj(R[CHEST])
+        for l, r in zip(joints[0::2], joints[1::2]):
+            dl = rotate_vector_wxyz_t(C, rotate_vector_wxyz_t(G[l], bax[l]))
+            dr = rotate_vector_wxyz_t(C, rotate_vector_wxyz_t(G[r], bax[r])) * mirror
+            if reference == 'halfway' and raw is not None:
+                rl = rotate_vector_wxyz_t(CR, rotate_vector_wxyz_t(R[l], bax[l]))
+                rr = rotate_vector_wxyz_t(CR, rotate_vector_wxyz_t(R[r], bax[r])) * mirror
+                mid = rl + rr
+                mid = (mid / (torch.linalg.vector_norm(mid, dim=-1, keepdim=True) + 1e-12)).detach()
+                diffs.append(dl - mid)
+                diffs.append(dr - mid)
+                continue
+            if reference == 'left arm':
+                dl = dl.detach()
+            elif reference == 'right arm':
+                dr = dr.detach()
+            diffs.append(dl - dr)
+        use = torch.zeros(len(q), dtype=torch.bool, device=q.device)
+        frame = torch.arange(len(q), device=q.device) * every
+        for a, b in ranges:
+            use |= (frame >= a) & (frame <= b)
+        return torch.stack(diffs, dim=1)[use], use
+
+    @staticmethod
+    def asymmetry(q, use, forearms=True):
+        """Median left-minus-mirrored-right angles in degrees over the frames used: per segment
+        sideways (+ = left further out), height (+ = left higher), forward (+ = left further
+        forward)."""
+        _, _, bax = skeleton()
+        bax = bax.to(device=q.device, dtype=q.dtype)
+        joints = [ARMS['L'][0], ARMS['R'][0]] + ([ARMS['L'][1], ARMS['R'][1]] if forearms else [])
+        G = world_orientations(q[use], [CHEST] + joints)
+        C = conj(G[CHEST])
+        out = []
+        for l, r in zip(joints[0::2], joints[1::2]):
+            ang = []
+            for j, sign in ((l, 1.0), (r, -1.0)):
+                v = rotate_vector_wxyz_t(C, rotate_vector_wxyz_t(G[j], bax[j]))
+                x = v[:, 0] * sign
+                ang.append(torch.stack([torch.atan2(x, -v[:, 1]), torch.asin(v[:, 1].clamp(-1.0, 1.0)),
+                                        torch.atan2(v[:, 2], torch.hypot(x, v[:, 1]))], dim=-1))
+            out.append(torch.rad2deg(ang[0] - ang[1]).median(0).values)
+        return torch.cat(out).detach().cpu().numpy()
+
+    def execute(self):
+        q, how = as_pose_tensor(self.pose_input())
+        if q is None or q.ndim != 3 or q.shape[0] < 2:
+            if self.app.verbose:
+                print('pose_symmetry: expects a take of Shadow quaternions, (frames, 37 or 20, 4)')
+            return
+        ranges = parse_ranges(self.ranges_option())
+        if len(ranges) == 0:
+            print('pose_symmetry: flag the frames of the symmetric pose in its ranges option')
+            return
+        every = self.every_option()
+        every = 1 if every is None else max(1, int(every))
+        forearms = self.segments_option() != 'upper arms'
+        reference = self.reference_option()
+        reference = 'both arms' if reference is None else reference
+        raw = None
+        if reference == 'halfway':
+            raw, _ = as_pose_tensor(self.raw_input())
+            if raw is None or raw.shape != q.shape:
+                print("pose_symmetry: 'halfway' needs the uncorrected take, the same frames, in 'raw take'")
+                return
+            raw = raw.to(device=q.device, dtype=q.dtype)
+        d, use = self.differences(q, ranges, every, forearms, reference, raw)
+        self.count_output.send(int(use.sum()))
+        if d.shape[0] == 0:
+            print('pose_symmetry: no frames in the ranges')
+            return
+        width = self.width_option()
+        sig = math.radians(4.0 if width is None or width <= 0 else float(width))
+        # pseudo-Huber on every component: a moment where the dancer breaks the pose cannot
+        # drag the answer the way a mean would
+        loss = torch.mean(sig ** 2 * (torch.sqrt(1 + (d / sig) ** 2) - 1)) / sig ** 2
+        self.asymmetry_output.send(np.round(self.asymmetry(q, use, forearms), 2))
         self.loss_output.send(loss)
