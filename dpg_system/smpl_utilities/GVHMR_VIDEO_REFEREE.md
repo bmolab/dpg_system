@@ -517,6 +517,35 @@ shake). smooth_stomp_jolt.py now fades the smoothing where it would move the roo
 fix the largest move is 14 mm; fast shake after right stomps, hip fix -> stomp: S1 1.33 -> 0.52, S3 1.54 -> 0.72,
 S4 2.80 -> 0.92, S5 1.31 -> 0.49, S6 1.62 -> 0.66, S7 2.60 -> 0.82. S7 `_vc` files carry the new root position.
 
+## Where we left off (2026-11-01): picking up the old-fusion sessions
+
+Decision: no arm corrections on S1-S6 until their video has been analysed.
+
+Done for every old-fusion session:
+- hip fix (`*_rhipflexstat.npz`, right thigh everywhere)
+- stomp smoothing (`*_rhipflexstat_stomp.npz`, S1 and S3-S7; S2 has no stomp shake and was left out)
+- Shadow-only screen (`video_fix/screen_old_fusion.txt`, table above)
+
+Use the `_stomp` files as the input to any further correction (S2: its `_rhipflexstat` files).
+
+When the video is in, per session (S6 first, then S2; the others only if video turns up):
+1. Run GVHMR on the takes (see Setup), draw Shadow with SMPL-H (file gender and betas), not GVHMR's neutral
+   model (2026-11-01 section).
+2. Fit the fixed swing per segment (`fit_fixed.py`), as for S7.
+3. Elbow turn: measure it AFTER the swing (`build_final.py` does swing, then turn, about the SMPL-H bone). Check
+   it against the video with `turn_video.py`; in S7 the video-implied turn (L 44.8 / R 46) replaced Shadow's
+   post-swing right reading (68), which over-corrected.
+4. Check `_vc` files with `compare.py` and `make_compare_patch.py`.
+
+If a session never gets video, its Shadow-only session turn (screen table) can be applied as a provisional value
+(`build_final.py` with no swing segments; untested that way, and it measures its own turn unless given `L=..,R=..`).
+
+Open:
+- the second performer's left-arm swing may be partly the neutral-model artefact (not redone; not needed)
+- calibration facing cannot be read from the files; S7-style offsets need filmed T-poses to tell the cause
+- S6 take7 and take8 are byte-identical (raw too): ask whether one was saved over the other
+- the swing and turn scripts live outside the repo, in `~/Projects/GVHMR/tools/shadow_compare/video_fix/`
+
 ## Scripts (`~/Projects/GVHMR/tools/shadow_compare/`, run in env `gvhmr`)
 
 - `compare_shadow.py GVHMR_NPZ SHADOW_SMPL_NPZ` — time sync, per-joint rotation differences,
