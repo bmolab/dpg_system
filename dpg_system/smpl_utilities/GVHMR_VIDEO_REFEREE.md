@@ -426,6 +426,11 @@ SMPL take, same layout as the originals (play with smpl_take). Each carries `_vi
 recording what was applied. Scripts and text results copied to `~/Projects/GVHMR/tools/shadow_compare/video_fix/`
 (they expect the scratchpad layout for the per-take comparison npz files, which were not copied for lack of disk).
 
+To see the correction: `gvhmr_video_referee/shadow_video_correction_compare.json` (copy of
+`patches/shadow_video_correction_compare.json`) plays jathiswaram as recorded (left) beside the corrected file
+(right) from one frame slider; mgl_rotate's y turns both. Look at the opening hands-on-waist hold (frames 0-800).
+For another take, change both smpl_take paths and the slider and counter maximums to its frame count.
+
 Process, per session:
 1. GVHMR on each take's video, then sensor_error_landscape.py (as in run_all.sh / run_b.sh).
 2. fit_fixed.py: one swing per arm segment per performer (no turn about the bone), held-out halves decide
