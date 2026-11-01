@@ -517,6 +517,55 @@ shake). smooth_stomp_jolt.py now fades the smoothing where it would move the roo
 fix the largest move is 14 mm; fast shake after right stomps, hip fix -> stomp: S1 1.33 -> 0.52, S3 1.54 -> 0.72,
 S4 2.80 -> 0.92, S5 1.31 -> 0.49, S6 1.62 -> 0.66, S7 2.60 -> 0.82. S7 `_vc` files carry the new root position.
 
+## 2026-11-01: the elbow turn under the new fusion (all sessions)
+
+Question: is the elbow turn (the upper arm's roll about its own bone, the candy-wrapper source) a property of
+Shadow's old fusion, like the big hang bank? Measured with `elbow_turn`'s own measure (`ElbowTurnNode.measure`)
+on the raw Shadow rotations of every session, since the 2026 files are in a layout the SMPL converter does not
+read. Strict band (bend 45-80, upper arm more than 30 below level), no widening; session value = circular mean
+over takes with at least 100 band frames, each take once. The old sessions reproduce the SMPL-file screen
+(S1 +18/+43 vs +19/+42; S7 +45/+50 vs +47/+56).
+
+| Session | Fusion | Left | Right |
+|---|---|---|---|
+| S1 | old | +18 | +43 |
+| S2 | old | +41 | +30 |
+| S3 | old | +37 | +47 |
+| S4 | old | +21 | +36 |
+| S5 | old | -2 | +23 |
+| S6 | old | +27 | +28 |
+| S7 | old | +45 | +50 |
+| S10 | new | +32 | +48 |
+| S11 | new | +29 | +29 |
+| S12 | new | +24 | +17 |
+| S13 | new | +27 | +28 (take-to-take spread 29) |
+| S14 | new | +27 | +29 |
+| S15 | new | +35 | +12 |
+| S16 | new | -6 | +11 |
+| S17 | new | +42 | +17 |
+| S18 | new | +27 | +29 |
+| S19 | new | +28 | +35 |
+| S20 | new | +8 | +20 |
+| S21 | new | +22 | +40 |
+| S22 | new | +9 | -4 |
+| S9 retakes | new | +31 | +33 |
+| Gaia suits | new | +17 | +24 |
+
+Reading:
+- Not the fusion: averages are about +27 / +37 under the old fusion and +23 / +25 under the new one.
+- Nearly always positive (inside of the elbow turned up) on both arms, a few calibrations near zero (S22 both
+  arms, S16 and S5 left), take-to-take spread 4-17. A sensor or fusion cause would not come out clean in some
+  sessions; the dancer's T-pose posture would. Consistent with a palms-forward or elbow-turned T-pose, but
+  untested: see test 8 in `HANG_BANK_STUDIO_TESTS.md` (rolled T-poses).
+- Arm alignment is checked before each calibration, but a roll of the upper arm does not change where the arm
+  points, so it is easy to miss by eye.
+
+Byte-identical takes found (skipped): S6 take7 = take8, S13 take3 = take4 and take12 = take13, S16 take2 =
+take3, S18 `Mime` = `mime_1_baton_pole_rope`, and the S9 retakes `temp_take_*` files repeat the named takes
+(except `temp_take_20261009_122939`, which has no named copy and reads +58 / +61).
+
+Files: `video_fix/turn_all_sessions.py`, `video_fix/turn_all_sessions.txt` (per take).
+
 ## Where we left off (2026-11-01): picking up the old-fusion sessions
 
 Decision: no arm corrections on S1-S6 until their video has been analysed.
@@ -543,6 +592,8 @@ If a session never gets video, its Shadow-only session turn (screen table) can b
 Open:
 - the second performer's left-arm swing may be partly the neutral-model artefact (not redone; not needed)
 - calibration facing cannot be read from the files; S7-style offsets need filmed T-poses to tell the cause
+- the elbow turn's cause (T-pose upper-arm roll?): test 8 in `HANG_BANK_STUDIO_TESTS.md`; if it confirms, the fix
+  is a calibration instruction and archive takes keep the per-session turn correction
 - S6 take7 and take8 are byte-identical (raw too): ask whether one was saved over the other
 - the swing and turn scripts live outside the repo, in `~/Projects/GVHMR/tools/shadow_compare/video_fix/`
 

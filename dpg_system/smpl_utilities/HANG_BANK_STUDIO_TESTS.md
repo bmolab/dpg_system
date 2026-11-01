@@ -111,6 +111,33 @@ Exchange the left and right upper-arm sensor units, recalibrate, and run the pro
 If a second suit is available, run the protocol in it. With suit numbers logged, sizes and signs
 across sessions will show whether the bank follows the suit.
 
+### 8. Rolled T-poses (the elbow turn, a different error)
+Not the bank: this tests the elbow turn, where the upper arm reads rolled about its own bone so
+bent elbows seem to bend partly upward (the candy-wrapper shoulders). It is in nearly every
+session under both fusions, mostly +20 to +45° (inside of the elbow turned up), and near zero in
+a few (Subject 22). Suspected cause: the upper arms are rolled during the calibration T-pose,
+and Shadow takes that roll as zero. See `GVHMR_VIDEO_REFEREE.md`, 2026-11-01.
+
+For each condition, calibrate in that T-pose, then record:
+1. T-pose as calibrated, still, 5 s.
+2. Upper arms hanging by the sides, bend both elbows forward slowly to about a right angle and
+   back, 10 times (about 20 s). The turn is read from these bends.
+
+Conditions, turning the whole arm from the shoulder (not just the forearm or the hand):
+- **A, standard:** palms down, inside of the elbow facing forward.
+- **B, rolled up:** inside of the elbow turned about 45° toward the ceiling (palms angled forward).
+- **C, rolled down:** inside of the elbow turned about 45° toward the floor (palms angled back).
+- **D, the dancer's usual T-pose**, without coaching.
+
+If possible, film each calibration from the front and from the side, so the elbow crease can be
+seen. Log the suit number as usual.
+
+- **Turn follows the roll** (A near 0, B about +45, C about −45): the cause is the T-pose. D shows
+  how far the usual T-pose is off. The fix is a calibration instruction; archive takes keep the
+  per-session turn correction.
+- **Turn the same in all conditions:** not the T-pose. Next suspects are the strap mounting
+  (sensor rotating on the arm after calibration) or a solver convention.
+
 ### Dropped
 - **Deliberate root tilt.** The simulation shows that a rotated root sensor cancels out in
   calibration and can't produce the bank.
@@ -126,5 +153,7 @@ across sessions will show whether the bank follows the suit.
   time, per session. Add the new session's folder to the list at its top.
 - **For the timing and the T-pose return:** ask Claude to measure the bank against time after
   each lowering. Point to the take and the step frames.
+- **For test 8:** the `elbow_turn` node reads the turn from a take (left, right, degrees; +
+  means the inside of the elbow is turned up). Its `frames used` outlet should be at least 100.
 - **Size that matters:** take-to-take scatter in clean sessions is about ±3°. Compare session
   medians, or protocol takes in the same spot, not single choreography takes.
