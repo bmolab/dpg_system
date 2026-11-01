@@ -322,7 +322,16 @@ Status legend: **[V]** validated (cross-checked / multiple independent tests) ·
 ## OPEN [O] — need video or more data
 
 - **Elevation half of the hang (~26°, right arm too high):** gravity-referenced, so not yaw-mag. Real
-  asymmetric posture vs tilt-bleed — **VIDEO adjudicates** (is the relaxed right arm really raised?).
+  asymmetric posture vs tilt-bleed — **VIDEO adjudicated it for Subject 7** (`GVHMR_VIDEO_REFEREE.md`,
+  2026-10-30 to 11-01): Shadow's right upper arm is off by ~31° (±4) in every take, a constant
+  rotation in the sensor's own frame, present even at T-pose; the left upper arm is right. The second
+  performer (other suit, calibrated together) has the same offset, so the cause is the calibration
+  (spot or facing), not a magnetized sensor or posture. Corrected by a fixed swing per segment (the
+  `_vc` files). Still open: spot vs facing (needs filmed T-poses at both facings), and the other
+  sessions (no S7-style offset in the Shadow-only screen; S6 is the next candidate for video).
+- **Elbow turn (upper-arm roll, the candy-wrapper source):** confirmed against the video in Subject 7,
+  and present under both fusions in nearly every session (+20..+45°, a few near 0). Suspected T-pose
+  upper-arm roll; test 8 in `HANG_BANK_STUDIO_TESTS.md`.
 - **Does any properly-combined heading-dependent correction improve the *rendered* defect?** Never
   cleanly demonstrated (yaw and twist fixes did not).
 - **Hang bank: cause of the within-session leftward drift** (warming, battery, filter, or
