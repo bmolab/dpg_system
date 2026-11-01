@@ -465,6 +465,58 @@ the planted-foot slide (4-5 cm on both sides, a separate problem) is unchanged. 
 beside the hip-fixed ones; the `video_corrected/subject7/*_vc.npz` files now carry the same root position
 (`_stomp_smooth_*` keys). Pipeline per take: hip fix -> stomp smoothing -> video arm correction (poses only).
 
+## 2026-11-01: which body model draws Shadow's rotations
+
+The converter copies Shadow's joint rotations straight into SMPL, so the drawn bone directions depend on the model's
+rest pose. Shadow's own skeleton has the upper arms 3 deg below level, pointing straight out; SMPL-H (what
+dpg_system draws with) is close to that. GVHMR's neutral SMPL-X is lopsided: left upper arm 15.6 deg below level and
+9 deg back, right 7.6 deg below. All the video comparisons above drew Shadow on the neutral SMPL-X model.
+
+Re-measured (Subject 7, 8 takes, upper-arm direction error vs video, median):
+- right arm, raw: 32.8 (neutral) / 29.7 (Shadow skeleton) / 33.6 (SMPL-H); corrected: 13.6 / 15.8 / 14.2.
+  The right-arm offset and its correction stand whatever the model.
+- left arm, raw: 13.2 / 15.9 / 14.7. Small either way; the left-arm conclusions stand.
+- But the turn had been rolled about the NEUTRAL bone, so drawn with SMPL-H it moved the left upper arm
+  (corrected left 17.1 vs raw 14.7). Fixed 2026-11-01: the turn is re-applied about the SMPL-H bone (file gender and
+  betas); the drawn left upper arm is now exactly the raw one, and corrected left = raw left = 14.7.
+  Files carry `_video_correction_turn_axis`. build_final.py now does this itself; reaxis_turn.py and axis_check.py
+  are in video_fix/.
+- Not redone: the second performer's left upper-arm swing (10 deg) was fitted with Shadow on the lopsided
+  neutral left arm and may be partly that model's rest pose. For later sessions, the fitting step should draw
+  Shadow with SMPL-H (or Shadow's skeleton) and the video with its own neutral SMPL-X.
+
+## 2026-11-01: Shadow-only screening of the old-fusion sessions (S1-S7)
+
+`video_fix/screen_sessions.py` on the hip-fixed files (results `screen_old_fusion.txt`). Measures, per session:
+
+| session | stomp shake L/R | elbow turn L / R (sd over takes) | hang bank | right reads higher at level |
+|---|---|---|---|---|
+| S1 | 0.90 / 1.33 | +19 (4) / +42 (11) | -4.6 | +0.4 |
+| S2 | 1.00 / 1.07 | +43 (6) / +32 (9) | -7.9 | +2.1 |
+| S3 | 0.92 / 1.54 | +33 (5) / +41 (12) | -3.2 | +1.0 |
+| S4 | 1.34 / 2.91 | +11 (7) / +26 (6) | -2.1 | -2.2 |
+| S5 | 0.99 / 1.26 | +5 (9) / +21 (5) | +0.8 | -2.4 |
+| S6 | 1.17 / 1.70 | +28 (8) / +29 (7) | -2.4 | +4.5 |
+| S7 | 1.27 / 2.42 | +47 (10) / +56 (7) | -16.3 | +10.1 |
+
+- Stomp shake (fast root shake after / before each leg's stomps): the right thigh carries the position sensor in
+  every session; S2 shows no shake on either side.
+- Elbow turn from Shadow alone: positive on both arms in every session, steady over takes. For S7 this reading
+  matched the video within 2-3 deg on arms that needed no big swing, so it is a usable provisional correction.
+- One-sided right upper-arm offset like S7's: the lens that moves with the S7 correction is how much higher the
+  right arm reads with both arms near level (S7 +10.1 raw, -2.5 corrected). No other session comes close; S6 is
+  next (+4.5; takes 7, 11, 12 at +7..+9). S2 has the next-largest bank but reads level, so its bank looks like the
+  shared old-fusion lean, not a one-sided offset. Video is most likely to add something for S6, then S2.
+- Calibration facing cannot be read from the files: S7's takes start facing the dance direction, not the
+  calibration facing (~95 deg away), and rarely in a T-pose.
+- S6 take7 and take8 are byte-identical, raw files too.
+
+Stomp smoothing applied to S1, S3, S4, S5, S6, S7 (`*_stomp.npz` beside the hip-fixed files; S2 left out, no
+shake). smooth_stomp_jolt.py now fades the smoothing where it would move the root more than ~25 mm: dropout jumps of
+25-71 cm in one frame sometimes fall near a stomp, and the first run smeared them (up to 373 mm moves). After the
+fix the largest move is 14 mm; fast shake after right stomps, hip fix -> stomp: S1 1.33 -> 0.52, S3 1.54 -> 0.72,
+S4 2.80 -> 0.92, S5 1.31 -> 0.49, S6 1.62 -> 0.66, S7 2.60 -> 0.82. S7 `_vc` files carry the new root position.
+
 ## Scripts (`~/Projects/GVHMR/tools/shadow_compare/`, run in env `gvhmr`)
 
 - `compare_shadow.py GVHMR_NPZ SHADOW_SMPL_NPZ` — time sync, per-joint rotation differences,

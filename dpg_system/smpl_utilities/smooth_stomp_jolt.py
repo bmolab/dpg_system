@@ -22,13 +22,16 @@ Method
    frame of peak deceleration. The root position plays no part in finding them.
 2. A soft weight is 1 from --pre s before each strike to --post s after it, with
    raised-cosine fades of --ramp s either side (overlapping stomps take the max).
-3. trans_out = trans + weight * (gaussian_smoothed(trans) - trans).
+3. trans_out = trans + weight * (gaussian_smoothed(trans) - trans), with the weight faded by
+   1 / (1 + (move / --max-move)^4): the bounce moves the root by a few mm, so where smoothing would move
+   it by several cm the cause is something else (a dropout jump of tens of cm in one frame near a
+   stomp), and smearing it into its neighbours would only spread it.
 
 Output filename suffix: `_stomp.npz`.
 
 Usage:
     python smooth_stomp_jolt.py <input.npz> [<output.npz>]
-        [--side R|L] [--sigma 0.03] [--pre 0.02] [--post 0.18] [--ramp 0.04]
+        [--side R|L] [--sigma 0.03] [--pre 0.02] [--post 0.18] [--ramp 0.04] [--max-move 0.025]
 """
 from __future__ import annotations
 
@@ -87,7 +90,7 @@ def stomp_weight(strikes, T, fps, pre, post, ramp):
 
 
 def smooth_take(in_path, out_path, side='R', sigma_s=0.03, pre_s=0.02, post_s=0.18,
-                ramp_s=0.04, verbose=True):
+                ramp_s=0.04, max_move=0.025, verbose=True):
     data = np.load(in_path, allow_pickle=True)
     poses = data['poses']; trans = data['trans']
     betas = np.asarray(data['betas']).flatten()
@@ -112,13 +115,15 @@ def smooth_take(in_path, out_path, side='R', sigma_s=0.03, pre_s=0.02, post_s=0.
     strikes = find_strikes(z, fps)
     w = stomp_weight(strikes, T, fps, pre_s, post_s, ramp_s)
     smooth = gaussian_filter1d(trans, sigma_s * fps, axis=0, mode='nearest')
+    w = w / (1 + (np.linalg.norm(smooth - trans, axis=1) / max_move) ** 4)
     trans_out = trans + w[:, None] * (smooth - trans)
 
     if verbose:
         moved = np.linalg.norm(trans_out - trans, axis=1)
+        typical = np.median(moved[w > 0.5]) if (w > 0.5).any() else 0.0
         print(f'Take: {Path(in_path).name}  T={T}  fps={fps}  side={side}  '
               f'stomps={len(strikes)}  frames weighted={np.mean(w > 0) * 100:.1f}%  '
-              f'root moved: median {np.median(moved[w > 0.5]) * 1000:.1f} mm, '
+              f'root moved: median {typical * 1000:.1f} mm, '
               f'max {moved.max() * 1000:.1f} mm')
 
     out = {k: data[k] for k in data.files}
@@ -127,6 +132,7 @@ def smooth_take(in_path, out_path, side='R', sigma_s=0.03, pre_s=0.02, post_s=0.
     out['_stomp_smooth_strikes'] = strikes
     out['_stomp_smooth_sigma_s'] = np.array(sigma_s)
     out['_stomp_smooth_window_s'] = np.array([pre_s, post_s, ramp_s])
+    out['_stomp_smooth_max_move_m'] = np.array(max_move)
     np.savez(out_path, **out)
     if verbose:
         print(f'Saved: {out_path}')
@@ -144,10 +150,12 @@ def main():
     p.add_argument('--pre', type=float, default=0.02, help='full weight starts this long before the strike, s')
     p.add_argument('--post', type=float, default=0.18, help='full weight lasts this long after the strike, s')
     p.add_argument('--ramp', type=float, default=0.04, help='fade in/out, s')
+    p.add_argument('--max-move', type=float, default=0.025,
+                   help='smoothing fades out where it would move the root more than this, m')
     a = p.parse_args()
     inp = Path(a.input)
     out = Path(a.output) if a.output else inp.with_name(inp.stem + '_stomp.npz')
-    smooth_take(inp, out, a.side, a.sigma, a.pre, a.post, a.ramp)
+    smooth_take(inp, out, a.side, a.sigma, a.pre, a.post, a.ramp, a.max_move)
 
 
 if __name__ == '__main__':
