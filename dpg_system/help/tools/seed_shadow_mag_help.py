@@ -532,10 +532,17 @@ moved, so this is an absolute reference - where pose_symmetry can only compare o
 with the other.
 
 THE BODY:
-The torso is an oval cylinder from the pelvis to the upper spine, turned with the chest:
-'torso width' and 'torso depth' are its half-width and half-depth in cm. The forearms and
-hands are points along them, placed by the Shadow skeleton, with 'arm radius' of
-thickness. Sizes are for an average adult; set them for the dancer.
+The torso runs from the pelvis to the upper spine, turned with the chest; the forearms and
+hands are points along them, placed by the Shadow skeleton, with a thickness.
+
+Given the dancer's SMPL betas and gender, the body is measured from that SMPL body: the
+torso's half-width, and its depth in front of and behind the spine, follow its shape from
+below the hips to the neck (wide hips, narrow waist, chest), and the forearm tapers from
+elbow to wrist; the hand takes the wrist's thickness. This is the body the mesh shows.
+
+Without betas, the torso is an oval cylinder - 'torso width' and 'torso depth' are its
+half-width and half-depth in cm - and the forearms and hands have 'arm radius' of
+thickness: guesses for an average adult.
 
 WHAT COUNTS:
 In every frame, how deep any forearm or hand point is inside the torso (a hand clear of
@@ -554,6 +561,10 @@ take in:
 Shadow quaternions, (frames, 37 or 20 joints, 4), scalar first. A tensor carrying
 gradients keeps them.
 
+betas:
+The dancer's SMPL shape, a list of 10 numbers, e.g. from smpl_beta_editor. Once any have
+arrived they are used instead of the 'betas file'.
+
 contact ranges:
 An option: frames where the wrists rest on the body, like 1-827, 15428-15741. Empty
 checks penetration only.
@@ -562,11 +573,20 @@ every:
 An option: if the take was thinned (t[] ::6), the step, so the ranges still name frames
 of the full take.
 
+betas file:
+An option: a file holding the betas - a session's betas .npy, or a take .npz that carries
+them. Empty, with nothing at the betas inlet, uses the cylinder.
+
+gender:
+An option (female, male, neutral): the SMPL model the betas were fitted with. It must
+match: the same betas make a different body on another model. A betas file's own gender
+is not used.
+
 torso width, torso depth:
-Options, in cm (13, 10): the torso's half-width and half-depth.
+Options, in cm (13, 10): the cylinder's half-width and half-depth, without betas.
 
 arm radius:
-An option, in cm (4): the thickness of the forearm and hand.
+An option, in cm (4): the thickness of the forearm and hand, without betas.
 
 contact weight:
 An option (1): how much the contact counts against the penetration.
@@ -589,7 +609,7 @@ Two numbers, left then right, in cm: each wrist's typical distance from the surf
 the contact ranges; negative is inside. Sent only when there are contact ranges.
 
 READING THE DEMO:
-A made-up take of both arms hanging, swaying in and out together: as mirror images,
+The demo uses the cylinder. A made-up take of both arms hanging, swaying in and out together: as mirror images,
 clear of the body (0 and 0), then with both turned 15 degrees toward the dancer's right
 - the left arm swings in through the body for most of the take (about 71), the right one
 out (0).
@@ -612,7 +632,7 @@ held(53) + [
 ],
 [('lb', 'out', 'nl', 'send'), ('nl', 'dict out', 'de', 'dict in'), ('de', 'hanging', 'b1', 'take in'),
  ('de', 'shifted', 'b2', 'take in'), ('b1', 'inside', 'l1', ''), ('b2', 'inside', 'l2', '')],
-['pose_symmetry', 'hang_symmetry', 'shadow_mag_correct', 'elbow_hinge', 't.optimize'], 430, 1350)
+['pose_symmetry', 'hang_symmetry', 'shadow_mag_correct', 'elbow_hinge', 't.optimize'], 430, 1650)
 
 
 def main():

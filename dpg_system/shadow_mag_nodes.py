@@ -31,6 +31,7 @@ shoulder, elbow and wrist local quaternions; the hand keeps its world orientatio
 (except under 'hang', which carries the hand with the arm).
 """
 import math
+import os
 from pathlib import Path
 
 import numpy as np
@@ -408,38 +409,112 @@ def torso_frame(q, scale=1.0):
     return A, axis, length, axis / length, xc, zc
 
 
-def torso_gap(frame, p, width=14.0, depth=10.0):
+_profiles = {}
+
+
+def body_profile(betas, gender='female'):
+    """The torso and forearm of the SMPL-H body with these betas, in its rest pose, measured
+    for torso_gap and arm_gaps. Every 2 cm from 10 cm below the pelvis joint to the neck: the
+    half-width, and the depth in front of and behind the spine line (cm). Heights are kept as
+    fractions of pelvis to neck, so they map onto Shadow's pelvis to upper spine. And the
+    forearm's radius (median, cm) at tenths of the way from elbow to wrist, both arms averaged."""
+    betas = np.asarray(betas, dtype=np.float64).reshape(-1)[:10]
+    key = (gender, tuple(np.round(betas, 6)))
+    if key not in _profiles:
+        path = Path(__file__).resolve().parents[1] / 'assets' / 'smplh' / f'SMPLH_{gender.upper()}.npz'
+        m = np.load(path)
+        b = np.zeros(10)
+        b[:len(betas)] = betas
+        v = (m['v_template'] + m['shapedirs'][:, :, :10] @ b) * 100.0
+        J = m['J_regressor'][:22] @ v
+        dom = m['weights'].argmax(1)
+        torso = v[np.isin(dom, [0, 3, 6, 9, 12, 13, 14])]
+        spine = [0, 3, 6, 9, 12]
+        length = J[12, 1] - J[0, 1]
+        heights = np.arange(-10.0, length + 1e-6, 2.0)
+        rows = []
+        for h in heights:
+            y = J[0, 1] + h
+            sl = torso[np.abs(torso[:, 1] - y) < 1.0]
+            zs = np.interp(y, J[spine, 1], J[spine, 2])
+            rows.append([(sl[:, 0].max() - sl[:, 0].min()) / 2.0, sl[:, 2].max() - zs, zs - sl[:, 2].min()])
+        rows = np.array(rows)
+        # a light smoothing: a 1 cm slab holds few vertices
+        padded = np.concatenate([rows[:1], rows, rows[-1:]])
+        rows = (padded[:-2] + padded[1:-1] + padded[2:]) / 3.0
+        tenths = np.linspace(0.0, 1.0, 11)
+        arm = v[np.isin(dom, [16, 17, 18, 19, 20, 21])]
+        sides = []
+        for e, w in ((18, 20), (19, 21)):
+            ax = J[w] - J[e]
+            t = (arm - J[e]) @ ax / (ax @ ax)
+            rad = np.linalg.norm(arm - J[e] - t[:, None] * ax, axis=1)
+            sides.append([np.median(rad[np.abs(t - f) < 0.03]) for f in tenths])
+        radius = np.mean(sides, axis=0)
+        radius[1:-1] = (radius[:-2] + radius[1:-1] + radius[2:]) / 3.0
+        _profiles[key] = dict(start=heights[0] / length, step=2.0 / length,
+                              width=torch.tensor(rows[:, 0]), front=torch.tensor(rows[:, 1]),
+                              back=torch.tensor(rows[:, 2]), arm=torch.tensor(radius))
+    return _profiles[key]
+
+
+def _lookup(table, x, start, step):
+    """Linear interpolation of a table sampled at start, start+step, ... at x (clamped)."""
+    table = table.to(device=x.device, dtype=x.dtype)
+    f = ((x - start) / step).clamp(0.0, len(table) - 1.0)
+    i = f.floor().clamp(max=len(table) - 2).long()
+    a = f - i
+    return table[i] * (1.0 - a) + table[i + 1] * a
+
+
+def torso_gap(frame, p, width=14.0, depth=10.0, profile=None, scale=1.0):
     """Distance (cm) of points p (..., [k,] 3) outside the torso: an oval cylinder (half-width x
     half-depth, in the chest's frame) along the frame's axis, rounded past its ends. Negative
-    inside. With an extra point axis k, the frame broadcasts over it."""
+    inside. With a body_profile, the oval's half-width and its depths in front and behind
+    follow the body's shape with height instead (scaled by scale). With an extra point axis k,
+    the frame broadcasts over it."""
     A, axis, length, u, xc, zc = frame
     if p.dim() == A.dim() + 1:
         A, axis, length, u, xc, zc = (x[..., None, :] for x in (A, axis, length, u, xc, zc))
-    t = (((p - A) * u).sum(-1, keepdim=True) / length).clamp(0.0, 1.0)
+    t = ((p - A) * u).sum(-1, keepdim=True) / length
+    t = t.clamp(0.0 if profile is None else profile['start'], 1.0)
     h = p - (A + t * axis)
     hl, hd, hv = (h * xc).sum(-1), (h * zc).sum(-1), (h * u).sum(-1)
     radial = torch.sqrt(hl * hl + hd * hd + 1e-9)
+    if profile is not None:
+        s = t[..., 0]
+        width = _lookup(profile['width'], s, profile['start'], profile['step']) * scale
+        depth = torch.where(hd > 0,
+                            _lookup(profile['front'], s, profile['start'], profile['step']),
+                            _lookup(profile['back'], s, profile['start'], profile['step'])) * scale
     # the oval's radius in this point's direction
     r = width * depth * radial / torch.sqrt((depth * hl) ** 2 + (width * hd) ** 2 + 1e-9)
     return radial - r + hv.abs()
 
 
-def arm_gaps(q, width=14.0, depth=10.0, arm=4.0, scale=1.0, samples=6):
+def arm_gaps(q, width=14.0, depth=10.0, arm=4.0, scale=1.0, samples=6, profile=None):
     """Per arm, how close the forearm and hand come to the torso surface (cm; negative = inside),
-    and how far the wrist itself is from it: two (..., 2) tensors, left then right."""
+    and how far the wrist itself is from it: two (..., 2) tensors, left then right. With a
+    body_profile, the torso and the forearm's thickness are the body's (the hand takes the
+    wrist's), and width, depth and arm are unused."""
     joints = [j for side in 'LR' for j in (ARMS[side][1], ARMS[side][2], FINGERS[side])]
     P, _ = joint_positions(q, joints, scale)
     frame = torso_frame(q, scale)
     t = q.new_tensor(np.linspace(0.0, 1.0, samples))[:, None]
-    w, d, r = width * scale, depth * scale, arm * scale
+    w, d = width * scale, depth * scale
+    if profile is None:
+        r = q.new_full((2 * samples - 1,), arm * scale)
+    else:
+        fore_r = _lookup(profile['arm'], t[:, 0], 0.0, 0.1) * scale
+        r = torch.cat([fore_r, fore_r[-1:].expand(samples - 1)])
     closest, wrist = [], []
     for side in 'LR':
         el, wr, fi = ARMS[side][1], ARMS[side][2], FINGERS[side]
         fore = P[el][..., None, :] + t * (P[wr] - P[el])[..., None, :]
         hand = P[wr][..., None, :] + t[1:] * (P[fi] - P[wr])[..., None, :]
-        g = torso_gap(frame, torch.cat([fore, hand], dim=-2), w, d)
-        closest.append(g.min(-1).values - r)
-        wrist.append(torso_gap(frame, P[wr], w, d) - r)
+        g = torso_gap(frame, torch.cat([fore, hand], dim=-2), w, d, profile, scale)
+        closest.append((g - r).min(-1).values)
+        wrist.append(torso_gap(frame, P[wr], w, d, profile, scale) - r[samples - 1])
     return torch.stack(closest, dim=-1), torch.stack(wrist, dim=-1)
 
 
@@ -773,7 +848,12 @@ class BodyContactNode(Node):
     skeleton. A forearm or hand inside the torso is impossible in any frame, so every frame's
     penetration counts. In the frames flagged as 'contact ranges' (hands resting on the hips,
     say) the wrists should touch the surface, so a gap counts there too, either way. Absolute,
-    so unlike pose_symmetry it can tell which arm is wrong. A loss for t.optimize."""
+    so unlike pose_symmetry it can tell which arm is wrong. A loss for t.optimize.
+
+    Given the dancer's SMPL betas (a 'betas file' or the 'betas' inlet) and gender, the torso
+    and forearms are measured from that SMPL body instead: the torso's width and its depth in
+    front and behind follow its shape from hips to neck, and the forearm tapers to the wrist.
+    The torso and arm options are then unused."""
     @staticmethod
     def factory(name, data, args=None):
         return BodyContactNode(name, data, args)
@@ -781,8 +861,12 @@ class BodyContactNode(Node):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.pose_input = self.add_input('take in', triggers_execution=True)
+        self.betas_input = self.add_input('betas')
         self.ranges_option = self.add_option('contact ranges', widget_type='text_input', default_value='')
         self.every_option = self.add_option('every', widget_type='drag_int', default_value=1, min=1)
+        self.betas_file_option = self.add_option('betas file', widget_type='text_input', default_value='')
+        self.gender_option = self.add_option('gender', widget_type='combo', default_value='female')
+        self.gender_option.widget.combo_items = ['female', 'male', 'neutral']
         self.width_option = self.add_option('torso width', widget_type='drag_float', default_value=13.0, min=1.0)
         self.depth_option = self.add_option('torso depth', widget_type='drag_float', default_value=10.0, min=1.0)
         self.arm_option = self.add_option('arm radius', widget_type='drag_float', default_value=4.0, min=0.0)
@@ -796,6 +880,29 @@ class BodyContactNode(Node):
         v = option()
         return default if v is None else float(v)
 
+    def betas(self):
+        """The betas from the inlet if any have arrived, else from the file (a betas .npy, as a
+        dict or an array, or a take .npz carrying 'betas'), else None."""
+        b = self.betas_input()
+        if b is not None:
+            return np.asarray(b, dtype=np.float64).reshape(-1)
+        path = (self.betas_file_option() or '').strip()
+        if not path:
+            return None
+        if getattr(self, '_betas_path', None) != path:
+            self._betas_path, self._betas = path, None
+            try:
+                d = np.load(os.path.expanduser(path), allow_pickle=True)
+                if isinstance(d, np.lib.npyio.NpzFile):
+                    d = d['betas']
+                elif d.dtype == object:
+                    d = d.item()
+                    d = d['betas'] if isinstance(d, dict) else d
+                self._betas = np.asarray(d, dtype=np.float64).reshape(-1)
+            except Exception as e:
+                print('body_contact: could not read betas from', path, '-', e)
+        return self._betas
+
     def execute(self):
         q, how = as_pose_tensor(self.pose_input())
         if q is None or q.ndim != 3 or q.shape[0] < 2:
@@ -804,7 +911,9 @@ class BodyContactNode(Node):
             return
         width, depth = self.number(self.width_option, 13.0), self.number(self.depth_option, 10.0)
         arm = self.number(self.arm_option, 4.0)
-        closest, wrist = arm_gaps(q, width, depth, arm)
+        betas = self.betas()
+        profile = None if betas is None else body_profile(betas, self.gender_option() or 'female')
+        closest, wrist = arm_gaps(q, width, depth, arm, profile=profile)
         sig = max(1e-3, self.number(self.robust_option, 1.0))
         huber = lambda x: torch.mean(sig ** 2 * (torch.sqrt(1 + (x / sig) ** 2) - 1)) / sig ** 2
         # inside anywhere: only how deep, nothing for a hand clear of the body
