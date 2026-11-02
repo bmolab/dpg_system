@@ -427,8 +427,9 @@ recording what was applied. Scripts and text results copied to `~/Projects/GVHMR
 (they expect the scratchpad layout for the per-take comparison npz files, which were not copied for lack of disk).
 
 To see the correction: `gvhmr_video_referee/shadow_video_correction_compare.json` (copy of
-`patches/shadow_video_correction_compare.json`) plays jathiswaram as recorded (left) beside the corrected file
-(right) from one frame slider; mgl_rotate's y turns both. Look at the opening hands-on-waist hold (frames 0-800).
+`patches/shadow_video_correction_compare.json`) plays jathiswaram before the arm correction (left: the
+`_rhipflexstat_stomp` file, hip fix and stomp smoothing) beside the `_vc` file (right), so the arms are the
+only difference, from one frame slider; mgl_rotate's y turns both. Look at the opening hands-on-waist hold (frames 0-800).
 For another take, change both smpl_take paths and the slider and counter maximums to its frame count.
 
 Process, per session:
