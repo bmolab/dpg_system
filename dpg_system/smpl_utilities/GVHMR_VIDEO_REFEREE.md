@@ -567,6 +567,127 @@ take3, S18 `Mime` = `mime_1_baton_pole_rope`, and the S9 retakes `temp_take_*` f
 
 Files: `video_fix/turn_all_sessions.py`, `video_fix/turn_all_sessions.txt` (per take).
 
+## 2026-11-01: the hang bank after the video correction (Subject 7)
+
+The same screen (`screen_sessions.py`) run on the `_vc` files beside the files before the arm correction (hip fix,
+stomp smoothing). Session values, median over takes:
+
+| lens | before | `_vc` |
+|---|---|---|
+| hang bank (+ = toward the dancer's left) | -16.3 | -3.5 |
+| arm splayed out, L / R | +9.2 / +35.3 | +8.9 / +15.0 |
+| arm forward, L / R | +5.6 / +10.4 | +6.1 / +3.0 |
+| right reads higher at level | +10.1 | +1.3 |
+| frames with both arms hanging, jathiswaram | 4698 | 14987 |
+
+Per take the bank is now -1.7 (jathiswaram) to -10.9 (sarukkal, 181 hanging frames); the takes with the most
+hanging frames read -1.7 to -3.4.
+
+Reading:
+- Nearly all of Subject 7's hang bank was the one-sided right upper-arm offset, not a lean of both arms, as the
+  2026-10-30 measurement suggested (left arm hanging within 6 deg of the video). Swinging the right arm back
+  removes it; the left arm's lens values barely move.
+- The remaining -3.5 is inside the range of the new-fusion sessions (about +-5), so `_vc` files need no fixed bank.
+  The old `shadow_mag_correct` setting ('fixed bank' -17.9) would now push both arms about 14 deg the other way.
+- Three times as many jathiswaram frames now qualify as both arms hanging: the screen needs the two arms at
+  matching heights, and the right arm no longer reads higher.
+- The right arm still splays out about 6 deg more than the left (+15 vs +9). Could be the dancer, or what is left
+  of the offset; not separated.
+- The elbow turn reads back L +2 / R +25 on the `_vc` files. The right is expected: the video-implied +46 was used
+  instead of Shadow's post-swing +68 (see "finished corrected files").
+- For the other old-fusion sessions: a bank alone cannot tell a lean of both arms from a one-sided offset. The
+  "right reads higher at level" lens can; S7 was the only session high on it (screen table above).
+
+Files: `video_fix/screen_S7_vc.txt`.
+
+## 2026-11-02: Subject 11 (new fusion) — file layout, frame rate and the Vive tracker
+
+Videos: `Subject11_Shaolin_Tai_Chi_60/Subject11_take1..9.mov`, beside the Shadow files, one per take, 1080p at
+59.94 fps, one camera position (the new space). A second person walks in front of the lens near the end of some takes.
+
+Several takes are in unusual positions: crouching and hops (take 3), seated and floor stretches (take 6),
+low stances. The back is upright (pelvis and chest within 15 deg of vertical) in only 32-64% of each take's frames.
+
+**The files run at 100 frames per second, though they say 60.** Every video is 0.6 x its Shadow take's length (all 9
+takes), and the hops take syncs to its video with correlation 0.51 at 100 vs 0.27 at 60 (offset +0.08 s at 100, as
+S7's +0.10; at 60 the best offset sits at the search edge).
+
+**Layout:** 20-joint `quats` (local, w first), `trans` and `tracker_ori`, with no Shadow positions. `trans` and
+`tracker_ori` come from a Vive tracker worn about mid lower back: a rough root position, a little higher than the
+SMPL root, in the Vive's world frame, not Shadow's. As stored, the horizontal axes do not match Shadow's (hops take:
+Shadow's x and y travel swapped against the video).
+
+**Coordinating the two worlds:** fit tracker_ori = W * pelvis * M, where W is a constant turn between the Vive's world
+and Shadow's magnetic world and M is the tracker's mount on the pelvis. M comes from relative motions
+(T_i^-1 T_j = M^-1 (S_i^-1 S_j) M, aligning rotation axes), then W = mean(T M^-1 S^-1).
+- `tracker_ori` is w first (x first leaves about 30 deg unexplained). The mount is about 174 deg (the tracker is turned
+  round on the back). The two worlds agree on which way is up within 1-6 deg; W is a turn about vertical.
+- **Use upright-back frames only.** From experience (David), the Vive-to-suit relationship changes with the angle of
+  the back, so only frames with the back fairly straight and perpendicular to the floor are used. The data agree:
+  with one session mount, the leftover is 4.5 deg median with the pelvis within 15 deg of vertical, 5.7 at 15-30, 8.1
+  at 30-45, 11.1 at 45-60. Mount fitted from upright frames pooled over all takes (short takes alone give unstable
+  mounts: take 4 alone moves W by 26 deg).
+- W per take (pooled mount, upright frames), leftover median / 90th:
+
+| take | upright | W turn | leftover | per minute (upright frames) |
+|---|---|---|---|---|
+| 1 rouquan | 45% | +39.4 | 5.8 / 18.5 | +35.5 +46.9 |
+| 2 rouqyan kungfu | 53% | +69.2 | 3.6 / 11.9 | +71.2 +70.1 +56.4 +69.8 |
+| 3 hops | 43% | +70.6 | 2.6 / 7.5 | +69.2 |
+| 4 short centipede | 32% | +57.5 | 3.6 / 6.6 | (too short) |
+| 5 spiraling fist | 55% | +66.1 | 7.0 / 13.5 | +72.0 +69.8 +60.4 |
+| 6 stretches misaligned | 46% | +77.1 | 4.0 / 6.1 | +78.1 +79.0 +78.3 (3 min on the floor) +76.9 +76.0 |
+| 7 slow misaligned | 50% | +68.5 | 2.2 / 4.7 | +68.5 +68.4 +68.5 +69.4 +68.9 +68.7 +68.5 |
+| 8 slow 2 eventually misaligned | 61% | +71.4 | 3.2 / 7.9 | +71.8 +71.5 +69.8 +71.4 |
+| 9 final combo | 64% | +40.2 | 5.2 / 13.3 | +40.2 +39.8 +41.9 |
+
+Two things change between takes (David): the tracker was probably adjusted on the back several times, and the suit
+is usually recalibrated between takes. Recalibration between takes is not absolute, but it is the starting
+assumption for every session. On upright frames a tracker turned on the back (mount) and a turn of the worlds (W)
+are the same rotation about vertical, so the orientation fit alone cannot separate them.
+
+**W from travel, independent of the mount** (`video_fix/vive_from_video.py`): GVHMR's root travel, put in Shadow's
+world by the constant GVHMR-to-Shadow rotation of the root orientations, against the Vive's horizontal travel
+(2 s displacements over 0.2 m, reliable frames). Signs as the table above (Shadow to Vive):
+
+| take | W from travel | direction leftover median / 90th | video / Vive travel length | W from orientation (pooled mount) |
+|---|---|---|---|---|
+| 1 | +59.4 | 10.8 / 35.1 | 1.08 | +39.4 |
+| 2 | +76.5 | 9.5 / 29.9 | 1.06 | +69.2 |
+| 3 | +71.1 | 5.0 / 21.5 | 0.98 | +70.6 |
+| 4 | (too little travel) | | | +57.5 |
+| 5 | +73.1 | 8.6 / 27.6 | 1.07 | +66.1 |
+| 9 | +71.6 | 8.5 / 27.5 | 1.03 | +40.2 |
+
+Reading:
+- Take 9's 30 deg jump in the orientation fit is the tracker re-seated on the back, not a heading reset: by travel
+  it sits with takes 2-5. Take 1 differs by 20 deg the same way. Takes 2, 3 and 5 agree within 1-7 deg, so the pooled
+  mount fits them.
+- Across recalibrations, Shadow's heading against the Vive stays within about 59-77 deg (take 1 lowest).
+- Within a slow take on upright frames the orientation turn holds within about 1 deg for 7 minutes (take 7): no
+  steady drift of Shadow's pelvis heading against the Vive inside a take. The vigorous takes swing up to 15 deg
+  minute to minute (take 2's +56, take 5's +60); not separated from the tracker moving on the back.
+- Whatever 'misaligned' in the take names refers to, it is not a drift of the pelvis heading against the Vive.
+- So: with video, take W from travel; without video, the orientation fit needs a mount per stretch between strap
+  adjustments, which the files do not mark.
+- An all-frames fit (mount per take, every posture) gave different values (takes 1-9: +55 to +69). It is superseded.
+
+Tools (`video_fix/`):
+- `convert_active20.py OUT_DIR [--fps F] [--vive] TAKE.npz ...`: 20-joint files to SMPL (joints placed in the 37
+  layout, then `convert_shadow_to_smpl`). `--vive` turns `trans` into Shadow's world by W^-1. The lower-back offset
+  is not removed. Caution: it still uses the all-frames, per-take fit; switch it to upright frames and the pooled
+  mount before using positions for anything finer than the room bins.
+- `vive_fit.py` (all frames, superseded), `vive_upright.py` (upright frames, pooled mount, tilt bins),
+  `vive_from_video.py GVHMR_OUT RAW_TAKE SHADOW_SMPL` (W from travel).
+- `demo_mac.py` new options: `--stride 2` (59.94 fps video; keeps the comparison's 29.97 timing) and `--h_tol` (height
+  tolerance of the person follower; 0.5 for a performer who crouches and sits — at 0.3 the hops take lost 30% of
+  frames, at 0.5 3%). `arm_2d_referee.py` reads the stride for its picture.
+
+Hops take, first reading (with the Vive-turned trans): Shadow's travel x 1.1 / y 4.7 m vs the video's 1.3 / 5.5 (the
+axes now match). Both upper arms carry about 40 deg of twist (the elbow turn); the left upper arm's direction is 23 deg
+off against the right's 9.5. One take only. All nine takes are running through the S7 pipeline (scratchpad
+`s11/run_s11.sh`, `s11/progress.txt`).
+
 ## Where we left off (2026-11-01): picking up the old-fusion sessions
 
 Decision: no arm corrections on S1-S6 until their video has been analysed.
@@ -597,6 +718,10 @@ Open:
   is a calibration instruction and archive takes keep the per-session turn correction
 - S6 take7 and take8 are byte-identical (raw too): ask whether one was saved over the other
 - the swing and turn scripts live outside the repo, in `~/Projects/GVHMR/tools/shadow_compare/video_fix/`
+- recalibration between takes is the starting assumption for every session (2026-11-02): fit corrections per take
+  where the data allow, and treat a session value as the case to be shown. S7 was already read this way (right
+  upper-arm offset 24-38 deg across takes, the same error made at each calibration of the day). For the session-wide
+  elbow turn (2026-10-31 'one turn for the whole session vs one per take') the per-take values are the default.
 
 ## Scripts (`~/Projects/GVHMR/tools/shadow_compare/`, run in env `gvhmr`)
 
