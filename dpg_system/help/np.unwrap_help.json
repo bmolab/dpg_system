@@ -1,0 +1,707 @@
+{
+    "height": 1121,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "np.unwrap_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.unwrap_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.unwrap - remove the jumps from a run of angles",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 611,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.unwrap - remove the jumps from a run of angles",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.unwrap - remove the jumps from a run of angles"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Takes a run of angles that jumps back by a whole turn each time it passes 180 (or pi), and adds or subtracts whole turns so the run continues smoothly instead.\n\nAn angle from atan2, a heading, a joint rotation or the phase of a spectrum is usually given between -180 and 180. Something turning steadily then reads 170, 175, -180, -175 ... - a jump of almost 360 that is not real movement, and that wrecks any speed, average or smoothing worked out from it. np.unwrap turns that into 170, 175, 180, 185 ... and keeps counting: two whole turns end at 720, not back at 0.\n\nSYNTAX:\nnp.unwrap <units: degrees or radians>\nDefault: degrees.\n\nINPUTS and PARAMETERS:\n\nin:\nThe run of angles (a list or array). Every input is unwrapped and sent.\n\naxis (int box, also an inlet):\nWhich way the run goes: -1 (the default) along each row, 0 down each column - one run per joint for a buffer of frames x joints.\n\nunits:\nAn option, under the node: degrees (the default here, a turn of 360) or radians (a turn of 2 pi, NumPy's own default).\n\nOUTPUTS:\n\nunwrapped:\nThe same angles with the jumps taken out. The first value is unchanged.\n\nHOW IT DECIDES:\nAny step between neighbours of more than half a turn is taken to be a wrap and is corrected. So it only works if the angle really changes by less than half a turn between samples; a genuinely fast spin, sampled too slowly, cannot be told apart.\n\nREADING THE DEMO:\nSomething turning steadily through two whole turns, 15 degrees a step, written as an angle from -180 to 180: a sawtooth (left) that climbs to 165 and drops back to -180 as each turn completes. Unwrapped, it is a straight ramp from -180 to 525 (right). Below, the run 150 170 -170 -150 becomes 150 170 190 210.\n\nRELATED:\ncontinuous_rotation does the same for a stream of angles, one at a time. atan2 makes angles from points. np.diff of the unwrapped angles gives the true turning speed.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Takes a run of angles that jumps back by a whole turn each time it passes 180 (or pi), and adds or subtracts whole turns so the run continues smoothly instead.\n\nAn angle from atan2, a heading, a joint rotation or the phase of a spectrum is usually given between -180 and 180. Something turning steadily then reads 170, 175, -180, -175 ... - a jump of almost 360 that is not real movement, and that wrecks any speed, average or smoothing worked out from it. np.unwrap turns that into 170, 175, 180, 185 ... and keeps counting: two whole turns end at 720, not back at 0.\n\nSYNTAX:\nnp.unwrap <units: degrees or radians>\nDefault: degrees.\n\nINPUTS and PARAMETERS:\n\nin:\nThe run of angles (a list or array). Every input is unwrapped and sent.\n\naxis (int box, also an inlet):\nWhich way the run goes: -1 (the default) along each row, 0 down each column - one run per joint for a buffer of frames x joints.\n\nunits:\nAn option, under the node: degrees (the default here, a turn of 360) or radians (a turn of 2 pi, NumPy's own default).\n\nOUTPUTS:\n\nunwrapped:\nThe same angles with the jumps taken out. The first value is unchanged.\n\nHOW IT DECIDES:\nAny step between neighbours of more than half a turn is taken to be a wrap and is corrected. So it only works if the angle really changes by less than half a turn between samples; a genuinely fast spin, sampled too slowly, cannot be told apart.\n\nREADING THE DEMO:\nSomething turning steadily through two whole turns, 15 degrees a step, written as an angle from -180 to 180: a sawtooth (left) that climbs to 165 and drops back to -180 as each turn completes. Unwrapped, it is a straight ramp from -180 to 525 (right). Below, the run 150 170 -170 -150 becomes 150 170 190 210.\n\nRELATED:\ncontinuous_rotation does the same for a stream of angles, one at a time. atan2 makes angles from points. np.diff of the unwrapped angles gives the true turning speed."
+        },
+        "3": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "4": {
+            "name": "load_bang",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment 0 to 705, 15 at a time",
+            "name": "comment",
+            "id": 422,
+            "position_x": 140,
+            "position_y": 53,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "0 to 705, 15 at a time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "0 to 705, 15 at a time"
+        },
+        "6": {
+            "name": "np.arange",
+            "id": 459,
+            "position_x": 140,
+            "position_y": 92,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.arange 0 720 15"
+        },
+        "7": {
+            "init": "comment wrapped: -180 to 180",
+            "name": "comment",
+            "id": 496,
+            "position_x": 350,
+            "position_y": 53,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "wrapped: -180 to 180",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "wrapped: -180 to 180"
+        },
+        "8": {
+            "name": "%",
+            "id": 533,
+            "position_x": 350,
+            "position_y": 92,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "% 360"
+        },
+        "9": {
+            "name": "-",
+            "id": 570,
+            "position_x": 350,
+            "position_y": 180,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "- 180"
+        },
+        "10": {
+            "init": "comment unwrap",
+            "name": "comment",
+            "id": 607,
+            "position_x": 560,
+            "position_y": 53,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "unwrap",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "unwrap"
+        },
+        "11": {
+            "name": "np.unwrap",
+            "id": 644,
+            "position_x": 560,
+            "position_y": 92,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "12": {
+            "init": "comment in: a sawtooth",
+            "name": "comment",
+            "id": 681,
+            "position_x": 28,
+            "position_y": 290,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: a sawtooth",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: a sawtooth"
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 28,
+            "position_y": 325,
+            "width": 368,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 48.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -200.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 600.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "init": "comment out: a steady ramp",
+            "name": "comment",
+            "id": 755,
+            "position_x": 430,
+            "position_y": 290,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "out: a steady ramp",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "out: a steady ramp"
+        },
+        "15": {
+            "name": "plot",
+            "id": 792,
+            "position_x": 430,
+            "position_y": 325,
+            "width": 368,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 48.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -200.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 600.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "16": {
+            "init": "comment four angles across the jump",
+            "name": "comment",
+            "id": 829,
+            "position_x": 140,
+            "position_y": 560,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "four angles across the jump",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "four angles across the jump"
+        },
+        "17": {
+            "name": "message",
+            "id": 866,
+            "position_x": 140,
+            "position_y": 595,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "150 170 -170 -150",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "name": "np.unwrap",
+            "id": 903,
+            "position_x": 380,
+            "position_y": 595,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "19": {
+            "name": "list",
+            "id": 940,
+            "position_x": 560,
+            "position_y": 595,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 774,
+            "width": 133,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link continuous_rotation"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 220,
+            "position_y": 774,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link atan2"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 302,
+            "position_y": 774,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.diff"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 399,
+            "position_y": 774,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.angle"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 884,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "arange out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "unwrapped",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "unwrapped",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

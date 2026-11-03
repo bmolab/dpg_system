@@ -1,0 +1,555 @@
+{
+    "height": 881,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "np.ptp_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.ptp_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.ptp - the range from lowest to highest",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.ptp - the range from lowest to highest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.ptp - the range from lowest to highest"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the distance from the smallest value to the largest: the maximum minus the minimum. ptp stands for \"peak to peak\".\n\nIt is the simplest measure of how much something varies. Over a window of recent samples it says how far a sensor has moved, how loud a signal swings, how much a joint has travelled - and near zero means stillness. Because it rests entirely on the two most extreme values, a single glitch sets it; np.std or np.percentile give a steadier measure of spread when the data has outliers.\n\nSYNTAX:\nnp.ptp <axis: int>\nDefault: axis None (the whole array).\n\nEXAMPLE:\nnp.ptp 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is measured and sent.\n\naxis (menu, also an inlet):\nNone measures over every element. A number measures along that axis: for a 2-D array, 0 gives one range per column, 1 one per row.\n\nOUTPUTS:\n\nptp:\nThe range: a single value, or one per column or row.\n\nREADING THE DEMO:\nTop: 3 9 1 7 runs from 1 to 9, a range of 8.\n\nBottom: the same idea column by column. The 3 x 2 array has columns 1 4 2 (range 3) and 5 6 5 (range 1). A metro re-sends both five times a second; edit a message and click it.\n\nRELATED:\nnp.amax and np.amin give the two ends separately. np.std measures spread from every value, not just the two extremes. np.percentile 5 and 95 give a range that ignores the most extreme tenth.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the distance from the smallest value to the largest: the maximum minus the minimum. ptp stands for \"peak to peak\".\n\nIt is the simplest measure of how much something varies. Over a window of recent samples it says how far a sensor has moved, how loud a signal swings, how much a joint has travelled - and near zero means stillness. Because it rests entirely on the two most extreme values, a single glitch sets it; np.std or np.percentile give a steadier measure of spread when the data has outliers.\n\nSYNTAX:\nnp.ptp <axis: int>\nDefault: axis None (the whole array).\n\nEXAMPLE:\nnp.ptp 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is measured and sent.\n\naxis (menu, also an inlet):\nNone measures over every element. A number measures along that axis: for a 2-D array, 0 gives one range per column, 1 one per row.\n\nOUTPUTS:\n\nptp:\nThe range: a single value, or one per column or row.\n\nREADING THE DEMO:\nTop: 3 9 1 7 runs from 1 to 9, a range of 8.\n\nBottom: the same idea column by column. The 3 x 2 array has columns 1 4 2 (range 3) and 5 6 5 (range 1). A metro re-sends both five times a second; edit a message and click it.\n\nRELATED:\nnp.amax and np.amin give the two ends separately. np.std measures spread from every value, not just the two extremes. np.percentile 5 and 95 give a range that ignores the most extreme tenth."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment four values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "four values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "four values"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 9 1 7",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment highest minus lowest",
+            "name": "comment",
+            "id": 496,
+            "position_x": 360,
+            "position_y": 53,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "highest minus lowest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "highest minus lowest"
+        },
+        "8": {
+            "name": "np.ptp",
+            "id": 533,
+            "position_x": 360,
+            "position_y": 92,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 560,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment six values as 3 rows of 2",
+            "name": "comment",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 230,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "six values as 3 rows of 2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "six values as 3 rows of 2"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 180,
+            "position_y": 265,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 5 4 6 2 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "np.reshape",
+            "id": 681,
+            "position_x": 180,
+            "position_y": 340,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 3 2"
+        },
+        "13": {
+            "init": "comment the range of each column",
+            "name": "comment",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 230,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the range of each column",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the range of each column"
+        },
+        "14": {
+            "name": "np.ptp",
+            "id": 755,
+            "position_x": 400,
+            "position_y": 265,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": "0",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.ptp 0",
+            "highlight": true
+        },
+        "15": {
+            "name": "list",
+            "id": 792,
+            "position_x": 580,
+            "position_y": 265,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 490,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 524,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.amax"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 127,
+            "position_y": 524,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.amin"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 224,
+            "position_y": 524,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.std"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 314,
+            "position_y": 524,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.percentile"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 634,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ptp",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ptp",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

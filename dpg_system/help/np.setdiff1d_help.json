@@ -1,0 +1,491 @@
+{
+    "height": 881,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "np.setdiff1d_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.setdiff1d_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.setdiff1d - the values in one list but not the other",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 684,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.setdiff1d - the values in one list but not the other",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.setdiff1d - the values in one list but not the other"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the values in the first list that are not in the second - each value once, sorted from smallest to largest (or in alphabetical order, for words).\n\nUse it to take a selection away from a whole: every joint except the ones already used, the notes of a scale not yet played, the channels that passed a test (all minus the failures). The order matters: A minus B is not B minus A.\n\nThese treat the lists as sets: how many times a value occurs, and where, does not matter. Numbers and words both work.\n\nSYNTAX:\nnp.setdiff1d\n\nINPUTS and PARAMETERS:\n\nin:\nThe first list, A (any shape is flattened). Every input is compared and sent - the only inlet that makes the node send.\n\nin 2:\nThe second list, B, held: send it first.\n\nOUTPUTS:\n\nonly in first:\nThe result, sorted, each value once. It may be empty.\n\nREADING THE DEMO:\nA is 1 2 3 4 and B is 3 4 5: only in A, 1 2. A metro re-sends A twice a second;\nedit either list and click it.\n\nRELATED:\nnp.intersect1d and np.union1d are the other set operations. np.isin marks which elements of a list are in a set. np.unique gives the values of one list, each once.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the values in the first list that are not in the second - each value once, sorted from smallest to largest (or in alphabetical order, for words).\n\nUse it to take a selection away from a whole: every joint except the ones already used, the notes of a scale not yet played, the channels that passed a test (all minus the failures). The order matters: A minus B is not B minus A.\n\nThese treat the lists as sets: how many times a value occurs, and where, does not matter. Numbers and words both work.\n\nSYNTAX:\nnp.setdiff1d\n\nINPUTS and PARAMETERS:\n\nin:\nThe first list, A (any shape is flattened). Every input is compared and sent - the only inlet that makes the node send.\n\nin 2:\nThe second list, B, held: send it first.\n\nOUTPUTS:\n\nonly in first:\nThe result, sorted, each value once. It may be empty.\n\nREADING THE DEMO:\nA is 1 2 3 4 and B is 3 4 5: only in A, 1 2. A metro re-sends A twice a second;\nedit either list and click it.\n\nRELATED:\nnp.intersect1d and np.union1d are the other set operations. np.isin marks which elements of a list are in a set. np.unique gives the values of one list, each once."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment A",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 15,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "A",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "A"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 496,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "8": {
+            "name": "load_bang",
+            "id": 533,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment B, held",
+            "name": "comment",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "B, held",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "B, held"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 4 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment only in A",
+            "name": "comment",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 53,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only in A",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only in A"
+        },
+        "12": {
+            "name": "np.setdiff1d",
+            "id": 681,
+            "position_x": 380,
+            "position_y": 92,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 580,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 374,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.intersect1d"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 181,
+            "position_y": 374,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.union1d"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 302,
+            "position_y": 374,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.isin"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 399,
+            "position_y": 374,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.unique"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 484,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "only in first",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -193,12 +193,21 @@ The samples. Each tensor that arrives is transformed and sent at once.
 
 """ + FFT_COMMON.format(name='rfft') + """
 
+sample rate:
+An option, under the node: samples per second, for the frequencies outlet.
+1 (the default) gives frequencies in cycles per sample; 60 for motion at
+60 frames a second gives them in cycles per second (Hz).
+
 OUTPUTS:
 
 fft tensor out:
 A complex tensor. Along the transformed dimension it has n/2 + 1 values:
 value k is the part of the signal that makes k full cycles across the
 window. Other dimensions are unchanged.
+
+frequencies:
+The frequency of each bin, n/2 + 1 of them from 0 up: in cycles per
+sample, or per second once sample rate is set. Sent first.
 
 READING THE DEMO:
 The two sines make two spikes: one at the slider's number (10 cycles at
@@ -271,10 +280,20 @@ sent at once. """ + FFT_TENSOR + """
 
 """ + FFT_COMMON.format(name='fft') + """
 
+sample rate:
+An option, under the node: samples per second, for the frequencies outlet.
+1 (the default) gives frequencies in cycles per sample; 60 for motion at
+60 frames a second gives them in cycles per second (Hz).
+
 OUTPUTS:
 
 fft tensor out:
 A complex tensor the same shape as the input.
+
+frequencies:
+The frequency of each bin, one per input sample: 0 and the positive
+frequencies first, then the negative ones counting back up towards 0 -
+in cycles per sample, or per second once sample rate is set. Sent first.
 
 READING THE DEMO:
 Drag the slider and watch the two spikes on the left half move one way

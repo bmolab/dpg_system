@@ -1,0 +1,522 @@
+{
+    "height": 1364,
+    "width": 1870,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "shadow_video_correction_compare",
+    "path": "/Users/drokeby/dpg_system/patches/shadow_video_correction_compare.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment original vs video-corrected - Subject 7",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 488,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "original vs video-corrected - Subject 7",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "original vs video-corrected - Subject 7"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1122,
+            "position_y": 45,
+            "width": 708,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "LEFT: the take as recorded. RIGHT: the same take after the video-fitted correction.\n\nWHAT WAS CORRECTED:\n1. The right upper arm is swung back by one fixed rotation (about 30 degrees, mostly about the T-pose vertical) - the heading error locked in at the rotated calibration. The forearm keeps its place in the room.\n2. Each upper arm is rolled about its own length by one session-wide turn (left 45, right 46 degrees), with the forearm held still - the elbow turn from the calibration T-pose. This moves no joint; it only changes the twist of the skin, which is why it has to be seen on a mesh.\n\nWHERE TO LOOK:\nFrames 0-800, the opening hold with the hands on the waist: the shoulders were candy-wrapped (twisted about 104 degrees each way). They should look untwisted on the right-hand body. Any section with the arms hanging: the original's right arm sits off to one side; the corrected one should hang like the left.\nBent elbows: the inside of the elbow should face forward-up, not toward the ceiling.\n\nHOW TO USE:\nDrag the frame slider, or switch the metro on to play (every second frame at 50 per second, which is real time for these 100 fps takes). Drag the rotate node's y to turn both bodies.\nTo look at another take, change each smpl_take's path (the corrected files are in video_corrected/subject7 and video_corrected/second, with _vc added to the name) and set the slider's and counter's maximum to that take's frame count.\n\nBoth bodies are drawn at the origin without the room position, so they stay side by side as the dancer travels.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "LEFT: the take as recorded. RIGHT: the same take after the video-fitted correction.\n\nWHAT WAS CORRECTED:\n1. The right upper arm is swung back by one fixed rotation (about 30 degrees, mostly about the T-pose vertical) - the heading error locked in at the rotated calibration. The forearm keeps its place in the room.\n2. Each upper arm is rolled about its own length by one session-wide turn (left 45, right 46 degrees), with the forearm held still - the elbow turn from the calibration T-pose. This moves no joint; it only changes the twist of the skin, which is why it has to be seen on a mesh.\n\nWHERE TO LOOK:\nFrames 0-800, the opening hold with the hands on the waist: the shoulders were candy-wrapped (twisted about 104 degrees each way). They should look untwisted on the right-hand body. Any section with the arms hanging: the original's right arm sits off to one side; the corrected one should hang like the left.\nBent elbows: the inside of the elbow should face forward-up, not toward the ceiling.\n\nHOW TO USE:\nDrag the frame slider, or switch the metro on to play (every second frame at 50 per second, which is real time for these 100 fps takes). Drag the rotate node's y to turn both bodies.\nTo look at another take, change each smpl_take's path (the corrected files are in video_corrected/subject7 and video_corrected/second, with _vc added to the name) and set the slider's and counter's maximum to that take's frame count.\n\nBoth bodies are drawn at the origin without the room position, so they stay side by side as the dancer travels."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "metro 20"
+        },
+        "4": {
+            "name": "counter",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 40919,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "step",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "slider",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 310,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 280,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 40919"
+        },
+        "6": {
+            "init": "comment one frame number drives both takes",
+            "name": "comment",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one frame number drives both takes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one frame number drives both takes"
+        },
+        "7": {
+            "name": "smpl_take",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 377,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "path",
+                    "value": "/Users/drokeby/Projects/BMO_Lab/GRANTS/NFRF_2023/Anonomized_shadow/Subject7_Bharathanatyam/Subject7_take_jathiswaram_a_beta_smpl_poses_rhipflexstat_stomp.npz",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment original (left body)",
+            "name": "comment",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "original (left body)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "original (left body)"
+        },
+        "9": {
+            "name": "smpl_take",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 396,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "path",
+                    "value": "/Users/drokeby/Projects/BMO_Lab/GRANTS/NFRF_2023/Anonomized_shadow/Subject7_Bharathanatyam/video_corrected/subject7/Subject7_take_jathiswaram_a_beta_smpl_poses_rhipflexstat_vc.npz",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment video-corrected (right body)",
+            "name": "comment",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 690,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "video-corrected (right body)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "video-corrected (right body)"
+        },
+        "11": {
+            "name": "mgl_context",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_display_width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "node_display_height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "camera_pos",
+                    "value": [
+                        0.0,
+                        -0.15,
+                        3.4
+                    ],
+                    "value_type": "list"
+                },
+                "6": {
+                    "name": "camera_target",
+                    "value": [
+                        0.0,
+                        -0.15,
+                        0.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "12": {
+            "name": "mgl_rotate",
+            "id": 681,
+            "position_x": 380,
+            "position_y": 800,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "mgl_translate",
+            "id": 718,
+            "position_x": 380,
+            "position_y": 940,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "mgl_translate -0.9 0 0"
+        },
+        "14": {
+            "name": "mgl_smpl_mesh",
+            "id": 755,
+            "position_x": 620,
+            "position_y": 800,
+            "width": 154,
+            "height": 224,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "gender",
+                    "value": "female",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "name": "mgl_translate",
+            "id": 792,
+            "position_x": 380,
+            "position_y": 1080,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "mgl_translate 1.8 0 0"
+        },
+        "16": {
+            "name": "mgl_smpl_mesh",
+            "id": 829,
+            "position_x": 620,
+            "position_y": 1080,
+            "width": 154,
+            "height": 224,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "gender",
+                    "value": "female",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 1190,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "frame"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "frame"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "7": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "8": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "9": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_data",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "10": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_data",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        }
+    }
+}

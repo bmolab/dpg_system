@@ -1,0 +1,881 @@
+{
+    "height": 1221,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1532,
+    "name": "np.percentile_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.percentile_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.percentile - the value a share of the data lies below",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 697,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.percentile - the value a share of the data lies below",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.percentile - the value a share of the data lies below"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the value below which a given percentage of the data lies. percentile 50 is the median: half the values are below it. percentile 90 has nine values in ten below it;\npercentile 0 is the smallest value and 100 the largest.\n\nPercentiles describe a spread of values without being thrown by a few wild ones. The mean of 1 to 9 plus one glitch of 100 is 14.5, a value none of the data is near; the median is 5.5, and percentile 90 is still only 18. Use them for a robust range (percentile 5 to 95 ignores the extremes), an automatic threshold (call the top 10% of activity \"loud\"), or to normalize a signal whose peaks are unreliable.\n\nSYNTAX:\nnp.percentile <percentile: float> <axis: int>\nDefaults: percentile 50, axis None (the whole array).\n\nEXAMPLE:\nnp.percentile 90\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is measured and sent - the only inlet that makes the node send.\n\npercentile (float box, also an inlet):\nWhich percentile, 0 to 100 (values outside are clamped). Send it a list - 5 50 95 - to get several at once. It does not send by itself.\n\naxis (menu, also an inlet):\nNone takes the percentile over every element. A number takes it along that axis: for a 2-D array, 0 gives one value per column, 1 one per row.\n\nmethod:\nAn option, under the node. When the percentile falls between two values, linear (the default) blends them; lower, higher and nearest pick one of the two values;\nmidpoint takes their average.\n\nignore nan:\nAn option, under the node. Off, a single nan in the data makes the result nan. On, the nans are skipped.\n\nOUTPUTS:\n\nresult:\nThe percentile: a single value, or one per percentile asked for, or an array of them along the axis.\n\nREADING THE DEMO:\nTop: ten values, one of them a glitch. The mean is dragged up to 14.5; percentile 50 - the median - stays at 5.5 among the ordinary values.\n\nBottom: 1000 random values, evenly spread from 0 to 1. Percentile 90 comes out near 0.9, since nine values in ten are below that (round trims it to two decimal places for reading). The second node was sent 5 50 95 at\nload, so it gives three percentiles at once: about 0.05 0.5 0.95. The metro makes a new random array twice a second; the answers wobble a little each time.\n\nRELATED:\nnp.median is percentile 50. np.amin and np.amax are percentile 0 and 100. np.mean and np.std summarize the same data in a way that outliers do pull around;\nnp.robust_mean is a mean that resists them. np.histogram shows the whole spread.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the value below which a given percentage of the data lies. percentile 50 is the median: half the values are below it. percentile 90 has nine values in ten below it;\npercentile 0 is the smallest value and 100 the largest.\n\nPercentiles describe a spread of values without being thrown by a few wild ones. The mean of 1 to 9 plus one glitch of 100 is 14.5, a value none of the data is near; the median is 5.5, and percentile 90 is still only 18. Use them for a robust range (percentile 5 to 95 ignores the extremes), an automatic threshold (call the top 10% of activity \"loud\"), or to normalize a signal whose peaks are unreliable.\n\nSYNTAX:\nnp.percentile <percentile: float> <axis: int>\nDefaults: percentile 50, axis None (the whole array).\n\nEXAMPLE:\nnp.percentile 90\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is measured and sent - the only inlet that makes the node send.\n\npercentile (float box, also an inlet):\nWhich percentile, 0 to 100 (values outside are clamped). Send it a list - 5 50 95 - to get several at once. It does not send by itself.\n\naxis (menu, also an inlet):\nNone takes the percentile over every element. A number takes it along that axis: for a 2-D array, 0 gives one value per column, 1 one per row.\n\nmethod:\nAn option, under the node. When the percentile falls between two values, linear (the default) blends them; lower, higher and nearest pick one of the two values;\nmidpoint takes their average.\n\nignore nan:\nAn option, under the node. Off, a single nan in the data makes the result nan. On, the nans are skipped.\n\nOUTPUTS:\n\nresult:\nThe percentile: a single value, or one per percentile asked for, or an array of them along the axis.\n\nREADING THE DEMO:\nTop: ten values, one of them a glitch. The mean is dragged up to 14.5; percentile 50 - the median - stays at 5.5 among the ordinary values.\n\nBottom: 1000 random values, evenly spread from 0 to 1. Percentile 90 comes out near 0.9, since nine values in ten are below that (round trims it to two decimal places for reading). The second node was sent 5 50 95 at\nload, so it gives three percentiles at once: about 0.05 0.5 0.95. The metro makes a new random array twice a second; the answers wobble a little each time.\n\nRELATED:\nnp.median is percentile 50. np.amin and np.amax are percentile 0 and 100. np.mean and np.std summarize the same data in a way that outliers do pull around;\nnp.robust_mean is a mean that resists them. np.histogram shows the whole spread."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment nine values and a glitch",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nine values and a glitch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nine values and a glitch"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6 7 8 9 100",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment the mean is pulled up",
+            "name": "comment",
+            "id": 496,
+            "position_x": 500,
+            "position_y": 53,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the mean is pulled up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the mean is pulled up"
+        },
+        "8": {
+            "name": "np.mean",
+            "id": 533,
+            "position_x": 500,
+            "position_y": 92,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 680,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment percentile 50 is not",
+            "name": "comment",
+            "id": 607,
+            "position_x": 500,
+            "position_y": 180,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "percentile 50 is not",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "percentile 50 is not"
+        },
+        "11": {
+            "name": "np.percentile",
+            "id": 644,
+            "position_x": 500,
+            "position_y": 215,
+            "width": 154,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.percentile 50",
+            "highlight": true
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 680,
+            "position_y": 215,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 718,
+            "position_x": 28,
+            "position_y": 375,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "14": {
+            "name": "metro",
+            "id": 755,
+            "position_x": 28,
+            "position_y": 410,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "15": {
+            "init": "comment 1000 random values",
+            "name": "comment",
+            "id": 792,
+            "position_x": 180,
+            "position_y": 375,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "1000 random values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "1000 random values"
+        },
+        "16": {
+            "name": "np.rand",
+            "id": 829,
+            "position_x": 180,
+            "position_y": 410,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 1000"
+        },
+        "17": {
+            "init": "comment nine in ten are below",
+            "name": "comment",
+            "id": 866,
+            "position_x": 370,
+            "position_y": 375,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nine in ten are below",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nine in ten are below"
+        },
+        "18": {
+            "name": "np.percentile",
+            "id": 903,
+            "position_x": 370,
+            "position_y": 410,
+            "width": 154,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.percentile 90",
+            "highlight": true
+        },
+        "19": {
+            "init": "comment to 2 places",
+            "name": "comment",
+            "id": 940,
+            "position_x": 570,
+            "position_y": 375,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "to 2 places",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "to 2 places"
+        },
+        "20": {
+            "name": "round",
+            "id": 977,
+            "position_x": 570,
+            "position_y": 410,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "21": {
+            "name": "list",
+            "id": 1014,
+            "position_x": 690,
+            "position_y": 410,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "22": {
+            "init": "comment several at once",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 180,
+            "position_y": 565,
+            "width": 101,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "several at once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "several at once"
+        },
+        "23": {
+            "name": "load_bang",
+            "id": 1088,
+            "position_x": 28,
+            "position_y": 600,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "24": {
+            "name": "message",
+            "id": 1125,
+            "position_x": 180,
+            "position_y": 600,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "5 50 95",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "25": {
+            "name": "np.percentile",
+            "id": 1162,
+            "position_x": 370,
+            "position_y": 600,
+            "width": 154,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "26": {
+            "name": "round",
+            "id": 1199,
+            "position_x": 570,
+            "position_y": 600,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "27": {
+            "name": "list",
+            "id": 1236,
+            "position_x": 690,
+            "position_y": 600,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "28": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1273,
+            "position_x": 30,
+            "position_y": 770,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "29": {
+            "name": "help_link",
+            "id": 1310,
+            "position_x": 30,
+            "position_y": 804,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.median"
+        },
+        "30": {
+            "name": "help_link",
+            "id": 1347,
+            "position_x": 143,
+            "position_y": 804,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.mean"
+        },
+        "31": {
+            "name": "help_link",
+            "id": 1384,
+            "position_x": 240,
+            "position_y": 804,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.robust_mean"
+        },
+        "32": {
+            "name": "help_link",
+            "id": 1421,
+            "position_x": 391,
+            "position_y": 804,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.histogram"
+        },
+        "33": {
+            "name": "help_link",
+            "id": 1458,
+            "position_x": 527,
+            "position_y": 804,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.amax"
+        },
+        "34": {
+            "name": "close",
+            "id": 1495,
+            "position_x": 24,
+            "position_y": 914,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mean",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1162,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "10": {
+            "source_node": 1088,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1125,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 1125,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 1162,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "percentile"
+        },
+        "12": {
+            "source_node": 1162,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1199,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "13": {
+            "source_node": 1199,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1236,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

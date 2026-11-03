@@ -1,0 +1,568 @@
+{
+    "height": 1221,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "t.param_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.param_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.param - numbers for t.optimize to tune",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.param - numbers for t.optimize to tune",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.param - numbers for t.optimize to tune"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Holds a set of numbers that are to be learned rather than set by hand: the strength of a correction, the offsets of a set of sensors, the coefficients of a curve. It sends them as a tensor that remembers where it came from, so whatever is worked out from them by torch nodes - a corrected pose, a fitted curve, and finally a loss that measures how wrong it is - can be traced back to them. t.optimize does that tracing and nudges the numbers to make the loss smaller.\n\nThe numbers can be kept in a .pt file: give a path and they are read back whenever the patch is opened, so what was learned survives a restart. Save writes them; t.optimize can also save them as it goes.\n\nSYNTAX:\nt.param <shape ...> <device> <path>\nDefault: one number, 0, on the cpu. t.param 3 is three numbers; t.param 18 5 a table\nof 18 rows of 5.\n\nINPUTS and PARAMETERS:\n\nin:\nAnything sends the numbers. A list or tensor of numbers sets them first (and gives them its shape, if that differs), then sends them. Wire t.optimize's 'again' outlet here.\n\nlearn (checkbox, also an inlet):\nOn (the default), t.optimize may change these numbers. Off, they are held still while others learn.\n\nsave (button):\nWrites the numbers to the path, or asks where if there is none.\n\nreset (button):\nPuts every number back to the initial value.\n\ninitial value:\nAn option, under the node. What reset puts back; 0 by default.\n\nlow, high:\nOptions. If high is above low, the numbers are kept between them: they ease toward either end rather than being cut off there, so they can approach a limit but never pass it. Both 0 (the default): no limits.\n\ndevice:\nAn option. Where the numbers live: cpu, or mps for the GPU. Everything worked out from them follows.\n\npath:\nAn option. The .pt file the numbers are kept in. If it exists when the patch opens, or when a path is entered, the numbers are read from it.\n\nOUTPUTS:\n\nvalues:\nThe numbers, as a tensor. While learning, it carries the trail back to this node;\nwhile not, it is plain values and costs nothing extra downstream.\n\nREADING THE DEMO:\nThree numbers learn to match 1 2 3: t.mse_loss measures how far they are from the target, and t.optimize moves them closer every frame, asking for a new loss through 'again'. Click the message to throw them to 10 -4 0.5 and watch them find their way back.\n\nRELATED:\nt.optimize does the learning. t.mse_loss and t.l1_loss measure how wrong a result is. t.save and t.load keep any tensor in a file.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Holds a set of numbers that are to be learned rather than set by hand: the strength of a correction, the offsets of a set of sensors, the coefficients of a curve. It sends them as a tensor that remembers where it came from, so whatever is worked out from them by torch nodes - a corrected pose, a fitted curve, and finally a loss that measures how wrong it is - can be traced back to them. t.optimize does that tracing and nudges the numbers to make the loss smaller.\n\nThe numbers can be kept in a .pt file: give a path and they are read back whenever the patch is opened, so what was learned survives a restart. Save writes them; t.optimize can also save them as it goes.\n\nSYNTAX:\nt.param <shape ...> <device> <path>\nDefault: one number, 0, on the cpu. t.param 3 is three numbers; t.param 18 5 a table\nof 18 rows of 5.\n\nINPUTS and PARAMETERS:\n\nin:\nAnything sends the numbers. A list or tensor of numbers sets them first (and gives them its shape, if that differs), then sends them. Wire t.optimize's 'again' outlet here.\n\nlearn (checkbox, also an inlet):\nOn (the default), t.optimize may change these numbers. Off, they are held still while others learn.\n\nsave (button):\nWrites the numbers to the path, or asks where if there is none.\n\nreset (button):\nPuts every number back to the initial value.\n\ninitial value:\nAn option, under the node. What reset puts back; 0 by default.\n\nlow, high:\nOptions. If high is above low, the numbers are kept between them: they ease toward either end rather than being cut off there, so they can approach a limit but never pass it. Both 0 (the default): no limits.\n\ndevice:\nAn option. Where the numbers live: cpu, or mps for the GPU. Everything worked out from them follows.\n\npath:\nAn option. The .pt file the numbers are kept in. If it exists when the patch opens, or when a path is entered, the numbers are read from it.\n\nOUTPUTS:\n\nvalues:\nThe numbers, as a tensor. While learning, it carries the trail back to this node;\nwhile not, it is plain values and costs nothing extra downstream.\n\nREADING THE DEMO:\nThree numbers learn to match 1 2 3: t.mse_loss measures how far they are from the target, and t.optimize moves them closer every frame, asking for a new loss through 'again'. Click the message to throw them to 10 -4 0.5 and watch them find their way back.\n\nRELATED:\nt.optimize does the learning. t.mse_loss and t.l1_loss measure how wrong a result is. t.save and t.load keep any tensor in a file."
+        },
+        "3": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "4": {
+            "name": "load_bang",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 88,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment click: throw the numbers off",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 160,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click: throw the numbers off",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click: throw the numbers off"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 195,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "10 -4 0.5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment three numbers",
+            "name": "comment",
+            "id": 496,
+            "position_x": 260,
+            "position_y": 53,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three numbers"
+        },
+        "8": {
+            "name": "t.param",
+            "id": 533,
+            "position_x": 260,
+            "position_y": 92,
+            "width": 88,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.param 3",
+            "highlight": true
+        },
+        "9": {
+            "init": "comment the target, held",
+            "name": "comment",
+            "id": 570,
+            "position_x": 260,
+            "position_y": 300,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the target, held",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the target, held"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 260,
+            "position_y": 335,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment how far off",
+            "name": "comment",
+            "id": 644,
+            "position_x": 450,
+            "position_y": 53,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how far off",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how far off"
+        },
+        "12": {
+            "name": "t.mse_loss",
+            "id": 681,
+            "position_x": 450,
+            "position_y": 92,
+            "width": 70,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment nudge them, every frame",
+            "name": "comment",
+            "id": 718,
+            "position_x": 450,
+            "position_y": 230,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nudge them, every frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nudge them, every frame"
+        },
+        "14": {
+            "name": "t.optimize",
+            "id": 755,
+            "position_x": 450,
+            "position_y": 265,
+            "width": 88,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "step on",
+                    "value": "every frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "learning rate",
+                    "value": 0.05,
+                    "value_type": "float"
+                }
+            }
+        },
+        "15": {
+            "init": "comment the numbers now",
+            "name": "comment",
+            "id": 792,
+            "position_x": 640,
+            "position_y": 53,
+            "width": 101,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the numbers now",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the numbers now"
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 640,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 514,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.optimize"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 151,
+            "position_y": 514,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.mse_loss"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 272,
+            "position_y": 514,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.save"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 362,
+            "position_y": 514,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.load"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 624,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "target"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "loss",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "loss"
+        },
+        "6": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "again",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

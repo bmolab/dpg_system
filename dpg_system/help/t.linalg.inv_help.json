@@ -1,0 +1,524 @@
+{
+    "height": 1171,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "t.linalg.inv_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.inv_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.linalg.inv - the matrix that undoes a matrix",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.linalg.inv - the matrix that undoes a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.linalg.inv - the matrix that undoes a matrix"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1066,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the inverse of a square matrix: the matrix that undoes it. If a matrix turns, stretches or shears points, its inverse turns, stretches or shears them back; the two multiplied together give the identity (1s down the diagonal, 0s elsewhere), which changes nothing.\n\nUse it to go back from a transformed space to the original one: a camera's view back to the room, a body's frame back to the world, a calibration undone.\n\nA matrix that flattens space (its determinant is 0: two of its rows point the same way) cannot be undone, and the node sends nothing. t.linalg.pinv gives the closest thing.\n\nSYNTAX:\nt.linalg.inv\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA square matrix, or a stack of them (each is inverted). Every input sends.\n\nOUTPUTS:\n\ninverse:\nThe inverse, the same shape.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nThe matrix 2 1, 1 1 and its inverse 1 -1, -1 2. Multiplied together (right) they give the identity, 1 0, 0 1.\n\nRELATED:\nnp.linalg.inv is the numpy version. t.linalg.solve solves A x = b directly, which is quicker and more accurate than multiplying by the inverse. t.linalg.det says whether a matrix can be inverted. t.linalg.pinv works for any matrix.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1050,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the inverse of a square matrix: the matrix that undoes it. If a matrix turns, stretches or shears points, its inverse turns, stretches or shears them back; the two multiplied together give the identity (1s down the diagonal, 0s elsewhere), which changes nothing.\n\nUse it to go back from a transformed space to the original one: a camera's view back to the room, a body's frame back to the world, a calibration undone.\n\nA matrix that flattens space (its determinant is 0: two of its rows point the same way) cannot be undone, and the node sends nothing. t.linalg.pinv gives the closest thing.\n\nSYNTAX:\nt.linalg.inv\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA square matrix, or a stack of them (each is inverted). Every input sends.\n\nOUTPUTS:\n\ninverse:\nThe inverse, the same shape.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nThe matrix 2 1, 1 1 and its inverse 1 -1, -1 2. Multiplied together (right) they give the identity, 1 0, 0 1.\n\nRELATED:\nnp.linalg.inv is the numpy version. t.linalg.solve solves A x = b directly, which is quicker and more accurate than multiplying by the inverse. t.linalg.det says whether a matrix can be inverted. t.linalg.pinv works for any matrix."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment a matrix",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a matrix"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2 1 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "t.reshape",
+            "id": 496,
+            "position_x": 340,
+            "position_y": 92,
+            "width": 243,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.reshape 2 2"
+        },
+        "8": {
+            "init": "comment its inverse",
+            "name": "comment",
+            "id": 533,
+            "position_x": 600,
+            "position_y": 53,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "its inverse",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "its inverse"
+        },
+        "9": {
+            "name": "t.linalg.inv",
+            "id": 570,
+            "position_x": 600,
+            "position_y": 92,
+            "width": 82,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 600,
+            "position_y": 190,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the matrix times its inverse",
+            "name": "comment",
+            "id": 644,
+            "position_x": 340,
+            "position_y": 280,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the matrix times its inverse",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the matrix times its inverse"
+        },
+        "12": {
+            "name": "t.matmul",
+            "id": 681,
+            "position_x": 340,
+            "position_y": 319,
+            "width": 58,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment the identity",
+            "name": "comment",
+            "id": 718,
+            "position_x": 600,
+            "position_y": 280,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the identity",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the identity"
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 600,
+            "position_y": 319,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 460,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 494,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linalg.inv"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 174,
+            "position_y": 494,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.linalg.solve"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 325,
+            "position_y": 494,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.linalg.det"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 461,
+            "position_y": 494,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.linalg.pinv"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 604,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "inverse",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "inverse",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

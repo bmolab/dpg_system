@@ -1,6 +1,6 @@
 {
-    "height": 580,
-    "width": 681,
+    "height": 600,
+    "width": 687,
     "position": [
         100,
         100
@@ -292,12 +292,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 258,
-            "width": 409,
+            "width": 452,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "abs, sqrt, exp, log2, log10, inverse, norm, round / np.round,\nfloor / np.floor, ceil / np.ceil, trunc / np.trunc",
+                    "value": "abs, sqrt, exp, log, log1p, log2, log10, sign, inverse, norm,\nround / np.round, floor / np.floor, ceil / np.ceil, trunc / np.trunc",
                     "value_type": "str"
                 },
                 "1": {
@@ -307,7 +307,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 401,
+                    "value": 444,
                     "value_type": "int"
                 },
                 "3": {
@@ -321,7 +321,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "abs, sqrt, exp, log2, log10, inverse, norm, round / np.round,\nfloor / np.floor, ceil / np.ceil, trunc / np.trunc",
+            "text": "abs, sqrt, exp, log, log1p, log2, log10, sign, inverse, norm,\nround / np.round, floor / np.floor, ceil / np.ceil, trunc / np.trunc",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
@@ -356,12 +356,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 310,
-            "width": 224,
-            "height": 28,
+            "width": 465,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "sin, cos, tan, asin, acos, atan",
+                    "value": "sin, cos, tan, asin, acos, atan, atan2, hypot, degrees, radians, tanh,\nsinh, cosh",
                     "value_type": "str"
                 },
                 "1": {
@@ -371,12 +371,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 216,
+                    "value": 457,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "sin, cos, tan, asin, acos, atan",
+            "text": "sin, cos, tan, asin, acos, atan, atan2, hypot, degrees, radians, tanh,\nsinh, cosh",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
@@ -548,12 +548,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 474,
-            "width": 428,
-            "height": 40,
+            "width": 434,
+            "height": 64,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, continuous_rotation",
+                    "value": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, quaternion_multiply,\ncontinuous_rotation, scipy.slerp, scipy.rotation_mean,\nscipy.align_vectors, scipy.rotation_apply",
                     "value_type": "str"
                 },
                 "1": {
@@ -563,12 +563,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 420,
+                    "value": 426,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 48,
                     "value_type": "int"
                 },
                 "4": {
@@ -577,7 +577,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, continuous_rotation",
+            "text": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, quaternion_multiply,\ncontinuous_rotation, scipy.slerp, scipy.rotation_mean,\nscipy.align_vectors, scipy.rotation_apply",
             "id": 1203,
             "visibility": "show_all",
             "draggable": true,

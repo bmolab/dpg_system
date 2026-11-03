@@ -33,7 +33,6 @@ class TorchNode(Node):
         if match_tensor is not None:
             device = match_tensor.device
             dtype = match_tensor.dtype
-            requires_grad = match_tensor.requires_grad
         if not isinstance(input_tensor, torch.Tensor):
             input_tensor = any_to_tensor(input_tensor, device, dtype, requires_grad)
         else:
@@ -41,8 +40,9 @@ class TorchNode(Node):
             # Passing requires_grad as the third positional silently turns into
             # non_blocking=True and drops requires_grad. Set it on the tensor instead.
             input_tensor = input_tensor.to(device=device, dtype=dtype)
-            if input_tensor.requires_grad != requires_grad:
-                input_tensor.requires_grad_(requires_grad)
+            # only switch gradients on; never cut an incoming tensor out of training
+            if requires_grad and not input_tensor.requires_grad and input_tensor.is_floating_point():
+                input_tensor.requires_grad_(True)
         return input_tensor
 
     def data_to_torchvision_tensor(self, input_tensor, format='auto'):
@@ -255,3 +255,44 @@ class TorchWithDimNode(TorchNode):
         if self.dim_input is not None:
             self.dim = self.dim_input()
 
+
+
+def run_with_cpu_fallback(op, *args, **kwargs):
+    """Run a torch op; when the tensors' device lacks it (MPS has no lstsq or
+    mode), run it on the CPU and move the results back to that device."""
+    try:
+        return op(*args, **kwargs)
+    except NotImplementedError:
+        device = next((a.device for a in args if isinstance(a, torch.Tensor)), None)
+        if device is None or device.type == 'cpu':
+            raise
+        cpu_args = [a.cpu() if isinstance(a, torch.Tensor) else a for a in args]
+        result = op(*cpu_args, **kwargs)
+        if isinstance(result, torch.Tensor):
+            return result.to(device)
+        return tuple(r.to(device) if isinstance(r, torch.Tensor) else r for r in result)
+
+
+def held_tensor(data):
+    """A cold inlet's data as a tensor, or None for nothing usable."""
+    if data is None:
+        return None
+    if isinstance(data, torch.Tensor):
+        return data
+    return any_to_tensor(data, validate=True)
+
+
+def float_like(tensor):
+    """Linear algebra wants floats: whole numbers become float32."""
+    if tensor.is_floating_point() or tensor.is_complex():
+        return tensor
+    return tensor.float()
+
+
+def scalar_or_graph(tensor):
+    """A one-number result as a plain float, unless it still carries
+    gradients: then it stays a tensor so a training loss can flow on to
+    t.optimize. Displays and math nodes take either."""
+    if isinstance(tensor, torch.Tensor) and tensor.numel() == 1 and not tensor.requires_grad:
+        return tensor.item()
+    return tensor

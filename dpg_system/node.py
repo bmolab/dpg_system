@@ -3175,7 +3175,7 @@ class Node:
 
         self.set_custom_visibility()
         if visibility_state == 'show_all' and self._title_bar_hidden():
-            dpg.bind_item_theme(self.uuid, Node.chromeless_theme())
+            self.bind_chromeless_theme()
             dpg.configure_item(self.uuid, label='')
 
     def create_button_themes(self):
@@ -3260,6 +3260,33 @@ class Node:
                     dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
         return Node._chromeless_theme
 
+    _highlighted_chromeless_themes = {}
+
+    @classmethod
+    def highlighted_chromeless_theme(cls, frameless=False):
+        """The chromeless theme with the highlight's background and outline,
+        so a highlighted comment or button still shows it. frameless also
+        clears the frame background, as text_block's own theme does."""
+        if frameless not in Node._highlighted_chromeless_themes:
+            with dpg.theme() as theme:
+                with dpg.theme_component(dpg.mvAll):
+                    Node.app.highlight_colors()
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBar, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    dpg.add_theme_color(dpg.mvNodeCol_TitleBarHovered, [0, 0, 0, 0], category=dpg.mvThemeCat_Nodes)
+                    if frameless:
+                        dpg.add_theme_color(dpg.mvThemeCol_FrameBg, [0, 0, 0, 0], category=dpg.mvThemeCat_Core)
+            Node._highlighted_chromeless_themes[frameless] = theme
+        return Node._highlighted_chromeless_themes[frameless]
+
+    def bind_chromeless_theme(self, theme=None, frameless=False):
+        """Bind a node's transparent-chrome theme (the shared one unless theme
+        is given), or its highlighted version when the node is highlighted."""
+        if self.highlighted:
+            theme = Node.highlighted_chromeless_theme(frameless)
+        elif theme is None:
+            theme = Node.chromeless_theme()
+        dpg.bind_item_theme(self.uuid, theme)
+
     def _add_hide_title_bar_option(self, default_value=False):
         self.hide_title_bar = self.add_option(
             'hide_title_bar', widget_type='checkbox',
@@ -3273,7 +3300,7 @@ class Node:
 
     def _apply_title_bar_visibility(self):
         if self._title_bar_hidden():
-            dpg.bind_item_theme(self.uuid, Node.chromeless_theme())
+            self.bind_chromeless_theme()
             dpg.configure_item(self.uuid, label='')
         else:
             # Re-run visibility to restore the right base theme (global / locked / do_not_delete).

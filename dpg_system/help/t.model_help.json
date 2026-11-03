@@ -1,0 +1,479 @@
+{
+    "height": 1301,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "t.model_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.model_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.model - run a trained network",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 389,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.model - run a trained network",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.model - run a trained network"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1196,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Runs a trained network - one made in PyTorch, by you or by someone else - inside a patch. Each input is passed through the network and its answer comes out: a pose classifier, a gesture recogniser, a style or motion model, a denoiser, anything that was trained to turn one kind of data into another.\n\nThe network must be saved in a form that carries its own code, so it can run without the Python that defined it:\n\nTorchScript (.pt or .pth), from torch.jit.script(model).save(path) or torch.jit.trace(model, example).save(path).\n\nAn exported program (.pt2), from torch.export.save(torch.export.export(model, example), path).\n\nA file of weights alone (a state_dict, from torch.save(model.state_dict(), path)) has no code to run, so t.model refuses it and says how to save the network instead. t.load reads such a file as a dict of tensors.\n\nDEVICE:\nThe network runs on the device chosen in the device input: cpu, or mps (the Mac's GPU) or cuda when there is one. Inputs are moved there; the answer stays there. On the GPU a large network runs many times faster, and t. nodes after it work on the answer without copying it back.\n\nSYNTAX:\nt.model <path> <input count> <output count> <device>\nDefault: no path, one input, one output, cpu.\n\nEXAMPLE:\nt.model models/pose_classifier.pt\nt.model models/mixer.pt 2 1 mps\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to run through the network: a tensor, a list or a single number (lists and numbers become float tensors). Every input runs the network and sends the answer.\n\nin 2, in 3 ... (with an input count):\nMore inputs, for a network that takes several. Each is held until in arrives.\n\nload (button, also an inlet):\nAsks for a model file and loads it. The message \"path <file>\" sent to any inlet loads\nthat file with no dialog.\n\ndevice:\ncpu, mps or cuda. Changing it moves the network.\n\npath:\nAn option, under the node: the model file. A path that is not absolute is relative to the folder the app was started from, which is why the demo's path starts with dpg_system/help. It is saved with the patch, and loaded again when the patch opens.\n\nadd batch dim:\nAn option, under the node. Most networks expect a batch - a stack of examples - as their first dimension. With this on, one example is wrapped as a batch of one on the way in, and unwrapped on the way out.\n\nOUTPUTS:\n\nout:\nThe network's answer. A network that answers with a dict sends the dict here.\n\nout 2, out 3 ... (with an output count):\nMore answers, for a network that gives several. A network giving more answers than there are outlets prints a note once.\n\nREADING THE DEMO:\nAt load the message loads a tiny network (two layers of 16) that was trained to turn a number from 0 to 1 into one cycle of a sine wave. t.linspace sends it 64 numbers from 0 to 1 at once, and the network answers all 64: the curve it learned. The network behind it is made by help/tools/make_torch_model_example.py.\n\nRELATED:\nt.load reads tensors and weights; t.save writes them. t.linspace makes the demo's inputs.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1180,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Runs a trained network - one made in PyTorch, by you or by someone else - inside a patch. Each input is passed through the network and its answer comes out: a pose classifier, a gesture recogniser, a style or motion model, a denoiser, anything that was trained to turn one kind of data into another.\n\nThe network must be saved in a form that carries its own code, so it can run without the Python that defined it:\n\nTorchScript (.pt or .pth), from torch.jit.script(model).save(path) or torch.jit.trace(model, example).save(path).\n\nAn exported program (.pt2), from torch.export.save(torch.export.export(model, example), path).\n\nA file of weights alone (a state_dict, from torch.save(model.state_dict(), path)) has no code to run, so t.model refuses it and says how to save the network instead. t.load reads such a file as a dict of tensors.\n\nDEVICE:\nThe network runs on the device chosen in the device input: cpu, or mps (the Mac's GPU) or cuda when there is one. Inputs are moved there; the answer stays there. On the GPU a large network runs many times faster, and t. nodes after it work on the answer without copying it back.\n\nSYNTAX:\nt.model <path> <input count> <output count> <device>\nDefault: no path, one input, one output, cpu.\n\nEXAMPLE:\nt.model models/pose_classifier.pt\nt.model models/mixer.pt 2 1 mps\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to run through the network: a tensor, a list or a single number (lists and numbers become float tensors). Every input runs the network and sends the answer.\n\nin 2, in 3 ... (with an input count):\nMore inputs, for a network that takes several. Each is held until in arrives.\n\nload (button, also an inlet):\nAsks for a model file and loads it. The message \"path <file>\" sent to any inlet loads\nthat file with no dialog.\n\ndevice:\ncpu, mps or cuda. Changing it moves the network.\n\npath:\nAn option, under the node: the model file. A path that is not absolute is relative to the folder the app was started from, which is why the demo's path starts with dpg_system/help. It is saved with the patch, and loaded again when the patch opens.\n\nadd batch dim:\nAn option, under the node. Most networks expect a batch - a stack of examples - as their first dimension. With this on, one example is wrapped as a batch of one on the way in, and unwrapped on the way out.\n\nOUTPUTS:\n\nout:\nThe network's answer. A network that answers with a dict sends the dict here.\n\nout 2, out 3 ... (with an output count):\nMore answers, for a network that gives several. A network giving more answers than there are outlets prints a note once.\n\nREADING THE DEMO:\nAt load the message loads a tiny network (two layers of 16) that was trained to turn a number from 0 to 1 into one cycle of a sine wave. t.linspace sends it 64 numbers from 0 to 1 at once, and the network answers all 64: the curve it learned. The network behind it is made by help/tools/make_torch_model_example.py.\n\nRELATED:\nt.load reads tensors and weights; t.save writes them. t.linspace makes the demo's inputs."
+        },
+        "3": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "4": {
+            "name": "load_bang",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment load the model file",
+            "name": "comment",
+            "id": 422,
+            "position_x": 140,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "load the model file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "load the model file"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 140,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "path dpg_system/help/data/t_model_example.pt",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment 64 inputs from 0 to 1",
+            "name": "comment",
+            "id": 496,
+            "position_x": 140,
+            "position_y": 170,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "64 inputs from 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "64 inputs from 0 to 1"
+        },
+        "8": {
+            "name": "t.linspace",
+            "id": 533,
+            "position_x": 140,
+            "position_y": 205,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.linspace 0 1 64"
+        },
+        "9": {
+            "init": "comment the network",
+            "name": "comment",
+            "id": 570,
+            "position_x": 340,
+            "position_y": 170,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the network",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the network"
+        },
+        "10": {
+            "name": "t.model",
+            "id": 607,
+            "position_x": 340,
+            "position_y": 205,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "11": {
+            "init": "comment what it learned: a sine wave",
+            "name": "comment",
+            "id": 644,
+            "position_x": 540,
+            "position_y": 170,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what it learned: a sine wave",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what it learned: a sine wave"
+        },
+        "12": {
+            "name": "plot",
+            "id": 681,
+            "position_x": 540,
+            "position_y": 205,
+            "width": 308,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 64.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "13": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 420,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 454,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.load"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 120,
+            "position_y": 454,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.save"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 210,
+            "position_y": 454,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.linspace"
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 564,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "load"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

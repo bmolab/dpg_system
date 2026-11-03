@@ -1,0 +1,580 @@
+{
+    "height": 1221,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "t.linalg.pinv_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.pinv_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.linalg.pinv - the best possible undoing of any matrix",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 684,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.linalg.pinv - the best possible undoing of any matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.linalg.pinv - the best possible undoing of any matrix"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the pseudo-inverse: the closest thing to an inverse for a matrix that has none - one that is not square, or that flattens space. Where an exact undoing is impossible, it gives the one that misses by the least (in the least-squares sense), and where several are possible it gives the smallest.\n\nUse it to fit: with a matrix whose rows are measurements of known things, pinv times the readings gives the best estimate of the unknowns (t.linalg.lstsq does the same in one step). It also inverts matrices too close to flat for t.linalg.inv to trust.\n\nSYNTAX:\nt.linalg.pinv\n\nINPUTS and PARAMETERS:\n\ntensor in:\nAny matrix, or a stack. A matrix of 3 rows and 2 columns gives one of 2 rows and 3 columns. Every input sends.\n\nOUTPUTS:\n\npseudo-inverse:\nThe pseudo-inverse.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there. On the Mac's GPU (mps) part of the work is done on the CPU, which torch says in a warning the first time.\n\nREADING THE DEMO:\nThe 3 x 2 matrix 1 1, 1 -1, 1 1 has no inverse; its pseudo-inverse is 2 x 3: 0.25 0.5 0.25, 0.25 -0.5 0.25. pinv times the matrix is exactly the 2 x 2 identity (bottom): it undoes the matrix for anything the matrix can produce.\n\nRELATED:\nnp.linalg.pinv is the numpy version. t.linalg.inv is the exact inverse of a square matrix. t.linalg.lstsq solves a fitting problem directly. t.linalg.svd is how pinv is computed.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the pseudo-inverse: the closest thing to an inverse for a matrix that has none - one that is not square, or that flattens space. Where an exact undoing is impossible, it gives the one that misses by the least (in the least-squares sense), and where several are possible it gives the smallest.\n\nUse it to fit: with a matrix whose rows are measurements of known things, pinv times the readings gives the best estimate of the unknowns (t.linalg.lstsq does the same in one step). It also inverts matrices too close to flat for t.linalg.inv to trust.\n\nSYNTAX:\nt.linalg.pinv\n\nINPUTS and PARAMETERS:\n\ntensor in:\nAny matrix, or a stack. A matrix of 3 rows and 2 columns gives one of 2 rows and 3 columns. Every input sends.\n\nOUTPUTS:\n\npseudo-inverse:\nThe pseudo-inverse.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there. On the Mac's GPU (mps) part of the work is done on the CPU, which torch says in a warning the first time.\n\nREADING THE DEMO:\nThe 3 x 2 matrix 1 1, 1 -1, 1 1 has no inverse; its pseudo-inverse is 2 x 3: 0.25 0.5 0.25, 0.25 -0.5 0.25. pinv times the matrix is exactly the 2 x 2 identity (bottom): it undoes the matrix for anything the matrix can produce.\n\nRELATED:\nnp.linalg.pinv is the numpy version. t.linalg.inv is the exact inverse of a square matrix. t.linalg.lstsq solves a fitting problem directly. t.linalg.svd is how pinv is computed."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment three rows of two",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three rows of two",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three rows of two"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 1 1 -1 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "t.reshape",
+            "id": 496,
+            "position_x": 400,
+            "position_y": 92,
+            "width": 243,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.reshape 3 2"
+        },
+        "8": {
+            "init": "comment two rows of three",
+            "name": "comment",
+            "id": 533,
+            "position_x": 640,
+            "position_y": 53,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two rows of three",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two rows of three"
+        },
+        "9": {
+            "name": "t.linalg.pinv",
+            "id": 570,
+            "position_x": 640,
+            "position_y": 158,
+            "width": 95,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "10": {
+            "name": "round",
+            "id": 607,
+            "position_x": 640,
+            "position_y": 210,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 440,
+            "position_y": 300,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment pinv times the matrix",
+            "name": "comment",
+            "id": 681,
+            "position_x": 180,
+            "position_y": 250,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pinv times the matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pinv times the matrix"
+        },
+        "13": {
+            "name": "t.matmul",
+            "id": 718,
+            "position_x": 180,
+            "position_y": 289,
+            "width": 58,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "round",
+            "id": 755,
+            "position_x": 180,
+            "position_y": 400,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "15": {
+            "init": "comment the identity",
+            "name": "comment",
+            "id": 792,
+            "position_x": 380,
+            "position_y": 500,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the identity",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the identity"
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 180,
+            "position_y": 490,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 634,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linalg.pinv"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 181,
+            "position_y": 634,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.linalg.inv"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 317,
+            "position_y": 634,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.linalg.lstsq"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 468,
+            "position_y": 634,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.linalg.svd"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 744,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pseudo-inverse",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pseudo-inverse",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

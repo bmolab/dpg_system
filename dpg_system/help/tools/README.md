@@ -299,8 +299,9 @@ highlights t.to too) and marks them. `build()` and every `derive_*_help.py`
 script call it before writing, so regenerated pages keep their highlights. Run
 it on its own after making a page by hand. On the comment, text_block,
 help_link and close pages, the page's own title, prose, SEE ALSO row and close
-button are skipped. comment, text_block and help_link draw their own look, so
-their highlight is saved but does not show.
+button are skipped. Nodes drawn without chrome (comment, text_block,
+help_link, close, a hidden title bar) take a highlighted chromeless theme, so
+their highlight shows too.
 
 ## Hand-made pages taken out of their generators
 
@@ -363,6 +364,114 @@ check_coverage lists it as undocumented, because iface.json is read from the
 source and still sees its register_node line. Use `relayout.py --minimal`
 on these, never plain relayout.
 
+The sixteen pages for the numpy nodes added 2026-10-24 (atan2,
+np.logical_and/or/xor/not, np.isnan, np.isfinite, np.nan_to_num, np.percentile,
+np.histogram, np.interp, np.convolve, np.correlate, np.linalg.pinv,
+np.linalg.lstsq, np.einsum) were seeded by `seed_numpy_more_help.py` and are
+hand-made from then on. The seeder is deliberately not a `make_*` script, so
+rebuild.py never runs it: its demos flow left to right with each comment above
+its node, and plain relayout would move those comments into a gutter. It also
+refuses to overwrite an existing page without `--force`. Use
+`relayout.py --minimal` on these pages. (`log` is derived with the other
+single-input functions in `derive_math_single_help.py`; only its own page was
+written, because regenerating log2/log10/exp would not reproduce them exactly.)
+The second batch (np.ptp, np.unique, np.cov, np.corrcoef, np.gradient,
+np.fft.rfft, np.fft.irfft, np.take, np.pad, np.tile, np.digitize, np.arange,
+np.eye, np.diag, np.polyfit, np.polyval, np.linalg.svd, np.linalg.eigh) was
+seeded the same way by `seed_numpy_batch2_help.py`, which borrows the first
+seeder's building blocks.
+The third batch (hypot, np.full, np.meshgrid, np.trace, np.tril, np.triu,
+np.take_along_axis, np.tensordot, np.linalg.qr, np.linalg.eig) is seeded by
+`seed_numpy_batch3_help.py`; its element-wise nodes (sign, log1p, degrees,
+radians, tanh, sinh, cosh) are derived in `derive_math_single_help.py`, which
+again wrote only their new pages.
+The fourth batch (np.real, np.imag, np.angle, np.unwrap, np.nanmin,
+np.nanmax, np.nanstd, np.nanvar, np.average, np.histogram2d, np.top_k,
+np.isclose, np.allclose, np.trapezoid, np.cumulative_trapezoid, np.fft.fft,
+np.fft.ifft) is seeded by `seed_numpy_batch4_help.py`. smoke reports the first
+np.allclose on its page as ALWAYS ZERO: that demo is meant to answer false.
+The fifth batch (np.save, np.savetxt, np.loadtxt, np.random.normal,
+np.random.integers, np.random.choice, np.random.permutation,
+np.sliding_window_view, np.maximum.accumulate, np.minimum.accumulate, np.insert,
+np.delete, np.append, np.nanargmax, np.nanargmin, np.bincount) is seeded by
+`seed_numpy_batch5_help.py`. The np.save and np.savetxt demos keep their path
+empty and wire no button node to write: smoke --click bangs button nodes, and a
+write with no path opens a native save dialog that would stall the run. smoke
+reports both as never sent, which is expected. np.loadtxt reads
+help/data/np_loadtxt_example.csv.
+The sixth batch (np.logspace, np.geomspace, np.fft.rfft2, np.fft.fft2,
+np.fft.irfft2, np.fft.ifft2, np.isin, np.intersect1d, np.setdiff1d, np.union1d)
+is seeded by `seed_numpy_batch6_help.py`.
+The scipy nodes (scipy.find_peaks, scipy.filtfilt, scipy.kdtree,
+scipy.cubic_spline, in scipy_nodes.py) are seeded by `seed_scipy_help.py`; the
+peak and filter pages share a make_wobble subpatcher that makes the demo curve.
+The second scipy batch (scipy.resample_poly, scipy.spectrogram, scipy.welch,
+scipy.label, scipy.gaussian_filter, scipy.median_filter) is seeded by
+`seed_scipy2_help.py`. In make_wobble and make_two_tones the ripple branch is
+linked BEFORE the slow wave: an outlet sends in the order its links were made, and
+the ripple must reach the + operand before the slow wave triggers the sum, or the
+first tick (the only one a slow metro gives a quick check) adds nothing to it.
+The third scipy batch (scipy.slerp, scipy.rotation_mean, scipy.align_vectors,
+scipy.rotation_apply, scipy.circmean, scipy.circstd, scipy.hilbert, scipy.detrend,
+scipy.convex_hull, scipy.kmeans, scipy.procrustes, scipy.curve_fit) is seeded by
+`seed_scipy3_help.py`; its make_swell and make_drift subpatchers link the cold
+operand first for the same reason. The rotation nodes are scalar first (w x y z),
+like the quaternion nodes. smoke reports three ALWAYS ZERO outlets on these pages
+(align_vectors' error, circmean's np.mean, procrustes' same-shape difference): each
+demo is showing that the answer is 0.
+The fourth scipy batch (scipy.linear_sum_assignment, scipy.griddata,
+scipy.correlate, scipy.coherence, scipy.local_maxima, scipy.zscore,
+scipy.linregress, scipy.spearmanr, scipy.entropy) is seeded by
+`seed_scipy4_help.py`; make_pair and make_two_rhythms send b before a, so b is held
+when a triggers. smoke reports linear_sum_assignment's cost as ALWAYS ZERO: the
+demo only reorders points that do not move, so the distance moved is 0.
+The first torch batch (t.matmul, t.einsum, t.linalg.norm, t.linalg.inv,
+t.linalg.det, t.linalg.pinv, t.linalg.solve, t.linalg.lstsq, t.std, t.var,
+t.argmin, t.quantile, t.mode, t.sort, t.topk, t.where, t.unique, t.isnan,
+t.isfinite, t.isinf, t.nan_to_num, t.pad, t.unfold, t.interpolate, t.stft,
+t.istft, t.convolve, t.correlate) is seeded by `seed_torch_help.py`. Its demo
+numbers were chosen to be exact in float32 (0.25, 1.5, ...) because a list then
+showed a float32 value as the double it really is (1.4 as 1.3999999761...); since
+2026-10-25 list and message displays show float32 and float16 values as their
+shortest decimal (low_precision_as_shortest in interface_nodes.py), so that is no
+longer needed - the data sent is unchanged. sin works in degrees: the make_chirp_4096
+and make_wave multipliers are degrees per sample. smoke reports the second
+t.linalg.det as ALWAYS ZERO: that matrix flattens the plane, so its determinant is 0.
+t.model, t.save and t.load are seeded by `seed_torch_model_help.py`. t.model runs
+help/data/t_model_example.pt and t.load reads help/data/t_load_example.pt, both
+made by `make_torch_model_example.py` (a tiny network trained to draw a sine wave,
+saved runnable and as weights alone; fixed seed). As on np.save, the t.save demo
+has no path and no button node on write, so smoke never opens a save dialog; smoke
+reports its saved path as never sent.
+The second torch batch (t.cross, t.dot, t.outer, t.cov, t.linalg.eigh, t.gradient,
+t.trapezoid, t.cumulative_trapezoid, t.meshgrid, t.logical_and, t.logical_or,
+t.logical_xor, t.logical_not) is seeded by `seed_torch_batch2_help.py`, its demos
+following the numpy pages for the same operations. Covariances and eigenvalues are
+shown in heat maps (which print with a format) rather than lists, and the eigh demo
+points are float32-exact.
+The third torch batch (t.multinomial, t.randperm, t.one_hot, t.max_pool, t.avg_pool)
+is seeded by `seed_torch_batch3_help.py`. The random demos draw unseeded, so smoke
+sees different values each run; the avg_pool data is chosen so the means are whole
+or halves.
+The fourth torch batch (t.interp, t.hilbert, t.scatter_reduce) is seeded by
+`seed_torch_batch4_help.py`; t.hilbert reuses scipy.hilbert's make_swell. The same
+batch gave t.fft and t.rfft a frequencies outlet and a sample rate option: their
+text was edited inside the live pages, because make_torch_signal_help.py's output no
+longer matches them (they were relaid out and highlighted since) - the generator
+carries the same text, so the two agree if it is ever run again.
+The learning nodes (t.param, t.optimize) and quaternion_multiply are seeded by
+`seed_torch_learning_help.py`; t.optimize builds its points in a make_points
+subpatcher. Both learning demos train every frame from load. The 'throw the numbers
+off' message on the t.param page only sends when clicked, so smoke lists it as never
+sent.
+The Shadow magnetization nodes (shadow_mag_correct, elbow_hinge, elbow_turn,
+hang_symmetry) are seeded by `seed_shadow_mag_help.py`. The elbow and hang pages read a
+synthetic take, help/data/elbow_hinge_example.npz, written by
+`make_elbow_hinge_example.py`; smoke flags the clean take's loss and turn as always zero
+(and the synthetic turned take's spread, and the mirrored hang's loss and shift), which
+is the point. shadow_mag_correct's demo runs on a click (--click). The full learning
+setup on a real take is examples/shadow_mag_learning.json.
+
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add
 it here) so rebuild.py cannot write over it.
@@ -395,7 +504,7 @@ set output_type to int / float. `==` / `!=` demos compare whole numbers
 (`// 0.25` steps, int64 random arrays) - floats would never match.
 
 `derive_math_single_help.py` does it for the single-input functions (`abs`,
-`sqrt`, `exp`, `log2`, `log10`, `inverse`, `norm`, `round`, `floor`, `ceil`,
+`sqrt`, `exp`, `log`, `log1p`, `log2`, `log10`, `sign`, `degrees`, `radians`, `tanh`, `sinh`, `cosh`, `inverse`, `norm`, `round`, `floor`, `ceil`,
 `trunc`; the `np.` rounding names share their pages), again from the
 arithmetic template with the operand box and the second random array taken
 out. Logs and inverse put a `+` offset before the function so the sine never

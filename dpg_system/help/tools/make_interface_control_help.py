@@ -120,6 +120,23 @@ How far each axis runs either side of centre.
 width / height / marker size:
 The size of the pad, and of the dot.
 
+marker color:
+The colour of the dot (yellow unless set).
+
+x / y:
+Where the dot is. Saved with the patch, so a joy_stick reopens where it
+was left; setting them moves the dot without sending.
+
+vectors:
+Draws on the pad: a list of rows, each [x, y] (an arrow from the centre)
+or [x0, y0, x1, y1] (a thin grey guide line). The arrows take colours in
+turn - yellow, blue, magenta, green, orange - and earlier ones are drawn
+on top, and thinner, so arrows lying along each other all show. A single
+[x, y] draws one arrow; an empty list clears them. A bang sends the dot's
+position, as if it had just been dragged there - a load_bang into it
+starts a patch from the saved position. np.dot's page uses it to draw two
+vectors and the projection of one on the other.
+
 OUTPUTS: 
 
 x out / y out:

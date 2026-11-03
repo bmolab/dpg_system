@@ -42,6 +42,7 @@ to_import = [
     'plot_nodes',
     'quaternion_nodes',
     'numpy_nodes',
+    'scipy_nodes',
     'matrix_nodes',
     'osc_nodes',
     'text_nodes'

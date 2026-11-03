@@ -1,0 +1,964 @@
+{
+    "name": "scipy.find_peaks_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.find_peaks_help.json",
+    "patches": {
+        "0": {
+            "height": 840,
+            "width": 710,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1125,
+            "name": "make_wobble",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1162,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 500",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 500.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment twice a second",
+                    "id": 1236,
+                    "position_x": 190,
+                    "position_y": 55,
+                    "width": 200,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "twice a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "twice a second"
+                },
+                "3": {
+                    "name": "np.arange",
+                    "init": "np.arange 120",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 150,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 120 samples: 2 seconds at 60 a second",
+                    "id": 1310,
+                    "position_x": 210,
+                    "position_y": 150,
+                    "width": 380,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "120 samples: 2 seconds at 60 a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "120 samples: 2 seconds at 60 a second"
+                },
+                "5": {
+                    "name": "*",
+                    "init": "* 9",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 270,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 360,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "comment",
+                    "init": "comment a slow wave: 3 cycles",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 440,
+                    "width": 260,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a slow wave: 3 cycles",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a slow wave: 3 cycles"
+                },
+                "8": {
+                    "name": "*",
+                    "init": "* 45",
+                    "id": 1458,
+                    "position_x": 330,
+                    "position_y": 270,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "9": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1495,
+                    "position_x": 330,
+                    "position_y": 360,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "*",
+                    "init": "* 0.3",
+                    "id": 1532,
+                    "position_x": 330,
+                    "position_y": 450,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "comment",
+                    "init": "comment a ripple: 15 cycles, 0.3 tall",
+                    "id": 1569,
+                    "position_x": 330,
+                    "position_y": 530,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a ripple: 15 cycles, 0.3 tall",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a ripple: 15 cycles, 0.3 tall"
+                },
+                "12": {
+                    "name": "+",
+                    "init": "+",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 580,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "13": {
+                    "name": "comment",
+                    "init": "comment added together",
+                    "id": 1643,
+                    "position_x": 190,
+                    "position_y": 595,
+                    "width": 200,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "added together",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "added together"
+                },
+                "14": {
+                    "name": "out",
+                    "init": "out wobble",
+                    "id": 1680,
+                    "position_x": 40,
+                    "position_y": 680,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "3": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1532,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 1532,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 1,
+                    "dest_input_name": "operand"
+                },
+                "7": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1680,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "wobble"
+                }
+            }
+        },
+        "1": {
+            "height": 1371,
+            "width": 1670,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1088,
+            "name": "scipy.find_peaks_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.find_peaks_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment scipy.find_peaks - find the peaks of a curve",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 549,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "scipy.find_peaks - find the peaks of a curve",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "scipy.find_peaks - find the peaks of a curve"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 862,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1266,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Finds the peaks of a curve - the points higher than their neighbours - and gives their positions, their heights and how many there are. With valleys chosen it finds the dips instead.\n\nEvery little wiggle is a peak, so the useful work is in choosing which peaks count. Prominence is the best tool: how far a peak stands above the surrounding ground - a small ripple on a big wave has little prominence however high it is. Spacing keeps only the highest of peaks closer together than a minimum; a minimum height ignores everything below it.\n\nUse it on a recorded curve to find footfalls in a vertical position, beats in an envelope, the accents of a gesture in a speed, the turning points of a joint angle, the onsets of a movement.\n\nSYNTAX:\nscipy.find_peaks <prominence: float> <spacing: int>\nDefaults: prominence 0 (off), spacing 1.\n\nEXAMPLE:\nscipy.find_peaks 0.5 10\n\nINPUTS and PARAMETERS:\n\nin:\nThe curve: a list or 1-D array. Every input is searched and sent. A nan is treated as a deep gap, so it does not hide the peaks beside it.\n\nprominence (float box, also an inlet):\nHow far a peak must stand above the ground around it. 0 counts every peak.\n\nspacing (int box, also an inlet):\nThe smallest distance between peaks, in samples. Where two are closer, only the higher is kept.\n\nmin height (float box, also an inlet):\nIgnore peaks below this - for valleys, dips above it. Used only when use min height is on.\n\nuse min height:\nAn option, under the node: turns the minimum height on.\n\nfind:\nAn option, under the node: peaks (the default) or valleys.\n\nOUTPUTS:\n\nindices:\nThe position of each peak, in samples from the start.\n\nheights:\nThe value of the curve at each peak.\n\ncount:\nHow many peaks. Sent first, then the heights, then the indices.\n\nREADING THE DEMO:\nThe wobble comes from the make_wobble subpatcher (double-click it to look inside):\n120 samples - two seconds at 60 a second - of a slow wave going round 3 times, with a ripple five times as fast and a third as tall added to it.\n\nWith prominence 0, every crest of the ripple counts: 15 peaks. With prominence 1, only the three crests of the slow wave stand out far enough: at samples 10, 50 and 90, each 1.3 high (the wave's 1 plus the ripple's 0.3 riding on top).\n\nRELATED:\nscipy.filtfilt smooths a curve first, so that its peaks are the shape's and not the noise's. np.argmax finds the single highest point. np.diff and np.sign show where a curve turns.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1250,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Finds the peaks of a curve - the points higher than their neighbours - and gives their positions, their heights and how many there are. With valleys chosen it finds the dips instead.\n\nEvery little wiggle is a peak, so the useful work is in choosing which peaks count. Prominence is the best tool: how far a peak stands above the surrounding ground - a small ripple on a big wave has little prominence however high it is. Spacing keeps only the highest of peaks closer together than a minimum; a minimum height ignores everything below it.\n\nUse it on a recorded curve to find footfalls in a vertical position, beats in an envelope, the accents of a gesture in a speed, the turning points of a joint angle, the onsets of a movement.\n\nSYNTAX:\nscipy.find_peaks <prominence: float> <spacing: int>\nDefaults: prominence 0 (off), spacing 1.\n\nEXAMPLE:\nscipy.find_peaks 0.5 10\n\nINPUTS and PARAMETERS:\n\nin:\nThe curve: a list or 1-D array. Every input is searched and sent. A nan is treated as a deep gap, so it does not hide the peaks beside it.\n\nprominence (float box, also an inlet):\nHow far a peak must stand above the ground around it. 0 counts every peak.\n\nspacing (int box, also an inlet):\nThe smallest distance between peaks, in samples. Where two are closer, only the higher is kept.\n\nmin height (float box, also an inlet):\nIgnore peaks below this - for valleys, dips above it. Used only when use min height is on.\n\nuse min height:\nAn option, under the node: turns the minimum height on.\n\nfind:\nAn option, under the node: peaks (the default) or valleys.\n\nOUTPUTS:\n\nindices:\nThe position of each peak, in samples from the start.\n\nheights:\nThe value of the curve at each peak.\n\ncount:\nHow many peaks. Sent first, then the heights, then the indices.\n\nREADING THE DEMO:\nThe wobble comes from the make_wobble subpatcher (double-click it to look inside):\n120 samples - two seconds at 60 a second - of a slow wave going round 3 times, with a ripple five times as fast and a third as tall added to it.\n\nWith prominence 0, every crest of the ripple counts: 15 peaks. With prominence 1, only the three crests of the slow wave stand out far enough: at samples 10, 50 and 90, each 1.3 high (the wave's 1 plus the ripple's 0.3 riding on top).\n\nRELATED:\nscipy.filtfilt smooths a curve first, so that its peaks are the shape's and not the noise's. np.argmax finds the single highest point. np.diff and np.sign show where a curve turns."
+                },
+                "3": {
+                    "init": "comment a slow wave with a ripple on it",
+                    "name": "comment",
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 199,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a slow wave with a ripple on it",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a slow wave with a ripple on it"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 84,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_wobble",
+                    "patcher id": 1125
+                },
+                "5": {
+                    "init": "comment the curve",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 28,
+                    "position_y": 200,
+                    "width": 64,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the curve",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the curve"
+                },
+                "6": {
+                    "name": "plot",
+                    "id": 459,
+                    "position_x": 28,
+                    "position_y": 235,
+                    "width": 368,
+                    "height": 180,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 360,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 130,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 120,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 120.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.5,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.5,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "7": {
+                    "init": "comment every crest",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 440,
+                    "position_y": 53,
+                    "width": 76,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "every crest",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "every crest"
+                },
+                "8": {
+                    "name": "scipy.find_peaks",
+                    "id": 533,
+                    "position_x": 440,
+                    "position_y": 92,
+                    "width": 154,
+                    "height": 112,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "9": {
+                    "init": "comment how many",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 660,
+                    "position_y": 53,
+                    "width": 58,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "how many",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "how many"
+                },
+                "10": {
+                    "name": "list",
+                    "id": 607,
+                    "position_x": 660,
+                    "position_y": 92,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "11": {
+                    "init": "comment prominence 1: the big ones",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 440,
+                    "position_y": 290,
+                    "width": 168,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "prominence 1: the big ones",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "prominence 1: the big ones"
+                },
+                "12": {
+                    "name": "scipy.find_peaks",
+                    "id": 681,
+                    "position_x": 440,
+                    "position_y": 325,
+                    "width": 154,
+                    "height": 112,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "scipy.find_peaks 1",
+                    "highlight": true
+                },
+                "13": {
+                    "init": "comment where",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 660,
+                    "position_y": 290,
+                    "width": 39,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "where",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "where"
+                },
+                "14": {
+                    "name": "list",
+                    "id": 755,
+                    "position_x": 660,
+                    "position_y": 325,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "comment how high",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 660,
+                    "position_y": 400,
+                    "width": 58,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "how high",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "how high"
+                },
+                "16": {
+                    "name": "list",
+                    "id": 829,
+                    "position_x": 660,
+                    "position_y": 435,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 866,
+                    "position_x": 30,
+                    "position_y": 560,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 594,
+                    "width": 103,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link scipy.filtfilt"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 181,
+                    "position_y": 594,
+                    "width": 72,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.argmax"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 294,
+                    "position_y": 594,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.top_k"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 399,
+                    "position_y": 594,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.diff"
+                },
+                "22": {
+                    "name": "close",
+                    "id": 1051,
+                    "position_x": 24,
+                    "position_y": 704,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "wobble",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "1": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "wobble",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "wobble",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "3": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "count",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 681,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "indices",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 681,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "heights",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

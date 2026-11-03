@@ -1,0 +1,761 @@
+{
+    "height": 676,
+    "width": 521,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1388,
+    "name": "nodes_numpy_spread_of_values",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_spread_of_values.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Spread of values",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 212,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Spread of values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Spread of values",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_numpy < NumPy",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 83,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< NumPy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 67,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 131,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np. nodes work on numpy arrays.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "np. nodes work on numpy arrays.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link np.percentile np.percentile",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.percentile",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 154,
+            "width": 280,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the value a share of the data lies below",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the value a share of the data lies below",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link np.histogram np.histogram",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.histogram",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 206,
+            "width": 243,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how many values fall in each range",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how many values fall in each range",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link np.ptp np.ptp",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.ptp",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 258,
+            "width": 231,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the range from lowest to highest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the range from lowest to highest",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link np.unique np.unique",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.unique",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 310,
+            "width": 317,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the distinct values, and how often each occurs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 309,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the distinct values, and how often each occurs",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link np.digitize np.digitize",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.digitize",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 362,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "which bin each value falls in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "which bin each value falls in",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link np.histogram2d np.histogram2d",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.histogram2d",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 414,
+            "width": 298,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how many points fall in each cell of a grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how many points fall in each cell of a grid",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link np.bincount np.bincount",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 462,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.bincount",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 466,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "count, or total, by label",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "count, or total, by label",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link np.cov np.cov",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 514,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.cov",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 518,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how pairs of variables vary together",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how pairs of variables vary together",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link np.corrcoef np.corrcoef",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 566,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.corrcoef",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 570,
+            "width": 305,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how closely pairs of variables move together",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how closely pairs of variables move together",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

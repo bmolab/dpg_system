@@ -3,6 +3,7 @@ from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 import cv2
 import dearpygui.dearpygui as dpg
+from dpg_system.cv_motion_nodes import register_cv_motion_nodes
 
 # can create command parsers for various types of GLObjects?
 
@@ -12,6 +13,7 @@ def register_opencv_nodes():
     Node.app.register_node('cv_capture', CVVideoCaptureNode.factory)
     Node.app.register_node('cv_camera', CVVideoCaptureNode.factory)
 
+    register_cv_motion_nodes()
 
 class CVImageNode(Node):
     @staticmethod

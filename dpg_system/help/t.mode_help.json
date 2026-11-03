@@ -1,0 +1,419 @@
+{
+    "height": 1021,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "t.mode_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.mode_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.mode - the most common value",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 377,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.mode - the most common value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.mode - the most common value"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the value that appears most often, and where it appears. Use it to smooth a stream of labels: the most common gesture class over the last 15 frames is a steadier answer than any one frame's guess. Also for the most common note, colour index or state.\n\nSYNTAX:\nt.mode <dim>\nWithout a dim, along the last dim (each row of a matrix gets its own). With one, dim and\nkeep_dims boxes appear.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values. Every input sends.\n\ndim, keep_dims (also inlets; only when a dim was given):\nThe dim counted along, and whether to keep it as size 1.\n\nOUTPUTS:\n\nmode:\nThe most common value. Of several equally common, the smallest.\n\nindices:\nA position where it appears. Sent first.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there. On the Mac's GPU (mps), torch has no mode: it is done on the CPU and the answer moved back.\n\nREADING THE DEMO:\n3 1 3 2 3 1: 3 appears three times, more than any other.\n\nRELATED:\nt.unique counts every value. t.bincount counts whole numbers. t.median is the middle value, not the most common one. t.rolling_buffer collects the last frames to vote over.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the value that appears most often, and where it appears. Use it to smooth a stream of labels: the most common gesture class over the last 15 frames is a steadier answer than any one frame's guess. Also for the most common note, colour index or state.\n\nSYNTAX:\nt.mode <dim>\nWithout a dim, along the last dim (each row of a matrix gets its own). With one, dim and\nkeep_dims boxes appear.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values. Every input sends.\n\ndim, keep_dims (also inlets; only when a dim was given):\nThe dim counted along, and whether to keep it as size 1.\n\nOUTPUTS:\n\nmode:\nThe most common value. Of several equally common, the smallest.\n\nindices:\nA position where it appears. Sent first.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there. On the Mac's GPU (mps), torch has no mode: it is done on the CPU and the answer moved back.\n\nREADING THE DEMO:\n3 1 3 2 3 1: 3 appears three times, more than any other.\n\nRELATED:\nt.unique counts every value. t.bincount counts whole numbers. t.median is the middle value, not the most common one. t.rolling_buffer collects the last frames to vote over."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment six labels",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 70,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "six labels",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "six labels"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 1 3 2 3 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment the most common, and where",
+            "name": "comment",
+            "id": 496,
+            "position_x": 420,
+            "position_y": 53,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the most common, and where",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the most common, and where"
+        },
+        "8": {
+            "name": "t.mode",
+            "id": 533,
+            "position_x": 420,
+            "position_y": 92,
+            "width": 64,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 420,
+            "position_y": 190,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 560,
+            "position_y": 190,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "12": {
+            "name": "help_link",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 324,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.unique"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 135,
+            "position_y": 324,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.bincount"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 256,
+            "position_y": 324,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.median"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 361,
+            "position_y": 324,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rolling_buffer"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 434,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mode",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "indices",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

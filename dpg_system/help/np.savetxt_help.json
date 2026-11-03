@@ -1,0 +1,404 @@
+{
+    "height": 1061,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "np.savetxt_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.savetxt_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.savetxt - write an array as a text table",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.savetxt - write an array as a text table",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.savetxt - write an array as a text table"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 956,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Writes a list or 2-D array to a text file, one row per line, values separated by commas (or tabs or spaces). A spreadsheet, a text editor, R, Excel or any other program can open it; np.loadtxt reads it back.\n\nText is easy to share and to read by eye, but it is larger than np.save's format, keeps only 1-D and 2-D arrays, and writes each value to 9 significant digits. Without an extension, .csv is added.\n\nUse it to hand measurements to other software, or to look at numbers a patch has produced.\n\nWRITING ONLY WHEN ASKED:\nAn array arriving at in is only held, not written: a stream of arrays does not rewrite the file sixty times a second. The file is written when write is clicked (or sent a bang).\n\nSYNTAX:\nnp.savetxt <path>\nDefault: no path - the first write asks where to save.\n\nEXAMPLE:\nnp.savetxt recordings/take_1.csv\n\nINPUTS and PARAMETERS:\n\nin:\nThe array to save (a list is turned into one). Held until written; each new one replaces the last.\n\nwrite (button, also an inlet):\nWrites the held array to the path. With no path yet, it asks where, as save as does.\n\nsave as (button, also an inlet):\nAsks for a file name and folder, writes there, and keeps that path for the next write.\n\npath:\nAn option, under the node: where write saves. A path that is not absolute is relative to the folder the app was started from. It is saved with the patch.\n\ndelimiter:\nAn option, under the node: comma (the default), tab or space between the values on a line.\n\nOUTPUTS:\n\nsaved path:\nThe full path of the file, sent each time it is written - ready to pass on, or to show where the file went.\n\nREADING THE DEMO:\nA 2 x 3 table arrive and are held. Click write (on the node) and choose where to save; the path appears below. Nothing is saved until you do, and nothing is saved in the help folder.\n\nRELATED:\nnp.loadtxt reads the file back. np.save writes the other format.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 940,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Writes a list or 2-D array to a text file, one row per line, values separated by commas (or tabs or spaces). A spreadsheet, a text editor, R, Excel or any other program can open it; np.loadtxt reads it back.\n\nText is easy to share and to read by eye, but it is larger than np.save's format, keeps only 1-D and 2-D arrays, and writes each value to 9 significant digits. Without an extension, .csv is added.\n\nUse it to hand measurements to other software, or to look at numbers a patch has produced.\n\nWRITING ONLY WHEN ASKED:\nAn array arriving at in is only held, not written: a stream of arrays does not rewrite the file sixty times a second. The file is written when write is clicked (or sent a bang).\n\nSYNTAX:\nnp.savetxt <path>\nDefault: no path - the first write asks where to save.\n\nEXAMPLE:\nnp.savetxt recordings/take_1.csv\n\nINPUTS and PARAMETERS:\n\nin:\nThe array to save (a list is turned into one). Held until written; each new one replaces the last.\n\nwrite (button, also an inlet):\nWrites the held array to the path. With no path yet, it asks where, as save as does.\n\nsave as (button, also an inlet):\nAsks for a file name and folder, writes there, and keeps that path for the next write.\n\npath:\nAn option, under the node: where write saves. A path that is not absolute is relative to the folder the app was started from. It is saved with the patch.\n\ndelimiter:\nAn option, under the node: comma (the default), tab or space between the values on a line.\n\nOUTPUTS:\n\nsaved path:\nThe full path of the file, sent each time it is written - ready to pass on, or to show where the file went.\n\nREADING THE DEMO:\nA 2 x 3 table arrive and are held. Click write (on the node) and choose where to save; the path appears below. Nothing is saved until you do, and nothing is saved in the help folder.\n\nRELATED:\nnp.loadtxt reads the file back. np.save writes the other format."
+        },
+        "3": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "4": {
+            "name": "load_bang",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment a 2 x 3 table",
+            "name": "comment",
+            "id": 422,
+            "position_x": 140,
+            "position_y": 53,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a 2 x 3 table",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a 2 x 3 table"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 140,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 2 3 4 5 6",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "np.reshape",
+            "id": 496,
+            "position_x": 140,
+            "position_y": 165,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 2 3"
+        },
+        "8": {
+            "init": "comment click write, then choose where",
+            "name": "comment",
+            "id": 533,
+            "position_x": 380,
+            "position_y": 53,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click write, then choose where",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click write, then choose where"
+        },
+        "9": {
+            "name": "np.savetxt",
+            "id": 570,
+            "position_x": 380,
+            "position_y": 92,
+            "width": 88,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "10": {
+            "init": "comment where it went",
+            "name": "comment",
+            "id": 607,
+            "position_x": 380,
+            "position_y": 250,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "where it went",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "where it went"
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 285,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 420,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 454,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.loadtxt"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 151,
+            "position_y": 454,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.save"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 248,
+            "position_y": 454,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.load"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 564,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "saved path",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -19,6 +19,8 @@ class TorchMSELossNode(TorchNode):
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.target_input = self.add_input('target')
         self.loss_output = self.add_output('loss')
+        self.reduction_option = self.add_option('reduction', widget_type='combo', default_value='sum')
+        self.reduction_option.widget.combo_items = ['sum', 'mean']
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -28,8 +30,8 @@ class TorchMSELossNode(TorchNode):
         if target_tensor is None:
             return
         try:
-            loss = torch.nn.functional.mse_loss(input_tensor, target_tensor, reduction='sum')
-            self.loss_output.send(loss.item())
+            loss = torch.nn.functional.mse_loss(input_tensor, target_tensor, reduction=self.reduction_option())
+            self.loss_output.send(scalar_or_graph(loss))
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
             traceback.print_exc()
@@ -46,6 +48,8 @@ class TorchL1LossNode(TorchNode):
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.target_input = self.add_input('target')
         self.loss_output = self.add_output('loss')
+        self.reduction_option = self.add_option('reduction', widget_type='combo', default_value='sum')
+        self.reduction_option.widget.combo_items = ['sum', 'mean']
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -55,8 +59,8 @@ class TorchL1LossNode(TorchNode):
         if target_tensor is None:
             return
         try:
-            loss = torch.nn.functional.l1_loss(input_tensor, target_tensor, reduction='sum')
-            self.loss_output.send(loss.item())
+            loss = torch.nn.functional.l1_loss(input_tensor, target_tensor, reduction=self.reduction_option())
+            self.loss_output.send(scalar_or_graph(loss))
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
             traceback.print_exc()
@@ -93,7 +97,7 @@ class TorchCrossEntropyLossNode(TorchNode):
             target_tensor = target_tensor.long()
         try:
             loss = torch.nn.functional.cross_entropy(input_tensor, target_tensor)
-            self.loss_output.send(loss.item())
+            self.loss_output.send(scalar_or_graph(loss))
         except Exception as e:
             # cross_entropy is picky about target dtype/shape (class indices
             # must be long; soft targets must match input shape). The error

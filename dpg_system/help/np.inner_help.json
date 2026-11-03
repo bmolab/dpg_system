@@ -814,7 +814,7 @@
                             "value_type": "float"
                         }
                     },
-                    "init": "slider 360"
+                    "init": "slider 360.0"
                 },
                 "8": {
                     "init": "comment one more direction, in degrees",

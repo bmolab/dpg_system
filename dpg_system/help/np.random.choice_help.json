@@ -1,0 +1,631 @@
+{
+    "height": 1221,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "np.random.choice_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.random.choice_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.random.choice - pick at random from a list",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 561,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.random.choice - pick at random from a list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.random.choice - pick at random from a list"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Picks at random from a list - numbers, words, rows of a matrix - one at a time or several at once, every item equally likely or weighted.\n\nUse it to choose the next note of a scale, a word to speak, a pose to move to, a clip to play, a direction to turn; with weights, to make some choices common and others rare; without repeats, to deal from a deck - every item once before any comes again.\n\nSYNTAX:\nnp.random.choice <n>\nDefault: nothing to choose from until a list arrives at from. With n, it chooses from\n0 to n-1.\n\nEXAMPLE:\nnp.random.choice 12\n\nINPUTS and PARAMETERS:\n\n(button):\nMakes a choice and sends it.\n\nfrom:\nThe list (or array) to choose from, held. For a 2-D array, whole rows are chosen.\n\ncount (int box, also an inlet):\nHow many to pick. 1 (the default) sends the item itself; more sends them as a list.\n\nweights:\nHow likely each item is, held: one non-negative number per item. They need not add up to 1; 3 1 makes the first item three times as likely as the second. Without weights all are equally likely.\n\nrepeats:\nAn option, under the node. On (the default), an item can be picked again within one count. Off, each item at most once per count - like dealing cards (count is then at most the number of items).\n\nseed:\nAn option, under the node. -1 (the default) draws different numbers every time the patch opens. Any other number starts the same sequence every time - the same \"random\" piece on every run, which is what you want for rehearsal, comparison and debugging.\n\nOUTPUTS:\n\nchosen:\nThe pick, or the list of picks.\n\nREADING THE DEMO:\nTop: a word from do re mi fa sol, twice a second, each equally likely.\n\nBottom: 16 picks from 0 and 1, weighted 9 to 1: mostly 0s, a 1 now and then - about one in ten.\n\nRELATED:\nnp.random.permutation shuffles a whole list. np.random.integers picks whole numbers in a range. np.take picks by position.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Picks at random from a list - numbers, words, rows of a matrix - one at a time or several at once, every item equally likely or weighted.\n\nUse it to choose the next note of a scale, a word to speak, a pose to move to, a clip to play, a direction to turn; with weights, to make some choices common and others rare; without repeats, to deal from a deck - every item once before any comes again.\n\nSYNTAX:\nnp.random.choice <n>\nDefault: nothing to choose from until a list arrives at from. With n, it chooses from\n0 to n-1.\n\nEXAMPLE:\nnp.random.choice 12\n\nINPUTS and PARAMETERS:\n\n(button):\nMakes a choice and sends it.\n\nfrom:\nThe list (or array) to choose from, held. For a 2-D array, whole rows are chosen.\n\ncount (int box, also an inlet):\nHow many to pick. 1 (the default) sends the item itself; more sends them as a list.\n\nweights:\nHow likely each item is, held: one non-negative number per item. They need not add up to 1; 3 1 makes the first item three times as likely as the second. Without weights all are equally likely.\n\nrepeats:\nAn option, under the node. On (the default), an item can be picked again within one count. Off, each item at most once per count - like dealing cards (count is then at most the number of items).\n\nseed:\nAn option, under the node. -1 (the default) draws different numbers every time the patch opens. Any other number starts the same sequence every time - the same \"random\" piece on every run, which is what you want for rehearsal, comparison and debugging.\n\nOUTPUTS:\n\nchosen:\nThe pick, or the list of picks.\n\nREADING THE DEMO:\nTop: a word from do re mi fa sol, twice a second, each equally likely.\n\nBottom: 16 picks from 0 and 1, weighted 9 to 1: mostly 0s, a 1 now and then - about one in ten.\n\nRELATED:\nnp.random.permutation shuffles a whole list. np.random.integers picks whole numbers in a range. np.take picks by position."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment the words, held",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 101,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the words, held",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the words, held"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "do re mi fa sol",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment one at a time",
+            "name": "comment",
+            "id": 570,
+            "position_x": 420,
+            "position_y": 53,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one at a time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one at a time"
+        },
+        "10": {
+            "name": "np.random.choice",
+            "id": 607,
+            "position_x": 420,
+            "position_y": 92,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 640,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment two choices, weighted 9 to 1",
+            "name": "comment",
+            "id": 681,
+            "position_x": 180,
+            "position_y": 300,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two choices, weighted 9 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two choices, weighted 9 to 1"
+        },
+        "13": {
+            "name": "message",
+            "id": 718,
+            "position_x": 180,
+            "position_y": 335,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "name": "message",
+            "id": 755,
+            "position_x": 280,
+            "position_y": 387,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "9 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment 16 picks: mostly 0",
+            "name": "comment",
+            "id": 792,
+            "position_x": 420,
+            "position_y": 300,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "16 picks: mostly 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "16 picks: mostly 0"
+        },
+        "16": {
+            "name": "np.random.choice",
+            "id": 829,
+            "position_x": 420,
+            "position_y": 335,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "count",
+                    "value": 16,
+                    "value_type": "int"
+                }
+            },
+            "highlight": true
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 420,
+            "position_y": 510,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 674,
+            "width": 146,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.random.permutation"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 235,
+            "position_y": 674,
+            "width": 127,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.random.integers"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 417,
+            "position_y": 674,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.take"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 514,
+            "position_y": 674,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link random"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 784,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "from"
+        },
+        "4": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "from"
+        },
+        "5": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "weights"
+        },
+        "6": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "chosen",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "chosen",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,545 @@
+{
+    "height": 1421,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "t.interpolate_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.interpolate_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.interpolate - resample to a new length, or resize",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 635,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.interpolate - resample to a new length, or resize",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.interpolate - resample to a new length, or resize"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1316,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Stretches or squeezes a tensor to a new size, filling in the values between the original ones. With one size, the first dim is resampled: a movement of 47 frames becomes 100, so takes of different lengths can be compared or averaged frame by frame;\na short curve drawn by hand becomes a smooth one. With two sizes, the first two dims are resized: an image (height x width x colours) at a new resolution.\n\nAny dims after the resized ones are carried along unchanged: 47 frames x 72 values resampled to 100 gives 100 x 72.\n\nSYNTAX:\nt.interpolate <size> <size>\nDefault: 100.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every input sends.\n\nsize (text box, also an inlet):\nThe new size: one number, or two (or three) for that many leading dims.\n\nmode:\nAn option, under the node. linear (the default) draws straight lines between the values; cubic draws smooth curves through them; nearest repeats the closest value (steps, and keeps labels as labels); area averages (best for shrinking).\n\nalign corners:\nAn option, under the node. On (the default), the first and last values stay exactly first and last; off, each value is treated as the centre of a cell, as images usually are.\n\nOUTPUTS:\n\nresized:\nThe tensor at its new size.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nEight random values, new every second, resampled to 64. Linear (left) joins them with straight lines; cubic (right) passes smoothly through the same points.\n\nRELATED:\nnp.interp interpolates at positions you choose. scipy.cubic_spline gives a curve through points. scipy.resample_poly changes the sample rate of a signal without blurring its frequencies.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1300,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Stretches or squeezes a tensor to a new size, filling in the values between the original ones. With one size, the first dim is resampled: a movement of 47 frames becomes 100, so takes of different lengths can be compared or averaged frame by frame;\na short curve drawn by hand becomes a smooth one. With two sizes, the first two dims are resized: an image (height x width x colours) at a new resolution.\n\nAny dims after the resized ones are carried along unchanged: 47 frames x 72 values resampled to 100 gives 100 x 72.\n\nSYNTAX:\nt.interpolate <size> <size>\nDefault: 100.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every input sends.\n\nsize (text box, also an inlet):\nThe new size: one number, or two (or three) for that many leading dims.\n\nmode:\nAn option, under the node. linear (the default) draws straight lines between the values; cubic draws smooth curves through them; nearest repeats the closest value (steps, and keeps labels as labels); area averages (best for shrinking).\n\nalign corners:\nAn option, under the node. On (the default), the first and last values stay exactly first and last; off, each value is treated as the centre of a cell, as images usually are.\n\nOUTPUTS:\n\nresized:\nThe tensor at its new size.\n\nThe answer stays on the input's device: a tensor on the GPU is worked on there and comes out there.\n\nREADING THE DEMO:\nEight random values, new every second, resampled to 64. Linear (left) joins them with straight lines; cubic (right) passes smoothly through the same points.\n\nRELATED:\nnp.interp interpolates at positions you choose. scipy.cubic_spline gives a curve through points. scipy.resample_poly changes the sample rate of a signal without blurring its frequencies."
+        },
+        "3": {
+            "init": "comment every second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 1000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 1000"
+        },
+        "5": {
+            "init": "comment eight random values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eight random values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eight random values"
+        },
+        "6": {
+            "name": "np.rand",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 8"
+        },
+        "7": {
+            "init": "comment linear",
+            "name": "comment",
+            "id": 496,
+            "position_x": 28,
+            "position_y": 240,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "linear",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "linear"
+        },
+        "8": {
+            "name": "t.interpolate",
+            "id": 533,
+            "position_x": 28,
+            "position_y": 279,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.interpolate 64",
+            "highlight": true
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 28,
+            "position_y": 420,
+            "width": 368,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 64.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment cubic",
+            "name": "comment",
+            "id": 607,
+            "position_x": 440,
+            "position_y": 240,
+            "width": 39,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cubic",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cubic"
+        },
+        "11": {
+            "name": "t.interpolate",
+            "id": 644,
+            "position_x": 440,
+            "position_y": 279,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "mode",
+                    "value": "cubic",
+                    "value_type": "str"
+                }
+            },
+            "init": "t.interpolate 64",
+            "highlight": true
+        },
+        "12": {
+            "name": "plot",
+            "id": 681,
+            "position_x": 440,
+            "position_y": 420,
+            "width": 368,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 64.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "13": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 620,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 654,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.interp"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 143,
+            "position_y": 654,
+            "width": 127,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.cubic_spline"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 325,
+            "position_y": 654,
+            "width": 133,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.resample_poly"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 515,
+            "position_y": 654,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.reshape"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 764,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "resized",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "resized",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}
