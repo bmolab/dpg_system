@@ -396,6 +396,7 @@ class MGLContextNode(Node):
         self.texture_tag = None
         self.image_item = None
         self.external_window = None
+        self._dpg_window_size = None
         self.fullscreen_window = None
         self.render_target = None
 
@@ -876,6 +877,7 @@ class MGLContextNode(Node):
             if self.external_window is None or not dpg.does_item_exist(self.external_window):
                 disp_w = max(1, self.display_width_option())
                 disp_h = max(1, self.display_height_option())
+                self._dpg_window_size = (disp_w, disp_h)
                 with dpg.window(label="MGL Output", width=disp_w, height=disp_h) as win:
                     self.external_window = win
                     dpg.add_image(self.texture_tag, parent=win)
@@ -883,7 +885,17 @@ class MGLContextNode(Node):
                 # Sync Window Size
                 disp_w = max(1, self.display_width_option())
                 disp_h = max(1, self.display_height_option())
-                dpg.configure_item(self.external_window, show=True, width=disp_w, height=disp_h)
+                # As with the native window: a changed setting resizes the
+                # window, and otherwise a window dragged to a new size keeps it.
+                current = (dpg.get_item_width(self.external_window), dpg.get_item_height(self.external_window))
+                if (disp_w, disp_h) != self._dpg_window_size:
+                    dpg.configure_item(self.external_window, width=disp_w, height=disp_h)
+                elif current != self._dpg_window_size:
+                    disp_w, disp_h = current
+                    self.display_width_option.set(disp_w)
+                    self.display_height_option.set(disp_h)
+                self._dpg_window_size = (disp_w, disp_h)
+                dpg.configure_item(self.external_window, show=True)
                 
                 # Check image inside window
                 children = dpg.get_item_children(self.external_window, slot=1)
@@ -1170,6 +1182,15 @@ class MGLContextNode(Node):
                     win_h = int(self.display_height_option())
                     if win_w <= 0: win_w = self.width
                     if win_h <= 0: win_h = self.height
+
+                    # A window dragged to a new size keeps it. A changed setting
+                    # wins over a drag: it is what show() is about to apply.
+                    if mode != 'fullscreen' and self._native_win.applied_size == (win_w, win_h):
+                        dragged = self._native_win.poll_user_resize()
+                        if dragged is not None:
+                            win_w, win_h = dragged
+                            self.display_width_option.set(win_w)
+                            self.display_height_option.set(win_h)
 
                     self._native_win.show(win_w, win_h,
                                           title=f'MGL Output ({self.label})',
