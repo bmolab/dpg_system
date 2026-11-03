@@ -64,7 +64,9 @@ class MoviePlayerNode(Node):
         self.input = self.add_input('input', triggers_execution=True)
         self.frame_input = self.add_input('frame', widget_type='drag_int', default_value=0,
                                             triggers_execution=True, callback=self.frame_widget_changed)
-        self.path_input = self.add_input('path', widget_type='text_input', default_value=initial_path)
+        self.path_input = self.add_input('path', widget_type='text_input', default_value=initial_path,
+                                         callback=self.path_changed)
+        self.open_button = self.add_input('open', widget_type='button', callback=self.open_button_clicked)
 
         # --- Buttons ---
         self.play_pause_button = self.add_input('play', widget_type='button', callback=self.play_button_clicked)
@@ -88,7 +90,8 @@ class MoviePlayerNode(Node):
         self.info_label = self.add_label('no movie loaded')
 
         # --- Outputs ---
-        self.frame_output = self.add_output('frame')
+        self.frame_output = self.add_output('video out')
+        self.frame_output.name_archive.append('frame')
         self.frame_num_output = self.add_output('frame_num')
         self.done_output = self.add_output('done')
         self.clip_spec_output = self.add_output('clip_spec')
@@ -195,6 +198,21 @@ class MoviePlayerNode(Node):
         mb = self.cached_frames.nbytes / (1024 * 1024)
         self.info_label.set(f"cached  {self.total_frames} frames  {mb:.0f} MB")
         print(f"MoviePlayerNode: cached {self.total_frames} frames ({mb:.0f} MB)")
+
+    def path_changed(self):
+        """A path typed into the box or sent to the inlet opens that movie."""
+        # A saved patch restores this box and then reopens its movie in
+        # load_custom, the way it was opened (streaming or imported).
+        if getattr(self, 'in_loading_process', False):
+            return
+        path = any_to_string(self.path_input()).strip()
+        if path == '' or (path == self.movie_path and self.total_frames > 0):
+            return
+        self.open_movie(path)
+
+    def open_button_clicked(self):
+        LoadDialog(self, self.open_movie, extensions=['.mov', '.mp4', '.m4v', '.avi', '.mkv', '.webm'],
+                   default_path=os.path.dirname(self.movie_path))
 
     def _release(self):
         """Release capture and clear cache."""

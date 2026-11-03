@@ -8,15 +8,13 @@ from help_common import SIG, PLOT, INT, FLT, starter
 body = """movie_player plays a video file and sends its frames as pictures.
 
 OPENING A FILE:
-Send 'open' and a path to the 'input' inlet - here, edit the string at the
-top and press return. 'import' and a path does the same but reads the whole
-movie into memory first: it takes a while and a lot of memory, and then
+Press 'open' and choose a file, type a path into the 'path' box and press
+return, or send a path to the 'path' inlet. Sending 'open' and a path to the
+'input' inlet does the same - here, edit the string at the top and press
+return. 'import' and a path reads the whole movie into memory first: it takes a while and a lot of memory, and then
 jumping anywhere in it is instant. A path given as the node's argument
 (movie_player <path>) is opened when the node is made, and a saved patch
 reopens its movie when it loads.
-
-The 'path' box shows what is open. Typing a new path into it does not open
-anything - use the 'open' message.
 
 THE COMMANDS ARE PLAIN TEXT:
 The 'input' inlet understands open, import, play, loop, stop, pause, resume
@@ -54,7 +52,7 @@ interpolated between frames. A downstream counter counts real new frames, and
 the picture simply holds between them.
 
 FRAMES COME OUT AS ARRAYS:
-'frame' sends the picture as an RGB array of height by width by 3 bytes - the
+'video out' sends the picture as an RGB array of height by width by 3 bytes - the
 same kind of array cv_camera produces. 'frame_num' says where you are. 'done'
 bangs at the end, and on every wrap when looping, so it doubles as a lap
 marker - use it to trigger whatever comes next rather than watching the frame
@@ -89,7 +87,10 @@ frame:
 Jump to a frame and send it. Send a stream of them to scrub.
 
 path:
-Shows the open file.
+Shows the open file. A new path, typed or sent here, opens that movie.
+
+open:
+Choose a movie to open.
 
 play / stop:
 Transport.
@@ -108,7 +109,7 @@ Send the in and out points and speed out of 'clip_spec'.
 
 OUTPUTS:
 
-frame:
+video out:
 The picture, as an RGB array.
 
 frame_num:
@@ -141,7 +142,7 @@ demo = [
 
     {'key': 'mp', 'init': 'movie_player', 'pos': (30, 250), 'w': 340, 'h': 400},
     {'key': 'c2', 'comment': True, 'text': "set clip_start and clip_end, then\n'save clip' sends them out as a spec",
-     'pos': (30, 665)},
+     'pos': (30, 695)},
 
     {'key': 'inf', 'init': 'info', 'pos': (420, 250), 'w': 260, 'h': 80},
     {'key': 'c3', 'comment': True, 'text': 'frames are arrays, like a camera',
@@ -157,7 +158,7 @@ demo = [
 ]
 links = [('path', 'string out', 'mp', 'input'),
          ('m1', '', 'mp', 'input'), ('m2', '', 'mp', 'input'), ('m3', '', 'mp', 'input'),
-         ('mp', 'frame', 'inf', 'in'),
+         ('mp', 'video out', 'inf', 'in'),
          ('mp', 'frame_num', 'i1', ''),
          ('mp', 'done', 'b1', ''),
          ('mp', 'clip_spec', 'l1', '')]
