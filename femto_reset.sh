@@ -9,9 +9,10 @@
 #
 # This does NOT recover the stuck state behind the FireNEX after a reboot or
 # link loss (tested Oct 23 2026; the hub claims per-port power switching but
-# the Femto never reappears). For that: unplug the Femto's USB and power at the
-# remote end, then plug USB first, power second — or power-cycle the remote
-# FireNEX unit, then the Femto.
+# the 5 V stays on, so the Femto never sees a real disconnect). For that,
+# power-cycle at the remote end without touching the USB cable (tested
+# Oct 23 2026): remote FireNEX power off and on, wait for the link, then
+# cycle the Femto's power.
 #
 # Usage: ./femto_reset.sh [off_seconds]   (default 5; asks for sudo)
 # Installed root-owned as /usr/local/sbin/femto_reset with a NOPASSWD sudoers
@@ -84,5 +85,5 @@ for _ in $(seq 10); do
         exit 0
     fi
 done
-echo "Femto did not come back. Unplug its USB at the remote end (or power-cycle the remote FireNEX, then the Femto)." >&2
+echo "Femto did not come back. Power-cycle the remote FireNEX, wait for the link, then the Femto." >&2
 exit 1

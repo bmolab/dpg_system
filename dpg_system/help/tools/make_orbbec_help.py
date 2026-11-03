@@ -76,8 +76,8 @@ before suspecting the patch.
 'reset usb port' is a heavier version: it switches the camera's USB port off
 and on again. It needs the femto_reset script installed (see femto_reset.sh in
 the repo). If the camera has vanished altogether after a reboot behind the
-fiber extender, neither button brings it back - unplug the camera's USB at the
-far end, or power-cycle the extender's remote unit.
+fiber extender, neither button brings it back: switch the extender's remote
+unit off and on, wait for its link light, then switch the camera off and on.
 
 THE REST OF THE CLEANING:
 'median filter' removes speckle, 'fill holes' patches small gaps where the

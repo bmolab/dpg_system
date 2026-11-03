@@ -267,8 +267,8 @@ class OrbbecFemtoNode(Node):
                                                 width=button_width, callback=self.manual_usb_reset)
         # Heavier recovery: disable/re-enable the hub port (femto_reset script)
         # for mid-session dropouts. Does NOT recover the stuck state behind the
-        # FireNEX after a reboot/link loss (tested Oct 23 2026) — that still
-        # needs the Femto's USB unplugged, or the remote end power-cycled.
+        # FireNEX after a reboot/link loss (tested Oct 23 2026): the hub never
+        # really cuts 5 V. That needs the remote FireNEX power-cycled, then the Femto.
         self.reset_port_option = self.add_option('reset usb port', widget_type='button',
                                                  width=button_width, callback=self.manual_port_reset)
 
