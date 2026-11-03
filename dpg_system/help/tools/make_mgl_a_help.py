@@ -71,8 +71,9 @@ The size the picture is shown at, in the node or as a window. Drawn at the zoom
 in the node; drag the bar under the picture to change it. The width and height 
 options are the separate render size.
 
-reset_view (message to mgl_context):
-Put the built-in camera back where it started.
+reset view (mgl_context):
+Put the built-in camera back where it started. Press the button, bang the inlet 
+or send the message reset_view.
 
 enabled / flag (mgl_enable):
 Which GL state to change and whether to switch it on. Like everything else in 

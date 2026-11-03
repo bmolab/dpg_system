@@ -430,6 +430,7 @@ class MGLContextNode(Node):
 
         self.auto_render_input = self.add_input('auto_render', widget_type='checkbox', default_value=False, callback=self.toggle_auto_render)
         self.render_trigger = self.add_input('render', triggers_execution=True)
+        self.reset_view_button = self.add_input('reset view', widget_type='button', callback=self._reset_view_message)
         self.mgl_chain_output = self.add_output('mgl_chain')
         self.ui_output = self.add_output('ui')
 
@@ -475,6 +476,7 @@ class MGLContextNode(Node):
     def _reset_view_message(self, message='', args=None):
         self._orbit_view = _new_orbit_view()
         self._orbit_drag_last = None
+        self._render_requested = True  # show it even with auto_render off
 
     @staticmethod
     def _with_orbit_view_from_camera_options(node_container):
