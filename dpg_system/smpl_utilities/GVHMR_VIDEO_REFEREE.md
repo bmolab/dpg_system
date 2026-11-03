@@ -683,10 +683,182 @@ Tools (`video_fix/`):
   tolerance of the person follower; 0.5 for a performer who crouches and sits — at 0.3 the hops take lost 30% of
   frames, at 0.5 3%). `arm_2d_referee.py` reads the stride for its picture.
 
+(Written before the leg fix of 2026-11-03: see the re-measured per-segment section. Travel figures use only the root and stand.)
+
 Hops take, first reading (with the Vive-turned trans): Shadow's travel x 1.1 / y 4.7 m vs the video's 1.3 / 5.5 (the
 axes now match). Both upper arms carry about 40 deg of twist (the elbow turn); the left upper arm's direction is 23 deg
 off against the right's 9.5. One take only. All nine takes are running through the S7 pipeline (scratchpad
 `s11/run_s11.sh`, `s11/progress.txt`).
+
+## 2026-11-03: Subject 11 per-segment error picture (all takes, re-measured)
+
+This replaces the 2026-11-02 version of this section, which had two errors:
+- `convert_active20.py` used `as_pose_tensor`, which only carries the upper body, so hips, knees, ankles and head were
+  at rest in every Subject 11 SMPL file. A claim that Shadow loses the seated pose in take 6 came from this and is
+  withdrawn: the raw file shows the dancer seated (knees about 104-123 deg). Now fixed, checked joint by joint against the raw.
+- The comparison posed Shadow on the neutral SMPL-X body. Its lopsided rest arms make a hanging left arm read about 12 deg
+  inward and the right about 4 (see 'which body model draws Shadow's rotations'), which faked much of a left upper-arm
+  offset. Shadow is now posed on the SMPL-H body the viewer draws, with the dancer's shape; the video stays on its own body
+  (`SHADOW_BODY=drawn` in `sensor_error_landscape.py`, `video_fix/own_frame_drawn.py`, `video_fix/s11_table2.py`).
+
+Root-travel readings in the Vive section above stand. Its orientation fits used only the torso and also stand.
+
+Tracking, sync, and direction against the video (median deg, gated frames):
+
+| take | frames lost | sync corr | spine | L thigh | R thigh | L upper arm | R upper arm | L forearm | R forearm |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 rouquan | 9% | 0.86 | 5.7 | 7.6 | 9.7 | 17.5 | 19.7 | 15.6 | 14.1 |
+| 2 rouqyan kungfu | 5% | 0.83 | 6.9 | 10.0 | 5.1 | 16.3 | 13.1 | 13.4 | 20.0 |
+| 3 hops | 3% | 0.56 | 10.1 | 6.3 | 6.0 | 11.3 | 12.8 | 10.9 | 16.9 |
+| 4 short centipede | 6% | -- | unusable | | | | | | |
+| 5 spiraling fist | 13% | 0.82 | 9.6 | 10.3 | 7.3 | 19.6 | 12.0 | 18.6 | 16.4 |
+| 6 stretches misaligned | 3% | 0.66 | 31.6 | 24.1 | 25.4 | 38.0 | 32.6 | 28.1 | 19.2 |
+| 7 slow misaligned | 0% | 0.73 | 11.5 | 12.3 | 8.5 | 12.6 | 12.9 | 13.0 | 13.3 |
+| 8 slow 2 eventually misaligned | 2% | 0.68 | 10.5 | 8.6 | 7.1 | 18.2 | 14.2 | 15.3 | 16.9 |
+| 9 final combo | 2% | 0.84 | 6.2 | 5.5 | 5.4 | 12.4 | 13.4 | 12.8 | 11.7 |
+
+- The spine and thighs are the method's floor: about 5-12 deg.
+- Take 6 is off everywhere, spine included, and about as much standing as seated (thigh about 21-29 vs 22-23), so
+  sitting is not the reason. The cause is not known. Its arm numbers should not be read as arm errors.
+
+**Constant arm offset**, in each segment's own frame (deg; in brackets the part about the rest vertical):
+
+| take | L upper arm | R upper arm | L forearm | R forearm |
+|---|---|---|---|---|
+| 1 | 14.5 (-13.3) | 18.2 (-18.2) | 12.5 (-12.2) | 10.6 (-10.5) |
+| 2 | 15.1 (+14.5) | 8.5 (+4.9) | 5.3 (+4.6) | 16.7 (+16.1) |
+| 3 | 10.1 (+9.7) | 10.2 (+9.8) | 8.5 (+5.7) | 15.2 (+14.4) |
+| 5 | 16.2 (+15.8) | 6.5 (+5.5) | 9.0 (+8.9) | 10.3 (+9.8) |
+| 7 | 8.5 (+1.7) | 7.3 (-4.7) | 4.1 (+3.2) | 4.0 (+2.8) |
+| 8 | 15.8 (+14.4) | 6.6 (-1.3) | 9.6 (+9.3) | 12.5 (+12.5) |
+| 9 | 9.0 (+7.9) | 8.3 (-6.2) | 6.5 (+5.2) | 4.0 (+3.7) |
+
+- The left upper arm is still larger than the right in takes 2, 5 and 8 (15-16 vs 6-9), with no inward bias behind it now:
+  the offset is mostly about the rest vertical, which on a hanging arm is forward/back rather than sideways.
+- Take 1 has the opposite sign on all four segments (-10 to -18). Four sensors sharing one offset points at the body's
+  heading rather than the arms. The arm swings fitted for it improved agreement in the room's frame but worsened it
+  relative to the torso, so `_vc` leaves them out. Not yet tested directly.
+- Offsets change from take to take, as expected with a calibration per take.
+
+**Hanging upper arms** (video elevation below -50, upright; Shadow minus video, deg; + = dancer's left, forward):
+
+| take | L left | L fwd | R left | R fwd | bank per video | Shadow's own bank |
+|---|---|---|---|---|---|---|
+| 1 | +15.5 | -4.9 | +8.5 | +16.0 | +11.8 | +4.3 |
+| 2 | -7.9 | +8.7 | -8.0 | +2.0 | -7.6 | -11.0 |
+| 3 | -8.4 | +2.9 | -8.7 | -2.3 | -7.9 | -12.2 |
+| 5 | -2.0 | +14.0 | -7.8 | +0.6 | -5.1 | -4.5 |
+| 7 | +6.2 | +7.7 | +3.1 | +10.0 | +4.9 | -8.0 |
+| 8 | +1.0 | +13.4 | -2.4 | +10.6 | -0.7 | -9.9 |
+| 9 | +0.5 | +7.0 | +0.2 | +7.8 | +0.2 | -6.0 |
+
+- Bank: the reading survives the re-measure. In takes 2, 3 and 5 most of Shadow's bank is error. In slow takes 7, 8 and 9
+  it is mostly the dancer's real arm position, so read the bank only from relaxed, still hanging arms. Take 1's has the
+  opposite sign: per calibration.
+- Forward: hanging arms read forward of the video in most takes, up to +16. Facing the camera, forward is GVHMR's weak
+  depth axis. Side-on frames are too few to settle it (229 frames: left +8.1, right +2.1; `hang_forward_by_facing.py`).
+
+**Elbow turn**: twist against the video, L / R (deg; magnitude, `compare_shadow.py`):
+1: 47.6 / 13.4; 2: 27.8 / 34.3; 3: 39.5 / 40.5; 5: 43.1 / 32.9; 7: 38.2 / 41.7; 8: 30.2 / 23.7; 9: 34.2 / 33.0.
+Still the main arm error. Take 1's split matches a shared heading offset added to one arm and taken from the other.
+
+**Penetration**, forearm or wrist more than 3 cm inside the torso, % of synced frames, on the drawn body (L / R).
+Hands are not measured.
+
+| take | Shadow | video |
+|---|---|---|
+| 1 | 5.6 / 3.8 | 1.4 / 0.3 |
+| 2 | 9.7 / 0.8 | 1.2 / 0.1 |
+| 3 | 13.7 / 0.0 | 5.6 / 11.1 |
+| 5 | 18.6 / 3.3 | 0.6 / 0.9 |
+| 6 | 12.7 / 1.5 | 0.3 / 0.0 |
+| 7 | 0.3 / 0.4 | 1.6 / 0.0 |
+| 8 | 6.9 / 0.0 | 0.1 / 0.1 |
+| 9 | 3.8 / 0.0 | 1.1 / 0.0 |
+
+- The left arm dominates, well below what the neutral body showed (take 2: 32 to 9.7; take 5: 30 to 18.6). GVHMR's body prior favours clear hands, so its
+  low numbers are partly habit.
+- No single segment causes it. Taking one direction from the video (`arm_penetration_swap.py`):
+  - left upper arm helps most in takes 2 and 3 (9.7 to 4.2, 13.7 to 0.2);
+  - left forearm helps most in takes 1, 5 and 9 (5.6 to 1.2, 18.6 to 6.4, 3.8 to 1.1);
+  - both together reach 0-1.2 in every take except 3 (2.4) and 6 (9.2);
+  - take 1's right side is cured by its upper arm alone (3.8 to 0).
+- The frames that go in have the elbow bent about 76-107 deg with the wrist near the midline, with the forearm further back
+  and further in than the video. These frames were picked for being inside, so that direction is partly built in.
+- One fixed turn of the whole arm per take does not do it (fit on one half, scored on the other): good for take 1 left
+  (9.6 to 1.9), some for take 5, nothing elsewhere, and worse in take 8 left (0.2 to 4.2), take 3 right (0 to 16), take 6 left.
+- Turning the forearm outward about the upper arm by 20 deg clears much of it, and brings the left forearm closer to the
+  video in takes 1, 7, 8 and 9, but moves the right forearm further away in most takes.
+
+**Could a magnetized sensor produce this?** Sweep in `video_fix/arm_mag_sweep.py`: a fixed field in the sensor, the same with
+bleed into tilt, and a magnet at 18 places on the torso, each on top of a constant own-frame offset, fitted on one half and
+scored on the other. Takes 1, 2, 5, 7, 8, 9.
+- Fixed field vs constant alone: usually within 2 deg. Largest gains are left forearm in takes 7 and 8 (about 3) and right
+  upper arm in take 5 (3); left forearm in take 5 is 2 worse.
+- Fitted offsets differ in direction between takes, although remanent magnetism should survive recalibration.
+- One shared offset, leave one take out: most changes are within 2 deg and go both ways.
+- Bleed into tilt: gain from -16 to +42, not physical. Torso magnet: no better, and the best place changes per take.
+- Fusion recovering slowly: no fade in the seconds after the arm leaves the pose (`arm_error_after_exit.py`).
+- Penetration does not improve overall over the constant.
+
+So no magnetic model tested earns its place as the main cause. A small effect is not excluded: 12-25 deg of disagreement
+remains after every fit. The June arm-sensor offsets (`magnetometer_assessment/`) allow at most about 9 deg of heading
+on shoulders and elbows; wrist outliers allow 36-59 deg on the hand (tested under Hands). A field that
+varies across the room is untested.
+
+**Hands** (`video_fix/hand_measure.py`, `hand_drift.py`, `hand_inject.py`; uncorrected poses). Deep inside (> 3 cm), % of synced
+frames, L / R, on the drawn body's hand surface:
+
+| take | forearm-wrist | hand | forearm or hand | video hand |
+|---|---|---|---|---|
+| 1 | 5.6 / 3.8 | 8.4 / 0.0 | 10.1 / 3.8 | 0.2 / 0.0 |
+| 2 | 9.7 / 0.8 | 3.5 / 3.4 | 11.2 / 3.8 | 0.1 / 1.6 |
+| 3 | 13.7 / 0.0 | 1.1 / 0.9 | 14.5 / 0.9 | 9.6 / 15.7 |
+| 5 | 18.6 / 3.2 | 20.1 / 6.2 | 24.1 / 6.7 | 0.5 / 5.1 |
+| 6 | 12.7 / 1.5 | 3.2 / 0.5 | 15.6 / 1.6 | 0.2 / 0.0 |
+| 7 | 0.3 / 0.4 | 0.1 / 1.0 | 0.4 / 1.3 | 0.0 / 0.0 |
+| 8 | 6.9 / 0.0 | 8.2 / 0.7 | 10.6 / 0.7 | 3.4 / 4.2 |
+| 9 | 3.8 / 0.0 | 3.5 / 0.0 | 4.1 / 0.0 | 4.3 / 2.9 |
+
+- The files carry no finger rotation, so hands are drawn open. A fist would reach less far, so these are upper figures for
+  closed hands.
+- The video cannot referee the hand: no hand keypoints, and GVHMR's wrist differs from Shadow's by a median 22-45 deg.
+- Magnetized hand sensor, no video: a fixed field in the hand sensor should make the hand-to-forearm rotation steadier
+  once corrected. On held-out frames it does no better than a constant, and no better than a placebo using the hand's orientation
+  from 30 s away. Fitted fields point different ways between takes; one shared field does not help on a left-out take.
+- Sensitivity, injected into the left hand of takes 2, 5, 7, 9: size 0.2 (units of horizontal field) cannot be found; 0.59 (June's suit 2
+  left wrist) gains 1-4 deg with about the right size; 0.86 (suit 1 right wrist) gains 5-10. With nothing injected the fit still
+  returns about 0.3, so fitted sizes up to that mean nothing. Reading: no left-hand field of 0.59 or more in these takes. The right
+  hand was not injected but behaves alike. Either the suit was not one with those outliers or the offsets came after March.
+- Take 1's left hand-to-forearm centre looked like a 40 deg step at 40-60 s in 20 s windows. In 2 s windows both hands swing together, and David sees no change in how the hand is held: choreography.
+
+**Root from the Vive** (`video_fix/vive_root.py`, `build_s11.py`):
+- Repeated samples (3-11% of frames: the tracker is slower than the frames), jumps and spikes over 2.5 cm off a smooth path are filled by
+  interpolation, then an 8 Hz zero-phase low-pass. David saw the root jerk in take 1. It has the most missing samples and had spikes of 3-7 cm;
+  across takes the jitter also grows with speed (about 0.04 cm still to 1.6 cm fast), which points at sample timing. Take 1's top
+  speed goes from 5.5 to 2.3 m/s; planted-foot jitter improves only about 15% (90th percentile 0.45 to 0.38 m/s), so most of what remains is
+  not this noise (`trans_jerk.py`, `trans_filter_test.py`).
+- World turn and tracker offset per take from planted feet, offset limited to the lower back. Unlimited, the offset grows
+  to the length of the leg and glues the foot to the tracker.
+- Turn -62 to -71 deg (halves within about 2-6); video travel gives a median of -71 and is noisier per take; `raw/` take 2
+  `_trans` is the main trans turned by -77.41, about 11 from this take's -66.2.
+- Offset 2-6 cm above and 8.5-14 behind the pelvis joint at rest, at most about 5 sideways; take 9 pins at the 8 cm
+  sideways limit, which may be the re-seated tracker.
+- One room floor at Vive height -3.47.
+- Feet within 10 cm of the floor in 94-100% of frames, slip down on every take. Seated take 6: soles about 18 cm low.
+
+**Corrected files** in `~/Projects/GVHMR/outputs/s11_work/`:
+- `tr/`: uncorrected poses with the new root, all nine takes.
+- `tr_nofilter/`, `vc_nofilter/`: the same without the spike filter and low-pass.
+- `vc/`: new root, elbow turn per take, and a swing only where it beat no swing by 1.5 deg in both held-out halves, improved
+  the direction relative to the torso, and did not raise penetration. Takes 1, 2, 5, 7, 8, 9. Swings kept: take 2 left upper
+  arm and right forearm; take 5 left upper arm; take 8 left upper arm and right forearm.
+
+Left arm deep penetration raw to `vc`: take 2 9.7 to 4.6, take 5 18.6 to 7.5, take 8 6.9 to 4.9; takes 1, 7, 9 unchanged.
+
+Open:
+- S7 and S8 swings were fitted with the neutral rest bones; the S8 left upper-arm swing is the most suspect.
+- Take 1's body heading; take 6's overall disagreement.
 
 ## Where we left off (2026-11-01): picking up the old-fusion sessions
 
