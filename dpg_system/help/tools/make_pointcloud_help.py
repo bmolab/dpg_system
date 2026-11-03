@@ -613,8 +613,8 @@ The draw, passed on to the rest of the chain."""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240, 'node_mouse_events': True}},
+     'props': {'auto_render': True, 'display_width': 320,
+               'display_height': 240, 'node_mouse_events': True}},
     {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
      'pos': (400, 62)},
     {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, 430), 'w': 240, 'h': 160},

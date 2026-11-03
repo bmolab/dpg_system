@@ -597,7 +597,6 @@
   ],
   "mgl_context": [
     "mgl_context",
-    "mgl_display",
     "mgl_enable"
   ],
   "mgl_light": [

@@ -317,7 +317,7 @@ LABELS = {
     'sensor_to_root': 'sensor_to_root / root inference',
     'take': 'take / take_dict',
     'smpl_pose_to_joints': 'smpl pose / quats to joints', 'torque_gang': 'torque gangs',
-    'gl_body': 'gl_body (alt, simple)', 'mgl_context': 'mgl context / display / enable',
+    'gl_body': 'gl_body (alt, simple)', 'mgl_context': 'mgl context / enable',
     't.point_cloud_voxels': 't point cloud voxels / crop', 'gl_text': 'gl_text / gl_korean_text',
     'k.rgb_to_grayscale': 'k. colour',
     'np.linalg.norm': 'np.linalg.norm', 't.nn.log_softmax': 't.nn.log_softmax',

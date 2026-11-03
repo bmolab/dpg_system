@@ -2714,6 +2714,10 @@ class App:
             dest_input_name = ''
             if 'dest_input_name' in link_container:
                 dest_input_name = link_container['dest_input_name']
+            # An outlet removed from a node moves those after it down: a saved
+            # index can now be past the end, and the name below still finds it.
+            if source_output_index >= len(source_node.outputs) and source_output_name != '':
+                source_output_index = 0
             if source_output_index < len(source_node.outputs):
                 source_output = source_node.outputs[source_output_index]
                 found_output = True

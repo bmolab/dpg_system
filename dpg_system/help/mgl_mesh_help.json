@@ -109,12 +109,12 @@
                     "value_type": "bool"
                 },
                 "1": {
-                    "name": "node_display_width",
+                    "name": "display_width",
                     "value": 320,
                     "value_type": "int"
                 },
                 "2": {
-                    "name": "node_display_height",
+                    "name": "display_height",
                     "value": 240,
                     "value_type": "int"
                 },

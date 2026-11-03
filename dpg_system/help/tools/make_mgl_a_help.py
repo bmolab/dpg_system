@@ -33,23 +33,21 @@ other.
 
 GETTING SOMETHING ON SCREEN:
 
-    mgl_context  ->  mgl_camera  ->  mgl_light  ->  mgl_box
-         |
-    texture_tag  ->  mgl_display
+    mgl_context  ->  mgl_light  ->  mgl_box
 
-The context renders into a texture; mgl_display puts that texture in a window. 
-They are separate so that the scene can be rendered once and shown in several 
-places, or shown at a size unrelated to the resolution it was drawn at.
+The context shows the picture itself, in its own window by default, and it has 
+an orbit camera built in: drag the picture to orbit and scroll to zoom. That 
+view is saved with the patch. To set the view exactly, or to change the lens, 
+add an mgl_orbit_camera or mgl_camera after the context; it replaces the 
+built-in view for everything drawn after it.
 
 THE NODES:
 
-mgl_context  the root: holds the GL context, renders the chain
-mgl_display  shows the rendered texture in a window
+mgl_context  the root: holds the GL context, renders the chain, shows the picture
 mgl_enable   turn a GL flag on or off for the rest of the chain
 
 SYNTAX:
 mgl_context
-mgl_display
 
 EXAMPLE:
 mgl_context
@@ -68,11 +66,13 @@ Where the context shows its picture: off, node, window or fullscreen. A new
 context opens its own 960 x 960 window; the contexts on these help pages are 
 set to node so that each page stays self-contained.
 
-texture_tag (mgl_display):
-The texture to show - patch it from the context's texture_tag outlet.
+display_width / display_height (mgl_context):
+The size the picture is shown at, in the node or as a window. Drawn at the zoom 
+in the node; drag the bar under the picture to change it. The width and height 
+options are the separate render size.
 
-width / height / fullscreen (mgl_display):
-The window.
+reset_view (message to mgl_context):
+Put the built-in camera back where it started.
 
 enabled / flag (mgl_enable):
 Which GL state to change and whether to switch it on. Like everything else in 
@@ -83,11 +83,10 @@ OUTPUTS:
 mgl_chain (mgl_context):
 The chain. Patch it into the first thing you want drawn.
 
-texture_tag:
-The rendered image, for mgl_display.
-
 ui:
-Interaction events from the window, for the orbit camera.
+Interaction events from the window, for an mgl_orbit_camera. The built-in 
+camera reads them itself, so it needs no patching. In node mode there are none 
+unless 'node_mouse_events' is on, because a drag would otherwise move the node.
 
 WHY GL WORK IS MAIN-THREAD ONLY:
 A pose or a point cloud arriving on a streaming thread can trigger a node's 
@@ -108,15 +107,11 @@ demo = [
     {'key': 'box', 'init': 'mgl_box', 'pos': (30, 810), 'w': 220, 'h': 200},
     {'key': 'c1', 'comment': True, 'text': 'the rotate applies to everything after it',
      'pos': (30, 1025)},
-    {'key': 'dsp', 'init': 'mgl_display', 'pos': (300, 240), 'w': 220, 'h': 160},
-    {'key': 'c2', 'comment': True, 'text': 'the context renders to a texture;\ndisplay puts it in a window',
-     'pos': (300, 415)},
 ]
 links = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
          ('cam', 'mgl chain out', 'lgt', 'mgl chain in'),
          ('lgt', 'mgl chain out', 'rot', 'mgl chain in'),
-         ('rot', 'mgl chain out', 'box', 'mgl chain in'),
-         ('ctx', 'texture_tag', 'dsp', 'texture_tag')]
+         ('rot', 'mgl chain out', 'box', 'mgl chain in')]
 print(build('mgl_context', 'mgl_context - the root of a 3D scene', body, demo, links,
             demo_width=550, text_width=820, text_height=820))
 
@@ -207,15 +202,13 @@ demo = [
     {'key': 'sph', 'init': 'mgl_sphere', 'pos': (30, 1160), 'w': 220, 'h': 200},
     {'key': 'c1', 'comment': True, 'text': 'the sphere by BOTH: they accumulate',
      'pos': (30, 1375)},
-    {'key': 'dsp', 'init': 'mgl_display', 'pos': (300, 200), 'w': 220, 'h': 160},
 ]
 links = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
          ('cam', 'mgl chain out', 'lgt', 'mgl chain in'),
          ('lgt', 'mgl chain out', 'tr1', 'mgl chain in'),
          ('tr1', 'mgl chain out', 'box', 'mgl chain in'),
          ('box', 'mgl chain out', 'tr2', 'mgl chain in'),
-         ('tr2', 'mgl chain out', 'sph', 'mgl chain in'),
-         ('ctx', 'texture_tag', 'dsp', 'texture_tag')]
+         ('tr2', 'mgl chain out', 'sph', 'mgl chain in')]
 print(build('mgl_transform', 'mgl transforms - moving what comes after', body, demo,
             links, demo_width=550, text_width=820, text_height=820))
 
@@ -233,10 +226,9 @@ for whatever is drawn after them; they differ only in how you say where the
 eye is.
 
 YOU DO NOT NEED ONE TO SEE SOMETHING:
-mgl_context supplies a default camera (at 0 0 3, looking at the origin),
-switchable with its 'default_camera' option and adjustable with its
-'camera_' options. A camera node replaces that view for everything drawn
-after it.
+mgl_context has an orbit camera built in, which starts 3 units from the origin
+and 20 degrees above it; drag the picture to orbit and scroll to zoom. A camera
+node replaces that view for everything drawn after it.
 
 A CAMERA IS NOT PUT BACK:
 Transforms, colours and materials are undone at the end of the branch they
@@ -307,13 +299,13 @@ mgl chain out:
 The chain, seen from this camera.
 
 RELATED:
-mgl_context for the default camera. mgl_light, mgl_material and mgl_color
+mgl_context for the built-in camera. mgl_light, mgl_material and mgl_color
 used to share this page."""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240}},
+     'props': {'auto_render': True, 'display_width': 320,
+               'display_height': 240}},
     {'key': 'cam', 'init': 'mgl_camera', 'pos': (30, 440), 'w': 240, 'h': 160,
      'props': {'pos': [2.0, 1.5, 3.0]}},
     {'key': 'c0', 'comment': True, 'text': 'a fixed eye, up and to the right',
@@ -321,8 +313,8 @@ demo = [
     {'key': 'bx1', 'init': 'mgl_box', 'pos': (30, 630), 'w': 200, 'h': 150},
 
     {'key': 'ctx2', 'init': 'mgl_context', 'pos': (420, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240, 'node_mouse_events': True}},
+     'props': {'auto_render': True, 'display_width': 320,
+               'display_height': 240, 'node_mouse_events': True}},
     {'key': 'c1', 'comment': True,
      'text': 'drag on this picture to orbit,\nscroll to zoom', 'pos': (420, 120)},
     {'key': 'm1', 'init': 'message', 'pos': (420, 420), 'w': 80, 'h': 42,
@@ -369,10 +361,10 @@ exceptions: they draw in the current colour without any lighting.
 
 body = """mgl_light adds a light to the scene, for everything drawn after it.
 
-THE DEFAULT LIGHT GOES AWAY:
-mgl_context supplies one light of its own (at 2 5 5), switchable with its
-'default_light' option. The first mgl_light in a frame removes it, so the
-lights you place are the only ones.
+THE DEFAULT LIGHTS GO AWAY:
+mgl_context supplies two lights of its own (at 5 5 -5 and -5 5 5, both at
+intensity 0.5 with 50% gray ambient). The first mgl_light in a frame removes them, so the lights you
+place are the only ones.
 
 A LIGHT IS NOT PUT BACK:
 Each mgl_light adds a light that stays on for the rest of the frame - up to
@@ -422,12 +414,12 @@ The chain, with this light added.
 
 RELATED:
 mgl_material for how surfaces answer the light; mgl_color for their colour.
-mgl_context for the default light. gl_light is the gl equivalent."""
+mgl_context for the default lights. gl_light is the gl equivalent."""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240}},
+     'props': {'auto_render': True, 'display_width': 320,
+               'display_height': 240}},
     {'key': 'l1', 'init': 'mgl_light', 'pos': (30, 440), 'w': 240, 'h': 240,
      'props': {'position': [-4.0, 2.0, 3.0], 'diffuse': [255.0, 60.0, 60.0, 255.0]}},
     {'key': 'c0', 'comment': True, 'text': 'a red light from the left', 'pos': (30, 440)},
@@ -502,8 +494,8 @@ the gl equivalent."""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240}},
+     'props': {'auto_render': True, 'display_width': 320,
+               'display_height': 240}},
     {'key': 'mat1', 'init': 'mgl_material', 'pos': (30, 440), 'w': 240, 'h': 230,
      'props': {'ambient': [0.1, 0.1, 0.1, 1.0], 'diffuse': [1.0, 1.0, 1.0, 1.0],
                'specular': [0.5, 0.5, 0.5, 1.0], 'shininess': 4.0}},
@@ -578,8 +570,8 @@ mgl_material for how surfaces answer light. gl_color is the gl equivalent."""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240}},
+     'props': {'auto_render': True, 'display_width': 320,
+               'display_height': 240}},
     {'key': 'col', 'init': 'mgl_color', 'pos': (30, 440), 'w': 240, 'h': 260,
      'props': {'color': [255.0, 140.0, 0.0, 255.0]}},
     {'key': 'c0', 'comment': True, 'text': 'orange, for both shapes', 'pos': (30, 440)},
@@ -692,8 +684,8 @@ and lit through the current material."""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240}},
+     'props': {'auto_render': True, 'display_width': 320,
+               'display_height': 240}},
     {'key': 'img', 'init': 'mgl_image', 'pos': (30, 440), 'w': 130, 'h': 80},
     {'key': 'c0', 'comment': True, 'text': 'the backdrop: an array drawn across\nthe whole picture',
      'pos': (30, 440)},

@@ -174,7 +174,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "the root of a 3D scene\n(mgl_context, mgl_display, mgl_enable)",
+                    "value": "the root of a 3D scene\n(mgl_context, mgl_enable)",
                     "value_type": "str"
                 },
                 "1": {
@@ -198,7 +198,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "the root of a 3D scene\n(mgl_context, mgl_display, mgl_enable)",
+            "text": "the root of a 3D scene\n(mgl_context, mgl_enable)",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,

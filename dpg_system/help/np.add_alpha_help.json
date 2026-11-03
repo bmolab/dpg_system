@@ -372,12 +372,12 @@
                     "value_type": "int"
                 },
                 "3": {
-                    "name": "node_display_width",
+                    "name": "display_width",
                     "value": 240,
                     "value_type": "int"
                 },
                 "4": {
-                    "name": "node_display_height",
+                    "name": "display_height",
                     "value": 240,
                     "value_type": "int"
                 },
@@ -514,12 +514,12 @@
                     "value_type": "int"
                 },
                 "3": {
-                    "name": "node_display_width",
+                    "name": "display_width",
                     "value": 240,
                     "value_type": "int"
                 },
                 "4": {
-                    "name": "node_display_height",
+                    "name": "display_height",
                     "value": 240,
                     "value_type": "int"
                 },

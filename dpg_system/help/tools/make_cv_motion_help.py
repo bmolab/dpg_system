@@ -123,7 +123,7 @@ demo = [
      'w': 245, 'h': 100},
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (330, 62), 'w': 300, 'h': 300,
      'props': {'auto_render': True, 'width': 640, 'height': 480,
-               'node_display_width': 300, 'node_display_height': 225,
+               'display_width': 300, 'display_height': 225,
                'match_texture_to_window': False, 'display_mode': 'node'}},
     {'key': 'image', 'init': 'mgl_image', 'pos': (330, 405), 'w': 245, 'h': 80},
     {'key': 'c0', 'comment': True,

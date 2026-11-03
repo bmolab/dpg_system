@@ -10,13 +10,11 @@ def chain(x=30, y=62, auto=True):
          'props': {'auto_render': auto}},
         {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (x, y + 138), 'w': 240, 'h': 220},
         {'key': 'lgt', 'init': 'mgl_light', 'pos': (x, y + 373), 'w': 220, 'h': 200},
-        {'key': 'dsp', 'init': 'mgl_display', 'pos': (x + 300, y + 138), 'w': 220, 'h': 160},
     ]
 
 CHAIN_LINKS = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
                ('ctx', 'ui', 'cam', 'ui'),
-               ('cam', 'mgl chain out', 'lgt', 'mgl chain in'),
-               ('ctx', 'texture_tag', 'dsp', 'texture_tag')]
+               ('cam', 'mgl chain out', 'lgt', 'mgl chain in')]
 
 # ----------------------------------------------------------------- primitives
 body = """The built-in shapes: things you can draw without supplying any geometry.
@@ -110,12 +108,12 @@ print(build('mgl_sphere', 'mgl shapes - the built-in geometry', body, demo, link
 # ------------------------------------------------------------ geometry from data
 def view():
     """A context showing its picture in the node, and an orbit camera.
-    Shapes use the context's own default light. The chain continues from
+    Shapes use the context's own default lights. The chain continues from
     'cam'."""
     nodes = [
         {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-         'props': {'auto_render': True, 'node_display_width': 320,
-                   'node_display_height': 240, 'node_mouse_events': True}},
+         'props': {'auto_render': True, 'display_width': 320,
+                   'display_height': 240, 'node_mouse_events': True}},
         {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
          'pos': (30, 120)},
         {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, 440), 'w': 240, 'h': 160},
@@ -648,8 +646,8 @@ mgl_point_cloud draw other kinds of geometry. gl_text is the older equivalent.""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240, 'node_mouse_events': True}},
+     'props': {'auto_render': True, 'display_width': 320,
+               'display_height': 240, 'node_mouse_events': True}},
     {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
      'pos': (30, 120)},
     {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, 440), 'w': 240, 'h': 160},
@@ -687,8 +685,8 @@ def scene(y=62, light=False):
     for lit drawing, a light. The chain continues from the last key."""
     nodes = [
         {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, y), 'w': 340, 'h': 340,
-         'props': {'auto_render': True, 'node_display_width': 320,
-                   'node_display_height': 240, 'node_mouse_events': True}},
+         'props': {'auto_render': True, 'display_width': 320,
+                   'display_height': 240, 'node_mouse_events': True}},
         {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
          'pos': (30, y + 58)},
         {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, y + 378), 'w': 240, 'h': 160},

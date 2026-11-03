@@ -61,7 +61,7 @@ def _props(d):
 # A new mgl_context opens its own 960 x 960 window. A help page is a self-contained
 # demo, so its contexts draw in the node unless the spec says otherwise.
 MGL_CONTEXT_HELP_PROPS = {'display_mode': 'node', 'width': 640, 'height': 480,
-                          'node_display_width': 640, 'node_display_height': 480}
+                          'display_width': 640, 'display_height': 480}
 
 
 def _demo_props(d):

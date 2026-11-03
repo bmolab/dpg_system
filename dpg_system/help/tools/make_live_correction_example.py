@@ -60,7 +60,7 @@ demo = [
     {'key': 'c_body', 'comment': True, 'text': 'the body', 'pos': (740, 62)},
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (740, 92), 'w': 92, 'h': 84,
      'props': {'auto_render': True, 'display_mode': 'node', 'width': 960, 'height': 960,
-               'node_display_width': 640, 'node_display_height': 480}},
+               'display_width': 640, 'display_height': 480}},
     {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (740, 200), 'w': 188, 'h': 126,
      'props': {'distance': 3.6, 'yaw': 7.0, 'elevation': 19.0}},
     {'key': 'mesh', 'init': 'mgl_smpl_mesh', 'pos': (740, 350), 'w': 154, 'h': 224,
