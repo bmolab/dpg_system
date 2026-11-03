@@ -107,6 +107,31 @@
                     "name": "auto_render",
                     "value": true,
                     "value_type": "bool"
+                },
+                "1": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 480,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "node_display_width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "node_display_height",
+                    "value": 480,
+                    "value_type": "int"
                 }
             }
         },

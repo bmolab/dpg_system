@@ -117,6 +117,21 @@
                     "name": "node_display_height",
                     "value": 240,
                     "value_type": "int"
+                },
+                "3": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "height",
+                    "value": 480,
+                    "value_type": "int"
                 }
             }
         },
@@ -210,6 +225,21 @@
                     "name": "node_mouse_events",
                     "value": true,
                     "value_type": "bool"
+                },
+                "4": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "height",
+                    "value": 480,
+                    "value_type": "int"
                 }
             }
         },

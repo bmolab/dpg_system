@@ -311,6 +311,11 @@
                         0.0
                     ],
                     "value_type": "list"
+                },
+                "7": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
                 }
             }
         },

@@ -410,6 +410,11 @@
                     "name": "node_display_height",
                     "value": 480,
                     "value_type": "int"
+                },
+                "5": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
                 }
             }
         },

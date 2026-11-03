@@ -329,8 +329,8 @@ class MGLContextNode(Node):
     
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.width = 640
-        self.height = 480
+        self.width = 960
+        self.height = 960
         self.context = MGLContext.get_instance()
         self.texture_tag = None
         self.image_item = None
@@ -370,13 +370,13 @@ class MGLContextNode(Node):
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.width, callback=self.resize)
         self.height_option = self.add_option('height', widget_type='drag_int', default_value=self.height, callback=self.resize)
         self.node_display_width_option = self.add_option('node_display_width', widget_type='drag_int',
-                                                         default_value=self.width, callback=self._on_node_display_size_changed)
+                                                         default_value=480, callback=self._on_node_display_size_changed)
         self.node_display_height_option = self.add_option('node_display_height', widget_type='drag_int',
-                                                          default_value=self.height, callback=self._on_node_display_size_changed)
+                                                          default_value=480, callback=self._on_node_display_size_changed)
         self.match_texture_to_window_option = self.add_option('match_texture_to_window', widget_type='checkbox',
                                                               default_value=False)
         self.node_resize_handle = None
-        self.display_mode_option = self.add_option('display_mode', widget_type='combo', default_value='node')
+        self.display_mode_option = self.add_option('display_mode', widget_type='combo', default_value='window')
         self.display_mode_option.widget.combo_items = ['off', 'node', 'window', 'fullscreen']
         # When on, the in-node display captures mouse events (down/drag/up/scroll)
         # and sends them out the ui output — e.g. to drive mgl_orbit_camera. The

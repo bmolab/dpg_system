@@ -151,7 +151,33 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 480,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_display_width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "node_display_height",
+                    "value": 480,
+                    "value_type": "int"
+                }
+            }
         },
         "7": {
             "name": "mgl_smpl_mesh",

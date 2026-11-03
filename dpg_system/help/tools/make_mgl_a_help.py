@@ -63,6 +63,11 @@ something bangs "render".
 render (mgl_context):
 Draw one frame now.
 
+display_mode (mgl_context):
+Where the context shows its picture: off, node, window or fullscreen. A new 
+context opens its own 960 x 960 window; the contexts on these help pages are 
+set to node so that each page stays self-contained.
+
 texture_tag (mgl_display):
 The texture to show - patch it from the context's texture_tag outlet.
 

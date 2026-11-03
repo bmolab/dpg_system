@@ -58,6 +58,20 @@ def _props(d):
     return out
 
 
+# A new mgl_context opens its own 960 x 960 window. A help page is a self-contained
+# demo, so its contexts draw in the node unless the spec says otherwise.
+MGL_CONTEXT_HELP_PROPS = {'display_mode': 'node', 'width': 640, 'height': 480,
+                          'node_display_width': 640, 'node_display_height': 480}
+
+
+def _demo_props(d):
+    """A demo entry's properties, with the help-page settings of an mgl_context."""
+    props = d.get('props', {})
+    if d['init'].split(' ')[0] == 'mgl_context':
+        props = {**props, **{k: v for k, v in MGL_CONTEXT_HELP_PROPS.items() if k not in props}}
+    return props
+
+
 def build(name, title, body, demo, links, demo_width=520,
           text_width=780, text_height=620, out_dir=HELP_DIR, subpatch=None, keep_toggles=False):
     """
@@ -151,7 +165,7 @@ def build(name, title, body, demo, links, demo_width=520,
                  'width': d.get('w', 130), 'height': d.get('h', 70),
                  'visibility': 'show_all', 'draggable': True,
                  'presentation_state': 'show_all',
-                 'properties': _props(d.get('props', {}))}
+                 'properties': _props(_demo_props(d))}
         if ' ' in init:
             entry['init'] = init
         add(entry)
@@ -234,7 +248,7 @@ def build(name, title, body, demo, links, demo_width=520,
                 'width': d.get('w', 140), 'height': d.get('h', 60),
                 'visibility': 'show_all', 'draggable': True,
                 'presentation_state': 'show_all',
-                'properties': _props(d.get('props', {})),
+                'properties': _props(_demo_props(d)),
             }
             if d['init'].startswith('comment '):
                 # a comment loads its text from 'comment', not from init
