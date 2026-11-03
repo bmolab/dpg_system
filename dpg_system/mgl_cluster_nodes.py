@@ -80,6 +80,19 @@ _CUBE_EDGE_INDICES = np.array([(i, i ^ bit) for bit in (1, 2, 4)
                                for i in range(8) if not (i & bit)],
                               dtype=np.int32).reshape(-1)
 
+
+
+def _lattice_centres(shape, origin, cell, boxes):
+    """(N, 3) float32 centres of the given boxes of a lattice, numbered as
+    pc_voxel numbers them: x + bx*y + bx*by*z."""
+    bx, by = int(shape[0]), int(shape[1])
+    k = np.asarray(boxes, dtype=np.int64).reshape(-1)
+    ijk = np.stack((k % bx, (k // bx) % by, k // (bx * by)), axis=1)
+    origin = np.asarray(origin, dtype=np.float32).reshape(-1)[:3]
+    cell = np.asarray(cell, dtype=np.float32).reshape(-1)[:3]
+    return (origin + (ijk.astype(np.float32) + 0.5) * cell).astype(np.float32)
+
+
 # 'sensitivity' 1.0 means this much gain on the raw sum. The sums are counts of
 # distance-compensated voxel weights, so their natural scale is in the tens or
 # hundreds and a raw gain of 1 buries every box at full brightness. This puts a
@@ -88,7 +101,123 @@ _CUBE_EDGE_INDICES = np.array([(i, i ^ bit) for bit in (1, 2, 4)
 SENSITIVITY_SCALE = 0.015
 
 
-class MGLClusterBoxesNode(MGLNode):
+class _ClickCommands:
+    """Modifier-clicks in the view, turned into commands for pc_regions.
+
+    The node wires mgl_context's 'ui' out to an input calling ``_ui_event``,
+    and has a 'click command' output and 'shift-click' / 'alt-click' /
+    'ctrl-click' options naming one of ``CLICK_COMMANDS`` (or 'none'). A
+    click that is not a drag, with a modifier held, is held until the next
+    draw — only a draw knows the camera — and then goes out as the command
+    and the ray through it: 'add ox oy oz dx dy dz'. A plain click goes to
+    ``_plain_click(u, v)``. Ctrl wins over alt, alt over shift; command
+    counts as ctrl, and option is alt.
+
+    Every view sends the same few verbs — pc_regions' own button names — and
+    only the ray. What the ray picks out (the piece of cloud it meets, in
+    voxels or in boxes) is pc_regions' business, settled by its 'work in',
+    so the result of a click does not depend on which view it was made in,
+    nor on how that view happens to be drawing."""
+
+    # A press and release further apart than this, in displayed pixels, was a
+    # drag — the orbit camera's business, not a pick.
+    CLICK_SLOP = 4
+    # Modifier bits on mgl_context's mouse events (element 6; GLFW's values).
+    MOD_SHIFT, MOD_CTRL, MOD_ALT, MOD_SUPER = 1, 2, 4, 8
+    CLICK_COMMANDS = ('add', 'replace', 'new', 'cut', 'none')
+
+    def _add_click_options(self, shift='add', alt='new', ctrl='cut'):
+        self._press = None          # (x, y, button, modifiers) of the mouse_down in progress
+        self._pending_ray = None    # (u, v, command), waiting for a draw's matrices
+        for key, default in (('shift', shift), ('ctrl', ctrl), ('alt', alt)):
+            option = self.add_option(f'{key}-click', widget_type='combo', default_value=default)
+            option.widget.combo_items = list(self.CLICK_COMMANDS)
+            setattr(self, f'{key}_click_option', option)
+
+    @staticmethod
+    def _click_verb(command):
+        # The options once named 'add piece' / 'add boxes' and so on, which a
+        # saved patch still holds: the verb is the first word.
+        return str(command).split(' ')[0]
+
+    def post_load_callback(self):
+        super().post_load_callback()
+        for key in ('shift', 'ctrl', 'alt'):
+            option = getattr(self, f'{key}_click_option', None)
+            if option is not None and option() not in self.CLICK_COMMANDS:
+                verb = self._click_verb(option())
+                option.set(verb if verb in self.CLICK_COMMANDS else 'none')
+
+    def _plain_click(self, u, v):
+        pass
+
+    def _click_message(self, command, origin, direction):
+        return [command, *(float(c) for c in origin), *(float(c) for c in direction)]
+
+    def _ui_event(self):
+        event = self.ui_input()
+        if not isinstance(event, (list, tuple)) or len(event) < 4:
+            return
+        kind = event[0]
+        if kind == 'mouse_down':
+            mods = int(event[6]) if len(event) > 6 else 0
+            self._press = (float(event[1]), float(event[2]), int(event[3]), mods)
+        elif kind == 'mouse_up':
+            press, self._press = self._press, None
+            if press is None or press[2] != 0 or int(event[3]) != 0 or len(event) < 6:
+                return
+            if max(abs(float(event[1]) - press[0]), abs(float(event[2]) - press[1])) > self.CLICK_SLOP:
+                return
+            u, v = float(event[4]), float(event[5])
+            if not (0.0 <= u <= 1.0 and 0.0 <= v <= 1.0):
+                return
+            mods = press[3]
+            if mods & (self.MOD_CTRL | self.MOD_SUPER):
+                command = self.ctrl_click_option()
+            elif mods & self.MOD_ALT:
+                command = self.alt_click_option()
+            elif mods & self.MOD_SHIFT:
+                command = self.shift_click_option()
+            else:
+                self._plain_click(u, v)
+                return
+            command = self._click_verb(command)
+            if command in self.CLICK_COMMANDS and command != 'none':
+                self._pending_ray = (u, v, command)
+
+    def _flush_click(self):
+        """Send the command for a click held since the last draw. Call at
+        the top of draw()."""
+        if self._pending_ray is None:
+            return
+        (u, v, command), self._pending_ray = self._pending_ray, None
+        try:
+            origin, direction = self._pick_ray(u, v)
+        except np.linalg.LinAlgError:
+            return
+        message = self._click_message(command, origin, direction)
+        if message is not None:
+            self.click_command_output.send(message)
+
+    def _pick_ray(self, u, v):
+        """World-space (origin, direction) of the ray under a 0..1 image
+        position, from the matrices this draw is using."""
+        # V and P are stored as GL reads them (column-major bytes), so the
+        # matrix in the usual sense is the transpose; M is already that way
+        # round — see how draw() uploads each.
+        pvm = (self.ctx.projection_matrix.astype(np.float64).T
+               @ self.ctx.view_matrix.astype(np.float64).T
+               @ self.ctx.get_model_matrix().astype(np.float64))
+        inverse = np.linalg.inv(pvm)
+        x, y = 2.0 * u - 1.0, 1.0 - 2.0 * v
+        near = inverse @ np.array([x, y, -1.0, 1.0])
+        far = inverse @ np.array([x, y, 1.0, 1.0])
+        near, far = near[:3] / near[3], far[:3] / far[3]
+        direction = far - near
+        return near, direction / max(np.linalg.norm(direction), 1e-12)
+
+
+class MGLClusterBoxesNode(_ClickCommands, MGLNode):
     """One translucent cube per cluster, coloured by that cluster's value.
 
     Colour is HSV. The value drives V, so a box's brightness is how much landed
@@ -104,7 +233,17 @@ class MGLClusterBoxesNode(MGLNode):
     boxes happen to be drawn in, while additive is order-independent. Depth
     writes are off during the pass for the same reason (the test stays on, so
     solid geometry still occludes) — the pattern mgl_point_cloud already uses
-    for its additive points."""
+    for its additive points.
+
+    Clicks: wire mgl_context's 'ui' out to ``ui`` and 'click command' to
+    pc_regions' ``command``. The clicks are mgl_regions' own — shift-click
+    'add', alt-click 'new', ctrl-click 'cut', a plain click 'pick' — sent as
+    the verb and the ray, for pc_regions to resolve; set its 'work in' to
+    boxes to author in whole boxes. What this node draws plays no part: a
+    box counts when pc_regions' 'min points' land in it, not when it is lit
+    here. The options of the same names rebind each key. If mgl_regions
+    shares the view, route 'ui' to one of them at a time: both would act on
+    the same click."""
 
     _vert_src = '''
         #version 330
@@ -170,6 +309,8 @@ class MGLClusterBoxesNode(MGLNode):
         self.alpha_input = self.add_input('alpha', widget_type='drag_float',
                                           default_value=1.0, min=0.0, max=1.0)
         self.alpha_input.widget.speed = 0.01
+        self.ui_input = self.add_input('ui', callback=self._ui_event)
+        self.click_command_output = self.add_output('click command')
         self.show_fill_option = self.add_option('show fill', widget_type='checkbox',
                                                 default_value=True)
         self.show_frames_option = self.add_option('show frames', widget_type='checkbox',
@@ -193,6 +334,7 @@ class MGLClusterBoxesNode(MGLNode):
         self.blend_option = self.add_option('blend', widget_type='combo',
                                             default_value='additive')
         self.blend_option.widget.combo_items = ['additive', 'alpha']
+        self._add_click_options()
 
         # Published as one reference for the render thread (see execute).
         self.frame = None
@@ -229,24 +371,15 @@ class MGLClusterBoxesNode(MGLNode):
         count or the voxel size does — not every frame."""
         key = (shape, tuple(origin.tolist()), tuple(cell.tolist()))
         if key != self._geometry_key:
-            bx, by, bz = shape
-            k = np.arange(bx * by * bz, dtype=np.int64)
-            # Matching pc_voxel's linear index: x + bx*y + bx*by*z.
-            ijk = np.stack((k % bx, (k // bx) % by, k // (bx * by)), axis=1)
-            self._centres = (origin + (ijk.astype(np.float32) + 0.5) * cell).astype(np.float32)
+            self._centres = _lattice_centres(shape, origin, cell,
+                                             np.arange(int(np.prod(shape)), dtype=np.int64))
             self._geometry_key = key
         return self._centres
 
-    def _instance_data(self):
-        """(N, 11) float32 — centre, size, full-value rgb, and the fill and
-        frame levels — for the boxes worth drawing, or None.
-
-        Boxes below the threshold on both levels are dropped rather than drawn
-        transparent: with a fine subdivision most boxes are empty most of the
-        time, and they cost nothing if they never reach the GPU."""
-        frame = self.frame
-        if frame is None:
-            return None
+    def _lit_boxes(self, frame):
+        """(keep, fill level, frame level) for a frame: the indices of the
+        boxes that are drawn, and every box's two levels. None if the frame
+        does not describe its lattice."""
         values, shape, origin, cell = frame
         n_boxes = shape[0] * shape[1] * shape[2]
         if values.size != n_boxes:
@@ -263,8 +396,23 @@ class MGLClusterBoxesNode(MGLNode):
         if not self.show_frames_option():
             frame_level = np.zeros_like(frame_level)
         keep = np.nonzero(np.maximum(fill_level, frame_level) > threshold)[0]
-        if keep.size == 0:
+        return keep, fill_level, frame_level
+
+    def _instance_data(self):
+        """(N, 11) float32 — centre, size, full-value rgb, and the fill and
+        frame levels — for the boxes worth drawing, or None.
+
+        Boxes below the threshold on both levels are dropped rather than drawn
+        transparent: with a fine subdivision most boxes are empty most of the
+        time, and they cost nothing if they never reach the GPU."""
+        frame = self.frame
+        if frame is None:
             return None
+        lit = self._lit_boxes(frame)
+        if lit is None or lit[0].size == 0:
+            return None
+        keep, fill_level, frame_level = lit
+        values, shape, origin, cell = frame
 
         saturation = float(self.saturation_input())
         hue = float(self.hue_input())
@@ -282,6 +430,9 @@ class MGLClusterBoxesNode(MGLNode):
         inst[:, 9] = fill_level[keep]
         inst[:, 10] = frame_level[keep]
         return inst
+
+    def _plain_click(self, u, v):
+        self._pending_ray = (u, v, 'pick')
 
     def _ensure_gpu(self, inner_ctx, instances):
         if self._prog is None:
@@ -312,6 +463,7 @@ class MGLClusterBoxesNode(MGLNode):
     def draw(self):
         if self.ctx is None:
             return
+        self._flush_click()
         inst = self._instance_data()
         if inst is None:
             return
@@ -386,7 +538,7 @@ class _RegionMesh:
         self.edges = crease_edges(grid, cells)
 
 
-class MGLRegionsNode(MGLNode):
+class MGLRegionsNode(_ClickCommands, MGLNode):
     """Draw pc_regions' regions: each as a translucent skin and an outline,
     in its own colour, lit by its value — mgl_cluster_boxes' picture, for
     clusters that are arbitrary shapes.
@@ -417,22 +569,46 @@ class MGLRegionsNode(MGLNode):
     click, because only a draw knows the camera.
 
     A shift-, alt- or ctrl-click picks nothing: it sends its ray, as the command
-    the 'shift-click' / 'ctrl-click' option names, on 'click command' — wire
-    that to pc_regions' ``command``. By default shift-click is 'add piece'
-    (capture into the current region just the connected bit of the live
-    cloud that was clicked) and ctrl-click is 'cut piece' (remove the bit of
-    whichever region was clicked, which becomes current). Alt-click, with or without shift,
-    is 'new piece': the clicked bit becomes a region of its own, which is
-    made current. Ctrl wins over alt, alt over shift; on a Mac, command
-    counts as ctrl and option is alt."""
+    the 'shift-click' / 'alt-click' / 'ctrl-click' option names, on 'click
+    command' — wire that to pc_regions' ``command``. By default shift-click
+    is 'add' (capture into the current region just the connected bit of the
+    live cloud that was clicked) and ctrl-click is 'cut' (remove the bit of
+    whichever region was clicked, which becomes current). Alt-click, with or
+    without shift, is 'new': the clicked bit becomes a region of its own,
+    which is made current. 'Bit' is in pc_regions' 'work in' grain —
+    connected voxels, or connected boxes taken whole. Ctrl wins over alt,
+    alt over shift; on a Mac, command counts as ctrl and option is alt.
 
-    # A press and release further apart than this, in displayed pixels, was a
-    # drag — the orbit camera's business, not a pick.
-    CLICK_SLOP = 4
+    Boxes: with pc_regions' 'work in' set to boxes, the boxes the cloud
+    occupies — exactly what a capture or a click would take, 'min points'
+    and all — are outlined at 'box level', whether or not any region holds
+    them, so a box grain can be authored from this view alone. 'show boxes'
+    turns that off."""
+
     CURRENT_OUTLINE_RGB = (1.0, 1.0, 1.0)
-    CLICK_COMMANDS = ('add piece', 'replace piece', 'new piece', 'cut piece', 'none')
-    # Modifier bits on mgl_context's mouse events (element 6; GLFW's values).
-    MOD_SHIFT, MOD_CTRL, MOD_ALT, MOD_SUPER = 1, 2, 4, 8
+    BOX_RGB = (0.7, 0.8, 1.0)
+
+    # The occupied-box outlines: a unit cube's edges, instanced per box.
+    _box_vert_src = '''
+        #version 330
+        uniform mat4 M;
+        uniform mat4 V;
+        uniform mat4 P;
+        uniform vec3 size;
+        in vec3 in_position;
+        in vec3 inst_centre;
+        void main() {
+            gl_Position = P * V * M * vec4(inst_centre + in_position * size, 1.0);
+        }
+    '''
+    _box_frag_src = '''
+        #version 330
+        uniform vec4 color;     // premultiplied
+        out vec4 f_color;
+        void main() {
+            f_color = color;
+        }
+    '''
 
     _vert_src = '''
         #version 330
@@ -486,8 +662,6 @@ class MGLRegionsNode(MGLNode):
         self.picked_output = self.add_output('picked region')
         self.picked_point_output = self.add_output('picked point')
         self.click_command_output = self.add_output('click command')
-        self._press = None          # (x, y, button, modifiers) of the mouse_down in progress
-        self._pending_ray = None    # (u, v, command), waiting for a draw's matrices
         self._pending_pick = None   # (u, v), waiting for a draw's matrices
         self.show_fill_option = self.add_option('show fill', widget_type='checkbox',
                                                 default_value=True)
@@ -516,16 +690,21 @@ class MGLRegionsNode(MGLNode):
         self.blend_option = self.add_option('blend', widget_type='combo',
                                             default_value='additive')
         self.blend_option.widget.combo_items = ['additive', 'alpha']
-        self.shift_click_option = self.add_option('shift-click', widget_type='combo',
-                                                  default_value='add piece')
-        self.shift_click_option.widget.combo_items = list(self.CLICK_COMMANDS)
-        self.ctrl_click_option = self.add_option('ctrl-click', widget_type='combo',
-                                                 default_value='cut piece')
-        self.ctrl_click_option.widget.combo_items = list(self.CLICK_COMMANDS)
-        self.alt_click_option = self.add_option('alt-click', widget_type='combo',
-                                                default_value='new piece')
-        self.alt_click_option.widget.combo_items = list(self.CLICK_COMMANDS)
+        self.show_boxes_option = self.add_option('show boxes', widget_type='checkbox',
+                                                 default_value=True)
+        self.box_level_option = self.add_option('box level', widget_type='drag_float',
+                                                default_value=0.35, min=0.0, max=1.0)
+        self.box_level_option.widget.speed = 0.005
+        self._add_click_options()
 
+        # (centres, cell) of the occupied boxes, or None; swapped whole.
+        self.boxes = None
+        self._box_prog = None
+        self._box_vbo = None
+        self._box_ibo = None
+        self._box_inst = None
+        self._box_vao = None
+        self._box_capacity = 0
         # (values, colors, scene): one reference, swapped whole (see execute).
         self.frame = None
         self._meshes = {}           # region id -> _RegionMesh
@@ -548,6 +727,13 @@ class MGLRegionsNode(MGLNode):
             data = self.cloud_input()
             clusters = data.get(CLUSTER_KEY) if isinstance(data, dict) else None
             geometry = clusters.get('geometry') if isinstance(clusters, dict) else None
+            boxes = clusters.get('boxes') if isinstance(clusters, dict) else None
+            if boxes is None or len(boxes['occupied']) == 0:
+                self.boxes = None
+            else:
+                self.boxes = (_lattice_centres(boxes['shape'], boxes['origin'], boxes['cell'],
+                                               boxes['occupied']),
+                              np.asarray(boxes['cell'], dtype=np.float32).reshape(-1)[:3])
             if geometry is None or geometry.grid is None:
                 self.frame = None
             else:
@@ -590,52 +776,8 @@ class MGLRegionsNode(MGLNode):
 
     # -- picking -------------------------------------------------------------
 
-    def _ui_event(self):
-        event = self.ui_input()
-        if not isinstance(event, (list, tuple)) or len(event) < 4:
-            return
-        kind = event[0]
-        if kind == 'mouse_down':
-            mods = int(event[6]) if len(event) > 6 else 0
-            self._press = (float(event[1]), float(event[2]), int(event[3]), mods)
-        elif kind == 'mouse_up':
-            press, self._press = self._press, None
-            if press is None or press[2] != 0 or int(event[3]) != 0 or len(event) < 6:
-                return
-            if max(abs(float(event[1]) - press[0]), abs(float(event[2]) - press[1])) > self.CLICK_SLOP:
-                return
-            u, v = float(event[4]), float(event[5])
-            if not (0.0 <= u <= 1.0 and 0.0 <= v <= 1.0):
-                return
-            mods = press[3]
-            if mods & (self.MOD_CTRL | self.MOD_SUPER):
-                command = self.ctrl_click_option()
-            elif mods & self.MOD_ALT:
-                command = self.alt_click_option()
-            elif mods & self.MOD_SHIFT:
-                command = self.shift_click_option()
-            else:
-                self._pending_pick = (u, v)
-                return
-            if command in self.CLICK_COMMANDS and command != 'none':
-                self._pending_ray = (u, v, command)
-
-    def _pick_ray(self, u, v):
-        """World-space (origin, direction) of the ray under a 0..1 image
-        position, from the matrices this draw is using."""
-        # V and P are stored as GL reads them (column-major bytes), so the
-        # matrix in the usual sense is the transpose; M is already that way
-        # round — see how draw() uploads each.
-        pvm = (self.ctx.projection_matrix.astype(np.float64).T
-               @ self.ctx.view_matrix.astype(np.float64).T
-               @ self.ctx.get_model_matrix().astype(np.float64))
-        inverse = np.linalg.inv(pvm)
-        x, y = 2.0 * u - 1.0, 1.0 - 2.0 * v
-        near = inverse @ np.array([x, y, -1.0, 1.0])
-        far = inverse @ np.array([x, y, 1.0, 1.0])
-        near, far = near[:3] / near[3], far[:3] / far[3]
-        direction = far - near
-        return near, direction / max(np.linalg.norm(direction), 1e-12)
+    def _plain_click(self, u, v):
+        self._pending_pick = (u, v)
 
     def _pick(self, geometry, current, u, v):
         """(region id, world point) under the cursor, or None. Steps the ray
@@ -758,16 +900,12 @@ class MGLRegionsNode(MGLNode):
     def draw(self):
         if self.ctx is None:
             return
-        if self._pending_ray is not None:
-            # Before the frame check: the first region is captured by click
-            # while there is nothing yet to draw.
-            (u, v, command), self._pending_ray = self._pending_ray, None
-            try:
-                origin, direction = self._pick_ray(u, v)
-                self.click_command_output.send([command, *(float(c) for c in origin),
-                                                *(float(c) for c in direction)])
-            except np.linalg.LinAlgError:
-                pass
+        # Before the frame check: the first region is captured by click while
+        # there is nothing yet to draw.
+        self._flush_click()
+        # Before the regions' check too: the boxes are what the first region
+        # is made of.
+        self._draw_boxes()
         frame = self.frame
         if frame is None or frame[2] is None:
             return
@@ -810,11 +948,63 @@ class MGLRegionsNode(MGLNode):
         if additive:
             inner_ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
 
+    def _draw_boxes(self):
+        boxes = self.boxes
+        if boxes is None or not self.show_boxes_option():
+            return
+        level = float(self.box_level_option())
+        if level <= 0.0:
+            return
+        centres, cell = boxes
+        n = centres.shape[0]
+        inner_ctx = self.ctx.ctx
+        if self._box_prog is None:
+            self._box_prog = inner_ctx.program(vertex_shader=self._box_vert_src,
+                                               fragment_shader=self._box_frag_src)
+            self._box_vbo = inner_ctx.buffer(np.ascontiguousarray(_CUBE_CORNERS).tobytes())
+            self._box_ibo = inner_ctx.buffer(_CUBE_EDGE_INDICES.tobytes())
+        if self._box_inst is None or self._box_capacity < n:
+            self.ctx.defer_release(self._box_vao, self._box_inst)
+            # Headroom, as mgl_cluster_boxes: a cloud breathing across a box
+            # boundary should not reallocate every frame.
+            self._box_capacity = max(n, 256)
+            self._box_inst = inner_ctx.buffer(reserve=self._box_capacity * 3 * 4)
+            self._box_vao = inner_ctx.vertex_array(
+                self._box_prog, [(self._box_vbo, '3f', 'in_position'),
+                                 (self._box_inst, '3f/i', 'inst_centre')], self._box_ibo)
+        self._box_inst.write(np.ascontiguousarray(centres).tobytes())
+
+        prog = self._box_prog
+        prog['M'].write(self.ctx.get_model_matrix().astype('f4').T.tobytes())
+        prog['V'].write(self.ctx.view_matrix.astype('f4').tobytes())
+        prog['P'].write(self.ctx.projection_matrix.astype('f4').tobytes())
+        prog['size'].value = tuple(float(c) for c in cell)
+        alpha = level * float(self.alpha_input())
+        prog['color'].value = (*(c * alpha for c in self.BOX_RGB), alpha)
+
+        # MAX, not the regions' blend: neighbouring boxes share edges, and
+        # added up a shared edge would come out two to four times as bright
+        # as an outer one. The outline over a brighter region gives way to it.
+        fbo = inner_ctx.fbo
+        inner_ctx.enable(moderngl.BLEND)
+        inner_ctx.blend_func = (moderngl.ONE, moderngl.ONE)
+        inner_ctx.blend_equation = moderngl.MAX
+        fbo.depth_mask = False
+        self._box_vao.render(moderngl.LINES, instances=n)
+        fbo.depth_mask = True
+        inner_ctx.blend_equation = moderngl.FUNC_ADD
+        inner_ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
+
     def custom_cleanup(self):
         ctx = MGLContext._instance
         if ctx is not None:
             ctx.defer_release(self._face_vao, self._edge_vao, self._face_vbo, self._face_ibo,
-                              self._edge_vbo, self._params, self._prog)
+                              self._edge_vbo, self._params, self._prog,
+                              self._box_vao, self._box_inst, self._box_vbo, self._box_ibo,
+                              self._box_prog)
+        self._box_vao = self._box_inst = self._box_vbo = self._box_ibo = None
+        self._box_prog = None
+        self._box_capacity = 0
         self._face_vao = self._edge_vao = None
         self._face_vbo = self._face_ibo = self._edge_vbo = None
         self._params = None
