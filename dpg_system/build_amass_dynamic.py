@@ -20,7 +20,7 @@ and adds these arrays:
     com_pos             (T, 3)      body CoM position  (processor.current_com)
     com_vel             (T, 3)      body CoM velocity  (processor.prob_prev_com_vel)
     com_acc             (T, 3)      body CoM accel     (processor.prob_prev_com_acc)
-    rotation_band       (T, 22, 7, 3) rotation bands 
+    rotation_band       (T, 31, 7, 3) rotation bands 
 
   File-level metadata:
     max_torque          (24, 3)     processor.max_torque_array — the per-joint
@@ -57,7 +57,7 @@ import torch
 
 import numpy as np
 from rotation_band_pipeline import RotationBandPipeline, axis_angle_to_quaternion
-
+from scipy.spatial.transform import Rotation
 
 # ── Constants ────────────────────────────────────────────────────────────
 N_JOINTS = 22  # SMPLProcessor.target_joint_count
@@ -69,10 +69,13 @@ MODEL_PATH = os.path.dirname(os.path.abspath(__file__))
 # smpl_processor imports its siblings as `dpg_system.*`, so the REPO ROOT
 # (parent of the package dir) must be importable.
 REPO_ROOT = os.path.dirname(MODEL_PATH)
-
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
 DEFAULT_SRC = "/home/bmolab/Projects/AMASS/SMPL_H"
 DEFAULT_OUT = "/home/bmolab/Projects/AMASS_Dynamic/SMPL_H"
 DEFAULT_MASS = 75.0
+
+from body_defs import JointTranslator # This has to be imported after REPO_ROOT is set 
 
 # SMPLProcessor / options are imported lazily inside build_options()/worker so
 # that argument parsing and --help stay fast and so each multiprocessing worker
@@ -207,12 +210,15 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
     # Add in rotation band pipeline 
     rotation_band_pipeline = RotationBandPipeline(sample_frequency = fps)
     # intiate a zero matrix storing rotation bands 
+    # T = number of frames 
+    # Number of active joints = 31 
+    # Number of bands 
+    # 3 = the x, y, z components of the band's axis-angle difference -> how a joint’s filtered 
+    # orientation changed from one frame to the next.
     rotation_band = np.zeros(
-        (T, N_JOINTS, rotation_band_pipeline.num_output_bands, 3),
+        (T, 31, rotation_band_pipeline.num_output_bands, 3),
         dtype=np.float32,
     )
-    first_frame_rotations = poses[0].reshape(-1, 3)[:N_JOINTS]
-    rotation_band_pipeline.capture(first_frame_rotations)
 
     # Betas: optional (constructor truncates to 10 internally)
     betas = None
@@ -298,9 +304,31 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
                 ca = np.asarray(ca)
                 com_acc[t] = ca[0] if ca.ndim == 2 else ca
             
-            frame_rotations = frame_pose[0].reshape(-1, 3)[:N_JOINTS]
+            # the 22 axis-angle joints per frame
+            axis_angle_joints = frame_pose[0].reshape(-1, 3)[:N_JOINTS]
+            # Convert to quaternions 
+            smpl_quaternions = axis_angle_to_quaternion(
+                torch.as_tensor(axis_angle_joints, dtype=torch.float32)
+            ).cpu().numpy()
+
+            # Map the 22 joints from SMPL to body joints  
+            active_quaternions = np.zeros((31, 4), dtype=np.float32)
+            # Ensures valid quaternion since [0 0 0 0] is not a valid quaternion
+            # but [1 0 0 0] is a valid quaternion (w^2 + x^2 + y^2 + z^2 = 1)
+            active_quaternions[:, 0] = 1.0
+            # Iterate through each axis-angle joint
+            for smpl_idx, body_idx in JointTranslator.SMPL_TO_BODY_INDEX.items():
+                # Checks if smpl_idx within the valid index range 
+                if smpl_idx < smpl_quaternions.shape[0]:
+                    active_quaternions[body_idx] = smpl_quaternions[smpl_idx]
+
+            # This is to follow the patch but apply rotation to the axis-angle joint at index 5 
+            y_up = Rotation.from_rotvec([-np.pi / 2, 0.0, 0.0])
+            root_rotation = Rotation.from_quat(active_quaternions[5], scalar_first=True)
+            active_quaternions[5] = (y_up * root_rotation).as_quat(scalar_first=True)
+
             # Calculate rotation band per frame 
-            band_result = rotation_band_pipeline.process_frame(frame_rotations)
+            band_result = rotation_band_pipeline.process_frame(active_quaternions)
             if band_result is not None:
                 # Add to rotation_band matrix 
                 rotation_band[t] = band_result.detach().cpu().numpy()
