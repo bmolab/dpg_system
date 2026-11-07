@@ -541,6 +541,43 @@ class SMPLProcessingOptions:
     use_s_curve_spine: bool = True      # Use biomechanical S-curve spine instead of SMPL cantilevered spine
 
 
+def _align_rotation_window(win, ref, input_type):
+    """Make a window of rotation samples continuous with the newest one before the
+    input moving average averages their raw numbers.
+
+    win (..., W, D) samples, ref (..., D) the newest frame, D = joints * 3 (axis-angle) or * 4 (quaternion).
+    A rotation has two number forms: axis-angle v and v - 2*pi*v/|v| (the same rotation seen
+    from the other side of 180 deg), a quaternion q and -q. Averaging across that jump gives
+    a nonsense pose for a few frames (seen as 17-30 Nm elbow torque spikes). Each sample is
+    rewritten in the form closest to ref. Samples already closest are left untouched, so a
+    window with no jump averages byte-identically to the old code. Returns (aligned win, changed?)."""
+    if input_type == 'axis_angle' and win.shape[-1] % 3 == 0:
+        s = win.reshape(win.shape[:-1] + (-1, 3)); r = ref.reshape(ref.shape[:-1] + (1, -1, 3))
+        th = np.linalg.norm(s, axis=-1, keepdims=True)
+        alt = s - (2.0 * np.pi) * s / np.where(th > 1e-12, th, 1.0)
+        use = (np.linalg.norm(alt - r, axis=-1) < np.linalg.norm(s - r, axis=-1)) & (th[..., 0] > 1e-12)
+        if not use.any():
+            return win, False
+        return np.where(use[..., None], alt, s).reshape(win.shape), True
+    if input_type == 'quat' and win.shape[-1] % 4 == 0:
+        s = win.reshape(win.shape[:-1] + (-1, 4)); r = ref.reshape(ref.shape[:-1] + (1, -1, 4))
+        use = (s * r).sum(-1) < 0
+        if not use.any():
+            return win, False
+        return np.where(use[..., None], -s, s).reshape(win.shape), True
+    return win, False
+
+
+def _canonical_rotvec_flat(p):
+    """Axis-angle numbers (..., joints*3) with any rotation beyond 180 deg rewritten in its
+    standard form (|v| <= pi), which joint limits read component by component."""
+    s = p.reshape(p.shape[:-1] + (-1, 3)); th = np.linalg.norm(s, axis=-1, keepdims=True)
+    over = th[..., 0] > np.pi
+    if not over.any():
+        return p
+    return np.where(over[..., None], s - (2.0 * np.pi) * s / np.where(th > 0, th, 1.0), s).reshape(p.shape)
+
+
 def resolve_acc_smooth_window(options, dt):
     """Savitzky-Golay acceleration window, in frames, for this capture rate.
 
@@ -7512,7 +7549,13 @@ class SMPLProcessor:
                     # Skip the pose MA when the adaptive front-end already
                     # filtered the pose (avoid double smoothing).
                     if not used_adaptive_frontend:
-                        pose_data = np.mean(ring['pose_buf'], axis=0).reshape(pose_data.shape)
+                        # align the window to the newest frame first: averaging across a 180-deg number jump gives a nonsense pose
+                        _ma_it = getattr(options, 'input_type', 'axis_angle')
+                        _ma_buf, _ma_changed = _align_rotation_window(ring['pose_buf'], p_flat, _ma_it)
+                        _ma_m = np.mean(_ma_buf, axis=0)
+                        if _ma_changed and _ma_it == 'axis_angle':
+                            _ma_m = _canonical_rotvec_flat(_ma_m)
+                        pose_data = _ma_m.reshape(pose_data.shape)
                 if ring['trans_buf'] is not None:
                     ring['trans_buf'][ring['trans_idx']] = t_flat
                     ring['trans_idx'] = (ring['trans_idx'] + 1) % trans_win
@@ -7525,7 +7568,17 @@ class SMPLProcessor:
                     if win >= 2:
                         p2d = pose_data.reshape(F_in, -1)
                         p_pad = np.concatenate([np.tile(p2d[0:1], (win - 1, 1)), p2d], axis=0)
-                        pose_data = np.mean(sliding_window_view(p_pad, win, axis=0), axis=-1).reshape(pose_data.shape)
+                        _ma_view = sliding_window_view(p_pad, win, axis=0)          # (F, D, W)
+                        _ma_m = np.mean(_ma_view, axis=-1)
+                        # frames whose window crosses a 180-deg number jump: average the aligned window instead (others unchanged)
+                        _ma_it = getattr(options, 'input_type', 'axis_angle')
+                        _ma_sw = np.swapaxes(_ma_view, -1, -2)                         # (F, W, D)
+                        _ma_al, _ma_changed = _align_rotation_window(_ma_sw, p2d, _ma_it)
+                        if _ma_changed:
+                            _ma_rows = np.any(_ma_al != _ma_sw, axis=(1, 2))
+                            _ma_new = np.mean(_ma_al[_ma_rows], axis=1)
+                            _ma_m[_ma_rows] = _canonical_rotvec_flat(_ma_new) if _ma_it == 'axis_angle' else _ma_new
+                        pose_data = _ma_m.reshape(pose_data.shape)
                     if trans_win >= 2:
                         t2d = trans_data.reshape(F_in, -1)
                         t_pad = np.concatenate([np.tile(t2d[0:1], (trans_win - 1, 1)), t2d], axis=0)
