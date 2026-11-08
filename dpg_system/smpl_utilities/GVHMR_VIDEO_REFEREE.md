@@ -1,5 +1,7 @@
 # GVHMR video referee for Shadow arms
 
+> **How-to for correcting a take (process and palette of techniques, from Subject 11 take 8): `SHADOW_CORRECTION_PROCESS.md`.**
+
 Working notes, started 2026-10-30. Single-camera video → SMPL (GVHMR) set up on the M1 Max and used
 as an independent check on Shadow data, first on Subject 7 jathiswaram. Related ledger:
 `MAGNETIZATION_FINDINGS.md` (this bears on its OPEN item "elevation half of the hang … VIDEO
@@ -860,9 +862,262 @@ Open:
 - S7 and S8 swings were fitted with the neutral rest bones; the S8 left upper-arm swing is the most suspect.
 - Take 1's body heading; take 6's overall disagreement.
 
+## 2026-11-04: Subject 2 (old fusion, Contemporary, all three takes)
+
+Measured as Subject 11: Shadow on the drawn SMPL-H body (female, file betas), the video on its own body. Input is the
+`*_rhipflexstat_100hz.npz` files; S2 has no stomp smoothing because it shows no stomp shake. Video is 59.94 fps, so `--stride 2`;
+`--target_h 600 --target_x 700 --h_tol 0.5`. Scripts `video_fix/s2_table.py`, `pelvis_split.py`, `pelvis_belt.py`, `build_s2.py`,
+`verify_s2.py`, `turn_video_dir.py` (`turn_video.py` with the results folder from `LANDSCAPE_DIR`).
+
+Tracking, sync, and direction against the video (median deg, gated frames):
+
+| take | frames lost | sync corr | spine | L thigh | R thigh | L upper arm | R upper arm | L forearm | R forearm |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 3% | 0.75 | 12.7 | 12.5 | 14.9 | 17.6 | 22.7 | 14.9 | 17.9 |
+| 2 batteryIssue | 0% | 0.92 | 5.5 | 8.0 | 11.0 | 13.0 | 17.6 | 10.3 | 12.2 |
+| 3 | 17% | 0.85 | 9.4 | 8.4 | 10.1 | 13.0 | 17.8 | 12.9 | 14.9 |
+
+- Take 2 agrees best despite its label.
+- Take 1 has long floor stretches (0-120 s and 360-420 s, lower spine difference 47-52 deg against 10-25 elsewhere). In the sampled
+  frames a seated person's legs are at the right edge, which is probably why two or more people are detected in nearly every frame; the tracker
+  was on the dancer in all six referee frames. That is a spot check, not a full one.
+- Sync drifts by about 0.2 s across take 1. Following the drift (`video_fix/sync_warp.py`) lifts sync from 0.749 to 0.768
+  and changes almost nothing else: all joints 21.4 to 21.2 deg, upper arm offsets within 0.1. Its weak sync stretches are mostly
+  slow movement, which gives speed correlation little to lock onto.
+
+**Pelvis tilt in forward bends** (from vertical, Shadow / video, by whole-torso lean):
+
+| torso lean | take 1 | take 2 | take 3 |
+|---|---|---|---|
+| 0-10 | 12 / 13 | 4 / 8.5 | 6.5 / 8.5 |
+| 10-20 | 15 / 14 | 7 / 11 | 12 / 11 |
+| 20-30 | 22 / 15 | 17 / 9 | 22 / 14.5 |
+| 30-45 | 32 / 21 | 27 / 9 | 31 / 18 |
+| 45-60 | 51 / 28 | 44 / 16 | 48 / 21 |
+| 60-90 | 69 / 44 | 51 / 19 | 65 / 34 |
+
+- The torso lean itself agrees; the two split it differently between pelvis and spine.
+- The belt correction is not the cause: tilt before and after it (`pre/smpl` against the final file) differs by at most 0.5 deg in any bin.
+- Probably mostly the video's error, but this rests on the eye and a few small frames: in take 3 at 959 s and 232 s the dancer is low on hands and
+  knees with a fairly level back, where Shadow's 73 and 63 look plausible and the video's 33 and 26 do not. Most camera angles are from the front, where
+  this tilt is hard to see. If so, lower spine and pelvis differences in bends should not be read as Shadow errors, take 1's included.
+
+**Constant arm offset**, in each segment's own frame (deg; in brackets the part about the rest vertical):
+
+| take | L upper arm | R upper arm | L forearm | R forearm |
+|---|---|---|---|---|
+| 1 | 12.2 (+4.6) | 19.0 (+13.5) | 4.5 (+3.7) | 11.2 (+9.2) |
+| 2 | 8.8 (-7.8) | 14.8 (+14.8) | 5.6 (+3.1) | 7.0 (+7.0) |
+| 3 | 6.9 (-3.2) | 13.4 (+12.0) | 2.8 (-2.7) | 8.1 (+6.7) |
+
+The right arm is the stable finding: about +12 to +15 on the upper arm and +7 to +9 on the forearm, in every take. The left is smaller and changes direction.
+
+**Hanging upper arms** (video elevation below -50, upright; Shadow minus video, deg; + = dancer's left, forward):
+
+| take | L left | L fwd | R left | R fwd | bank per video | both out by |
+|---|---|---|---|---|---|---|
+| 1 | +0.6 | +11.0 | -12.4 | +8.4 | -5.9 | 13.1 |
+| 2 | +13.5 | +5.9 | -11.3 | +3.3 | +0.8 | 24.7 |
+| 3 | +4.7 | +6.5 | -9.9 | +0.9 | -2.3 | 14.6 |
+
+Shadow's own session bank is -7.9, closest to take 1. Both arms sit out from the body in every take, the right steadily.
+
+**Elbow turn, checked the 2026-10-31 way** (`turn_video.py`; elbow bent 45-80, arm low; Shadow's own reading / video-implied, frames in brackets):
+
+| take | L, raw | R, raw | applied in `vc`, L / R |
+|---|---|---|---|
+| 1 | 26.7 / 19.8 (3561) | 22.5 / 24.9 (1591) | 28.0 / 34.4 |
+| 2 | 38.8 / 34.8 (602) | 36.5 / 57.7 (86) | 41.1 / 45.2 |
+| 3 | 33.5 / 28.0 (4111) | 25.3 / 29.7 (1748) | 39.3 / 32.2 |
+
+- The turn is real: Shadow and the video agree within about 7 deg except take 2's thin right arm. Pooled, the video-implied value holds about 20-34 deg at every bend range.
+- Undoing it on bent arms brings shoulder twist to the video: L +34.7 to +1.3 (video +5.6), R -31.4 to -6.7 (video -4.5). On straight arms the video reads L -15, R +15
+  and undoing gives -35, +31, but GVHMR's straight-arm twist is prior, not measurement.
+- Shadow's reading after the right upper-arm swing climbs (take 1 22.5 to 36.3, take 3 25.3 to 34.8) while the video-implied value barely moves, the same pattern
+  as Subject 7. So the applied turns run high by up to about 10 deg in places, mostly takes 1 and 3. Not yet rebuilt with video-implied values.
+- `compare_shadow.py`'s elbow twist gets much worse after the turn (take 2 from 8 and 6 to 42 and 45). This is not evidence against it: GVHMR's own elbow stays near a
+  hinge by its prior, so a real turn shows up as disagreement there.
+
+**Corrected files** in `~/Projects/GVHMR/outputs/s2_work/` (trans unchanged: no Vive in this session):
+- `sw/`: swings only.
+- `vc/`: swings and the per-take elbow turn, turn read after the swing.
+- `build.txt`, `verify.txt`, `turn_video_raw.txt`, `turn_video_sw.txt`: logs.
+
+Same checks as Subject 11. Swings kept: right upper arm in all three takes (18.5, 15.9, 13.4 deg), left upper arm in take 3 (6.5). Dropped by the torso check: take 1
+left upper arm (world gain, torso-relative 14.5 to 15.5), take 2 right forearm (7.5 to 8.5). No other forearm passed.
+
+| error against the video (deg) | take 1 | take 2 | take 3 |
+|---|---|---|---|
+| R upper arm, world | 22.7 to 14.0 | 17.6 to 11.0 | 17.8 to 12.5 |
+| R upper arm, relative to the torso | 19.2 to 14.9 | 16.8 to 10.3 | 16.5 to 15.2 |
+| L upper arm, world | -- | -- | 13.0 to 11.3 |
+| L upper arm, relative to the torso | -- | -- | 15.3 to 12.9 |
+
+Deep penetration is near zero and rises only in take 3: L 0.1 to 1.1%, R 0.0 to 1.8% (video 1.1, 0.2).
+
+**`armfix` (take 3, the earlier manual fix)** against the video, without / with: L upper arm 13.0 / 20.6, R upper arm 17.8 / 15.7, L forearm 12.9 / 15.2, R forearm 14.9 / 15.5.
+It helps the right upper arm only, and worsens the left.
+
+Open:
+- Pelvis split: no independent check yet, only the frames above.
+- Whether to rebuild `vc` with video-implied turns. The corrected motion has not been viewed yet.
+
+## 2026-11-05 to 11-08: Subject 11 corrections, from take 8 to all nine takes
+
+**How to repeat it:** `SHADOW_CORRECTION_PROCESS.md`, beside this file, covers the method, the guards and the traps. This entry covers what was found, what was rejected, and what is still open.
+
+### What was built, in order
+
+1. **pd (pose-dependent arm swings)**, `video_fix/build_posedep.py`.
+   - **What it fits:** per segment, a rigid swing that is a smooth function of heading and/or pose.
+   - **Evidence:** the raw self-contacts (palm to nose, palm to palm, forearm to torso) and the elbow's anatomical limit are kept in the fit.
+   - **Choosing a model:**
+     - A model passes if its held-out video error is within 1.5° of the best.
+     - Among those, the one with the fewest constraint violations wins.
+     - A richer model must win by 0.5°.
+   - **Files:** `s11_work/pd/`, with logs in `s11_work/pd_logs/`.
+   - The pd fit's elbow turn is used later, in the hinge step.
+2. **Take 8, worked by hand with you** (final2 to final5). The steps are listed below.
+3. **Generalised** into `video_fix/correct_take.sh N`, then run on every take.
+
+### Take 8: what each look found
+
+**Lower-back sensor roll drift.** After about 90 s the pelvis rolls 6–10° against the video.
+- **The Vive tracker can't referee it:** it shares the belt and rolls even further, 11–14°.
+- **Referee:** the video hip line. **Check:** the planted feet.
+- **Applied graded:** pelvis 1, spine1 2/3, spine2 1/3.
+- **Effect:** lean against the video 4.9° → 2.1°.
+- **It also explains the "high left shoulder":** the correlation is +0.88. So the collar fix (`build_collar.py`) is superseded.
+
+**Constant upper-arm offsets** from mirror pairs plus the video:
+- Fitted: left 12.8°, right 4.8°.
+- Rejected: a heading (magnetic) model and a hinge-deformation model.
+
+**Left elbow off its hinge** (29% of bent frames).
+- **Cause:** the left upper arm's roll error varies over time.
+- **Fix:** roll the upper arm about its bone, per frame.
+- **First version failed:** it caused the "candy wrapper" at 12356. On a nearly straight arm, a small sideways forearm error looked like a 90° roll.
+- **Fixed with the 'map' mode, which balances three things:**
+  - a roll prior of 40°
+  - the sideways forearm spread (6.7°) and carrying angle (−4.4°), both from the uncorrected right arm
+  - a soft wall at the take's own raw twist range
+- **Rejected:**
+  - swinging the upper arm instead (it added 460°/s of joint speed)
+  - turning the forearm (the video got worse)
+
+**Removed on 7 November: the torso-clearance step (`build_mc.py`) and the back-contact step (`build_backcontact.py`).**
+- Both engaged when the pose crossed a threshold, and both invented movement.
+- The case that showed it: take 7, 23750–24250. A hand hanging by the hip was pulled 10–13 cm inward and back out.
+- **Rule from now on:** corrections come from a sensor-error model. Contact and penetration may only enter the fit as soft evidence.
+
+**What the models alone leave on take 8:**
+- At 5848 the left forearm is 8 cm inside the chest (raw 10 cm).
+- In the holds, the hands are off the back.
+
+**Other take 8 observations not yet modelled:**
+- A left upper-arm error tied to the arm crossing the body. In face-on video it's 32° with the wrist past the midline, against 9–13° on its own side. It comes and goes with the gesture. Room direction isn't the cause.
+- The right collar sits about 5° lower from 140 s on.
+
+### All nine takes (`s11_work/logs/summary_all_takes.txt`, made by `video_fix/summarize_takes.py`)
+
+**Trunk drift** (median/max correction; held-out hip line, raw > corrected, in two halves):
+
+| Take | Correction (median / max) | Held-out hip line | Verdict |
+|---|---|---|---|
+| 8 | 8.1° / 12.5° | 5.2 > 2.1, 4.5 > 3.2 | supported; feet 4 windows better, 2 worse |
+| 1, 3, 5, 9 | 0.1–1.4° / 4.0° or less | mixed | negligible either way |
+| 2 | 3.1° / 4.5° | mixed | feet warning |
+| 7 | 3.9° / 15.9° | mixed | feet warning; the video and the feet disagree |
+| 6 | 8.7° / 15.3° | 11.6 > 12.2, 4.5 > 8.4 | worse |
+| 4 | 0 | none | take shorter than the 60 s reference |
+
+Take 6 is the stretches take with floor work. The hip-line referee probably fails once the dancer is off her feet, and the raw twist range is ±174°, so the twist wall is meaningless there.
+
+**Constant arm offsets:** mostly 3–16°, and they vary per take, as expected if the suit is recalibrated between takes.
+- **Unsupported (held-out video worse in both halves):**
+  - right arm, takes 6, 7, 8
+  - left arm, take 7
+- **Take 4:** unverifiable (see below).
+
+**Carrying angle:** −2.7° to −9.1° across takes, consistent with a property of the dancer's body.
+
+**Left elbow off-hinge:** reduced by the map mode in every take.
+
+**Arm sources chosen by the face-on video:**
+- **pd:** 13 of the 18 arms.
+- **Hinge file:** left arm in takes 4, 5, 7, 8, and right arm in take 1.
+
+**Unexplained: forearm more than 3 cm inside the torso** (% of frames; hand-behind-back frames excluded; raw / pd / corrected):
+- take 2: left 14.8 / 11.8 / 12.4
+- take 3: left 18.3 / 11.0 / 10.9
+- take 5: left 22.4 / 21.3 / 11.4; right 14.1 / 15.3 / 15.3
+- take 6: left 16.5 / 16.5 / 16.3
+- take 1: left 8.0 / 7.5 / 7.3; right 6.0 / 6.0 / 2.6
+- takes 4, 7, 8, 9: 3.3% or less on both arms
+
+The left side dominates in every take except 5. That points to the same left-arm error tied to crossing the body seen on take 8. It is the main lead for the next model.
+
+### Take 4 (short_centipede, 7.26 s): why it had no pd, and what fixed it
+
+- **The sync had failed.** Its video file had never been synced. `compare_shadow.py` matches total joint speed between video and Shadow. On a take shorter than its video, every candidate lag puts some video frames outside the Shadow take, where the interpolation holds the end value. The correlation came out nan, and the search fell back to its −10 s edge. The pd build then saw a torso-relative error of 61° and left take 4 out.
+- **First fix:** `compare_shadow.py` now correlates only where video and Shadow overlap. Long takes keep their lags (take 3: 0.151 s).
+- **The speed match then found a false peak** at −1.57 s, which is easy to hit on 7 s of slow movement.
+- **Root height gives the true lag:** +1.28 s, correlation 0.95. The pose-agreement scan agrees (+1.2 s). On take 3, root height finds that take's known lag (+0.10 against 0.151).
+- **Second fix:** a new `SYNC_OFFSET` environment variable in `compare_shadow.py` fixes the lag. `sensor_error_landscape.py` reads it from the `_vs_shadow.npz`.
+- **Take 4 at +1.28 s:** upper arms 8–17°, forearms 17–22°, spine 19°. That's in line with the other takes.
+- **Two copies of each video file:**
+  - `s11_work/S11_takeN.npz` (2 November, default body) is what the correction stages read.
+  - `scratch_results/s11/S11_takeN.npz` (3 November, drawn SMPL-H body).
+  - They differ only in the Shadow-joint fields. The stages read only the video joints, times, lag, facing and reliability masks, and those agree (facing within 0.01°, the masks identical).
+  - The rebuilt take 4 file was copied into `s11_work/`. The broken one is kept as `s11_work/S11_take4.bad_sync_minus10s.npz`; the older `scratch_results` copy is `S11_take4.pre_remeasure.npz`.
+- **pd build:** take 4 is back in `build_posedep.py`. Run alone (`TAKES=4`), it had no takes to average the session elbow turn over (nan, then a crash). It now uses the turns recorded in the pd files already written. Take 4's turns: left +33.6° (its own measurement), right +28.2° (the session value).
+- **A scipy 1.15.2 bug.** `median_filter` with a window wider than the array returns zeros and corrupted the frame indices next to it in memory. That surfaced in `build_root_tilt.py`, whose window is now capped at the data length. **Any other `median_filter` call on short data has the same exposure.**
+- **Robustness only, no change to results:** a take shorter than two 20 s blocks gets no held-out trunk test, and an empty delayed-pair set no longer crashes the mirror search.
+- **Take 4 results:**
+  - trunk 0
+  - no delayed mirror pairs, only 4 synchronous ones
+  - constant offset left 13.5°, right 1.8°, **unverified** (no held-out test is possible)
+  - left arm from the hinge file (in-sample video 11.3 against pd's 13.8), right arm from pd
+  - no penetration
+  - `ARM_L=pd correct_take.sh 4` takes the left arm from pd instead, if the unverified offset shouldn't stand
+
+### Open questions and what to try next
+
+1. **Per-take trunk decision.** Apply the trunk roll only where the held-out hip line and the feet support it: take 8 yes, take 6 no, take 7 undecided. This is a choice of model for the whole take, not a pose trigger. `correct_take.sh` currently applies it everywhere.
+2. **Is the left forearm penetration real?** Look at takes 5 and 6 in their patches. The oval torso model counts a hand resting at the hip as "inside" (seen on take 7), so some of the 11–16% may be grazing, not error.
+3. **A left-arm error tied to crossing the body.** Fit it across takes, with penetration and contact as soft evidence (residuals weighted by how likely the contact is), and test it held-out. Candidate mechanism: the strap sits near the elbow, held tight against the body.
+4. **Hands on the back in the take 8 holds.** These are a test for item 3, not something to enforce.
+5. **The right collar on take 8,** about 5° low from 140 s on. Not modelled.
+6. **Take 4's left offset.** Keep it, or take pd? Is a session-level left offset defensible, given that the per-take values are 3–16°?
+7. **Other subjects.** Only Subject 11 is wired into `correct_take.sh`.
+
+### Files
+
+Scripts, all in `~/Projects/GVHMR/tools/shadow_compare/video_fix/`:
+- `correct_take.sh` (the driver; `FROM=k` reruns from stage k)
+- `build_root_tilt.py`
+- `build_lowspine.py`
+- `build_mirror_upper.py`
+- `build_hinge.py`
+- `build_elbow_hinge.py`
+- `combine_arms.py`
+- `make_three_body_patch_final.py`
+- `summarize_takes.py`
+- `build_posedep.py`
+- `build_mc.py` and `build_backcontact.py` (removed from the pipeline; kept for the record)
+
+Outputs, in `~/Projects/GVHMR/outputs/s11_work/`:
+- `corr_out/*_corrected.npz` (all nine takes)
+- `logs/corr_takeN_<stage>.txt`
+- `logs/summary_all_takes.txt`
+- `final5_out/` (take 8 as reviewed, still with the triggered steps)
+
+Patches: `~/dpg_system/patches/shadow_raw_pd_corrected_s11_takeN.json`, one per take, 1 to 9.
+
 ## Where we left off (2026-11-01): picking up the old-fusion sessions
 
-Decision: no arm corrections on S1-S6 until their video has been analysed.
+Decision: no arm corrections on S1-S6 until their video has been analysed. S2's is done (2026-11-04 section above). S6's video arrived 2026-11-04, except take 8, whose
+data is byte-identical to take 7's; its batch writes to `~/Projects/GVHMR/outputs/s6_work/`.
 
 Done for every old-fusion session:
 - hip fix (`*_rhipflexstat.npz`, right thigh everywhere)
@@ -898,7 +1153,9 @@ Open:
 ## Scripts (`~/Projects/GVHMR/tools/shadow_compare/`, run in env `gvhmr`)
 
 - `compare_shadow.py GVHMR_NPZ SHADOW_SMPL_NPZ` — time sync, per-joint rotation differences,
-  joint positions, heading and trajectory; writes `*_vs_shadow.npz` (needed by the others)
+  joint positions, heading and trajectory; writes `*_vs_shadow.npz` (needed by the others).
+  The sync correlates only where video and Shadow overlap. `SYNC_OFFSET=<s>` fixes the lag when the
+  speed match is unreliable (short or slow takes); check it against root height (S11 take 4).
 - `arm_tests.py GVHMR_NPZ SHADOW_SMPL_NPZ` — left/right mirror test and constant-bias split per joint
 - `arm_2d_referee.py OUT_DIR SHADOW_SMPL_NPZ VIDEO PICTURE_DIR` — the 2D referee for one Shadow
   file, plus a picture of the worst right-forearm frames
