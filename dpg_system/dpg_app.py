@@ -93,6 +93,7 @@ optional_import = [
     'bonsai_2_node',
     'qwen_moe_node',
     'neuronpedia_node',
+    'neural_synth_nodes',
 ]
 
 imported = []

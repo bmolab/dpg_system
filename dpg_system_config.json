@@ -46,5 +46,6 @@
  "bonsai_2_node": true,
  "qwen_moe_node": true,
  "monitor_nodes": true,
- "neuronpedia_node": true
+ "neuronpedia_node": true,
+ "neural_synth_nodes": true
 }
