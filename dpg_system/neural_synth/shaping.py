@@ -179,14 +179,18 @@ def _hist_quantile(v, q, bins):
     return vmin + idx * (vmax - vmin) / bins
 
 
-def display_normalize(img, scale=4, smoothing=0.0, gamma=1.0, min_range=64.0):
+def display_normalize(img, scale=4, smoothing=0.0, gamma=1.0, min_range=64.0, saturation=1.0):
     """2018 adaptive_normalize_B_W_H_C on an NCHW tensor; returns 0..1.
 
     Local contrast stretch: per-pixel colour min/max are reduced to a coarse
     scale x scale grid (min blended 3:1 with the grey min), the grids are
     bilinearly upsampled, and each pixel is stretched between them. The range
     is never stretched beyond 1/min_range gain (2018: 64, in the image's raw
-    units, so the first steps of a fresh image look dim)."""
+    units, so the first steps of a fresh image look dim).
+
+    saturation (not in 2018) blends the result toward its Rec. 709 luma
+    (1 = unchanged, 0 = grey). The stretch pushes each block's weakest
+    colour toward black, which by itself makes colours purer."""
     _, _, h, w = img.shape
     sy, sx = h // scale, w // scale
     for _ in range(3):
@@ -239,6 +243,10 @@ def display_normalize(img, scale=4, smoothing=0.0, gamma=1.0, min_range=64.0):
     out = ((img - lo) / (hi - lo).clamp(min_range, 1e6)).clamp(0.0, 1.0)
     if gamma != 1.0:
         out = out.pow(gamma)
+    if saturation != 1.0:
+        w = torch.tensor([0.2126, 0.7152, 0.0722], device=out.device, dtype=out.dtype).view(1, 3, 1, 1)
+        luma = (out * w).sum(1, keepdim=True)
+        out = (luma + (out - luma) * saturation).clamp(0.0, 1.0)
     return out
 
 

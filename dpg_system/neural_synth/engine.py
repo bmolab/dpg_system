@@ -85,6 +85,7 @@ def default_settings():
         out_lerp_lap_weights=True,
         # display
         norm_scale=4, norm_sigma=0.0, norm_gamma=1.0, norm_min_range=64.0,
+        norm_saturation=0.5,          # display only: 1 = as 2018, 0 = grey
         octave_fade=12,               # display only: steps over which an octave change is eased in (0 = off)
         apply='next image',
     )
@@ -357,7 +358,7 @@ class SynthEngine:
         if img.shape[2] != height or img.shape[3] != width:
             img = F.interpolate(img, size=(height, width), mode='bilinear', align_corners=True)
         return display_normalize(img, int(s.norm_scale), float(s.norm_sigma), float(s.norm_gamma),
-                                 float(s.norm_min_range))
+                                 float(s.norm_min_range), float(s.norm_saturation))
 
     def render_frame(self, width=None, height=None):
         """Current image, local-contrast normalised and scaled to the output

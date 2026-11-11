@@ -173,6 +173,7 @@ class NeuralSynthNode(Node):
         opt('norm scale', 'drag_int', 'norm_scale', 1)
         opt('norm smoothing', 'drag_float', 'norm_sigma', 0.0)
         opt('norm gamma', 'drag_float', 'norm_gamma', 0.01)
+        opt('norm saturation', 'drag_float', 'norm_saturation', 0.0)
         opt('norm min range', 'drag_float', 'norm_min_range', 0.0)
         opt('octave fade', 'drag_int', 'octave_fade', 0)
 
