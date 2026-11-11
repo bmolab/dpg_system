@@ -754,6 +754,9 @@
   "movie_player": [
     "movie_player"
   ],
+  "movie_writer": [
+    "movie_writer"
+  ],
   "_ndi_nodes": [
     "--- ndi_nodes.py ---"
   ],
@@ -766,6 +769,12 @@
   "nemotron": [
     "nemotron",
     "nemotron~"
+  ],
+  "_neural_synth_nodes": [
+    "--- neural_synth_nodes.py ---"
+  ],
+  "neural_synth": [
+    "neural_synth"
   ],
   "_neuronpedia_node": [
     "--- neuronpedia_node.py ---"
