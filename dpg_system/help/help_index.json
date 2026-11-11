@@ -776,6 +776,9 @@
   "neural_synth": [
     "neural_synth"
   ],
+  "neural_atlas": [
+    "neural_atlas"
+  ],
   "_neuronpedia_node": [
     "--- neuronpedia_node.py ---"
   ],

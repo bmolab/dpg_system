@@ -25,6 +25,8 @@ CHOOSING WHAT TO GROW:
 
 'octave schedule' takes a list and sets the target octave by octave. A list of numbers is features on the current layer: '139 139 139 0 0 0 0 0 0' lays the picture out with feature 139 and fills it in with feature 0. Layer names in the list switch layer from that point. The last entry carries on to the remaining octaves. 'clear' (or an empty list) goes back to the single layer and feature.
 
+'direction' grows a mix of all the channels of a block instead of one channel: a direction from neural_atlas, chosen from a map of what the layer does with real photographs ('find volcano'), or a plain list with one weight per channel of the current layer. Touching 'layer' or 'feature' goes back to single channels.
+
 WHEN A CHANGE TAKES EFFECT:
 A new layer, feature or schedule is held until 'apply' lets it in: 'next image' (the default) waits for the current picture to finish, 'next octave' switches when the picture next grows, and 'next step' switches at once, in the middle of an octave. Changing mid-image grows one feature's picture out of another's. 'restart' starts a new picture now.
 
@@ -38,7 +40,7 @@ SIZE AND LENGTH:
 'width' and 'height' are the output size, 'octaves' how many times the picture grows on the way there, 'iterations' the steps in the first octave, and 'iteration factor' how much fewer each later octave takes (1.1: about 10 percent fewer each time). These take effect with the next picture. This page uses 640 by 360, 9 octaves and 100 steps so a picture takes about 12 seconds.
 
 THE SHAPING, FOR EXPERIMENT (options):
-'objective': 'sum' grows the feature's total response (2018 default), 'square' favours its strongest spots, 'all' grows the whole layer at once. 'roll' jitters the picture by up to this fraction of its height each step, which avoids grid artefacts. 'octave scaler' is how much the step shrinks per octave. 'sat elbow' and 'base sat' set how colour is reduced as the picture grows. 'band weights start' and 'band weights end' (five numbers, coarse to fine) weight the bands, moving from start to end over the octaves when 'lerp band weights' is on. 'desaturate': 'row mean' is what the 2018 code actually did (it averaged along image rows, not across colour), 'luma' is a true grey. 'dual path' builds the displayed picture with a second set of 'out' shaping settings while the first keeps driving the growth. 'seed' fixes the starting noise ('seed mode' random gives a new one each picture). 'norm scale', 'norm smoothing', 'norm gamma' and 'norm min range' control the display contrast, and 'octave fade' the easing across octave changes. 'lrn size' is a setting inside the network (the 2018 synth used 11).
+'objective': 'sum' grows the feature's total response (2018 default), 'square' favours its strongest spots, 'all' grows the whole layer at once. 'direction cossim' sets how strongly a direction's picture is pushed to match the direction rather than just respond to it (1 by default, 0 for not at all). 'roll' jitters the picture by up to this fraction of its height each step, which avoids grid artefacts. 'octave scaler' is how much the step shrinks per octave. 'sat elbow' and 'base sat' set how colour is reduced as the picture grows. 'band weights start' and 'band weights end' (five numbers, coarse to fine) weight the bands, moving from start to end over the octaves when 'lerp band weights' is on. 'desaturate': 'row mean' is what the 2018 code actually did (it averaged along image rows, not across colour), 'luma' is a true grey. 'dual path' builds the displayed picture with a second set of 'out' shaping settings while the first keeps driving the growth. 'seed' fixes the starting noise ('seed mode' random gives a new one each picture). 'norm scale', 'norm smoothing', 'norm gamma' and 'norm min range' control the display contrast, and 'octave fade' the easing across octave changes. 'lrn size' is a setting inside the network (the 2018 synth used 11).
 
 THE NETWORK'S WEIGHTS:
 Inception5h's weights live in dpg_system/neural_synth/inception5h.pt, converted from the 2018 NeuralSynth weights folder by dpg_system/neural_synth/convert_inception5h.py. VGG19's are downloaded by torchvision (548 MB) the first time it is chosen.
@@ -66,6 +68,9 @@ The channel in that layer.
 octave schedule:
 A list of features (and layer names) for successive octaves; 'clear' to stop.
 
+direction:
+A direction to grow instead of one feature, from neural_atlas.
+
 apply:
 When a new target takes effect: next image, next octave, next step.
 
@@ -84,7 +89,7 @@ done:
 A bang as each picture finishes.
 
 RELATED:
-movie_writer to record the stream. mgl_image or mgl_texture to show it."""
+neural_atlas to choose directions by what they look like. movie_writer to record the stream. mgl_image or mgl_texture to show it."""
 
 demo = [
     # choose the target

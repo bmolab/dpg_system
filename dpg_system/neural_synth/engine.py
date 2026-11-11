@@ -25,6 +25,13 @@ pending target takes effect is settings.apply: 'next image', 'next octave' or
 Settings are read live: image size, octave count, iterations and the noise are
 fixed when an image starts; shaper settings are re-read at each octave; the
 remaining settings (roll, tanh gain, objective, model, device) at each step.
+
+A feature can also be an atlas Direction (neural_synth.atlas): a weighting of
+every channel of a concatenated Inception block. Its objective is Lucid's
+activation-atlas one, over every position of the picture: the activation's
+dot product with the direction, times its cosine similarity to it raised to
+direction_cossim (clamped at 0.1), so the picture is pushed to match the
+direction rather than just to be loud in it.
 """
 import math
 import threading
@@ -38,6 +45,7 @@ import torch
 import torch.nn.functional as F
 
 from .models import load_model, DEFAULT_EXIT
+from .atlas import Direction
 from .shaping import (BandSplitter, GradientShaper, shift_zero, shift_wrap,
                       display_normalize, octave_sizes)
 
@@ -56,6 +64,7 @@ def default_settings():
         seed_mode='fixed',            # 'fixed' or 'random' per image
         noise_amplitude=1.0,
         objective='sum',              # 'sum' / 'square' of one channel, 'all' = square of whole layer
+        direction_cossim=1.0,         # atlas directions: power of the cosine-similarity factor
         lap_levels=4,
         band_padding='zero',          # 2018 alt_pad = zero; 'replicate'
         roll=0.01,                    # max random shift, fraction of image height
@@ -98,7 +107,7 @@ def best_device():
 @dataclass
 class Target:
     layers: List[str]
-    features: List[int]
+    features: list                # ints (channels) or atlas Directions
 
     def at(self, octave):
         layer = self.layers[min(octave, len(self.layers) - 1)]
@@ -116,7 +125,7 @@ class StepInfo:
     total_step: int           # step within the image
     total_steps: int
     layer: str
-    feature: int
+    feature: object           # channel number, or an atlas Direction
     size: tuple
     octave_end: bool = False
     image_end: bool = False
@@ -143,9 +152,17 @@ class SynthEngine:
     def set_target(self, layers, features):
         if isinstance(layers, str):
             layers = [layers]
-        if isinstance(features, (int, np.integer)):
-            features = [int(features)]
-        self.pending = Target(list(layers), [int(f) for f in features])
+        if isinstance(features, (int, np.integer, Direction)):
+            features = [features]
+        features = [f if isinstance(f, Direction) else int(f) for f in features]
+        layers = list(layers)
+        for i, f in enumerate(features):
+            if isinstance(f, Direction):
+                # a direction belongs to its own layer
+                while len(layers) <= i:
+                    layers.append(layers[-1])
+                layers[i] = f.layer
+        self.pending = Target(layers, features)
 
     def _take_pending(self):
         p = self.pending
@@ -165,6 +182,11 @@ class SynthEngine:
 
     def _resolve(self, octave):
         layer, feature = self.target.at(octave)
+        if isinstance(feature, Direction):
+            if (feature.layer in self.model._counts
+                    and self.model.feature_count(feature.layer) == feature.vector.shape[0]):
+                return feature.layer, feature
+            feature, layer = 0, DEFAULT_EXIT[self.model.name]   # not this model's
         if layer not in self.model._counts:
             layer = DEFAULT_EXIT[self.model.name]
         n = self.model.feature_count(layer)
@@ -224,14 +246,31 @@ class SynthEngine:
         # float32 only: the network takes raw 0..255-scale pixels, activations
         # reach the thousands and LRN squares them -- float16 overflows and
         # bfloat16 goes NaN at 1920 x 1080
-        ch = None if s.objective == 'all' else feature
-        f = self.model(local, layer, ch)
-        loss = f.sum() if s.objective == 'sum' else 0.5 * (f * f).sum()
+        if isinstance(feature, Direction):
+            loss = self._direction_loss(self.model(local, layer, None), feature)
+        else:
+            ch = None if s.objective == 'all' else feature
+            f = self.model(local, layer, ch)
+            loss = f.sum() if s.objective == 'sum' else 0.5 * (f * f).sum()
         g, = torch.autograd.grad(loss, local)
         g = shift(g, -sy, -sx)
         if s.pre_tanh_gain != 0:
             g = torch.tanh(g * (s.pre_tanh_gain / g.std().clamp_min(1e-10)))
         return g
+
+    def _direction_loss(self, f, direction):
+        key = id(direction), f.device
+        cached = getattr(self, '_dir_cache', None)
+        if cached is None or cached[0] != key:
+            d = torch.from_numpy(direction.vector).to(f.device).view(1, -1, 1, 1)
+            self._dir_cache = cached = (key, d, direction)   # holds the Direction so id() stays unique
+        d = cached[1]
+        dot = (f * d).sum(1)
+        p = float(self.s.direction_cossim)
+        if p == 0:
+            return dot.sum()
+        cos = dot / (f.norm(dim=1) + 1e-4)
+        return (dot * cos.clamp_min(0.1) ** p).sum()
 
     def run_image(self):
         """Generator: one StepInfo per gradient step of a whole image."""
@@ -297,7 +336,8 @@ class SynthEngine:
         for o in range(len(t.features)):
             layer = t.layers[min(o, len(t.layers) - 1)]
             n = self.model.feature_count(layer) if layer in self.model._counts else 1
-            feats.append((t.features[o] + delta) % n)
+            f = t.features[o]
+            feats.append(f if isinstance(f, Direction) else (f + delta) % n)
         self.target = Target(list(t.layers), feats)
 
     # ---- display -------------------------------------------------------

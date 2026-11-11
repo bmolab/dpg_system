@@ -30,6 +30,7 @@ import torch.nn.functional as F
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INCEPTION5H_WEIGHTS = os.path.join(HERE, 'inception5h.pt')
+INCEPTION5H_HEAD = os.path.join(HERE, 'inception5h_head.pt')
 
 # (name, in_channels, (1x1, 3x3 bottleneck, 3x3, 5x5 bottleneck, 5x5, pool_reduce))
 _MIXED = [
@@ -270,6 +271,39 @@ class Inception5h(nn.Module):
             if pool is not None:
                 x = F.max_pool2d(_same_pad(x, 3, 2), 3, 2)
         raise KeyError('unknown exit ' + exit_name)
+
+
+    # ---- classifier (activation atlas labels) ---------------------------
+    def classify_from(self, a, layer):
+        """Class logits (B, 1008) for activations `a` (B, C, H, W) of the
+        concatenated block `layer` (e.g. 'mixed4c'), run through the rest of
+        the network and the final classifier. Index i is line i of the
+        InceptionV1 label list (0 is 'dummy'; 1001..1007 are unused).
+
+        Fed a single averaged activation as a 1 x 1 map, this is how the
+        activation atlas labels a cell: the convolutions see only their
+        centre taps and the pools pass the value through."""
+        head = getattr(self, '_head', None)
+        if head is None:
+            if not os.path.exists(INCEPTION5H_HEAD):
+                raise FileNotFoundError(
+                    'classifier weights not found at ' + INCEPTION5H_HEAD +
+                    ' -- run python -m dpg_system.neural_synth.convert_inception5h')
+            st = torch.load(INCEPTION5H_HEAD, map_location='cpu')
+            head = self._head = (st['weight'].to(a.device), st['bias'].to(a.device))
+        names = [m for m, _, _ in _MIXED]
+        if layer not in names:
+            raise KeyError('classify_from needs a mixed block, not ' + layer)
+        i = names.index(layer)
+        x = a
+        if layer in _POOL_AFTER:
+            x = F.max_pool2d(_same_pad(x, 3, 2), 3, 2)
+        for m in names[i + 1:]:
+            x = self._mixed_exit(x, m, '', None)
+            if m in _POOL_AFTER:
+                x = F.max_pool2d(_same_pad(x, 3, 2), 3, 2)
+        x = x.mean((2, 3))
+        return x @ head[0].t() + head[1]
 
 
 _VGG19_CFG = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M',

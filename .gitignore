@@ -93,3 +93,5 @@ dpg_system/vive_names.json
 
 # neural synth weights (regenerate: python -m dpg_system.neural_synth.convert_inception5h)
 dpg_system/neural_synth/*.pt
+# activation atlases (build: python -m dpg_system.neural_synth.atlas all)
+dpg_system/neural_synth/atlas/

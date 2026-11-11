@@ -139,7 +139,7 @@ TREE = {
         ('Image processing', ['k.rgb_to_grayscale', 'k.sobel', 'tv.Grayscale', 'tv.gaussian_blur', 'tv.adjust_brightness']),
         ('Motion', ['cv_optical_flow']),
         ('Understanding', ['vision_describe', 'depth_anything']),
-        ('Making pictures', ['neural_synth']),
+        ('Making pictures', ['neural_synth', 'neural_atlas']),
         ('Recording', ['movie_writer']),
     ]),
     'nodes_numpy': ('NumPy', 'np. nodes work on numpy arrays.', [
@@ -252,7 +252,7 @@ TREE = {
     ]),
     'nodes_ai': ('AI models', 'Models that run in or alongside the patch.', [
         ('Language models', ['gemma_4', 'gemma', 'neuronpedia_search', 'qwen_moe', 'bonsai_2']),
-        ('Vision', ['vision_describe', 'depth_anything', 'clip_embedding', 'neural_synth']),
+        ('Vision', ['vision_describe', 'depth_anything', 'clip_embedding', 'neural_synth', 'neural_atlas']),
         ('Speech', ['whisper', 'nemotron', 'eleven_labs']),
         ('Autoencoders', ['vposer', 'vae']),
     ]),

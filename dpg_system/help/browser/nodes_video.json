@@ -420,12 +420,12 @@
             "annotation": true,
             "position_x": 176,
             "position_y": 362,
-            "width": 107,
+            "width": 194,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "neural_synth",
+                    "value": "neural_synth, neural_atlas",
                     "value_type": "str"
                 },
                 "1": {
@@ -435,7 +435,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 99,
+                    "value": 186,
                     "value_type": "int"
                 },
                 "3": {
@@ -449,7 +449,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "neural_synth",
+            "text": "neural_synth, neural_atlas",
             "id": 1055,
             "visibility": "show_all",
             "draggable": true,
