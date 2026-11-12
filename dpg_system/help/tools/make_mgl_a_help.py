@@ -36,7 +36,8 @@ GETTING SOMETHING ON SCREEN:
     mgl_context  ->  mgl_light  ->  mgl_box
 
 The context shows the picture itself, in its own window by default, and it has 
-an orbit camera built in: drag the picture to orbit and scroll to zoom. That 
+an orbit camera built in: drag the picture to orbit, scroll to zoom, and drag 
+with the middle button (or shift + drag) to pan. That 
 view is saved with the patch. To set the view exactly, or to change the lens, 
 add an mgl_orbit_camera or mgl_camera after the context; it replaces the 
 built-in view for everything drawn after it.
@@ -228,8 +229,9 @@ eye is.
 
 YOU DO NOT NEED ONE TO SEE SOMETHING:
 mgl_context has an orbit camera built in, which starts 3 units from the origin
-and 20 degrees above it; drag the picture to orbit and scroll to zoom. A camera
-node replaces that view for everything drawn after it.
+and 20 degrees above it; drag the picture to orbit, scroll to zoom, and drag
+with the middle button - or hold shift and drag, on a trackpad - to pan. A
+camera node replaces that view for everything drawn after it.
 
 A CAMERA IS NOT PUT BACK:
 Transforms, colours and materials are undone at the end of the branch they
@@ -246,6 +248,9 @@ the angle around the vertical in degrees - 0 puts the eye on the plus z side
 Patch the context's 'ui' outlet into its 'ui' inlet and the picture becomes
 the control: dragging with the left button orbits (elevation stops at 89
 degrees either way), and the scroll wheel zooms by changing the distance.
+Dragging with the middle button - or with shift held, on a trackpad - pans:
+it moves 'target' up, down and sideways so that the point you grabbed stays
+under the cursor, in either projection.
 The events come from the context's own picture - its window or fullscreen
 view, or the picture inside the node when the context's 'node_mouse_events'
 option is ticked, as here.
@@ -317,7 +322,7 @@ demo = [
      'props': {'auto_render': True, 'display_width': 320,
                'display_height': 240, 'node_mouse_events': True}},
     {'key': 'c1', 'comment': True,
-     'text': 'drag on this picture to orbit,\nscroll to zoom', 'pos': (420, 120)},
+     'text': 'drag on this picture to orbit,\nscroll to zoom, middle-drag\n(or shift-drag) to pan', 'pos': (420, 120)},
     {'key': 'm1', 'init': 'message', 'pos': (420, 420), 'w': 80, 'h': 42,
      'props': {'text in': 'front', 'font size': '24'}},
     {'key': 'm2', 'init': 'message', 'pos': (560, 420), 'w': 80, 'h': 42,

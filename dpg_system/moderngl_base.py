@@ -330,7 +330,13 @@ class MGLNativeWindow:
         x, y = int(x), int(y)
         self._last_cursor = (x, y)
         if self._buttons_down:
-            self._push_ui_event(['mouse_drag', x, y, min(self._buttons_down)])
+            # u, v as on mouse_down, so a pan can follow the cursor exactly
+            try:
+                w, h = self.get_size()
+                u, v = x / max(1.0, float(w)), y / max(1.0, float(h))
+            except Exception:
+                u = v = -1.0
+            self._push_ui_event(['mouse_drag', x, y, min(self._buttons_down), u, v])
         else:
             self._push_ui_event(['mouse_move', x, y])
 
@@ -722,7 +728,7 @@ class MGLDisplayWindow:
             btn = 2
         else:
             btn = 0
-        self._push_ui_event(['mouse_drag', x, y, btn])
+        self._push_ui_event(['mouse_drag', x, y, btn, *self._mouse_uv(x, y)])
 
     def _on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if not self._focused:

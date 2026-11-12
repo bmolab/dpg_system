@@ -345,36 +345,88 @@ def orbit_eye_and_up(target, distance, yaw_deg, elevation_deg):
     return eye, up
 
 
-def orbit_ui_event(event, yaw, elevation, distance, drag_last, drag_speed, zoom_speed):
+def orbit_pan(target, distance, yaw_deg, elevation_deg, fov_deg, aspect, du, dv):
+    """Move the orbit target so the point under the cursor stays under it:
+    du, dv are the cursor's move as fractions of the image (v down). The
+    image spans 2 * distance * tan(fov / 2) at the target's depth, in
+    perspective and in orthographic alike (see MGLOrbitCameraNode.draw)."""
+    eye, up = orbit_eye_and_up(target, distance, yaw_deg, elevation_deg)
+    forward = np.asarray(target, dtype=np.float64) - np.asarray(eye, dtype=np.float64)
+    forward /= max(np.linalg.norm(forward), 1e-12)
+    up = np.asarray(up, dtype=np.float64)
+    right = np.cross(forward, up)
+    right /= max(np.linalg.norm(right), 1e-12)
+    half_h = distance * math.tan(math.radians(max(1.0, min(179.0, fov_deg))) * 0.5)
+    half_w = half_h * aspect
+    # grab: the scene follows the cursor, so the target moves against it
+    moved = (np.asarray(target, dtype=np.float64)
+             - right * du * 2.0 * half_w + up * dv * 2.0 * half_h)
+    return [float(c) for c in moved]
+
+
+def orbit_ui_event(event, yaw, elevation, distance, drag_last, drag_speed, zoom_speed,
+                   target=None, fov=60.0, aspect=1.0):
     """Apply one ui event (mouse_down/drag/up/move, scroll) to an orbit view.
 
     Left-drag orbits (yaw/elevation follow the mouse), scroll wheel zooms the
-    distance. Deltas are computed between consecutive events, so a missed
-    mouse_up (possible on the DPG readback path) can't cause a jump. Returns
-    the new (yaw, elevation, distance, drag_last).
+    distance, and a middle-button drag - or a shift + left drag, for a
+    trackpad - pans: the target moves so the scene follows the cursor
+    (needs the drag's u, v and a target). Deltas are computed between
+    consecutive events, so a missed mouse_up (possible on the DPG readback
+    path) can't cause a jump. Returns the new (yaw, elevation, distance,
+    drag_last, target).
     """
     if not isinstance(event, (list, tuple)) or len(event) == 0:
-        return yaw, elevation, distance, drag_last
+        return yaw, elevation, distance, drag_last, target
     kind = event[0]
+
+    def uv(e):
+        if len(e) >= 6:
+            u, v = float(e[4]), float(e[5])
+            if u >= 0.0 and v >= 0.0:
+                return u, v
+        return None
+
     if kind == 'mouse_drag' and len(event) >= 4:
-        if int(event[3]) != 0:  # left button only
-            return yaw, elevation, distance, None
+        button = int(event[3])
         x, y = float(event[1]), float(event[2])
-        if drag_last is not None:
-            # turntable grab: the scene follows the cursor, so the eye
-            # orbits against it. Dragging right swings the subject right
-            # (camera left, yaw down); dragging down tips its top toward
-            # the viewer (camera up, elevation up).
-            yaw = yaw - (x - drag_last[0]) * drag_speed
-            elevation = max(-89.0, min(89.0, elevation + (y - drag_last[1]) * drag_speed))
-        drag_last = (x, y)
+        mode = drag_last[2] if drag_last is not None else ('orbit' if button == 0 else
+                                                           'pan' if button == 2 else None)
+        if mode == 'orbit':
+            if button != 0:  # left button only
+                return yaw, elevation, distance, None, target
+            if drag_last is not None:
+                # turntable grab: the scene follows the cursor, so the eye
+                # orbits against it. Dragging right swings the subject right
+                # (camera left, yaw down); dragging down tips its top toward
+                # the viewer (camera up, elevation up).
+                yaw = yaw - (x - drag_last[0]) * drag_speed
+                elevation = max(-89.0, min(89.0, elevation + (y - drag_last[1]) * drag_speed))
+            drag_last = (x, y, 'orbit', None)
+        elif mode == 'pan':
+            here = uv(event)
+            if here is None or target is None:
+                return yaw, elevation, distance, None, target
+            if drag_last is not None and drag_last[3] is not None:
+                du, dv = here[0] - drag_last[3][0], here[1] - drag_last[3][1]
+                target = orbit_pan(target, distance, yaw, elevation, fov, aspect, du, dv)
+            drag_last = (x, y, 'pan', here)
+        else:
+            drag_last = None
     elif kind == 'mouse_down' and len(event) >= 4:
-        drag_last = (float(event[1]), float(event[2])) if int(event[3]) == 0 else None
+        button = int(event[3])
+        shift = len(event) > 6 and (int(event[6]) & 1)
+        if button == 2 or (button == 0 and shift):
+            drag_last = (float(event[1]), float(event[2]), 'pan', uv(event))
+        elif button == 0:
+            drag_last = (float(event[1]), float(event[2]), 'orbit', None)
+        else:
+            drag_last = None
     elif kind in ('mouse_up', 'mouse_move'):
         drag_last = None
     elif kind == 'scroll' and len(event) >= 3:
         distance = max(0.01, distance * (0.9 ** (float(event[2]) * zoom_speed)))
-    return yaw, elevation, distance, drag_last
+    return yaw, elevation, distance, drag_last, target
 
 
 def _new_orbit_view():
@@ -638,7 +690,10 @@ class MGLContextNode(Node):
                 # drag that began elsewhere (e.g. moving another node across
                 # the image) doesn't register as a drag here
                 if self._dpg_mouse_captured:
-                    self._push_dpg_ui_event(['mouse_drag', x, y, button])
+                    # u, v as on mouse_down: a pan needs the move as a
+                    # fraction of the image, which pixels alone cannot give
+                    u, v = self._dpg_ui_mouse_uv(win, x, y)
+                    self._push_dpg_ui_event(['mouse_drag', x, y, button, u, v])
                 return
         self._push_dpg_ui_event(['mouse_move', x, y])
 
@@ -1026,10 +1081,13 @@ class MGLContextNode(Node):
             self._dpg_ui_events = []
         if ui_events:
             view = self._orbit_view
+            aspect = self.width / self.height if self.height else 1.0
             for event in ui_events:
-                view['yaw'], view['elevation'], view['distance'], self._orbit_drag_last = orbit_ui_event(
+                (view['yaw'], view['elevation'], view['distance'], self._orbit_drag_last,
+                 view['target']) = orbit_ui_event(
                     event, view['yaw'], view['elevation'], view['distance'], self._orbit_drag_last,
-                    ORBIT_DRAG_SPEED, ORBIT_ZOOM_SPEED)
+                    ORBIT_DRAG_SPEED, ORBIT_ZOOM_SPEED,
+                    target=list(view['target']), fov=view.get('fov', 60.0), aspect=aspect)
                 self.ui_output.send(event)
 
         # Escape Exits Fullscreen. When the native window has focus, DPG never
@@ -4784,7 +4842,8 @@ class MGLOrbitCameraNode(MGLNode):
         self.distance = self.add_input('distance', widget_type='drag_float', default_value=3.0)
         self.yaw = self.add_input('yaw', widget_type='drag_float', widget_width=50, default_value=0.0)
         self.elevation = self.add_input('elevation', widget_type='drag_float', widget_width=50, default_value=20.0)
-        # wire mgl_context's ui output here: left-drag orbits, scroll zooms
+        # wire mgl_context's ui output here: left-drag orbits, scroll zooms,
+        # middle-drag (or shift + left-drag) pans the target
         self.ui_input = self.add_input('ui', callback=self.ui_event_in)
         # In orthographic mode the view volume's half-height is
         # distance * tan(fov/2), so zoom (distance) and fov keep working
@@ -4827,9 +4886,15 @@ class MGLOrbitCameraNode(MGLNode):
     def ui_event_in(self):
         """Consume ui events from mgl_context (see orbit_ui_event)."""
         yaw, elevation, distance = self.yaw(), self.elevation(), self.distance()
-        new_yaw, new_elevation, new_distance, self._drag_last = orbit_ui_event(
+        target = [float(c) for c in self.target()]
+        # The aspect of what the camera last drew into: a pan moves the
+        # target by the image's width as well as its height.
+        aspect = getattr(self, '_last_aspect', 1.0)
+        new_yaw, new_elevation, new_distance, self._drag_last, new_target = orbit_ui_event(
             self.ui_input(), yaw, elevation, distance, self._drag_last,
-            self.drag_speed(), self.zoom_speed())
+            self.drag_speed(), self.zoom_speed(), target=target, fov=self.fov(), aspect=aspect)
+        if new_target != target:
+            self.target.set(new_target)
         if new_yaw != yaw:
             self.yaw.set(new_yaw)
         if new_elevation != elevation:
@@ -4855,6 +4920,7 @@ class MGLOrbitCameraNode(MGLNode):
         aspect = self.ctx.width / self.ctx.height
         if aspect == 0:
             aspect = 1.0
+        self._last_aspect = aspect
         if self.projection_option() == 'orthographic':
             half_h = dist * math.tan(math.radians(max(1.0, min(179.0, fov_val))) * 0.5)
             # The depth slab is measured from the eye, so the perspective
