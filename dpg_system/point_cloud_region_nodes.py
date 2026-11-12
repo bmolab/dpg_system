@@ -1874,6 +1874,11 @@ class PointCloudAccumulateNode(PointCloudNode):
     holds, ready to capture. 'per frame' then divides by the frames
     recorded, faded the same way.
 
+    'send when idle' (on by default) keeps the held accumulation going out
+    while 'record' is off (or counting down its delay): each incoming frame
+    sends it again, unchanged. Off, it is sent only while recording and
+    when a setting changes.
+
     'delay (s)' and 'duration (s)' are for working alone: tick ``record``,
     walk into the volume during the delay, and it stops itself. Duration 0
     records until unticked. The input passes through on ``cloud out``."""
@@ -1909,6 +1914,8 @@ class PointCloudAccumulateNode(PointCloudNode):
                                                  callback=self._emit)
         self.half_life_input = self.add_input('half-life (s)', widget_type='drag_float',
                                               default_value=0.0, min=0.0)
+        self.send_idle_input = self.add_input('send when idle', widget_type='checkbox',
+                                              default_value=True)
         self.output = self.add_output('accumulated')
         self.frames_output = self.add_output('frames')
         self.passthrough_output = self.add_output('cloud out')
@@ -1959,6 +1966,12 @@ class PointCloudAccumulateNode(PointCloudNode):
         self._reset()
         self._emit()
 
+    def _send_idle(self):
+        """Not recording: with 'send when idle', each incoming frame sends
+        the held accumulation again, so what is downstream keeps seeing it."""
+        if self.hits is not None and self.send_idle_input():
+            self._emit()
+
     def _decay(self):
         """Fade everything accumulated by the time since the last recorded
         frame, and forget voxels faded below DECAY_FORGET."""
@@ -2004,9 +2017,11 @@ class PointCloudAccumulateNode(PointCloudNode):
         pts = self._get_cloud()
         self.passthrough_output.send(raw)
         if self._armed_at is None:
+            self._send_idle()
             return
         elapsed = time.monotonic() - self._armed_at - float(self.delay_option())
         if elapsed < 0.0:
+            self._send_idle()
             return
         duration = float(self.duration_option())
         if duration > 0.0 and elapsed >= duration:

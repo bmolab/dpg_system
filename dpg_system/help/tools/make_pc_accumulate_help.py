@@ -60,6 +60,12 @@ Nothing fades while 'record' is off. Untick it and the accumulation holds
 as it is, ready to capture. With 'per frame', the frame count it divides by
 fades too, so it stays an average over the recent past.
 
+WHEN NOT RECORDING:
+With 'send when idle' ticked (the default), the accumulation keeps going out
+while 'record' is off - each frame arriving on 'point cloud' sends it again,
+unchanged - so whatever draws or uses it keeps seeing it. Untick it to send
+only while recording, and when a setting changes.
+
 MIN HITS:
 'min hits' drops voxels touched in fewer than that many frames - raise it to
 lose what was only walked through and keep where you stayed. It counts
@@ -109,6 +115,10 @@ Multiplies the weights after normalize. Default 1.
 half-life (s):
 How fast the accumulation fades while recording. 0 is no fading.
 
+send when idle:
+Keep sending the held accumulation with each frame while not recording. On
+by default.
+
 delay (s) / duration (s) / voxel size (cm) / min (x,y,z) / max (x,y,z)
 (options):
 As above.
@@ -117,8 +127,8 @@ OUTPUTS:
 
 accumulated:
 One point per voxel at the voxel centre, as a cloud frame carrying the voxel
-size and the weights. Sent every recorded frame, and whenever a setting
-changes.
+size and the weights. Sent every recorded frame, every frame while idle
+with 'send when idle' on, and whenever a setting changes.
 
 frames:
 How many frames have been recorded.
