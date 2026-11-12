@@ -44,6 +44,7 @@ def register_basic_nodes():
     Node.app.register_node("delay", DelayNode.factory)
     Node.app.register_node("select", SelectNode.factory)
     Node.app.register_node("route", RouteNode.factory)
+    Node.app.register_node("auto_route", AutoRouteNode.factory)
     Node.app.register_node("gate", GateNode.factory)
     Node.app.register_node("switch", SwitchNode.factory)
     Node.app.register_node("metro", MetroNode.factory)
@@ -2029,6 +2030,127 @@ class RouteNode(Node):
         else:
             self.miss_out.send(self.input())
 
+
+
+class AutoRouteNode(Node):
+    """route that makes its own outlets: each new address that arrives gets
+    an outlet of its own, labelled with it, and the value goes out of it.
+
+    A message is an address followed by its value - a list, or a string
+    split at its spaces: '/chair 0.4'. What goes out of the address's outlet
+    is the rest of the message: a single value as itself, more as a list
+    ('include address in output' keeps the address on the front).
+
+    Naked, it learns: the first time an address arrives it takes the next
+    outlet, up to MAX_OUTLETS. With addresses as arguments it starts with
+    those and, like route, learns nothing more - 'learn new addresses'
+    (option) changes that either way. The addresses are kept as the node's
+    arguments, so a saved patch comes back with its outlets, and its links.
+    Anything not routed - a bare value, an address past the last outlet, a
+    new address while not learning - goes out of 'unmatched'.
+
+    The addresses can be edited, reordered or removed in the options
+    ('address count', 'address 0' ...), as unpack_dict's keys are."""
+
+    MAX_OUTLETS = 32
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return AutoRouteNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.addresses = [any_to_string(a) for a in (args or [])][:self.MAX_OUTLETS]
+        self._pending_layout = False
+        self.input = self.add_input('in', triggers_execution=True)
+        self.route_outputs = [self.add_output(self.addresses[i] if i < len(self.addresses) else '')
+                              for i in range(self.MAX_OUTLETS)]
+        self.miss_out = self.add_output('unmatched')
+        self.learn_option = self.add_option('learn new addresses', widget_type='checkbox',
+                                            default_value=len(self.addresses) == 0)
+        self.include_option = self.add_option('include address in output',
+                                              widget_type='checkbox', default_value=False)
+        self.count_option = self.add_option('address count', widget_type='input_int',
+                                            default_value=len(self.addresses),
+                                            callback=self._addresses_edited)
+        self.address_options = [
+            self.add_option('address ' + str(i), widget_type='text_input',
+                            default_value=self.addresses[i] if i < len(self.addresses) else '',
+                            callback=self._addresses_edited)
+            for i in range(self.MAX_OUTLETS)]
+        self._index = {a: i for i, a in enumerate(self.addresses)}
+
+    def custom_create(self, from_file):
+        self._layout()
+        # Learned addresses arrive on whatever thread the data does; showing
+        # an outlet is a GUI call, so it waits for the main loop.
+        self.add_frame_task()
+
+    def frame_task(self):
+        if self._pending_layout:
+            self._pending_layout = False
+            self._layout()
+
+    def _layout(self):
+        """Show and label an outlet per address and hide the rest; mirror the
+        addresses into the options and the node's arguments."""
+        count = len(self.addresses)
+        for i in range(self.MAX_OUTLETS):
+            out = self.route_outputs[i]
+            if i < count:
+                out.set_label(self.addresses[i])
+                dpg.show_item(out.uuid)
+            else:
+                dpg.hide_item(out.uuid)
+            option = self.address_options[i]
+            option.set(self.addresses[i] if i < count else '', propagate=False)
+            if i >= count:
+                dpg.hide_item(option.uuid)
+            elif self.options_visible:
+                dpg.show_item(option.uuid)
+        self.count_option.set(count, propagate=False)
+        self.unparsed_args = list(self.addresses)
+
+    def toggle_show_hide_options(self) -> None:
+        super().toggle_show_hide_options()
+        # only as many address options as there are addresses
+        for i in range(len(self.addresses), self.MAX_OUTLETS):
+            dpg.hide_item(self.address_options[i].uuid)
+
+    def _addresses_edited(self):
+        try:
+            count = max(0, min(int(self.count_option()), self.MAX_OUTLETS))
+        except (TypeError, ValueError):
+            count = len(self.addresses)
+        addresses = [any_to_string(self.address_options[i]()).strip() for i in range(count)]
+        self.addresses = addresses
+        self._index = {a: i for i, a in enumerate(addresses) if a}
+        self._layout()
+
+    def execute(self):
+        data = self.input()
+        message = data.split(' ') if isinstance(data, str) else data
+        if isinstance(message, tuple):
+            message = list(message)
+        if not isinstance(message, list) or len(message) < 2:
+            self.miss_out.send(data)
+            return
+        address = any_to_string(message[0])
+        index = self._index.get(address)
+        if index is None:
+            if not self.learn_option() or len(self.addresses) >= self.MAX_OUTLETS:
+                self.miss_out.send(data)
+                return
+            index = len(self.addresses)
+            self.addresses.append(address)
+            self._index[address] = index
+            self.unparsed_args = list(self.addresses)
+            self._pending_layout = True
+        if self.include_option():
+            value = [address] + list(message[1:])
+        else:
+            value = message[1] if len(message) == 2 else list(message[1:])
+        self.route_outputs[index].send(value)
 
 class TriggerNode(Node):
     @staticmethod

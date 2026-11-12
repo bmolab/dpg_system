@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 219,
             "position_y": 206,
-            "width": 372,
+            "width": 446,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t, route, gate, switch, select, decode, decode_message,\npass_with_triggers, repeat / repeat_in_order",
+                    "value": "t, route, auto_route, gate, switch, select, decode, decode_message,\npass_with_triggers, repeat / repeat_in_order",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,7 +243,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 364,
+                    "value": 438,
                     "value_type": "int"
                 },
                 "3": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t, route, gate, switch, select, decode, decode_message,\npass_with_triggers, repeat / repeat_in_order",
+            "text": "t, route, auto_route, gate, switch, select, decode, decode_message,\npass_with_triggers, repeat / repeat_in_order",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,

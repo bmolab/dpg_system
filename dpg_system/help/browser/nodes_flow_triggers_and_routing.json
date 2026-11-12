@@ -1,11 +1,11 @@
 {
-    "height": 676,
+    "height": 728,
     "width": 687,
     "position": [
         100,
         100
     ],
-    "id": 1388,
+    "id": 1462,
     "name": "nodes_flow_triggers_and_routing",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_flow_triggers_and_routing.json",
     "nodes": {
@@ -274,7 +274,7 @@
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link gate gate",
+            "init": "help_link auto_route auto_route",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
@@ -282,7 +282,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "gate",
+                    "name": "auto_route",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -307,6 +307,75 @@
             "annotation": true,
             "position_x": 225,
             "position_y": 258,
+            "width": 194,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "an outlet for each address",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "an outlet for each address",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link gate gate",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 187,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gate",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 171,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 225,
+            "position_y": 310,
             "width": 218,
             "height": 28,
             "properties": {
@@ -337,16 +406,16 @@
                 }
             },
             "text": "pass or block the flow of data",
-            "id": 907,
+            "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "13": {
             "init": "help_link switch switch",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 306,
+            "position_y": 358,
             "width": 187,
             "height": 44,
             "properties": {
@@ -366,16 +435,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 944,
+            "id": 1018,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "14": {
             "name": "text_block",
             "annotation": true,
             "position_x": 225,
-            "position_y": 310,
+            "position_y": 362,
             "width": 422,
             "height": 28,
             "properties": {
@@ -406,16 +475,16 @@
                 }
             },
             "text": "pass data selectively from one of multiple inputs to one output",
-            "id": 981,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "15": {
             "init": "help_link select select",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
+            "position_y": 410,
             "width": 187,
             "height": 44,
             "properties": {
@@ -435,16 +504,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "name": "text_block",
             "annotation": true,
             "position_x": 225,
-            "position_y": 362,
+            "position_y": 414,
             "width": 311,
             "height": 28,
             "properties": {
@@ -475,16 +544,16 @@
                 }
             },
             "text": "send triggers when specified data is received",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "init": "help_link decode decode",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 462,
             "width": 187,
             "height": 44,
             "properties": {
@@ -504,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 225,
-            "position_y": 414,
+            "position_y": 466,
             "width": 335,
             "height": 28,
             "properties": {
@@ -544,16 +613,16 @@
                 }
             },
             "text": "send triggers when specified numbers are received",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
             "init": "help_link decode_message decode_message",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 462,
+            "position_y": 514,
             "width": 187,
             "height": 44,
             "properties": {
@@ -573,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "20": {
             "name": "text_block",
             "annotation": true,
             "position_x": 225,
-            "position_y": 466,
+            "position_y": 518,
             "width": 354,
             "height": 28,
             "properties": {
@@ -613,16 +682,16 @@
                 }
             },
             "text": "lookup and send output in response to an input index",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "21": {
             "init": "help_link pass_with_triggers pass_with_triggers",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 514,
+            "position_y": 566,
             "width": 187,
             "height": 44,
             "properties": {
@@ -642,16 +711,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1240,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "22": {
             "name": "text_block",
             "annotation": true,
             "position_x": 225,
-            "position_y": 518,
+            "position_y": 570,
             "width": 292,
             "height": 28,
             "properties": {
@@ -682,16 +751,16 @@
                 }
             },
             "text": "pass the input with a pre and post trigger",
-            "id": 1277,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "23": {
             "init": "help_link repeat repeat / repeat_in_order",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 566,
+            "position_y": 618,
             "width": 187,
             "height": 44,
             "properties": {
@@ -711,16 +780,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1314,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "24": {
             "name": "text_block",
             "annotation": true,
             "position_x": 225,
-            "position_y": 570,
+            "position_y": 622,
             "width": 231,
             "height": 40,
             "properties": {
@@ -751,7 +820,7 @@
                 }
             },
             "text": "the same value, in a known order\n(repeat, repeat_in_order)",
-            "id": 1351,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

@@ -67,7 +67,7 @@ TREE = {
     'nodes_flow': ('Control flow', 'When things happen, and where messages go.', [
         ('Timing', ['metro', 'micro_metro', 'tick', 'delay', 'defer', 'timer', 'time_between', 'date_time',
                     'ramp']),
-        ('Triggers and routing', ['t', 'route', 'gate', 'switch', 'select', 'decode', 'decode_message',
+        ('Triggers and routing', ['t', 'route', 'auto_route', 'gate', 'switch', 'select', 'decode', 'decode_message',
                                   'pass_with_triggers', 'repeat']),
         ('Counting and sequencing', ['counter', 'range_counter', 'bucket_brigade']),
     ]),

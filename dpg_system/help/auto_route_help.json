@@ -1,0 +1,517 @@
+{
+    "height": 981,
+    "width": 1807,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "auto_route_help",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/cc498989-3f87-4c50-9c17-a6270d7fcf96/scratchpad/arbuild/auto_route_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment auto_route - an outlet for each address",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 488,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "auto_route - an outlet for each address",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "auto_route - an outlet for each address"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 949,
+            "position_y": 45,
+            "width": 818,
+            "height": 876,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "auto_route sends each value out of an outlet named after its address - and makes that outlet the first time the address arrives.\n\nIt is route without having to type the addresses: put it after something that sends 'address value' messages - value_router's 'out', an OSC receiver, a message box - and an outlet appears for each address as it first arrives, labelled with it. Then wire the outlets where they need to go.\n\nWHAT GOES OUT:\nA message is an address followed by its value: '/chair 0.4', as a list or as a string split at its spaces. What goes out of that address's outlet is the rest of the message - a single value as itself (0.4), several as a list (1 2 3). With 'include address in output' (option) the address stays on the front, as route's unmatched messages do.\n\nAnything it does not route goes out of 'unmatched': a message with nothing after the address, an address that arrives once all the outlets are taken, or a new address while it is not learning.\n\nLEARNING:\nTyped with no addresses ('auto_route'), it learns: every new address takes the next outlet, up to 32. Typed with addresses ('auto_route /a /b'), it starts with those and, like route, learns nothing more. 'learn new addresses' (option) turns learning on or off either way - turn it off once the outlets are wired, so a stray message cannot add another.\n\nThe addresses it has are kept as its arguments. Save the patch and it comes back with the same outlets in the same order, still wired.\n\nEDITING THE ADDRESSES:\n'address count' and 'address 0', 'address 1' ... (options) are the outlets' addresses, in order. Change one to rename that outlet, or lower the count to drop the last ones. As with unpack_dict, a link stays with its outlet's position, not its name.\n\nSYNTAX:\nauto_route [address ...]\n\nEXAMPLE:\nauto_route\nauto_route /level/a /level/b\n\nINPUTS and PARAMETERS:\n\nin:\n'address value' messages.\n\nlearn new addresses (option):\nGive each new address an outlet. On when it was typed with no addresses.\n\ninclude address in output (option):\nKeep the address on the front of what goes out.\n\naddress count / address 0 ... (options):\nThe outlets' addresses.\n\nOUTPUTS:\n\none per address:\nThe value that came with that address.\n\nunmatched:\nWhatever was not routed.\n\nRELATED:\nroute, which has only the addresses it is given. value_router sends 'address value' messages from a list. unpack_dict does the same for a dictionary's keys.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 860,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "auto_route sends each value out of an outlet named after its address - and makes that outlet the first time the address arrives.\n\nIt is route without having to type the addresses: put it after something that sends 'address value' messages - value_router's 'out', an OSC receiver, a message box - and an outlet appears for each address as it first arrives, labelled with it. Then wire the outlets where they need to go.\n\nWHAT GOES OUT:\nA message is an address followed by its value: '/chair 0.4', as a list or as a string split at its spaces. What goes out of that address's outlet is the rest of the message - a single value as itself (0.4), several as a list (1 2 3). With 'include address in output' (option) the address stays on the front, as route's unmatched messages do.\n\nAnything it does not route goes out of 'unmatched': a message with nothing after the address, an address that arrives once all the outlets are taken, or a new address while it is not learning.\n\nLEARNING:\nTyped with no addresses ('auto_route'), it learns: every new address takes the next outlet, up to 32. Typed with addresses ('auto_route /a /b'), it starts with those and, like route, learns nothing more. 'learn new addresses' (option) turns learning on or off either way - turn it off once the outlets are wired, so a stray message cannot add another.\n\nThe addresses it has are kept as its arguments. Save the patch and it comes back with the same outlets in the same order, still wired.\n\nEDITING THE ADDRESSES:\n'address count' and 'address 0', 'address 1' ... (options) are the outlets' addresses, in order. Change one to rename that outlet, or lower the count to drop the last ones. As with unpack_dict, a link stays with its outlet's position, not its name.\n\nSYNTAX:\nauto_route [address ...]\n\nEXAMPLE:\nauto_route\nauto_route /level/a /level/b\n\nINPUTS and PARAMETERS:\n\nin:\n'address value' messages.\n\nlearn new addresses (option):\nGive each new address an outlet. On when it was typed with no addresses.\n\ninclude address in output (option):\nKeep the address on the front of what goes out.\n\naddress count / address 0 ... (options):\nThe outlets' addresses.\n\nOUTPUTS:\n\none per address:\nThe value that came with that address.\n\nunmatched:\nWhatever was not routed.\n\nRELATED:\nroute, which has only the addresses it is given. value_router sends 'address value' messages from a list. unpack_dict does the same for a dictionary's keys."
+        },
+        "3": {
+            "init": "comment click each message",
+            "name": "comment",
+            "id": 348,
+            "position_x": 676,
+            "position_y": 62,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click each message",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click each message"
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 100,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "/red 0.2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 200,
+            "position_y": 100,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "/green 0.7",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 370,
+            "position_y": 100,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "/blue 1 2 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "auto_route",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 676,
+            "position_y": 290,
+            "width": 243,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "learning: an outlet appears, named\nafter each address, the first time\nit arrives",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "learning: an outlet appears, named\nafter each address, the first time\nit arrives"
+        },
+        "9": {
+            "name": "auto_route",
+            "id": 570,
+            "position_x": 380,
+            "position_y": 200,
+            "width": 70,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "learn new addresses",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "init": "auto_route /red /green /blue",
+            "highlight": true
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 676,
+            "position_y": 360,
+            "width": 231,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "given its addresses: the outlets\nare there to wire from the start",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "given its addresses: the outlets\nare there to wire from the start"
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 430,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "float",
+            "id": 681,
+            "position_x": 520,
+            "position_y": 430,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "message",
+            "id": 718,
+            "position_x": 380,
+            "position_y": 490,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment /blue's three values arrive as a list",
+            "name": "comment",
+            "id": 755,
+            "position_x": 676,
+            "position_y": 545,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "/blue's three values arrive as a list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "/blue's three values arrive as a list"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 562,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "/red",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "/green",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 2,
+            "source_output_name": "/blue",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}
