@@ -27,11 +27,22 @@ CHOOSING WHAT TO GROW:
 
 'direction' grows a mix of all the channels of a block instead of one channel: a direction from neural_atlas, chosen from a map of what the layer does with real photographs ('find volcano'), or a plain list with one weight per channel of the current layer. Touching 'layer' or 'feature' goes back to single channels.
 
+THE STARTING POINT:
+Every picture starts from noise: a random value for every pixel and colour, made at full size and shrunk to the first octave. The network sees pixels on a 0 to 255 scale, and this noise only runs from 0 to 1, so it is a nearly black start that does little more than give the growth something to break the symmetry with. 'noise amplitude' scales it (255 for noise across the whole range). 'noise spectrum' sets its grain: 0 is fine, independent grain (the 2018 noise), 1 is softer, 2 is cloudy. 'noise colour' is 1 for independent noise in each colour and 0 for the same noise in all three (grey). 'noise tint' (three numbers, red green blue) multiplies it per colour, and 'noise base' (three numbers, on the 0 to 255 scale) adds a level per colour. At their defaults the noise is exactly the 2018 noise.
+
+'seed' picks the noise. With 'seed mode' on fixed, the same seed and target grow exactly the same picture every time (the seed also fixes the 'roll' jitter); 'at end' on repeat shows this. With 'seed mode' on random each picture gets a new seed. Each picture's seed is the last item of 'status', and a patch can send one to 'seed' to bring a picture back. 'deterministic' matters only on cuda (NVIDIA): the graphics card's arithmetic there is not exactly repeatable by default, and this makes it so, at some cost in speed (on a Mac it changes nothing; pictures repeat without it). python -m dpg_system.neural_synth.determinism_test checks whether pictures repeat on a machine.
+
+A picture can start from an image instead. Send one to 'init' (an RGB array, such as a cv_camera frame or a loaded picture; 'clear' goes back to noise). It is shrunk to the first octave's size, which keeps only its large shapes and colours: that is the layout the growth then builds on. 'init blur' blurs it further (in pixels of that small size). 'init noise' mixes the noise in: 0 is the image alone, 1 the noise alone. 'mask' (a grey image, 0 to 1 or 0 to 255) says where the noise goes: white takes the full 'init noise', black keeps the image. With the default noise, mixing toward it means fading toward black, which leaves those areas to the network; raise 'noise amplitude' to mix in visible noise instead. 'init centre' (on by default) subtracts the image's average brightness, since the grown pictures sit around 0 rather than mid-grey; 'init level' scales it (1 gives about the same contrast as a grown picture).
+
+'start octave' begins the picture at a later octave, skipping the smallest ones. With an 'init' image this keeps more of the image (a larger size means less blurring); with noise, it starts the growth at a finer scale. Octaves are counted from 0, and a schedule's entries still belong to the same octaves whether or not they are skipped.
+
 WHEN A CHANGE TAKES EFFECT:
-A new layer, feature or schedule is held until 'apply' lets it in: 'next image' (the default) waits for the current picture to finish, 'next octave' switches when the picture next grows, and 'next step' switches at once, in the middle of an octave. Changing mid-image grows one feature's picture out of another's. 'restart' starts a new picture now.
+A new layer, feature or schedule is held until 'apply' lets it in: 'next image' (the default) waits for the current picture to finish, 'next octave' switches when the picture next grows, and 'next step' switches at once, in the middle of an octave. Changing mid-image grows one feature's picture out of another's. 'restart' starts a new picture now. While the synth is holding a finished picture, a new target starts the next one on the following frame, so several messages sent together (a layer, a feature and a seed) all belong to the same picture.
 
 WHAT HAPPENS AT THE END OF A PICTURE:
 'at end' chooses: 'hold' keeps the finished picture (a new target then starts a new one), 'repeat' grows the same target again, and 'next feature' moves on to the next feature of the layer and keeps going - an endless walk through the layer, which is how the 2018 movies were made. 'done' bangs as each picture finishes.
+
+To choose each next picture with a patch of your own, set 'at end' to hold and link 'done' to the patch, which then sends the next target (and seed, or init image). Just before 'done', 'target' sends what each octave of the finished picture grew, in the form 'octave schedule' takes: a list of features, one per octave, with a layer name wherever the layer changes (and at the start, if it is not the current 'layer'). The patch can change any entry and send the list back to 'octave schedule'.
 
 SPEED:
 The work runs on the graphics processor ('device': mps on a Mac, cuda on an NVIDIA machine) in its own thread, so the patch stays responsive. On an M1 Max a 1920 by 1080 picture with the 2018 settings (13 octaves, 200 steps in the first) takes about 35 seconds and about 1500 steps. Rendering a frame every step adds about a quarter to that; every 5 steps adds about 4 percent, every 25 nothing measurable. With 'drop frames' off (the default) the synth waits for each frame to be sent, so a recording gets every step; it then cannot run faster than the patch's frame rate. Turn 'drop frames' on to let it run free and send only the latest frame.
@@ -40,7 +51,7 @@ SIZE AND LENGTH:
 'width' and 'height' are the output size, 'octaves' how many times the picture grows on the way there, 'iterations' the steps in the first octave, and 'iteration factor' how much fewer each later octave takes (1.1: about 10 percent fewer each time). These take effect with the next picture. This page uses 640 by 360, 9 octaves and 100 steps so a picture takes about 12 seconds.
 
 THE SHAPING, FOR EXPERIMENT (options):
-'objective': 'sum' grows the feature's total response (2018 default), 'square' favours its strongest spots, 'all' grows the whole layer at once. 'direction cossim' sets how strongly a direction's picture is pushed to match the direction rather than just respond to it (1 by default, 0 for not at all). 'roll' jitters the picture by up to this fraction of its height each step, which avoids grid artefacts. 'octave scaler' is how much the step shrinks per octave. 'sat elbow' and 'base sat' set how colour is reduced as the picture grows. 'band weights start' and 'band weights end' (five numbers, coarse to fine) weight the bands, moving from start to end over the octaves when 'lerp band weights' is on. 'desaturate': 'row mean' is what the 2018 code actually did (it averaged along image rows, not across colour), 'luma' is a true grey. 'dual path' builds the displayed picture with a second set of 'out' shaping settings while the first keeps driving the growth. 'seed' fixes the starting noise and the sequence of 'roll' jitters, so with 'seed mode' on fixed the same target grows exactly the same picture every time ('at end' on repeat shows this); 'seed mode' random gives a new seed each picture. 'deterministic' matters only on cuda (NVIDIA): the graphics card's arithmetic there is not exactly repeatable by default, and this makes it so, at some cost in speed (on a Mac it changes nothing; pictures repeat without it). python -m dpg_system.neural_synth.determinism_test checks whether pictures repeat on a machine. 'norm scale', 'norm smoothing', 'norm gamma' and 'norm min range' control the display contrast, and 'octave fade' the easing across octave changes.
+'objective': 'sum' grows the feature's total response (2018 default), 'square' favours its strongest spots, 'all' grows the whole layer at once. 'direction cossim' sets how strongly a direction's picture is pushed to match the direction rather than just respond to it (1 by default, 0 for not at all). 'roll' jitters the picture by up to this fraction of its height each step, which avoids grid artefacts. 'octave scaler' is how much the step shrinks per octave. 'sat elbow' and 'base sat' set how colour is reduced as the picture grows. 'band weights start' and 'band weights end' (five numbers, coarse to fine) weight the bands, moving from start to end over the octaves when 'lerp band weights' is on. 'desaturate': 'row mean' is what the 2018 code actually did (it averaged along image rows, not across colour), 'luma' is a true grey. 'dual path' builds the displayed picture with a second set of 'out' shaping settings while the first keeps driving the growth. 'norm scale', 'norm smoothing', 'norm gamma' and 'norm min range' control the display contrast, and 'octave fade' the easing across octave changes.
 
 COLOUR:
 'norm saturation' sets how colourful the frames are: 0.5 by default, 1 for the full colour of the 2018 pictures, 0 for black and white. It changes only what is shown and recorded, not the picture being grown, and takes effect at once. The display's contrast stretch pushes the weakest colour in each region toward black, which on its own makes the colours purer; this is the control for that. 'sat elbow', 'base sat' and 'desaturate' do something different: they set how coloured each step's change is, octave by octave. The first octaves, which lay down the large areas of colour, run at full colour whatever they say, so they change the texture and layout of the picture more than how colourful it looks. 'lrn size' is a setting inside the network (the 2018 synth used 11).
@@ -80,13 +91,25 @@ When a new target takes effect: next image, next octave, next step.
 at end:
 hold, repeat or next feature.
 
+seed:
+The seed of the starting noise (with 'seed mode' fixed).
+
+init:
+An image to start from instead of noise; 'clear' to go back.
+
+mask:
+Where the noise is mixed into the 'init' image.
+
 OUTPUTS:
 
 frame:
 The picture as it grows, as an RGB array.
 
 status:
-[image, octave, octaves, step in octave, steps in octave, step in image, steps in image, layer, feature, width, height] with each frame.
+[image, octave, octaves, step in octave, steps in octave, step in image, steps in image, layer, feature, width, height, seed] with each frame.
+
+target:
+What each octave of the finished picture grew, as a schedule, just before done.
 
 done:
 A bang as each picture finishes.
@@ -137,4 +160,4 @@ links = [('feat', '', 'ns', 'feature'),
          ('ns', 'status', 'st', ''),
          ('ns', 'done', 'b1', '')]
 print(build('neural_synth', 'neural_synth - a picture grown from inside a network', body,
-            demo, links, demo_width=1240, text_width=800, text_height=1100))
+            demo, links, demo_width=1240, text_width=800, text_height=1600))

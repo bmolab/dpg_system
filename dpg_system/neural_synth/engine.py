@@ -70,6 +70,17 @@ def default_settings():
         seed_mode='fixed',            # 'fixed' or 'random' per image
         deterministic=False,          # cuda only: repeatable (slower) arithmetic
         noise_amplitude=1.0,
+        noise_spectrum=0.0,           # 0 white (2018), 1 pink, 2 brown: power falls as 1/f^spectrum
+        noise_colour=1.0,             # 1 independent per colour (2018), 0 the same in all three
+        noise_tint=(1.0, 1.0, 1.0),   # per-colour multiplier of the noise
+        noise_base=(0.0, 0.0, 0.0),   # per-colour level added (network pixel scale, 0..255)
+        start_octave=0,               # begin the image at this octave (smaller ones skipped)
+        # init image (engine.set_init): the start is the source shrunk to the
+        # start octave's size, mixed toward the noise by init_noise x mask
+        init_noise=0.0,               # 0 the source alone, 1 the noise alone
+        init_blur=0.0,                # extra gaussian blur, pixels at the start octave's size
+        init_level=1.0,               # source multiplier (after centring)
+        init_centre=True,             # subtract the source's mean brightness
         objective='sum',              # 'sum' / 'square' of one channel, 'all' = square of whole layer
         direction_cossim=1.0,         # atlas directions: power of the cosine-similarity factor
         lap_levels=4,
@@ -137,6 +148,8 @@ class StepInfo:
     size: tuple
     octave_end: bool = False
     image_end: bool = False
+    seed: int = 0
+    used: Optional[list] = None   # at image_end: (layer, feature) actually grown at each octave
 
 
 class SynthEngine:
@@ -155,6 +168,54 @@ class SynthEngine:
         self.info: Optional[StepInfo] = None
         self._fade = None          # display easing across the current octave change
         self.lock = threading.Lock()   # guards x/out against render during a step
+        self.init_image = None     # (1, 3, H, W) float32 CPU, network pixel scale, or None
+        self.init_mask = None      # (1, 1, H, W) float32 CPU 0..1, or None
+        self.seed_used = None
+
+    # ---- start image ---------------------------------------------------
+    @staticmethod
+    def _as_nchw(data, channels):
+        """An image as (1, C, H, W) float32 CPU: numpy or torch, (H, W),
+        (H, W, C) or (C, H, W) / (1, C, H, W) torch; uint8 stays 0..255, floats
+        are taken as they are."""
+        if data is None:
+            return None
+        t = data.detach().float().cpu() if isinstance(data, torch.Tensor) else \
+            torch.from_numpy(np.asarray(data, dtype=np.float32).copy())
+        if t.dim() == 2:
+            t = t[None, None]
+        elif t.dim() == 3:
+            if isinstance(data, torch.Tensor) and t.shape[0] in (1, 3, 4) and t.shape[2] not in (1, 3, 4):
+                t = t[None]
+            else:
+                t = t.permute(2, 0, 1)[None]
+        elif t.dim() != 4:
+            raise ValueError('not an image: shape %s' % (tuple(t.shape),))
+        c = t.shape[1]
+        if c == 4:
+            t = t[:, :3]
+        if channels == 3 and t.shape[1] == 1:
+            t = t.expand(1, 3, -1, -1)
+        if channels == 1 and t.shape[1] != 1:
+            t = t.mean(1, keepdim=True)
+        return t.contiguous()
+
+    def set_init(self, image):
+        """Source image for the start of each picture (None to go back to
+        noise), on the 0..255 scale; an image whose values all lie within 0..1
+        is taken as 0..1 and scaled up. Takes effect with the next picture."""
+        img = self._as_nchw(image, 3)
+        if img is not None and float(img.max()) <= 1.0 and float(img.min()) >= 0.0:
+            img = img * 255.0
+        self.init_image = img
+
+    def set_mask(self, mask):
+        """Where the noise goes (1) and where the source stays (0): 0..1, or
+        0..255 if any value is above 1. None: everywhere."""
+        m = self._as_nchw(mask, 1)
+        if m is not None and float(m.max()) > 1.0:
+            m = m / 255.0
+        self.init_mask = None if m is None else m.clamp(0.0, 1.0)
 
     # ---- targets -------------------------------------------------------
     def set_target(self, layers, features):
@@ -237,7 +298,13 @@ class SynthEngine:
         torch.use_deterministic_algorithms(want, warn_only=True)
 
     # ---- one image -----------------------------------------------------
-    def _base_noise(self, sizes):
+    def _base_noise(self, sizes, start=0):
+        """The picture's first state, at the size of octave `start`.
+
+        2018: uniform noise 0..1 per pixel and colour, made at full size and
+        sampled down. The spectrum, colour, tint and base settings reshape it
+        (at their defaults it is exactly the 2018 noise); an init image
+        replaces it, with the noise mixed in by init_noise x mask."""
         s = self.s
         seed = s.seed if s.seed_mode == 'fixed' else int(np.random.randint(0, 2 ** 31 - 1))
         rs = np.random.RandomState(seed)
@@ -245,10 +312,69 @@ class SynthEngine:
         # seed repeats the whole picture exactly, not just its starting noise
         self.rng = np.random.RandomState([seed, 1])
         self.seed_used = seed
-        noise = rs.uniform(size=(1, s.height, s.width, 3)) * s.noise_amplitude
+        noise = rs.uniform(size=(1, s.height, s.width, 3))
         t = torch.from_numpy(np.ascontiguousarray(noise.transpose(0, 3, 1, 2)).astype(np.float32))
+        t = self._shape_noise(t)
+        t = t * s.noise_amplitude
+        tint, base = tuple(s.noise_tint), tuple(s.noise_base)
+        if tint != (1.0, 1.0, 1.0):
+            t = t * torch.tensor(tint, dtype=torch.float32).view(1, 3, 1, 1)
+        if base != (0.0, 0.0, 0.0):
+            t = t + torch.tensor(base, dtype=torch.float32).view(1, 3, 1, 1)
         t = t.to(self.device)
-        return F.interpolate(t, size=sizes[0], mode='bilinear', align_corners=True)
+        size = sizes[start]
+        x = F.interpolate(t, size=size, mode='bilinear', align_corners=True)
+        src = self.init_image
+        if src is not None:
+            x = self._mix_init(src, x, size)
+        return x
+
+    def _shape_noise(self, t):
+        """Spectrum and colour of the uniform noise, keeping its mean (0.5)
+        and spread (that of uniform 0..1), so amplitude means the same."""
+        s = self.s
+        spectrum, colour = float(s.noise_spectrum), float(s.noise_colour)
+        if spectrum == 0.0 and colour == 1.0:
+            return t                                  # the 2018 noise, untouched
+        t = t - 0.5
+        if colour != 1.0:
+            grey = t.mean(1, keepdim=True)
+            # the mean of three has a third of the variance: bring it back,
+            # so colour 0 is grey noise as strong as the coloured one
+            t = grey * math.sqrt(3.0) + (t - grey) * colour
+        if spectrum != 0.0:
+            h, w = t.shape[2], t.shape[3]
+            fy = torch.fft.fftfreq(h).view(-1, 1)
+            fx = torch.fft.rfftfreq(w).view(1, -1)
+            f = torch.sqrt(fy * fy + fx * fx)
+            f[0, 0] = 1.0
+            gain = f.pow(-spectrum / 2.0)            # power ~ 1/f^spectrum
+            gain[0, 0] = 0.0
+            t = torch.fft.irfft2(torch.fft.rfft2(t) * gain, s=(h, w))
+        sd = t.std().clamp_min(1e-12)
+        return t * (1.0 / math.sqrt(12.0) / sd) + 0.5
+
+    def _mix_init(self, src, noise, size):
+        s = self.s
+        img = F.interpolate(src, size=size, mode='bilinear', align_corners=False, antialias=True)
+        sigma = float(s.init_blur)
+        if sigma > 0:
+            r = max(1, int(math.ceil(3 * sigma)))
+            k = torch.exp(-0.5 * (torch.arange(-r, r + 1, dtype=torch.float32) / sigma) ** 2)
+            k = (k / k.sum()).view(1, 1, 1, -1).repeat(3, 1, 1, 1)
+            img = F.conv2d(F.pad(img, (r, r, 0, 0), mode='replicate'), k, groups=3)
+            img = F.conv2d(F.pad(img, (0, 0, r, r), mode='replicate'), k.transpose(2, 3), groups=3)
+        if s.init_centre:
+            img = img - img.mean()
+        img = (img * float(s.init_level)).to(noise.device)
+        amount = float(s.init_noise)
+        if amount == 0.0:
+            return img
+        m = self.init_mask
+        if m is not None:
+            m = F.interpolate(m, size=size, mode='bilinear', align_corners=False, antialias=True)
+            amount = (m * amount).to(noise.device)
+        return img + (noise - img) * amount
 
     def _shapers(self, octave):
         s = self.s
@@ -312,19 +438,21 @@ class SynthEngine:
         iters = [int(s.iter_base)]
         for _ in range(1, octaves):
             iters.append(int(iters[-1] / s.iter_factor))
-        total = sum(iters)
+        start = min(max(0, int(s.start_octave)), octaves - 1)
+        total = sum(iters[start:])
+        used = [None] * octaves
 
         self._fade = None
         with torch.no_grad():
-            base = self._base_noise(sizes)
+            base = self._base_noise(sizes, start)
         with self.lock:
             self.x = base
             self.out = base.clone() if s.dual_path else None
         done = 0
-        for octave in range(octaves):
+        for octave in range(start, octaves):
             if s.apply in ('next octave', 'next step'):
                 self._take_pending()
-            if octave > 0:
+            if octave > start:
                 with self.lock, torch.no_grad():
                     before = self._display_source()
                     self.x = F.interpolate(self.x, size=sizes[octave], mode='bilinear', align_corners=True)
@@ -340,6 +468,7 @@ class SynthEngine:
                     self._take_pending()
                 self._ensure_model()
                 layer, feature = self._resolve(octave)
+                used[octave] = (layer, feature)
                 g = self._gradient(self.x, layer, feature)
                 with torch.no_grad():
                     bands = self.splitter.split(g, int(s.lap_levels), s.band_padding)
@@ -353,7 +482,12 @@ class SynthEngine:
                 self.info = StepInfo(self.image_index, octave, octaves, i, iters[octave], done, total,
                                      layer, feature, tuple(sizes[octave]),
                                      octave_end=(i == iters[octave] - 1),
-                                     image_end=(octave == octaves - 1 and i == iters[octave] - 1))
+                                     image_end=(octave == octaves - 1 and i == iters[octave] - 1),
+                                     seed=self.seed_used)
+                if self.info.image_end:
+                    # octaves skipped by start_octave report the target's own
+                    # entries, so the list goes back as the same schedule
+                    self.info.used = [u if u is not None else self._resolve(o) for o, u in enumerate(used)]
                 yield self.info
 
     def advance_feature(self, delta=1):

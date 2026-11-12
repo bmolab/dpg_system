@@ -19,7 +19,14 @@ is 'apply': next image, next octave, or next step. While holding a finished
 image, a new target starts a new image.
 
 'at end': hold the finished image; repeat the target; or advance to the next
-feature of the layer.
+feature of the layer. 'target' sends what each octave grew (as a schedule)
+just before 'done', so a patch can answer 'done' with the next target; a held
+synth starts the next image one frame after a new target arrives, so several
+messages from one event land in the same image.
+
+Start: 'seed' (an input, so a patch can set it); noise options (spectrum,
+colour, tint, base); 'init' image (shrunk to the start octave, mixed toward
+the noise by 'init noise' x 'mask'); 'start octave'.
 
 'direction' takes an activation-atlas direction (from neural_atlas, or a raw
 list with one weight per channel of the current layer) and grows that
@@ -91,6 +98,8 @@ class NeuralSynthNode(Node):
         self.schedule = None              # per-octave target list, or None
         self.direction = None             # atlas Direction replacing layer / feature
         self._start_after_load = False
+        self._tick = 0                    # frame_task count
+        self._wake_at = None              # tick at which a held synth starts its next image
 
         # worker state
         self._cond = threading.Condition()
@@ -118,10 +127,14 @@ class NeuralSynthNode(Node):
         self.at_end_input = self.add_input('at end', widget_type='combo', widget_width=110,
                                            default_value='next feature', callback=self.at_end_changed)
         self.at_end_input.widget.combo_items = ['hold', 'repeat', 'next feature']
+        self.seed_input = self._add_setting_option('seed', 'drag_int', 'seed', None, as_input=True)
+        self.init_input = self.add_input('init', callback=self.init_received)
+        self.mask_input = self.add_input('mask', callback=self.mask_received)
         self.status_label = self.add_label('')
 
         self.frame_output = self.add_output('frame')
         self.status_output = self.add_output('status')
+        self.target_output = self.add_output('target')
         self.done_output = self.add_output('done')
 
         # options
@@ -141,10 +154,18 @@ class NeuralSynthNode(Node):
         opt('octaves', 'drag_int', 'octaves', 1)
         opt('iterations', 'drag_int', 'iter_base', 1)
         opt('iteration factor', 'drag_float', 'iter_factor', 0.01)
-        opt('seed', 'drag_int', 'seed', None)
         self.seed_mode_option = opt('seed mode', 'combo', 'seed_mode', None, ['fixed', 'random'])
         opt('deterministic', 'checkbox', 'deterministic', None)
         opt('noise amplitude', 'drag_float', 'noise_amplitude', 0.0)
+        opt('noise spectrum', 'drag_float', 'noise_spectrum', None)
+        opt('noise colour', 'drag_float', 'noise_colour', 0.0)
+        opt('noise tint', 'text_input', 'noise_tint', None)
+        opt('noise base', 'text_input', 'noise_base', None)
+        opt('start octave', 'drag_int', 'start_octave', 0)
+        opt('init noise', 'drag_float', 'init_noise', 0.0)
+        opt('init blur', 'drag_float', 'init_blur', 0.0)
+        opt('init level', 'drag_float', 'init_level', None)
+        opt('init centre', 'checkbox', 'init_centre', None)
         # gradient
         opt('objective', 'combo', 'objective', None, ['sum', 'square', 'all'])
         opt('direction cossim', 'drag_float', 'direction_cossim', 0.0)
@@ -181,8 +202,8 @@ class NeuralSynthNode(Node):
         self.engine.set_target([DEFAULT_EXIT[model]], [0])
 
     # ---- settings options ---------------------------------------------
-    def _add_setting_option(self, label, widget, attr, minimum, items=None):
-        """An option bound to one engine setting."""
+    def _add_setting_option(self, label, widget, attr, minimum, items=None, as_input=False):
+        """An option (or input) bound to one engine setting."""
         value = getattr(self.settings, attr)
         if attr == 'lrn':
             value = value[0]
@@ -191,7 +212,7 @@ class NeuralSynthNode(Node):
         kwargs = dict(widget_type=widget, default_value=value, callback=self.settings_changed)
         if minimum is not None and widget in ('drag_int', 'drag_float'):
             kwargs['min'] = minimum
-        o = self.add_option(label, **kwargs)
+        o = self.add_input(label, **kwargs) if as_input else self.add_option(label, **kwargs)
         if items is not None:
             o.widget.combo_items = items
         o._ns_attr = attr
@@ -211,7 +232,7 @@ class NeuralSynthNode(Node):
             if attr == 'lrn':
                 s.lrn = (max(1, any_to_int(v)),) + tuple(s.lrn[1:])
             elif isinstance(cur, tuple):
-                parsed = _parse_floats(v)
+                parsed = _parse_floats(v, len(cur))
                 if parsed is not None:
                     setattr(s, attr, parsed)
             elif isinstance(cur, bool):
@@ -341,11 +362,34 @@ class NeuralSynthNode(Node):
         else:
             layers, features = [layer], [feature]
         self.engine.set_target(layers, features)
-        if not self.in_loading_process:
-            with self._cond:
-                if self._idle:
-                    self._wake = True
-                self._cond.notify_all()
+        self._start_soon()
+
+    def _start_soon(self):
+        """A held synth starts its next image on the next frame, not at
+        once: a patch answering 'done' (or any one event) may send several
+        messages -- layer, then feature, then seed -- and they all belong to
+        the same picture."""
+        if self.in_loading_process:
+            return
+        with self._cond:
+            if self._idle:
+                self._wake_at = self._tick + 1
+
+    def init_received(self):
+        self._set_image(self.init_input(), self.engine.set_init, 'init')
+
+    def mask_received(self):
+        self._set_image(self.mask_input(), self.engine.set_mask, 'mask')
+
+    def _set_image(self, data, setter, name):
+        if data is None or (isinstance(data, str) and data.strip() in ('', 'clear')) or \
+                (isinstance(data, (list, tuple)) and len(data) == 1 and data[0] == 'clear'):
+            setter(None)
+            return
+        try:
+            setter(data)
+        except Exception as e:
+            self.status_label.set('%s: %s' % (name, e))
 
     def schedule_received(self):
         data = self.schedule_input()
@@ -456,6 +500,12 @@ class NeuralSynthNode(Node):
             self._start_after_load = False
             self.run_changed()
         with self._cond:
+            self._tick += 1
+            if self._wake_at is not None and self._tick >= self._wake_at:
+                self._wake_at = None
+                if self._idle:
+                    self._wake = True
+                    self._cond.notify_all()
             if not self._frames:
                 item = None
             else:
@@ -473,15 +523,34 @@ class NeuralSynthNode(Node):
                 target, info.size[1], info.size[0]))
             self.status_output.send([info.image, info.octave, info.octaves, info.step, info.steps,
                                      info.total_step, info.total_steps, info.layer, feature,
-                                     info.size[1], info.size[0]])
+                                     info.size[1], info.size[0], info.seed])
             self.frame_output.send(frame)
             if info.image_end:
+                if info.used:
+                    self.target_output.send(self._target_list(info.used))
                 self.done_output.send('bang')
         else:
             text = getattr(self, '_status_text', None)
             if text is not None:
                 self._status_text = None
                 self.status_label.set(text)
+
+    def _target_list(self, used):
+        """What each octave grew, in the form 'octave schedule' takes back:
+        features, with a layer name wherever the layer changes (none at the
+        start if it is the node's own 'layer'), directions as themselves."""
+        out = []
+        current = any_to_string(self.layer_input())
+        for layer, feature in used:
+            if isinstance(feature, Direction):
+                out.append(feature)
+                current = feature.layer
+                continue
+            if layer != current:
+                out.append(layer)
+                current = layer
+            out.append(int(feature))
+        return out
 
     def execute(self):
         pass
