@@ -201,19 +201,25 @@ class RollingBuffer:
     def set_value(self, x, value):
         if not self.lock.locked():
             if self.lock.acquire(blocking=False):
-                if x < self.buffer.shape[1] and x >= 0:
-                    if self.roll_along_x:
-                        self.buffer[x, 0] = value
-                    else:
-                        self.buffer[0, x] = value
-                self.lock.release()
+                try:
+                    if x < self.buffer.shape[1] and x >= 0:
+                        if self.roll_along_x:
+                            self.buffer[x, 0] = value
+                        else:
+                            self.buffer[0, x] = value
+                finally:
+                    self.lock.release()
 
     def set_write_pos(self, pos):
         if self.lock.acquire(blocking=False):
-            self.write_pos = pos
-            self.lock.release()
+            try:
+                self.write_pos = pos
+            finally:
+                self.lock.release()
 
     def update(self, incoming):
+        if isinstance(incoming, np.ndarray) and incoming.ndim == 0:
+            incoming = incoming.reshape(1)   # a 0-d array is a single value
         if not self.lock.locked():
             if self.update_style == t_BufferFill:
                 if self.buffer.shape != incoming.shape:
@@ -227,17 +233,23 @@ class RollingBuffer:
                     else:
                         self.allocate(incoming.shape, self.roll_along_x)
                 if self.lock.acquire(blocking=False):
-                    if len(incoming.shape) == 1:
-                        if self.roll_along_x:
-                            self.buffer[:, 0] = incoming[:]
+                    try:
+                        if len(incoming.shape) == 1:
+                            if self.roll_along_x:
+                                self.buffer[:, 0] = incoming[:]
+                            else:
+                                self.buffer[0, :] = incoming[:]
                         else:
-                            self.buffer[0, :] = incoming[:]
-                    else:
-                        self.buffer[:, :] = incoming[:, :]
-                    self.lock.release()
+                            self.buffer[:, :] = incoming[:, :]
+                    finally:
+                        self.lock.release()
                 self.write_pos = 0
 
             elif self.update_style == t_BufferCircularHorizontal:
+                # a single stream: an (N, 1) or (1, N) column/row is N samples.
+                # Left 2-d it failed to broadcast into the 1-d slice below.
+                if isinstance(incoming, np.ndarray) and incoming.ndim > 1:
+                    incoming = incoming.ravel()
                 if self.roll_along_x:
                     if self.sample_count * 2 != self.buffer.shape[0] or self.buffer.shape[1] != 1:
                         shape = (self.sample_count, 1)
@@ -251,42 +263,44 @@ class RollingBuffer:
                 back_size = 0
 
                 if self.lock.acquire(blocking=False):
-                    if self.write_pos > self.sample_count:
-                        self.write_pos = 0
-
-                    if front_size + self.write_pos >= self.sample_count:
-                        front_size = self.sample_count - self.write_pos
-                        back_size = incoming.shape[0] - front_size
-                    if back_size > self.sample_count:
-                        if self.roll_along_x:
-                            self.buffer[:self.sample_count, 0] = self.buffer[self.sample_count:, 0] = incoming[-back_size:]
-                        else:
-                            self.buffer[0, :self.sample_count] = self.buffer[0, self.sample_count:] = incoming[-back_size:]
-                        self.write_pos = 0
-                    else:
-                        start = self.write_pos
-                        end = self.write_pos + front_size
-                        if self.roll_along_x:
-                            self.buffer[start:end, 0] = incoming[:front_size]
-                            self.buffer[start + self.sample_count:end + self.sample_count, 0] = incoming[:front_size]
-                            if back_size > 0:
-                                self.buffer[:back_size, 0] = self.buffer[self.sample_count:back_size + self.sample_count, 0] = incoming[front_size:front_size + back_size]
-                                self.write_pos = back_size
-                            else:
-                                self.write_pos += front_size
-                        else:
-                            self.buffer[0, start:end] = incoming[:front_size]
-                            self.buffer[0, start + self.sample_count:end + self.sample_count] = incoming[:front_size]
-                            if back_size > 0:
-                                self.buffer[0, :back_size] = self.buffer[0,
-                                                          self.sample_count:back_size + self.sample_count] = incoming[
-                                                                                                             front_size:front_size + back_size]
-                                self.write_pos = back_size
-                            else:
-                                self.write_pos += front_size
-                        if self.write_pos >= self.sample_count:
+                    try:
+                        if self.write_pos > self.sample_count:
                             self.write_pos = 0
-                    self.lock.release()
+
+                        if front_size + self.write_pos >= self.sample_count:
+                            front_size = self.sample_count - self.write_pos
+                            back_size = incoming.shape[0] - front_size
+                        if back_size > self.sample_count:
+                            if self.roll_along_x:
+                                self.buffer[:self.sample_count, 0] = self.buffer[self.sample_count:, 0] = incoming[-back_size:]
+                            else:
+                                self.buffer[0, :self.sample_count] = self.buffer[0, self.sample_count:] = incoming[-back_size:]
+                            self.write_pos = 0
+                        else:
+                            start = self.write_pos
+                            end = self.write_pos + front_size
+                            if self.roll_along_x:
+                                self.buffer[start:end, 0] = incoming[:front_size]
+                                self.buffer[start + self.sample_count:end + self.sample_count, 0] = incoming[:front_size]
+                                if back_size > 0:
+                                    self.buffer[:back_size, 0] = self.buffer[self.sample_count:back_size + self.sample_count, 0] = incoming[front_size:front_size + back_size]
+                                    self.write_pos = back_size
+                                else:
+                                    self.write_pos += front_size
+                            else:
+                                self.buffer[0, start:end] = incoming[:front_size]
+                                self.buffer[0, start + self.sample_count:end + self.sample_count] = incoming[:front_size]
+                                if back_size > 0:
+                                    self.buffer[0, :back_size] = self.buffer[0,
+                                                              self.sample_count:back_size + self.sample_count] = incoming[
+                                                                                                                 front_size:front_size + back_size]
+                                    self.write_pos = back_size
+                                else:
+                                    self.write_pos += front_size
+                            if self.write_pos >= self.sample_count:
+                                self.write_pos = 0
+                    finally:
+                        self.lock.release()
 
             elif self.update_style == t_BufferCircularVertical:
                 if self.roll_along_x:
@@ -294,36 +308,40 @@ class RollingBuffer:
                         shape = (self.sample_count, incoming.shape[0])
                         self.allocate(shape, self.roll_along_x)
                     if self.lock.acquire(blocking=False):
-                        if len(incoming.shape) == 1:
-                            self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[:]
-                        else:
-                            if incoming.shape[0] == self.sample_count:
-                                self.buffer[:self.sample_count, :] = self.buffer[self.sample_count:, :] = incoming[:, :]
+                        try:
+                            if len(incoming.shape) == 1:
+                                self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[:]
                             else:
-                                self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[0, :]
+                                if incoming.shape[0] == self.sample_count:
+                                    self.buffer[:self.sample_count, :] = self.buffer[self.sample_count:, :] = incoming[:, :]
+                                else:
+                                    self.buffer[self.write_pos, :] = self.buffer[self.write_pos + self.sample_count, :] = incoming[0, :]
 
-                        self.write_pos += 1
-                        if self.write_pos >= self.sample_count:
-                            self.write_pos = 0
-                        self.lock.release()
+                            self.write_pos += 1
+                            if self.write_pos >= self.sample_count:
+                                self.write_pos = 0
+                        finally:
+                            self.lock.release()
                 else:
                     if len(self.buffer.shape) == 1 or self.buffer.shape[0] != incoming.shape[0]:
                         self.allocate((self.sample_count, incoming.shape[0]), self.roll_along_x)
                     if self.lock.acquire(blocking=False):
-                        if len(incoming.shape) == 1:
-                            self.buffer[:, self.write_pos] = self.buffer[:, self.write_pos + self.sample_count] = incoming[:]
-                            self.write_pos += 1
-                            if self.write_pos >= self.sample_count:
-                                self.write_pos = 0
-                        else:
-                            if incoming.shape[1] == self.sample_count:
-                                self.buffer[:, :self.sample_count] = self.buffer[:, self.sample_count:] = incoming[:, :]
-                            else:
-                                self.buffer[:, self.write_pos] = self.buffer[:, self.write_pos + self.sample_count] = incoming[:, 0]
+                        try:
+                            if len(incoming.shape) == 1:
+                                self.buffer[:, self.write_pos] = self.buffer[:, self.write_pos + self.sample_count] = incoming[:]
                                 self.write_pos += 1
                                 if self.write_pos >= self.sample_count:
                                     self.write_pos = 0
-                        self.lock.release()
+                            else:
+                                if incoming.shape[1] == self.sample_count:
+                                    self.buffer[:, :self.sample_count] = self.buffer[:, self.sample_count:] = incoming[:, :]
+                                else:
+                                    self.buffer[:, self.write_pos] = self.buffer[:, self.write_pos + self.sample_count] = incoming[:, 0]
+                                    self.write_pos += 1
+                                    if self.write_pos >= self.sample_count:
+                                        self.write_pos = 0
+                        finally:
+                            self.lock.release()
             return True
         return False
 
@@ -361,42 +379,44 @@ class RollingBuffer:
 
     def allocate(self, shape, roll_along_x):
         self.lock.acquire(blocking=True)
-        if self.update_style == t_BufferFill:
-            if self.roll_along_x:
-                self.breadth = shape[1]
-                self.sample_count = shape[0]
-            else:
-                self.breadth = shape[0]
-                self.sample_count = shape[1]
-            self.buffer = np.zeros(shape, order=self.order)
-        elif self.update_style == t_BufferCircularHorizontal:
-            self.sample_count = shape[0]
-            self.breadth = 1
-            if len(shape) > 1:
-                if shape[0] == 1:
+        try:
+            if self.update_style == t_BufferFill:
+                if self.roll_along_x:
+                    self.breadth = shape[1]
+                    self.sample_count = shape[0]
+                else:
+                    self.breadth = shape[0]
                     self.sample_count = shape[1]
-            if roll_along_x:
-                self.order = 'C'
-                self.buffer = np.zeros((self.sample_count * 2, 1), order=self.order)
-            else:
-                self.order = 'F'
-                self.buffer = np.zeros((1, self.sample_count * 2), order=self.order)
-        elif self.update_style == t_BufferCircularVertical:
-            if roll_along_x:
-                self.order = 'C'
+                self.buffer = np.zeros(shape, order=self.order)
+            elif self.update_style == t_BufferCircularHorizontal:
                 self.sample_count = shape[0]
-                self.breadth = shape[1]
-                self.buffer = np.zeros((self.sample_count * 2, self.breadth), order=self.order)
-            else:
-                self.order = 'F'
-                self.sample_count = shape[0]
-                self.breadth = shape[1]
-                self.buffer = np.zeros((self.breadth, self.sample_count * 2), order=self.order)
-        self.roll_along_x = roll_along_x
-        self.write_pos = 0
-        if self.buffer_changed_callback is not None:
-            self.buffer_changed_callback(self)
-        self.lock.release()
+                self.breadth = 1
+                if len(shape) > 1:
+                    if shape[0] == 1:
+                        self.sample_count = shape[1]
+                if roll_along_x:
+                    self.order = 'C'
+                    self.buffer = np.zeros((self.sample_count * 2, 1), order=self.order)
+                else:
+                    self.order = 'F'
+                    self.buffer = np.zeros((1, self.sample_count * 2), order=self.order)
+            elif self.update_style == t_BufferCircularVertical:
+                if roll_along_x:
+                    self.order = 'C'
+                    self.sample_count = shape[0]
+                    self.breadth = shape[1]
+                    self.buffer = np.zeros((self.sample_count * 2, self.breadth), order=self.order)
+                else:
+                    self.order = 'F'
+                    self.sample_count = shape[0]
+                    self.breadth = shape[1]
+                    self.buffer = np.zeros((self.breadth, self.sample_count * 2), order=self.order)
+            self.roll_along_x = roll_along_x
+            self.write_pos = 0
+            if self.buffer_changed_callback is not None:
+                self.buffer_changed_callback(self)
+        finally:
+            self.lock.release()
 
     def set_roll_axis(self, roll_along_x):
         if roll_along_x != self.roll_along_x:

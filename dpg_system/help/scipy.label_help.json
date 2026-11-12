@@ -1,0 +1,712 @@
+{
+    "height": 1121,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "scipy.label_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.label_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scipy.label - find the separate blobs in a grid",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 586,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scipy.label - find the separate blobs in a grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scipy.label - find the separate blobs in a grid"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Finds the separate regions - blobs - in a grid: groups of neighbouring cells above a threshold, each group cut off from the others. It numbers them 1, 2, 3 ..., and gives how many there are, the size of each and the centre of each.\n\nThe centres make it a simple tracker: the blobs in a depth or occupancy grid are the people in a room; in a thresholded camera image, the bright objects; in a heat map of activity, the hot spots. The sizes let you ignore specks.\n\nSYNTAX:\nscipy.label <threshold: float>\nDefault: threshold 0.5.\n\nINPUTS and PARAMETERS:\n\nin:\nThe grid (usually 2-D; any number of axes works). Every input is searched and sent. A true/false mask is used as it is; numbers count where they are above the threshold.\n\nthreshold (float box, also an inlet):\nThe level a cell must be above to count as part of a blob.\n\ndiagonals connect:\nAn option, under the node. Off (the default), cells join a blob only side by side; on, corner to corner too - two blobs touching only at a corner become one.\n\nOUTPUTS:\n\nlabels:\nThe grid with each cell numbered by its blob: 0 for background, 1 to count for the blobs.\n\ncount:\nHow many blobs.\n\nsizes:\nHow many cells in each blob, blob 1 first.\n\ncentres:\nThe centre of each blob, one row each: row then column, in cells. Sent first, then sizes, count and labels.\n\nREADING THE DEMO:\nRandom values smoothed with scipy.gaussian_filter make soft hills (left). Cut at 0.55, the hilltops become separate blobs, each a colour (right); the count and the centres change with each new picture, every two seconds.\n\nRELATED:\nscipy.gaussian_filter smooths a grid first, so its blobs are shapes and not specks. np.histogram2d makes an occupancy grid from points. np.argwhere lists every cell above a threshold.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Finds the separate regions - blobs - in a grid: groups of neighbouring cells above a threshold, each group cut off from the others. It numbers them 1, 2, 3 ..., and gives how many there are, the size of each and the centre of each.\n\nThe centres make it a simple tracker: the blobs in a depth or occupancy grid are the people in a room; in a thresholded camera image, the bright objects; in a heat map of activity, the hot spots. The sizes let you ignore specks.\n\nSYNTAX:\nscipy.label <threshold: float>\nDefault: threshold 0.5.\n\nINPUTS and PARAMETERS:\n\nin:\nThe grid (usually 2-D; any number of axes works). Every input is searched and sent. A true/false mask is used as it is; numbers count where they are above the threshold.\n\nthreshold (float box, also an inlet):\nThe level a cell must be above to count as part of a blob.\n\ndiagonals connect:\nAn option, under the node. Off (the default), cells join a blob only side by side; on, corner to corner too - two blobs touching only at a corner become one.\n\nOUTPUTS:\n\nlabels:\nThe grid with each cell numbered by its blob: 0 for background, 1 to count for the blobs.\n\ncount:\nHow many blobs.\n\nsizes:\nHow many cells in each blob, blob 1 first.\n\ncentres:\nThe centre of each blob, one row each: row then column, in cells. Sent first, then sizes, count and labels.\n\nREADING THE DEMO:\nRandom values smoothed with scipy.gaussian_filter make soft hills (left). Cut at 0.55, the hilltops become separate blobs, each a colour (right); the count and the centres change with each new picture, every two seconds.\n\nRELATED:\nscipy.gaussian_filter smooths a grid first, so its blobs are shapes and not specks. np.histogram2d makes an occupancy grid from points. np.argwhere lists every cell above a threshold."
+        },
+        "3": {
+            "init": "comment every two seconds",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every two seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every two seconds"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 2000"
+        },
+        "5": {
+            "init": "comment 24 x 24 random values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "24 x 24 random values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "24 x 24 random values"
+        },
+        "6": {
+            "name": "np.rand",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 24 24"
+        },
+        "7": {
+            "init": "comment smoothed into hills",
+            "name": "comment",
+            "id": 496,
+            "position_x": 360,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smoothed into hills",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smoothed into hills"
+        },
+        "8": {
+            "name": "scipy.gaussian_filter",
+            "id": 533,
+            "position_x": 360,
+            "position_y": 92,
+            "width": 143,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "scipy.gaussian_filter 2"
+        },
+        "9": {
+            "init": "comment the hilltops above 0.55",
+            "name": "comment",
+            "id": 570,
+            "position_x": 600,
+            "position_y": 53,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the hilltops above 0.55",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the hilltops above 0.55"
+        },
+        "10": {
+            "name": "scipy.label",
+            "id": 607,
+            "position_x": 600,
+            "position_y": 92,
+            "width": 148,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "scipy.label 0.55",
+            "highlight": true
+        },
+        "11": {
+            "init": "comment the hills",
+            "name": "comment",
+            "id": 644,
+            "position_x": 28,
+            "position_y": 290,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the hills",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the hills"
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 28,
+            "position_y": 325,
+            "width": 218,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.35,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.65,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment the blobs, numbered",
+            "name": "comment",
+            "id": 718,
+            "position_x": 290,
+            "position_y": 290,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the blobs, numbered",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the blobs, numbered"
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 290,
+            "position_y": 325,
+            "width": 218,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "paired",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 6.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment how many",
+            "name": "comment",
+            "id": 792,
+            "position_x": 560,
+            "position_y": 290,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how many"
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 560,
+            "position_y": 325,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment their centres: row, column",
+            "name": "comment",
+            "id": 866,
+            "position_x": 28,
+            "position_y": 610,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "their centres: row, column",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "their centres: row, column"
+        },
+        "18": {
+            "name": "round",
+            "id": 903,
+            "position_x": 28,
+            "position_y": 645,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "19": {
+            "name": "list",
+            "id": 940,
+            "position_x": 150,
+            "position_y": 645,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 750,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 784,
+            "width": 146,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.gaussian_filter"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 235,
+            "position_y": 784,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.histogram2d"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 386,
+            "position_y": 784,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.argwhere"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 514,
+            "position_y": 784,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.kdtree"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 894,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "filtered",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "filtered",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "labels",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "centres",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

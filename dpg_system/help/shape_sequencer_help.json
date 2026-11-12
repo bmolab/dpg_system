@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "A step sequencer whose steps hold CURVES rather than single values.\n\nAn ordinary sequencer steps through a list of numbers: beat one gives you this, \nbeat two gives you that. This one steps through a list of functions. \nOn each beat it advances a step, looks at the x inlet, reads THAT step's curve \nat that x, and sends the result.\n\nA plain value sequencer is the flat case - every curve a horizontal line, so x \nmakes no difference and each step is just a number. The interesting case is a \ncontinuous input running through it: a fader, an lfo, a stream of effort data. \nThen each step is not a value but an INTERPRETATION - this beat, map the input \ngently; next beat, map it steeply; the beat after, invert it.\n\nEach step's curve is edited the way the envelope node's is: drag the points, \nright-click to add or remove one, shift and left-drag a segment to curve it.\n\nTHE NODES:\n\nshape_seq            \nshape_sequencer      the same node\nfunction_sequencer   the same node\n\nSYNTAX:\nshape_seq <steps: int>\n\nEXAMPLE:\nshape_seq 8\n\nINPUTS and PARAMETERS:\n\nbeat:\nAdvance to the next step and send its value. This is the clock inlet - \ndrive it from a metro, or from whatever else marks time in your patch.\n\nx:\nWhere to read the current step's curve. Feed a continuous signal here and the \nsequencer becomes a bank of mappings rather than a bank of values.\n\nreset:\nReturn to the first step.\n\nstep / steps:\nThe step now playing, and how many there are altogether.\n\ndirection:\nWhich way to run through the steps.\n\nedit step / follow play / show other steps:\nWhich step the editor is showing, whether it follows the one playing, and \nwhether the others are drawn faintly behind it for comparison.\n\ncopy shape / paste shape / copy to all steps:\nMove a curve between steps. \"copy to all steps\" is how you start from one \nshape everywhere and then vary it.\n\nx max / y min / y max:\nThe ranges, which set what the numbers coming out mean.\n\nshow profile / profile height:\nDraw the whole sequence's shape as one strip, so you can see the arc across all \nthe steps rather than one at a time.\n\nOUTPUTS: \n\nvalue out:\nThe current step's curve, read at x.\n\nstep out:\nWhich step is playing, so the rest of the patch can follow.\n\ncycle:\nFires when the sequence wraps back to the beginning - use it to chain \nsequencers, or to count times through.",
+                    "value": "A step sequencer whose steps hold CURVES rather than single values.\n\nAn ordinary sequencer steps through a list of numbers: beat one gives you this,  beat two gives you that. This one steps through a list of functions.  On each beat it advances a step, looks at the x inlet, reads THAT step's curve  at that x, and sends the result.\n\nA plain value sequencer is the flat case - every curve a horizontal line, so x  makes no difference and each step is just a number. The interesting case is a  continuous input running through it: a fader, an lfo, a stream of effort data.  Then each step is not a value but an INTERPRETATION - this beat, map the input  gently; next beat, map it steeply; the beat after, invert it.\n\nEach step's curve is edited the way the envelope node's is: drag the points,  right-click to add or remove one, shift and left-drag a segment to curve it.\n\nTHE NODES:\n\nshape_seq            \nshape_sequencer      the same node\nfunction_sequencer   the same node\n\nSYNTAX:\nshape_seq <steps: int>\n\nEXAMPLE:\nshape_seq 8\n\nINPUTS and PARAMETERS:\n\nbeat:\nAdvance to the next step and send its value. This is the clock inlet -  drive it from a metro, or from whatever else marks time in your patch.\n\nx:\nWhere to read the current step's curve. Feed a continuous signal here and the  sequencer becomes a bank of mappings rather than a bank of values.\n\nreset:\nReturn to the first step.\n\nstep / steps:\nThe step now playing, and how many there are altogether.\n\ndirection:\nWhich way to run through the steps.\n\nedit step / follow play / show other steps:\nWhich step the editor is showing, whether it follows the one playing, and  whether the others are drawn faintly behind it for comparison.\n\ncopy shape / paste shape / copy to all steps:\nMove a curve between steps. \"copy to all steps\" is how you start from one  shape everywhere and then vary it.\n\nx max / y min / y max:\nThe ranges, which set what the numbers coming out mean.\n\nshow profile / profile height:\nDraw the whole sequence's shape as one strip, so you can see the arc across all  the steps rather than one at a time.\n\nOUTPUTS: \n\nvalue out:\nThe current step's curve, read at x.\n\nstep out:\nWhich step is playing, so the rest of the patch can follow.\n\ncycle:\nFires when the sequence wraps back to the beginning - use it to chain  sequencers, or to count times through.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,21 +90,9 @@
                     "value_type": "str"
                 }
             },
-            "text": "A step sequencer whose steps hold CURVES rather than single values.\n\nAn ordinary sequencer steps through a list of numbers: beat one gives you this, \nbeat two gives you that. This one steps through a list of functions. \nOn each beat it advances a step, looks at the x inlet, reads THAT step's curve \nat that x, and sends the result.\n\nA plain value sequencer is the flat case - every curve a horizontal line, so x \nmakes no difference and each step is just a number. The interesting case is a \ncontinuous input running through it: a fader, an lfo, a stream of effort data. \nThen each step is not a value but an INTERPRETATION - this beat, map the input \ngently; next beat, map it steeply; the beat after, invert it.\n\nEach step's curve is edited the way the envelope node's is: drag the points, \nright-click to add or remove one, shift and left-drag a segment to curve it.\n\nTHE NODES:\n\nshape_seq            \nshape_sequencer      the same node\nfunction_sequencer   the same node\n\nSYNTAX:\nshape_seq <steps: int>\n\nEXAMPLE:\nshape_seq 8\n\nINPUTS and PARAMETERS:\n\nbeat:\nAdvance to the next step and send its value. This is the clock inlet - \ndrive it from a metro, or from whatever else marks time in your patch.\n\nx:\nWhere to read the current step's curve. Feed a continuous signal here and the \nsequencer becomes a bank of mappings rather than a bank of values.\n\nreset:\nReturn to the first step.\n\nstep / steps:\nThe step now playing, and how many there are altogether.\n\ndirection:\nWhich way to run through the steps.\n\nedit step / follow play / show other steps:\nWhich step the editor is showing, whether it follows the one playing, and \nwhether the others are drawn faintly behind it for comparison.\n\ncopy shape / paste shape / copy to all steps:\nMove a curve between steps. \"copy to all steps\" is how you start from one \nshape everywhere and then vary it.\n\nx max / y min / y max:\nThe ranges, which set what the numbers coming out mean.\n\nshow profile / profile height:\nDraw the whole sequence's shape as one strip, so you can see the arc across all \nthe steps rather than one at a time.\n\nOUTPUTS: \n\nvalue out:\nThe current step's curve, read at x.\n\nstep out:\nWhich step is playing, so the rest of the patch can follow.\n\ncycle:\nFires when the sequence wraps back to the beginning - use it to chain \nsequencers, or to count times through."
+            "text": "A step sequencer whose steps hold CURVES rather than single values.\n\nAn ordinary sequencer steps through a list of numbers: beat one gives you this,  beat two gives you that. This one steps through a list of functions.  On each beat it advances a step, looks at the x inlet, reads THAT step's curve  at that x, and sends the result.\n\nA plain value sequencer is the flat case - every curve a horizontal line, so x  makes no difference and each step is just a number. The interesting case is a  continuous input running through it: a fader, an lfo, a stream of effort data.  Then each step is not a value but an INTERPRETATION - this beat, map the input  gently; next beat, map it steeply; the beat after, invert it.\n\nEach step's curve is edited the way the envelope node's is: drag the points,  right-click to add or remove one, shift and left-drag a segment to curve it.\n\nTHE NODES:\n\nshape_seq            \nshape_sequencer      the same node\nfunction_sequencer   the same node\n\nSYNTAX:\nshape_seq <steps: int>\n\nEXAMPLE:\nshape_seq 8\n\nINPUTS and PARAMETERS:\n\nbeat:\nAdvance to the next step and send its value. This is the clock inlet -  drive it from a metro, or from whatever else marks time in your patch.\n\nx:\nWhere to read the current step's curve. Feed a continuous signal here and the  sequencer becomes a bank of mappings rather than a bank of values.\n\nreset:\nReturn to the first step.\n\nstep / steps:\nThe step now playing, and how many there are altogether.\n\ndirection:\nWhich way to run through the steps.\n\nedit step / follow play / show other steps:\nWhich step the editor is showing, whether it follows the one playing, and  whether the others are drawn faintly behind it for comparison.\n\ncopy shape / paste shape / copy to all steps:\nMove a curve between steps. \"copy to all steps\" is how you start from one  shape everywhere and then vary it.\n\nx max / y min / y max:\nThe ranges, which set what the numbers coming out mean.\n\nshow profile / profile height:\nDraw the whole sequence's shape as one strip, so you can see the arc across all  the steps rather than one at a time.\n\nOUTPUTS: \n\nvalue out:\nThe current step's curve, read at x.\n\nstep out:\nWhich step is playing, so the rest of the patch can follow.\n\ncycle:\nFires when the sequence wraps back to the beginning - use it to chain  sequencers, or to count times through."
         },
         "3": {
-            "name": "toggle",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
             "name": "metro",
             "id": 385,
             "position_x": 30,
@@ -133,7 +121,7 @@
             },
             "init": "metro 500"
         },
-        "5": {
+        "4": {
             "init": "comment two beats a second",
             "name": "comment",
             "id": 422,
@@ -158,7 +146,7 @@
             },
             "comment": "two beats a second"
         },
-        "6": {
+        "5": {
             "name": "signal",
             "id": 459,
             "position_x": 250,
@@ -202,7 +190,7 @@
             },
             "init": "signal 3.0 saw"
         },
-        "7": {
+        "6": {
             "init": "comment a continuous x to read each shape at",
             "name": "comment",
             "id": 496,
@@ -227,32 +215,7 @@
             },
             "comment": "a continuous x to read each shape at"
         },
-        "8": {
-            "name": "load_bang",
-            "id": 533,
-            "position_x": 420,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "name": "t",
-            "id": 570,
-            "position_x": 420,
-            "position_y": 120,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "10": {
+        "7": {
             "name": "shape_seq",
             "id": 607,
             "position_x": 30,
@@ -263,9 +226,10 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "shape_seq 8"
+            "init": "shape_seq 8",
+            "highlight": true
         },
-        "11": {
+        "8": {
             "name": "text_block",
             "id": 644,
             "annotation": true,
@@ -305,7 +269,7 @@
             },
             "text": "each step holds its own curve\ntick follow play to watch it move"
         },
-        "12": {
+        "9": {
             "name": "plot",
             "id": 681,
             "position_x": 30,
@@ -368,7 +332,7 @@
                 }
             }
         },
-        "13": {
+        "10": {
             "name": "int",
             "id": 718,
             "position_x": 270,
@@ -396,7 +360,7 @@
                 }
             }
         },
-        "14": {
+        "11": {
             "init": "comment the step now playing",
             "name": "comment",
             "id": 755,
@@ -421,7 +385,7 @@
             },
             "comment": "the step now playing"
         },
-        "15": {
+        "12": {
             "name": "close",
             "id": 792,
             "position_x": 24,
@@ -442,16 +406,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -461,27 +415,7 @@
             "dest_input_index": 0,
             "dest_input_name": "beat"
         },
-        "2": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "3": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "4": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -491,7 +425,7 @@
             "dest_input_index": 0,
             "dest_input_name": "x"
         },
-        "5": {
+        "2": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
@@ -501,7 +435,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "6": {
+        "3": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,

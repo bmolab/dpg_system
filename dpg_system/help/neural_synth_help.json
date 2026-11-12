@@ -1,0 +1,614 @@
+{
+    "height": 1221,
+    "width": 2025,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "neural_synth_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/neural_synth_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment neural_synth - a picture grown from inside a network",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 647,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "neural_synth - a picture grown from inside a network",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "neural_synth - a picture grown from inside a network"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1177,
+            "position_y": 45,
+            "width": 808,
+            "height": 1116,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "neural_synth grows a picture of what one feature of an image-recognition network responds to, and sends the picture out as it grows, step by step.\n\nIt is David Rokeby's 2018 NeuralSynth, rebuilt. The network is Google's GoogLeNet (\"Inception5h\", the network behind DeepDream), or VGG19 as an alternative.\n\nHOW THE PICTURE GROWS:\nIt starts as noise at a very small size. Each step nudges every pixel in the direction that makes the chosen feature respond more strongly. After a number of steps the picture is enlarged (by about 1.4 times) and the work continues at the larger size, then again, octave by octave, until it reaches full size. The small octaves settle the overall layout; the large ones add the detail.\n\nBefore each step's change is applied it is split into bands from coarse to fine, each band is brought to the same strength, and the bands are weighted and recombined. Colour is reduced as the picture grows, and the steps get smaller. This shaping is most of what gives the pictures their look.\n\nWHAT COMES OUT:\n'frame' sends the picture as an RGB array (height by width by 3 bytes, like cv_camera) every 'frame every' steps and at the end of each octave, always at the full output size, so the stream can go straight to mgl_image, movie_writer, or anything else that takes pictures. The development is the point: a whole image is several hundred frames.\n\nEach frame is contrast-stretched for display (block by block, so dim regions are lifted). The very first frames of an image are faint; this is the 2018 behaviour, and 'norm min range' sets it.\n\nEach time the picture grows to the next octave it is resampled onto a finer grid, which softens its finest detail all at once. 'octave fade' (12 steps by default, 0 to switch off) eases that change into the stream: the first frame after the change matches the last one before it, and the difference fades out over that many steps while the growth carries on. It changes only what is shown; the picture being grown, and every frame after the fade, are the same either way.\n\nCHOOSING WHAT TO GROW:\n'layer' picks a layer of the network, and 'feature' one channel in it (the count differs per layer; numbers past the end wrap round). Layer names follow the original DeepDream names: mixed4d_3x3_bottleneck_pre_relu is a 3x3 branch of block 4d, taken before its ReLU. Early layers (conv2d0, mixed3a) respond to textures and edges, middle ones (mixed4a to 4e) to patterns and parts of things, the last ones (mixed5a, 5b) to whole creatures and objects.\n\n'octave schedule' takes a list and sets the target octave by octave. A list of numbers is features on the current layer: '139 139 139 0 0 0 0 0 0' lays the picture out with feature 139 and fills it in with feature 0. Layer names in the list switch layer from that point. The last entry carries on to the remaining octaves. 'clear' (or an empty list) goes back to the single layer and feature.\n\n'direction' grows a mix of all the channels of a block instead of one channel: a direction from neural_atlas, chosen from a map of what the layer does with real photographs ('find volcano'), or a plain list with one weight per channel of the current layer. Touching 'layer' or 'feature' goes back to single channels.\n\nWHEN A CHANGE TAKES EFFECT:\nA new layer, feature or schedule is held until 'apply' lets it in: 'next image' (the default) waits for the current picture to finish, 'next octave' switches when the picture next grows, and 'next step' switches at once, in the middle of an octave. Changing mid-image grows one feature's picture out of another's. 'restart' starts a new picture now.\n\nWHAT HAPPENS AT THE END OF A PICTURE:\n'at end' chooses: 'hold' keeps the finished picture (a new target then starts a new one), 'repeat' grows the same target again, and 'next feature' moves on to the next feature of the layer and keeps going - an endless walk through the layer, which is how the 2018 movies were made. 'done' bangs as each picture finishes.\n\nSPEED:\nThe work runs on the graphics processor ('device': mps on a Mac, cuda on an NVIDIA machine) in its own thread, so the patch stays responsive. On an M1 Max a 1920 by 1080 picture with the 2018 settings (13 octaves, 200 steps in the first) takes about 35 seconds and about 1500 steps. Rendering a frame every step adds about a quarter to that; every 5 steps adds about 4 percent, every 25 nothing measurable. With 'drop frames' off (the default) the synth waits for each frame to be sent, so a recording gets every step; it then cannot run faster than the patch's frame rate. Turn 'drop frames' on to let it run free and send only the latest frame.\n\nSIZE AND LENGTH:\n'width' and 'height' are the output size, 'octaves' how many times the picture grows on the way there, 'iterations' the steps in the first octave, and 'iteration factor' how much fewer each later octave takes (1.1: about 10 percent fewer each time). These take effect with the next picture. This page uses 640 by 360, 9 octaves and 100 steps so a picture takes about 12 seconds.\n\nTHE SHAPING, FOR EXPERIMENT (options):\n'objective': 'sum' grows the feature's total response (2018 default), 'square' favours its strongest spots, 'all' grows the whole layer at once. 'direction cossim' sets how strongly a direction's picture is pushed to match the direction rather than just respond to it (1 by default, 0 for not at all). 'roll' jitters the picture by up to this fraction of its height each step, which avoids grid artefacts. 'octave scaler' is how much the step shrinks per octave. 'sat elbow' and 'base sat' set how colour is reduced as the picture grows. 'band weights start' and 'band weights end' (five numbers, coarse to fine) weight the bands, moving from start to end over the octaves when 'lerp band weights' is on. 'desaturate': 'row mean' is what the 2018 code actually did (it averaged along image rows, not across colour), 'luma' is a true grey. 'dual path' builds the displayed picture with a second set of 'out' shaping settings while the first keeps driving the growth. 'seed' fixes the starting noise ('seed mode' random gives a new one each picture). 'norm scale', 'norm smoothing', 'norm gamma' and 'norm min range' control the display contrast, and 'octave fade' the easing across octave changes.\n\nCOLOUR:\n'norm saturation' sets how colourful the frames are: 0.5 by default, 1 for the full colour of the 2018 pictures, 0 for black and white. It changes only what is shown and recorded, not the picture being grown, and takes effect at once. The display's contrast stretch pushes the weakest colour in each region toward black, which on its own makes the colours purer; this is the control for that. 'sat elbow', 'base sat' and 'desaturate' do something different: they set how coloured each step's change is, octave by octave. The first octaves, which lay down the large areas of colour, run at full colour whatever they say, so they change the texture and layout of the picture more than how colourful it looks. 'lrn size' is a setting inside the network (the 2018 synth used 11).\n\nTHE NETWORK'S WEIGHTS:\nInception5h's weights live in dpg_system/neural_synth/inception5h.pt, converted from the 2018 NeuralSynth weights folder by dpg_system/neural_synth/convert_inception5h.py. VGG19's are downloaded by torchvision (548 MB) the first time it is chosen.\n\nSYNTAX:\nneural_synth [inception5h | vgg19]\n\nEXAMPLE:\nneural_synth\n\nINPUTS and PARAMETERS:\n\nrun:\nStart or pause.\n\nrestart:\nStart a new picture now, with the latest target.\n\nlayer:\nThe layer to grow from.\n\nfeature:\nThe channel in that layer.\n\noctave schedule:\nA list of features (and layer names) for successive octaves; 'clear' to stop.\n\ndirection:\nA direction to grow instead of one feature, from neural_atlas.\n\napply:\nWhen a new target takes effect: next image, next octave, next step.\n\nat end:\nhold, repeat or next feature.\n\nOUTPUTS:\n\nframe:\nThe picture as it grows, as an RGB array.\n\nstatus:\n[image, octave, octaves, step in octave, steps in octave, step in image, steps in image, layer, feature, width, height] with each frame.\n\ndone:\nA bang as each picture finishes.\n\nRELATED:\nneural_atlas to choose directions by what they look like. movie_writer to record the stream. mgl_image or mgl_texture to show it.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "neural_synth grows a picture of what one feature of an image-recognition network responds to, and sends the picture out as it grows, step by step.\n\nIt is David Rokeby's 2018 NeuralSynth, rebuilt. The network is Google's GoogLeNet (\"Inception5h\", the network behind DeepDream), or VGG19 as an alternative.\n\nHOW THE PICTURE GROWS:\nIt starts as noise at a very small size. Each step nudges every pixel in the direction that makes the chosen feature respond more strongly. After a number of steps the picture is enlarged (by about 1.4 times) and the work continues at the larger size, then again, octave by octave, until it reaches full size. The small octaves settle the overall layout; the large ones add the detail.\n\nBefore each step's change is applied it is split into bands from coarse to fine, each band is brought to the same strength, and the bands are weighted and recombined. Colour is reduced as the picture grows, and the steps get smaller. This shaping is most of what gives the pictures their look.\n\nWHAT COMES OUT:\n'frame' sends the picture as an RGB array (height by width by 3 bytes, like cv_camera) every 'frame every' steps and at the end of each octave, always at the full output size, so the stream can go straight to mgl_image, movie_writer, or anything else that takes pictures. The development is the point: a whole image is several hundred frames.\n\nEach frame is contrast-stretched for display (block by block, so dim regions are lifted). The very first frames of an image are faint; this is the 2018 behaviour, and 'norm min range' sets it.\n\nEach time the picture grows to the next octave it is resampled onto a finer grid, which softens its finest detail all at once. 'octave fade' (12 steps by default, 0 to switch off) eases that change into the stream: the first frame after the change matches the last one before it, and the difference fades out over that many steps while the growth carries on. It changes only what is shown; the picture being grown, and every frame after the fade, are the same either way.\n\nCHOOSING WHAT TO GROW:\n'layer' picks a layer of the network, and 'feature' one channel in it (the count differs per layer; numbers past the end wrap round). Layer names follow the original DeepDream names: mixed4d_3x3_bottleneck_pre_relu is a 3x3 branch of block 4d, taken before its ReLU. Early layers (conv2d0, mixed3a) respond to textures and edges, middle ones (mixed4a to 4e) to patterns and parts of things, the last ones (mixed5a, 5b) to whole creatures and objects.\n\n'octave schedule' takes a list and sets the target octave by octave. A list of numbers is features on the current layer: '139 139 139 0 0 0 0 0 0' lays the picture out with feature 139 and fills it in with feature 0. Layer names in the list switch layer from that point. The last entry carries on to the remaining octaves. 'clear' (or an empty list) goes back to the single layer and feature.\n\n'direction' grows a mix of all the channels of a block instead of one channel: a direction from neural_atlas, chosen from a map of what the layer does with real photographs ('find volcano'), or a plain list with one weight per channel of the current layer. Touching 'layer' or 'feature' goes back to single channels.\n\nWHEN A CHANGE TAKES EFFECT:\nA new layer, feature or schedule is held until 'apply' lets it in: 'next image' (the default) waits for the current picture to finish, 'next octave' switches when the picture next grows, and 'next step' switches at once, in the middle of an octave. Changing mid-image grows one feature's picture out of another's. 'restart' starts a new picture now.\n\nWHAT HAPPENS AT THE END OF A PICTURE:\n'at end' chooses: 'hold' keeps the finished picture (a new target then starts a new one), 'repeat' grows the same target again, and 'next feature' moves on to the next feature of the layer and keeps going - an endless walk through the layer, which is how the 2018 movies were made. 'done' bangs as each picture finishes.\n\nSPEED:\nThe work runs on the graphics processor ('device': mps on a Mac, cuda on an NVIDIA machine) in its own thread, so the patch stays responsive. On an M1 Max a 1920 by 1080 picture with the 2018 settings (13 octaves, 200 steps in the first) takes about 35 seconds and about 1500 steps. Rendering a frame every step adds about a quarter to that; every 5 steps adds about 4 percent, every 25 nothing measurable. With 'drop frames' off (the default) the synth waits for each frame to be sent, so a recording gets every step; it then cannot run faster than the patch's frame rate. Turn 'drop frames' on to let it run free and send only the latest frame.\n\nSIZE AND LENGTH:\n'width' and 'height' are the output size, 'octaves' how many times the picture grows on the way there, 'iterations' the steps in the first octave, and 'iteration factor' how much fewer each later octave takes (1.1: about 10 percent fewer each time). These take effect with the next picture. This page uses 640 by 360, 9 octaves and 100 steps so a picture takes about 12 seconds.\n\nTHE SHAPING, FOR EXPERIMENT (options):\n'objective': 'sum' grows the feature's total response (2018 default), 'square' favours its strongest spots, 'all' grows the whole layer at once. 'direction cossim' sets how strongly a direction's picture is pushed to match the direction rather than just respond to it (1 by default, 0 for not at all). 'roll' jitters the picture by up to this fraction of its height each step, which avoids grid artefacts. 'octave scaler' is how much the step shrinks per octave. 'sat elbow' and 'base sat' set how colour is reduced as the picture grows. 'band weights start' and 'band weights end' (five numbers, coarse to fine) weight the bands, moving from start to end over the octaves when 'lerp band weights' is on. 'desaturate': 'row mean' is what the 2018 code actually did (it averaged along image rows, not across colour), 'luma' is a true grey. 'dual path' builds the displayed picture with a second set of 'out' shaping settings while the first keeps driving the growth. 'seed' fixes the starting noise ('seed mode' random gives a new one each picture). 'norm scale', 'norm smoothing', 'norm gamma' and 'norm min range' control the display contrast, and 'octave fade' the easing across octave changes.\n\nCOLOUR:\n'norm saturation' sets how colourful the frames are: 0.5 by default, 1 for the full colour of the 2018 pictures, 0 for black and white. It changes only what is shown and recorded, not the picture being grown, and takes effect at once. The display's contrast stretch pushes the weakest colour in each region toward black, which on its own makes the colours purer; this is the control for that. 'sat elbow', 'base sat' and 'desaturate' do something different: they set how coloured each step's change is, octave by octave. The first octaves, which lay down the large areas of colour, run at full colour whatever they say, so they change the texture and layout of the picture more than how colourful it looks. 'lrn size' is a setting inside the network (the 2018 synth used 11).\n\nTHE NETWORK'S WEIGHTS:\nInception5h's weights live in dpg_system/neural_synth/inception5h.pt, converted from the 2018 NeuralSynth weights folder by dpg_system/neural_synth/convert_inception5h.py. VGG19's are downloaded by torchvision (548 MB) the first time it is chosen.\n\nSYNTAX:\nneural_synth [inception5h | vgg19]\n\nEXAMPLE:\nneural_synth\n\nINPUTS and PARAMETERS:\n\nrun:\nStart or pause.\n\nrestart:\nStart a new picture now, with the latest target.\n\nlayer:\nThe layer to grow from.\n\nfeature:\nThe channel in that layer.\n\noctave schedule:\nA list of features (and layer names) for successive octaves; 'clear' to stop.\n\ndirection:\nA direction to grow instead of one feature, from neural_atlas.\n\napply:\nWhen a new target takes effect: next image, next octave, next step.\n\nat end:\nhold, repeat or next feature.\n\nOUTPUTS:\n\nframe:\nThe picture as it grows, as an RGB array.\n\nstatus:\n[image, octave, octaves, step in octave, steps in octave, step in image, steps in image, layer, feature, width, height] with each frame.\n\ndone:\nA bang as each picture finishes.\n\nRELATED:\nneural_atlas to choose directions by what they look like. movie_writer to record the stream. mgl_image or mgl_texture to show it."
+        },
+        "3": {
+            "name": "text_block",
+            "id": 348,
+            "annotation": true,
+            "position_x": 856,
+            "position_y": 62,
+            "width": 243,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pick a feature: it starts with\nthe next picture, or press restart",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "pick a feature: it starts with\nthe next picture, or press restart"
+        },
+        "4": {
+            "name": "int",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 115,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "",
+                    "value": 139,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 856,
+            "position_y": 202,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a schedule: lay out with 139,\nfill in with 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a schedule: lay out with 139,\nfill in with 0"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 238,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "139 139 139 0 0 0 0 0 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "clear",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 856,
+            "position_y": 112,
+            "width": 206,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the classic DeepDream layer;\nfeature 139 grows flowers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 198,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the classic DeepDream layer;\nfeature 139 grows flowers"
+        },
+        "9": {
+            "name": "neural_synth",
+            "id": 570,
+            "position_x": 330,
+            "position_y": 115,
+            "width": 263,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "run",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "layer",
+                    "value": "mixed4d_3x3_bottleneck_pre_relu",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "feature",
+                    "value": 139,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "apply",
+                    "value": "next image",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "at end",
+                    "value": "next feature",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "height",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "octaves",
+                    "value": 9,
+                    "value_type": "int"
+                },
+                "8": {
+                    "name": "iterations",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "frame every",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            },
+            "highlight": true
+        },
+        "10": {
+            "init": "comment the picture as it grows",
+            "name": "comment",
+            "id": 607,
+            "position_x": 856,
+            "position_y": 162,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the picture as it grows",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the picture as it grows"
+        },
+        "11": {
+            "name": "mgl_context",
+            "id": 644,
+            "position_x": 700,
+            "position_y": 115,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "display_width",
+                    "value": 480,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "display_height",
+                    "value": 270,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "mgl_image",
+            "id": 681,
+            "position_x": 700,
+            "position_y": 440,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment status: image, octave, step ... layer, feature",
+            "name": "comment",
+            "id": 718,
+            "position_x": 856,
+            "position_y": 540,
+            "width": 291,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "status: image, octave, step ... layer, feature",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "status: image, octave, step ... layer, feature"
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 700,
+            "position_y": 585,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment done: each finished picture",
+            "name": "comment",
+            "id": 792,
+            "position_x": 856,
+            "position_y": 650,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "done: each finished picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "done: each finished picture"
+        },
+        "16": {
+            "name": "button",
+            "id": 829,
+            "position_x": 700,
+            "position_y": 695,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 767,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "feature"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "octave schedule"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "octave schedule"
+        },
+        "3": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frame",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "status",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "done",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

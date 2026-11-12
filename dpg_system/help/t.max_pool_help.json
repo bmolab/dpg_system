@@ -1,0 +1,469 @@
+{
+    "height": 1271,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "t.max_pool_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.max_pool_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.max_pool - the largest value in each window",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 561,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.max_pool - the largest value in each window",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.max_pool - the largest value in each window"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Takes the largest value in each window of values: windows side by side shrink a sequence (or an image) while keeping its peaks; a window sliding one value at a time holds every peak for the length of the window.\n\nShrinking while keeping peaks is what pooling layers do inside networks, and what you want when reducing a fast stream - a hit, a spike or a sudden movement survives, where averaging would blur it away. Sliding, it is a running maximum: the loudest of the last eight frames, a simple envelope that rises at once and falls only when the peak leaves the window. The answer stays on the input's device.\n\nSYNTAX:\nt.max_pool <window> <step>\nDefaults: window 2, step the same as the window (windows side by side).\n\nEXAMPLE:\nt.max_pool 4\nt.max_pool 8 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values (a list or tensor). Every input is pooled and sent.\n\nwindow (int box, also an inlet):\nHow many values each window holds (each side of a tile, over two dims).\n\nstep (int box, also an inlet):\nHow far each window moves on from the last. The same as the window (the default) takes windows side by side, with no overlap: the length shrinks by that factor. 1 slides the window one value at a time: one result per position - the running maximum.\n\ndim (int box, also an inlet):\nWhich dim to pool along: -1 (the default) along each row, 0 down each column - over time, for a buffer of frames x joints.\n\npool over:\nAn option, under the node. one dim (the default), or last two dims - square tiles of an image or grid, window x window, every image of a stack at once.\n\npartial window:\nAn option, under the node. Off (the default), values left over at the end that do not fill a window are dropped. On, they make one last, shorter window.\n\nOUTPUTS:\n\npooled:\nThe largest value of each window, the shape of the input with the pooled dim shortened.\n\nREADING THE DEMO:\nTop: 1 5 3 8 2 2 9 0 6 in windows of 3 side by side - 1 5 3, 8 2 2, 9 0 6 - gives the three peaks, 5 8 9. Bottom: the same window sliding one value at a time gives 5 8 8 8 9 9 9: each peak held while it stays in the window.\n\nRELATED:\nt.avg_pool takes the mean instead. t.unfold gives every window itself; t.max along a dim, or t.cummax for the running maximum from the start.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Takes the largest value in each window of values: windows side by side shrink a sequence (or an image) while keeping its peaks; a window sliding one value at a time holds every peak for the length of the window.\n\nShrinking while keeping peaks is what pooling layers do inside networks, and what you want when reducing a fast stream - a hit, a spike or a sudden movement survives, where averaging would blur it away. Sliding, it is a running maximum: the loudest of the last eight frames, a simple envelope that rises at once and falls only when the peak leaves the window. The answer stays on the input's device.\n\nSYNTAX:\nt.max_pool <window> <step>\nDefaults: window 2, step the same as the window (windows side by side).\n\nEXAMPLE:\nt.max_pool 4\nt.max_pool 8 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values (a list or tensor). Every input is pooled and sent.\n\nwindow (int box, also an inlet):\nHow many values each window holds (each side of a tile, over two dims).\n\nstep (int box, also an inlet):\nHow far each window moves on from the last. The same as the window (the default) takes windows side by side, with no overlap: the length shrinks by that factor. 1 slides the window one value at a time: one result per position - the running maximum.\n\ndim (int box, also an inlet):\nWhich dim to pool along: -1 (the default) along each row, 0 down each column - over time, for a buffer of frames x joints.\n\npool over:\nAn option, under the node. one dim (the default), or last two dims - square tiles of an image or grid, window x window, every image of a stack at once.\n\npartial window:\nAn option, under the node. Off (the default), values left over at the end that do not fill a window are dropped. On, they make one last, shorter window.\n\nOUTPUTS:\n\npooled:\nThe largest value of each window, the shape of the input with the pooled dim shortened.\n\nREADING THE DEMO:\nTop: 1 5 3 8 2 2 9 0 6 in windows of 3 side by side - 1 5 3, 8 2 2, 9 0 6 - gives the three peaks, 5 8 9. Bottom: the same window sliding one value at a time gives 5 8 8 8 9 9 9: each peak held while it stays in the window.\n\nRELATED:\nt.avg_pool takes the mean instead. t.unfold gives every window itself; t.max along a dim, or t.cummax for the running maximum from the start."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment nine values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "nine values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "nine values"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 5 3 8 2 2 9 0 6",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment windows of 3, side by side",
+            "name": "comment",
+            "id": 496,
+            "position_x": 440,
+            "position_y": 53,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "windows of 3, side by side",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "windows of 3, side by side"
+        },
+        "8": {
+            "name": "t.max_pool",
+            "id": 533,
+            "position_x": 440,
+            "position_y": 92,
+            "width": 129,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.max_pool 3",
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 640,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment windows of 3, sliding by 1",
+            "name": "comment",
+            "id": 607,
+            "position_x": 440,
+            "position_y": 260,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "windows of 3, sliding by 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "windows of 3, sliding by 1"
+        },
+        "11": {
+            "name": "t.max_pool",
+            "id": 644,
+            "position_x": 440,
+            "position_y": 295,
+            "width": 129,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.max_pool 3 1",
+            "highlight": true
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 640,
+            "position_y": 295,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 504,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.avg_pool"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 151,
+            "position_y": 504,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.unfold"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 256,
+            "position_y": 504,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.max"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 338,
+            "position_y": 504,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.cummax"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 614,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pooled",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pooled",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

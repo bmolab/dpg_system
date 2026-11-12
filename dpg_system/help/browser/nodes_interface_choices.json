@@ -1,0 +1,416 @@
+{
+    "height": 416,
+    "width": 533,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1018,
+    "name": "nodes_interface_choices",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_interface_choices.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Choices",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 102,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Choices",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Choices",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_interface < Interface",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 107,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< Interface",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 91,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 155,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 286,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Controls and displays you put in a patch.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Controls and displays you put in a patch.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link radio radio / radio_h / radio_v",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "radio / radio_h / radio_v",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 154,
+            "width": 231,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one choice from a set of buttons\n(radio, radio_h, radio_v)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one choice from a set of buttons\n(radio, radio_h, radio_v)",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link menu menu",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "menu",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 206,
+            "width": 261,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "choose one item from a drop-down list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "choose one item from a drop-down list",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link list_box list_box",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "list_box",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 258,
+            "width": 206,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "choose from a list by typing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 198,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "choose from a list by typing",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link color color / color_cmy",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "color / color_cmy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 310,
+            "width": 157,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pick a colour by eye\n(color, color_cmy)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 149,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "pick a colour by eye\n(color, color_cmy)",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

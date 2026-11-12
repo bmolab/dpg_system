@@ -1,0 +1,1658 @@
+{
+    "height": 780,
+    "width": 1075,
+    "position": [
+        100,
+        100
+    ],
+    "id": 2350,
+    "name": "nodes_numpy_linear_algebra",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_linear_algebra.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Linear algebra",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 188,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Linear algebra",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Linear algebra",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_numpy < NumPy",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 83,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< NumPy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 67,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 131,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np. nodes work on numpy arrays.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "np. nodes work on numpy arrays.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link np.dot np.dot",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.dot",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 154,
+            "width": 274,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how much two vectors point the same way",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how much two vectors point the same way",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link np.inner np.inner",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.inner",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 206,
+            "width": 237,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "every vector against every vector",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "every vector against every vector",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link np.outer np.outer",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.outer",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 258,
+            "width": 237,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "every element times every element",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "every element times every element",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link np.cross np.cross",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.cross",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 310,
+            "width": 280,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the vector at right angles to two others",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the vector at right angles to two others",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link np.matmul np.matmul",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.matmul",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 362,
+            "width": 200,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "apply one matrix to another",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "apply one matrix to another",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link np.linalg.norm np.linalg.norm",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.norm",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 414,
+            "width": 255,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the length of a vector\n(euclidean_distance, np.linalg.norm)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the length of a vector\n(euclidean_distance, np.linalg.norm)",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link np.linalg.det np.linalg.det",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 462,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.det",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 466,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how much a matrix scales area",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how much a matrix scales area",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link np.linalg.matrix_rank np.linalg.matrix_rank",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 514,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.matrix_rank",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 518,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how many independent directions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how many independent directions",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link np.linalg.inv np.linalg.inv",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 566,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.inv",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 570,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the matrix that undoes a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the matrix that undoes a matrix",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link np.linalg.pinv np.linalg.pinv",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 618,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.pinv",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 622,
+            "width": 268,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the best available inverse of a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the best available inverse of a matrix",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link np.linalg.solve np.linalg.solve",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 670,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.solve",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 207,
+            "position_y": 674,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "find the x that gives b",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "find the x that gives b",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link np.linalg.lstsq np.linalg.lstsq",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 150,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.lstsq",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 154,
+            "width": 305,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the best fit to more equations than unknowns",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the best fit to more equations than unknowns",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link np.linalg.svd np.linalg.svd",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 202,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.svd",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 206,
+            "width": 298,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "break a matrix into rotations and stretches",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "break a matrix into rotations and stretches",
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "init": "help_link np.linalg.eigh np.linalg.eigh",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 254,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.eigh",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 258,
+            "width": 280,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the principal axes of a symmetric matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the principal axes of a symmetric matrix",
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "init": "help_link np.linalg.eig np.linalg.eig",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 306,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.eig",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 310,
+            "width": 268,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the directions a matrix only stretches",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the directions a matrix only stretches",
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "init": "help_link np.linalg.qr np.linalg.qr",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 358,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.qr",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 362,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "square up a set of directions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "square up a set of directions",
+            "id": 1869,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "37": {
+            "init": "help_link np.diag np.diag",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 410,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.diag",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1906,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "38": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 414,
+            "width": 292,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "put values on a diagonal, or read them off",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "put values on a diagonal, or read them off",
+            "id": 1943,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "39": {
+            "init": "help_link np.trace np.trace",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 462,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.trace",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1980,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "40": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 466,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the sum of a diagonal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the sum of a diagonal",
+            "id": 2017,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "41": {
+            "init": "help_link np.tril np.tril",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 514,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.tril",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2054,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "42": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 518,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "keep the lower triangle of a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "keep the lower triangle of a matrix",
+            "id": 2091,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "43": {
+            "init": "help_link np.triu np.triu",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 566,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.triu",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2128,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "44": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 570,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "keep the upper triangle of a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "keep the upper triangle of a matrix",
+            "id": 2165,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "init": "help_link np.einsum np.einsum",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 618,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.einsum",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2202,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "46": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 622,
+            "width": 305,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "multiply and sum arrays by naming their axes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "multiply and sum arrays by naming their axes",
+            "id": 2239,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "47": {
+            "init": "help_link np.tensordot np.tensordot",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 670,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.tensordot",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2276,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "48": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 674,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "multiply and sum over matching axes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "multiply and sum over matching axes",
+            "id": 2313,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

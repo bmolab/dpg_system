@@ -1,11 +1,11 @@
 {
-    "height": 1359,
-    "width": 1676,
+    "height": 1204,
+    "width": 1508,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "pose_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/pose_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment pose - carrying, editing and comparing poses",
+            "init": "comment pose - a pose built from single joints",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 549,
+            "width": 475,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "pose - carrying, editing and comparing poses",
+                    "value": "pose - a pose built from single joints",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "pose - carrying, editing and comparing poses"
+            "comment": "pose - a pose built from single joints"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 818,
+            "position_x": 650,
             "position_y": 45,
             "width": 818,
-            "height": 796,
+            "height": 886,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These carry, edit and compare poses.\n\nA pose is a set of joint orientations as quaternions. Everything else in this \npart of the system is a transformation of one.\n\nTHE NODES:\n\npose            hold a pose, and send it\nshadow_pose     the same, for the 37-joint Shadow layout\nactive_pose     an editor for the 20 active joints - see and set each one\nactive_joints   reduce a full pose to the 20 active joints\ntarget_pose     compare a pose against a captured one and score the match\npose_adjust     apply a per-joint correction to a pose\ncalibrate_pose  capture a reference pose and correct against it\n\nTWENTY JOINTS, NOT THIRTY-SEVEN:\nThe Shadow layout has 37 joints; most work uses the 20 that carry the movement. \nactive_joints does that reduction, and it is worth doing early - the other 17 \nare mostly fixed relationships that add nothing and cost attention.\n\npose_adjust IS WHERE FRAME CONVENTION BITES:\nIt applies a per-joint quaternion correction, and by default each non-root joint \nis PRE-multiplied, so the correction is expressed in the PARENT bone's frame. \nThe root is post-multiplied, in body-local terms.\n\nThe 'child frame' checkbox switches every non-root joint to post-multiply, \nputting the correction in the joint's OWN frame. Which you want depends on where \nthe error is: a sensor mounted on the child side of a joint produces an error in \nthe child's frame, and correcting it in the parent's will not hold as the joint \nmoves.\n\nIf a correction looks right in one posture and wrong in another, that is almost \nalways this setting.\n\ntarget_pose SCORES A MATCH:\nCapture a pose, then feed the live stream in, and it reports how close the \ncurrent pose is. The 'axis distances out' outlet breaks the score down per axis, \nwhich tells you WHICH way the difference lies rather than only how much - so a \nperformer can be guided towards a target rather than just told they are wrong.\n\nSYNTAX:\npose\nactive_pose\ncalibrate_pose\n\nEXAMPLE:\nactive_joints\n\nINPUTS and PARAMETERS:\n\npose in:\nThe pose, as quaternions.\n\ncapture in (target_pose):\nStore the current pose as the target.\n\ncalibration input / calibrate input (calibrate_pose):\nThe reference, and the command to capture it.\n\nchild frame (pose_adjust):\nWhich frame the correction is applied in - see above.\n\nreset:\nClear the corrections.\n\nzero (active_pose):\nSet every joint to identity.\n\nOUTPUTS: \n\npose out:\nThe pose, adjusted or passed through.\n\nscore out / axis distances out (target_pose):\nHow close, overall and per axis.\n\ncalibration output:\nThe captured reference, so it can be stored and reloaded.",
+                    "value": "pose builds a whole pose out of single joints. It has one inlet per joint, and whenever any of them receives a rotation, the whole pose goes out.\n\nTHE NODES:\n\npose         20 joint inlets in, a 20-joint pose out\nshadow_pose  the same 20 inlets, but the pose out has the 37 rows of the\n             raw Shadow layout\n\nWHAT A POSE IS:\nAn array of joint orientations, one row per joint, each a quaternion w x y z with the real part first. pose sends the 20 active joints in the order active_joints uses: base of skull, upper vertebrae, mid vertebrae, lower vertebrae, spine pelvis, pelvis anchor, then left hip, knee and ankle, right hip, knee and ankle, left shoulder blade, shoulder, elbow and wrist, and the same four on the right. So a pose made here can go anywhere a reduced suit pose goes.\n\nshadow_pose puts each of the same 20 inlets at its row in the 37-row layout the shadow node sends. The 17 rows without an inlet are always the identity.\n\nJOINTS YOU DO NOT SET:\nAn inlet that has received nothing counts as the identity - no rotation - and an inlet keeps the last rotation it received. So you can drive two or three joints and leave the rest of the body at rest.\n\nWHAT AN INLET TAKES:\nFour numbers, w x y z: a numpy array, a torch tensor, or a plain list - from a message box, say. euler_to_quaternion turns angles into one, as the example does.\n\nSYNTAX:\npose\nshadow_pose\n\nEXAMPLE:\npose\n\nINPUTS:\n\nbase of skull ... right wrist:\nOne quaternion each, w x y z. Any of them arriving sends the pose.\n\nOUTPUT:\n\npose out:\nThe pose as a numpy array: 20 rows of four for pose, 37 rows of four for shadow_pose.\n\nRELATED:\nactive_pose shows a whole pose row by row, and lets you edit it. active_joints reduces a 37-row Shadow pose to these 20 joints. gl_body draws a pose of either size.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 780,
+                    "value": 870,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,88 +90,90 @@
                     "value_type": "str"
                 }
             },
-            "text": "These carry, edit and compare poses.\n\nA pose is a set of joint orientations as quaternions. Everything else in this \npart of the system is a transformation of one.\n\nTHE NODES:\n\npose            hold a pose, and send it\nshadow_pose     the same, for the 37-joint Shadow layout\nactive_pose     an editor for the 20 active joints - see and set each one\nactive_joints   reduce a full pose to the 20 active joints\ntarget_pose     compare a pose against a captured one and score the match\npose_adjust     apply a per-joint correction to a pose\ncalibrate_pose  capture a reference pose and correct against it\n\nTWENTY JOINTS, NOT THIRTY-SEVEN:\nThe Shadow layout has 37 joints; most work uses the 20 that carry the movement. \nactive_joints does that reduction, and it is worth doing early - the other 17 \nare mostly fixed relationships that add nothing and cost attention.\n\npose_adjust IS WHERE FRAME CONVENTION BITES:\nIt applies a per-joint quaternion correction, and by default each non-root joint \nis PRE-multiplied, so the correction is expressed in the PARENT bone's frame. \nThe root is post-multiplied, in body-local terms.\n\nThe 'child frame' checkbox switches every non-root joint to post-multiply, \nputting the correction in the joint's OWN frame. Which you want depends on where \nthe error is: a sensor mounted on the child side of a joint produces an error in \nthe child's frame, and correcting it in the parent's will not hold as the joint \nmoves.\n\nIf a correction looks right in one posture and wrong in another, that is almost \nalways this setting.\n\ntarget_pose SCORES A MATCH:\nCapture a pose, then feed the live stream in, and it reports how close the \ncurrent pose is. The 'axis distances out' outlet breaks the score down per axis, \nwhich tells you WHICH way the difference lies rather than only how much - so a \nperformer can be guided towards a target rather than just told they are wrong.\n\nSYNTAX:\npose\nactive_pose\ncalibrate_pose\n\nEXAMPLE:\nactive_joints\n\nINPUTS and PARAMETERS:\n\npose in:\nThe pose, as quaternions.\n\ncapture in (target_pose):\nStore the current pose as the target.\n\ncalibration input / calibrate input (calibrate_pose):\nThe reference, and the command to capture it.\n\nchild frame (pose_adjust):\nWhich frame the correction is applied in - see above.\n\nreset:\nClear the corrections.\n\nzero (active_pose):\nSet every joint to identity.\n\nOUTPUTS: \n\npose out:\nThe pose, adjusted or passed through.\n\nscore out / axis distances out (target_pose):\nHow close, overall and per axis.\n\ncalibration output:\nThe captured reference, so it can be stored and reloaded."
+            "text": "pose builds a whole pose out of single joints. It has one inlet per joint, and whenever any of them receives a rotation, the whole pose goes out.\n\nTHE NODES:\n\npose         20 joint inlets in, a 20-joint pose out\nshadow_pose  the same 20 inlets, but the pose out has the 37 rows of the\n             raw Shadow layout\n\nWHAT A POSE IS:\nAn array of joint orientations, one row per joint, each a quaternion w x y z with the real part first. pose sends the 20 active joints in the order active_joints uses: base of skull, upper vertebrae, mid vertebrae, lower vertebrae, spine pelvis, pelvis anchor, then left hip, knee and ankle, right hip, knee and ankle, left shoulder blade, shoulder, elbow and wrist, and the same four on the right. So a pose made here can go anywhere a reduced suit pose goes.\n\nshadow_pose puts each of the same 20 inlets at its row in the 37-row layout the shadow node sends. The 17 rows without an inlet are always the identity.\n\nJOINTS YOU DO NOT SET:\nAn inlet that has received nothing counts as the identity - no rotation - and an inlet keeps the last rotation it received. So you can drive two or three joints and leave the rest of the body at rest.\n\nWHAT AN INLET TAKES:\nFour numbers, w x y z: a numpy array, a torch tensor, or a plain list - from a message box, say. euler_to_quaternion turns angles into one, as the example does.\n\nSYNTAX:\npose\nshadow_pose\n\nEXAMPLE:\npose\n\nINPUTS:\n\nbase of skull ... right wrist:\nOne quaternion each, w x y z. Any of them arriving sends the pose.\n\nOUTPUT:\n\npose out:\nThe pose as a numpy array: 20 rows of four for pose, 37 rows of four for shadow_pose.\n\nRELATED:\nactive_pose shows a whole pose row by row, and lets you edit it. active_joints reduces a 37-row Shadow pose to these 20 joints. gl_body draws a pose of either size."
         },
         "3": {
-            "name": "shadow",
+            "name": "signal",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 119,
-            "height": 168,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "active_joints",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 400,
-            "width": 144,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "active_pose",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 505,
-            "width": 321,
-            "height": 350,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "init": "comment see and set each of the 20 joints",
-            "name": "comment",
-            "id": 459,
-            "position_x": 527,
-            "position_y": 750,
-            "width": 211,
-            "height": 30,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "see and set each of the 20 joints",
-                    "value_type": "str"
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "24",
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
                     "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 90.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
                 }
             },
-            "comment": "see and set each of the 20 joints"
+            "init": "signal 4.0 sin"
         },
-        "7": {
-            "name": "pose_adjust",
-            "id": 496,
+        "4": {
+            "name": "pack",
+            "id": 385,
             "position_x": 30,
-            "position_y": 875,
-            "width": 260,
-            "height": 350,
+            "position_y": 162,
+            "width": 33,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "init": "pack 3"
         },
-        "8": {
+        "5": {
+            "name": "euler_to_quaternion",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 277,
+            "width": 125,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
             "name": "text_block",
-            "id": 533,
+            "id": 459,
             "annotation": true,
-            "position_x": 527,
-            "position_y": 1090,
-            "width": 261,
+            "position_x": 377,
+            "position_y": 277,
+            "width": 212,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -179,7 +181,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "child frame changes which frame the\ncorrection is applied in - it matters",
+                    "value": "one joint swinging 90 degrees\neach way about x",
                     "value_type": "str"
                 },
                 "1": {
@@ -189,7 +191,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 253,
+                    "value": 204,
                     "value_type": "int"
                 },
                 "3": {
@@ -203,78 +205,118 @@
                     "value_type": "str"
                 }
             },
-            "text": "child frame changes which frame the\ncorrection is applied in - it matters"
+            "text": "one joint swinging 90 degrees\neach way about x"
+        },
+        "7": {
+            "name": "pose",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 131,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 400,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "into the left elbow inlet only:\nevery other joint stays at rest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "into the left elbow inlet only:\nevery other joint stays at rest"
         },
         "9": {
-            "name": "target_pose",
+            "name": "active_pose",
             "id": 570,
-            "position_x": 371,
-            "position_y": 505,
-            "width": 119,
-            "height": 70,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 321,
+            "height": 350,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "10": {
-            "name": "float",
+            "name": "text_block",
             "id": 607,
-            "position_x": 371,
-            "position_y": 660,
-            "width": 130,
-            "height": 42,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 720,
+            "width": 243,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%.3f",
+                    "name": "block",
+                    "value": "the pose that comes out - 20 rows,\nonly left_elbow moving",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "11": {
-            "init": "comment how close to the captured target",
-            "name": "comment",
-            "id": 644,
-            "position_x": 527,
-            "position_y": 710,
-            "width": 205,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "how close to the captured target",
-                    "value_type": "str"
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
                 },
-                "1": {
-                    "name": "font size",
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "how close to the captured target"
+            "text": "the pose that comes out - 20 rows,\nonly left_elbow moving"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1255,
+            "position_y": 1100,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -294,51 +336,41 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "body 1 quaternions",
+            "source_output_name": "",
             "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "full pose quats in"
+            "dest_input_name": "in 1"
         },
         "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "active joint quats out",
+            "source_output_name": "out",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "in"
+            "dest_input_name": "xyz rotation"
         },
         "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
+            "source_output_name": "quaternion rotation",
             "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "pose in"
+            "dest_input_name": "left elbow"
         },
         "3": {
-            "source_node": 385,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "active joint quats out",
+            "source_output_name": "pose out",
             "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "pose in"
-        },
-        "4": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "score out",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "in"
         }
     }
 }

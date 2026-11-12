@@ -1,0 +1,603 @@
+{
+    "height": 1302,
+    "width": 1863,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "t.dist.poisson_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.dist.poisson_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.dist.poisson - how many random events",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 488,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.dist.poisson - how many random events",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.dist.poisson - how many random events"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1055,
+            "position_y": 45,
+            "width": 768,
+            "height": 1121,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Makes a tensor of random whole-number COUNTS from the POISSON distribution:\nhow many events happen in a fixed time when they come at a steady random rate.\n\nIf clicks come at random at an average of 3 a second, the number in any one second is a Poisson sample with rate 3: often 2, 3 or 4, sometimes 0, now and then 8. Use it for the number of notes to play in a bar, of particles to emit in a frame, of photons on a pixel (shot noise) - any count of independent random events.\n\nSYNTAX:\nt.dist.poisson <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.poisson 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.poisson 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nrate (drag float, also an inlet):\nThe average count. Must be above 0. Default 1 on a new node; the demo sets 3.\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. The heat_map (0 dark, 10 bright) shows the counts as stepped tones. The histogram has one bar per whole number, 0 at the left to 20 at the right: at rate 3 the bars for 2 and 3 are the tallest. Drag rate up and the hump moves right, widens and becomes more like a bell; drag it down towards 1 and the 0 and 1 bars dominate. The counts come out as floats (2.0, 3.0 ...), always whole.\n\nRELATED:\nt.poisson draws a count for every element of a tensor of rates. t.dist.exponential is the waiting time between the same events. t.dist.bernoulli is a single yes/no event.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1105,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Makes a tensor of random whole-number COUNTS from the POISSON distribution:\nhow many events happen in a fixed time when they come at a steady random rate.\n\nIf clicks come at random at an average of 3 a second, the number in any one second is a Poisson sample with rate 3: often 2, 3 or 4, sometimes 0, now and then 8. Use it for the number of notes to play in a bar, of particles to emit in a frame, of photons on a pixel (shot noise) - any count of independent random events.\n\nSYNTAX:\nt.dist.poisson <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.poisson 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.poisson 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nrate (drag float, also an inlet):\nThe average count. Must be above 0. Default 1 on a new node; the demo sets 3.\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. The heat_map (0 dark, 10 bright) shows the counts as stepped tones. The histogram has one bar per whole number, 0 at the left to 20 at the right: at rate 3 the bars for 2 and 3 are the tallest. Drag rate up and the hump moves right, widens and becomes more like a bell; drag it down towards 1 and the 0 and 1 bars dominate. The counts come out as floats (2.0, 3.0 ...), always whole.\n\nRELATED:\nt.poisson draws a count for every element of a tensor of rates. t.dist.exponential is the waiting time between the same events. t.dist.bernoulli is a single yes/no event."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "slider",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 62,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 15.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "init": "comment rate: the average count",
+            "name": "comment",
+            "id": 422,
+            "position_x": 715,
+            "position_y": 125,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rate: the average count",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rate: the average count"
+        },
+        "6": {
+            "name": "t",
+            "id": 459,
+            "position_x": 150,
+            "position_y": 160,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang float"
+        },
+        "7": {
+            "name": "t.dist.poisson",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 123,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "rate",
+                    "value": 3.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.dist.poisson 64 64",
+            "highlight": true
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 300,
+            "position_y": 240,
+            "width": 238,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 230,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 230,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the field: 0 dark, 10 bright",
+            "name": "comment",
+            "id": 570,
+            "position_x": 715,
+            "position_y": 520,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the field: 0 dark, 10 bright",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the field: 0 dark, 10 bright"
+        },
+        "10": {
+            "name": "t.histc",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 570,
+            "width": 148,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "bin count",
+                    "value": 21,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": -0.5,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 20.5,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment counts the 4096 samples in 21 equal bins",
+            "name": "comment",
+            "id": 644,
+            "position_x": 715,
+            "position_y": 580,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counts the 4096 samples in 21 equal bins",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counts the 4096 samples in 21 equal bins"
+        },
+        "12": {
+            "name": "plot",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 528,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 230,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "bar",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 21,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 21.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1600.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "13": {
+            "init": "comment one bar per count: 0 at the left, 20 at the right",
+            "name": "comment",
+            "id": 718,
+            "position_x": 715,
+            "position_y": 1025,
+            "width": 310,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one bar per count: 0 at the left, 20 at the right",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one bar per count: 0 at the left, 20 at the right"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 1124,
+            "width": 73,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.poisson"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 119,
+            "position_y": 1124,
+            "width": 129,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.exponential"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 264,
+            "position_y": 1124,
+            "width": 117,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.bernoulli"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 397,
+            "position_y": 1124,
+            "width": 98,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.normal"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 511,
+            "position_y": 1124,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand"
+        },
+        "19": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 1090,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 1198,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "rate"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "3": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "histogram tensor out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

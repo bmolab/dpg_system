@@ -1,0 +1,347 @@
+{
+    "height": 372,
+    "width": 835,
+    "position": [
+        100,
+        100
+    ],
+    "id": 944,
+    "name": "nodes_sound_physical_models",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_sound_physical_models.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Physical models",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 200,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Physical models",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Physical models",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_sound < Sound",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 83,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< Sound",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 67,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 131,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 366,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Nodes ending in ~ pass sound between them as a signal.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 358,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Nodes ending in ~ pass sound between them as a signal.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link modal~ struck models",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 132,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "struck models",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 116,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 170,
+            "position_y": 154,
+            "width": 600,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hit it, hear it ring\n(bounce~, drop~, drum~, modal~, pluck~, rain~, rattle~, resonator~, shaker~, skin~, strike~,\n string~)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 592,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hit it, hear it ring\n(bounce~, drop~, drum~, modal~, pluck~, rain~, rattle~, resonator~, shaker~, skin~, strike~,\n string~)",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link bow~ friction models",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 210,
+            "width": 132,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "friction models",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 116,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 170,
+            "position_y": 214,
+            "width": 613,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "stick, slip, sing\n(bowed~, bowing~, bow~, coin~, creak~, engine~, glass~, motor~, rub~, spin~, strain~, stroke~)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 605,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "stick, slip, sing\n(bowed~, bowing~, bow~, coin~, creak~, engine~, glass~, motor~, rub~, spin~, strain~, stroke~)",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link wind~ blown models",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 262,
+            "width": 132,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "blown models",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 116,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 170,
+            "position_y": 266,
+            "width": 625,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "no trigger, only breath\n(blow~, brass~, bubbles~, flute~, gurgle~, horn~, pipe~, reed~, swish~, vessel~, whoosh~, wind~)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 617,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "no trigger, only breath\n(blow~, brass~, bubbles~, flute~, gurgle~, horn~, pipe~, reed~, swish~, vessel~, whoosh~, wind~)",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

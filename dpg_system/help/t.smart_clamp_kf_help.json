@@ -1,557 +1,1092 @@
 {
-    "height": 1097,
-    "width": 1539,
-    "position": [
-        100,
-        100
-    ],
-    "id": 829,
     "name": "t.smart_clamp_kf_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.smart_clamp_kf_help.json",
-    "nodes": {
+    "patches": {
         "0": {
-            "name": "",
-            "id": 237,
-            "position_x": 0,
-            "position_y": 0,
-            "width": 9,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "protected": true,
-            "presentation_state": "hidden",
-            "properties": {
+            "height": 690,
+            "width": 880,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1088,
+            "name": "make_noisy",
+            "parent_node_uuid": 348,
+            "nodes": {
                 "0": {
                     "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "id": 1125,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "signal",
+                    "init": "signal 4.0 sin",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment the movement: one slow cycle every 4 seconds",
+                    "id": 1199,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the movement: one slow cycle every 4 seconds",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the movement: one slow cycle every 4 seconds"
+                },
+                "3": {
+                    "name": "tick",
+                    "init": "tick",
+                    "id": 1236,
+                    "position_x": 420,
+                    "position_y": 110,
+                    "width": 33,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment every frame",
+                    "id": 1273,
+                    "position_x": 470,
+                    "position_y": 115,
+                    "width": 160,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "every frame",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "every frame"
+                },
+                "5": {
+                    "name": "random.gauss",
+                    "init": "random.gauss 0.0 0.04",
+                    "id": 1310,
+                    "position_x": 240,
+                    "position_y": 170,
+                    "width": 175,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment jitter",
+                    "id": 1347,
+                    "position_x": 240,
+                    "position_y": 280,
+                    "width": 120,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "jitter",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "jitter"
+                },
+                "7": {
+                    "name": "random",
+                    "init": "random 1.0",
+                    "id": 1384,
+                    "position_x": 440,
+                    "position_y": 170,
+                    "width": 140,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "8": {
+                    "name": ">",
+                    "init": "> 0.985",
+                    "id": 1421,
+                    "position_x": 440,
+                    "position_y": 270,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.985,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "output_type",
+                            "value": "float",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "*",
+                    "init": "* 1.5",
+                    "id": 1458,
+                    "position_x": 440,
+                    "position_y": 340,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 1.5,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "10": {
+                    "name": "comment",
+                    "init": "comment about one frame in 70: a spike of 1.5",
+                    "id": 1495,
+                    "position_x": 440,
+                    "position_y": 400,
+                    "width": 360,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "about one frame in 70: a spike of 1.5",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "about one frame in 70: a spike of 1.5"
+                },
+                "11": {
+                    "name": "signal",
+                    "init": "signal 5.0 square",
+                    "id": 1532,
+                    "position_x": 40,
+                    "position_y": 170,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "square",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 0.4,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "comment",
+                    "init": "comment a sudden step that stays: up 0.8, down 0.8",
+                    "id": 1569,
+                    "position_x": 40,
+                    "position_y": 260,
+                    "width": 180,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a sudden step that stays: up 0.8, down 0.8",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a sudden step that stays: up 0.8, down 0.8"
+                },
+                "13": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "14": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1643,
+                    "position_x": 40,
+                    "position_y": 380,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "15": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1680,
+                    "position_x": 40,
+                    "position_y": 450,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "16": {
+                    "name": "out",
+                    "init": "out noisy",
+                    "id": 1717,
+                    "position_x": 40,
+                    "position_y": 530,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
+                },
+                "1": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
+                },
+                "2": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1643,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "3": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1680,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "6": {
+                    "source_node": 1532,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "7": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1643,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "9": {
+                    "source_node": 1643,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1680,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "10": {
+                    "source_node": 1680,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "noisy"
                 }
             }
         },
         "1": {
-            "init": "comment t Kalman filters - glitch or fast movement?",
-            "name": "comment",
-            "id": 274,
-            "position_x": 24,
-            "position_y": -4,
-            "width": 537,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "t Kalman filters - glitch or fast movement?",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "48",
-                    "value_type": "str"
-                }
-            },
-            "comment": "t Kalman filters - glitch or fast movement?"
-        },
-        "2": {
-            "name": "text_block",
-            "id": 311,
-            "position_x": 671,
-            "position_y": 45,
-            "width": 828,
-            "height": 836,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "These are Kalman filters that try to tell a glitch from a fast movement.\n\nAn ordinary smoothing filter cannot. Both look like a large sudden change, and\nany setting that removes the glitch also removes the movement. These four\nattack that problem from different directions, and which is right depends on\nwhat your bad frames actually look like.\n\nTHE NODES:\n\nt.smart_clamp_kf        limits how far one frame may correct the estimate\nt.smart_clamp_quat_kf   the same, for quaternions\nt.persistence_quat_kf   holds its estimate through brief disagreement\nt.hybrid_quat_kf        blends between a damping and a responsive mode\nt.jerk_aware_quat_kf    classifies motion by the coherence of its jerk\n\nSMART CLAMPING LIMITS THE CORRECTION, NOT THE SIGNAL:\nA Kalman filter works by correcting its prediction toward the measurement. \nSmart clamping caps the MAGNITUDE of that correction per frame - so a \none-frame glitch cannot teleport the filter's state however wrong the reading \nis, while a genuinely fast movement, which arrives as many consecutive large \ncorrections, still tracks because each one is individually plausible.\n\nThat is the useful asymmetry: a glitch is one big step, real motion is a run of \nthem.\n\nJERK-AWARE USES COHERENCE, WHICH IS THE SHARPEST TEST:\nIt looks at angular jerk over time and asks whether the change is COHERENT. \nA real movement accelerates, sustains and decelerates - its jerk has structure. \nA sensor spike does not; it is one frame unrelated to its neighbours.\n\nWhen it decides a frame is a spike, it does not simply hold - it extrapolates \nfrom the last good pose using SMOOTHED velocity. Using the single-frame velocity \nwould carry the noise into the extrapolation, which is the mistake this avoids.\n\nHYBRID BLENDS RATHER THAN SWITCHES:\nIt runs a damping mode and a responsive mode and blends between them \ncontinuously. Its 'alphas' outlet reports the blend, which is worth watching: \nit tells you what the filter thinks is happening, and a blend that is pinned at \none end means the transition ranges are set wrong.\n\nBlending rather than switching matters. A filter that flips between two modes \nproduces a discontinuity at every flip, which is a new artefact in place of the \nold one.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.smart_clamp_kf\nt.jerk_aware_quat_kf\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\nThe stream. A tensor of parallel streams, or a pose.\n\ndt:\nThe time between frames, in seconds. Get this right - every rate the filter\nreasons about is derived from it.\n\nresponsiveness / smoothness:\nThe basic trade. As always, more of one is less of the other.\n\njerk_threshold / accel_limit (t.jerk_aware_quat_kf):\nWhat counts as an implausible change.\n\nDamp Smoothness / Damp Responsiveness / Resp Smoothness (t.hybrid_quat_kf):\nThe two modes it blends between.\n\nreset:\nClear the filter's state and start again.\n\nOUTPUTS: \n\nfiltered:\nThe result, in the same shape as the input.\n\nalphas:\nWhat the filter is doing - the blend between modes. Watch this while tuning.\n\nTUNE AGAINST REAL BAD FRAMES:\nNone of these can be set sensibly against clean data, because their whole\npurpose only engages when something goes wrong. Record a take containing the\nfailure you are trying to remove, and tune against that - with the alphas\noutlet plotted, so you can see the filter engaging rather than guessing.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 820,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 820,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "text": "These are Kalman filters that try to tell a glitch from a fast movement.\n\nAn ordinary smoothing filter cannot. Both look like a large sudden change, and\nany setting that removes the glitch also removes the movement. These four\nattack that problem from different directions, and which is right depends on\nwhat your bad frames actually look like.\n\nTHE NODES:\n\nt.smart_clamp_kf        limits how far one frame may correct the estimate\nt.smart_clamp_quat_kf   the same, for quaternions\nt.persistence_quat_kf   holds its estimate through brief disagreement\nt.hybrid_quat_kf        blends between a damping and a responsive mode\nt.jerk_aware_quat_kf    classifies motion by the coherence of its jerk\n\nSMART CLAMPING LIMITS THE CORRECTION, NOT THE SIGNAL:\nA Kalman filter works by correcting its prediction toward the measurement. \nSmart clamping caps the MAGNITUDE of that correction per frame - so a \none-frame glitch cannot teleport the filter's state however wrong the reading \nis, while a genuinely fast movement, which arrives as many consecutive large \ncorrections, still tracks because each one is individually plausible.\n\nThat is the useful asymmetry: a glitch is one big step, real motion is a run of \nthem.\n\nJERK-AWARE USES COHERENCE, WHICH IS THE SHARPEST TEST:\nIt looks at angular jerk over time and asks whether the change is COHERENT. \nA real movement accelerates, sustains and decelerates - its jerk has structure. \nA sensor spike does not; it is one frame unrelated to its neighbours.\n\nWhen it decides a frame is a spike, it does not simply hold - it extrapolates \nfrom the last good pose using SMOOTHED velocity. Using the single-frame velocity \nwould carry the noise into the extrapolation, which is the mistake this avoids.\n\nHYBRID BLENDS RATHER THAN SWITCHES:\nIt runs a damping mode and a responsive mode and blends between them \ncontinuously. Its 'alphas' outlet reports the blend, which is worth watching: \nit tells you what the filter thinks is happening, and a blend that is pinned at \none end means the transition ranges are set wrong.\n\nBlending rather than switching matters. A filter that flips between two modes \nproduces a discontinuity at every flip, which is a new artefact in place of the \nold one.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.smart_clamp_kf\nt.jerk_aware_quat_kf\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\nThe stream. A tensor of parallel streams, or a pose.\n\ndt:\nThe time between frames, in seconds. Get this right - every rate the filter\nreasons about is derived from it.\n\nresponsiveness / smoothness:\nThe basic trade. As always, more of one is less of the other.\n\njerk_threshold / accel_limit (t.jerk_aware_quat_kf):\nWhat counts as an implausible change.\n\nDamp Smoothness / Damp Responsiveness / Resp Smoothness (t.hybrid_quat_kf):\nThe two modes it blends between.\n\nreset:\nClear the filter's state and start again.\n\nOUTPUTS: \n\nfiltered:\nThe result, in the same shape as the input.\n\nalphas:\nWhat the filter is doing - the blend between modes. Watch this while tuning.\n\nTUNE AGAINST REAL BAD FRAMES:\nNone of these can be set sensibly against clean data, because their whole\npurpose only engages when something goes wrong. Record a take containing the\nfailure you are trying to remove, and tune against that - with the alphas\noutlet plotted, so you can see the filter engaging rather than guessing."
-        },
-        "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
-            "name": "signal",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 132,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 3.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "shape",
-                    "value": "sin",
-                    "value_type": "str"
-                },
-                "3": {
-                    "name": "range",
-                    "value": 0.7,
-                    "value_type": "float"
-                },
-                "4": {
-                    "name": "bipolar",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "5": {
-                    "name": "vector size",
-                    "value": 1,
-                    "value_type": "int"
-                }
-            },
-            "init": "signal 3.0 sin"
-        },
-        "6": {
-            "name": "toggle",
-            "id": 459,
-            "position_x": 200,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
+            "height": 1685,
+            "width": 1961,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1051,
+            "name": "t.smart_clamp_kf_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.smart_clamp_kf_help.json",
+            "nodes": {
                 "0": {
                     "name": "",
-                    "value": true,
-                    "value_type": "bool"
-                }
-            }
-        },
-        "7": {
-            "name": "metro",
-            "id": 496,
-            "position_x": 200,
-            "position_y": 110,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 },
                 "1": {
-                    "name": "period",
-                    "value": 16.0,
-                    "value_type": "float"
+                    "init": "comment t.smart_clamp_kf - a Kalman filter that caps each correction",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 746,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.smart_clamp_kf - a Kalman filter that caps each correction",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.smart_clamp_kf - a Kalman filter that caps each correction"
                 },
                 "2": {
-                    "name": "units",
-                    "value": "milliseconds",
-                    "value_type": "str"
-                }
-            },
-            "init": "metro 16"
-        },
-        "8": {
-            "name": "random.gauss",
-            "id": 533,
-            "position_x": 200,
-            "position_y": 190,
-            "width": 117,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "random.gauss 0.0 0.3"
-        },
-        "9": {
-            "name": "+",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 232,
-            "width": 88,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "operand",
-                    "value": 0.0,
-                    "value_type": "float"
-                }
-            },
-            "init": "+ 0.0"
-        },
-        "10": {
-            "init": "comment a clean wave with occasional spikes",
-            "name": "comment",
-            "id": 607,
-            "position_x": 355,
-            "position_y": 310,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a clean wave with occasional spikes",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a clean wave with occasional spikes"
-        },
-        "11": {
-            "name": "plot",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 350,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1153,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1546,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Smooths streams of ordinary numbers with a Kalman filter that will not let any one frame pull it further than a set distance.\n\nUse it on positions or values from a tracker that occasionally throws a wild reading. A one-frame spike moves the output by no more than 'max jump', so it barely shows; steady change still comes through.\n\nHOW IT WORKS:\nA constant-velocity Kalman filter: it keeps a position and a velocity per value, predicts the next frame, and corrects towards the measurement. The correction is the INNOVATION - the measurement minus the prediction. Smart clamping caps the length of that innovation (across all of a stream's values together) at 'max jump' before it is used. A wild reading is treated as if it were only max jump away.\n\nThe cost is the other half of the bet: a real step bigger than max jump is also taken a bounded bite at a time, so the output walks to the new level over several frames instead of jumping. Set max jump just above the largest honest change between two frames.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all of them one moment in time. Every row gets its own filter state, so a whole body - 22 joints, one row each - is filtered in one operation. The first frame (and any change in the number of rows) builds the state afresh. A 1-D input of n values is one stream and comes back 1-D. A tensor with more dimensions is treated as rows of its last dimension and reshaped back.\n\nSYNTAX:\nt.smart_clamp_kf\nNo arguments.\n\nEXAMPLE:\nt.smart_clamp_kf\n\nINPUTS and PARAMETERS:\n\ninput:\nThe values. Each arrival runs one filter step and sends.\n\ndt (float, default 1/60):\nThe time between frames.\n\nresponsiveness (float, default 1.0):\nThe process noise: how freely the filter lets the velocity change. Higher follows changes sooner and smooths less.\n\nsmoothness (float, default 0.1):\nThe measurement noise: how much the filter distrusts each reading. Higher smooths more and lags more.\n\nmax jump (clamp) (float, default 0.1):\nThe largest innovation used in one frame, in the input's own units. 0 turns clamping off.\n\naccel_rejection (float, default 0, off):\nWhen the estimated acceleration reverses from one frame to the next, divide the process noise by (1 + 100 x this): much stiffer on chatter.\n\nmax_accel (deg/s^2):\nHas no effect on this node - only the quaternion filters use it.\n\nreset (button):\nThe next input becomes the state outright, at rest. The filter also starts this way, from its first input, so there is no glide in from zero when the patch opens.\n\nOUTPUTS:\n\nfiltered:\nThe filtered values, the same shape as the input.\n\nREADING THE DEMO:\nMeasured on this input at the default 0.1: the spikes are almost gone (about 4 percent of each gets through), the jitter is six times smaller, and each step of 0.8 is reached in about a dozen frames. Drag max jump on the node: at 0.5 the steps take about four frames but a tenth of each spike shows; at 0.02 the output can no longer keep up even with the slow sine.\n\nTHE GLITCH OR THE MOVEMENT:\nA tracker throws two kinds of sudden change: a GLITCH, one bad frame that comes straight back, and a real QUICK MOVEMENT, a change that stays. On the frame it happens they look the same. Any filter that refuses the glitch will also hesitate on the quick movement; the filters in this family differ in how they make that bet. The demo input has both, so you can see each filter's choice.\n\nTHE FAMILY:\nt.ESEKF            ordinary numbers, three modes blended by motion\nt.quat_ESEKF       the same for quaternions (error-state)\nt.smart_clamp_kf   ordinary numbers, the correction per frame capped\nt.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap\nt.persistence_quat_kf      acceleration cap that gives way if the change persists\nt.hybrid_quat_kf   three-mode blending driving a smart-clamped filter\n\nRELATED:\nkalman_filter is a plain Kalman filter for single numbers; one_euro_filter adapts its smoothing to speed instead of clamping.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1530,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Smooths streams of ordinary numbers with a Kalman filter that will not let any one frame pull it further than a set distance.\n\nUse it on positions or values from a tracker that occasionally throws a wild reading. A one-frame spike moves the output by no more than 'max jump', so it barely shows; steady change still comes through.\n\nHOW IT WORKS:\nA constant-velocity Kalman filter: it keeps a position and a velocity per value, predicts the next frame, and corrects towards the measurement. The correction is the INNOVATION - the measurement minus the prediction. Smart clamping caps the length of that innovation (across all of a stream's values together) at 'max jump' before it is used. A wild reading is treated as if it were only max jump away.\n\nThe cost is the other half of the bet: a real step bigger than max jump is also taken a bounded bite at a time, so the output walks to the new level over several frames instead of jumping. Set max jump just above the largest honest change between two frames.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all of them one moment in time. Every row gets its own filter state, so a whole body - 22 joints, one row each - is filtered in one operation. The first frame (and any change in the number of rows) builds the state afresh. A 1-D input of n values is one stream and comes back 1-D. A tensor with more dimensions is treated as rows of its last dimension and reshaped back.\n\nSYNTAX:\nt.smart_clamp_kf\nNo arguments.\n\nEXAMPLE:\nt.smart_clamp_kf\n\nINPUTS and PARAMETERS:\n\ninput:\nThe values. Each arrival runs one filter step and sends.\n\ndt (float, default 1/60):\nThe time between frames.\n\nresponsiveness (float, default 1.0):\nThe process noise: how freely the filter lets the velocity change. Higher follows changes sooner and smooths less.\n\nsmoothness (float, default 0.1):\nThe measurement noise: how much the filter distrusts each reading. Higher smooths more and lags more.\n\nmax jump (clamp) (float, default 0.1):\nThe largest innovation used in one frame, in the input's own units. 0 turns clamping off.\n\naccel_rejection (float, default 0, off):\nWhen the estimated acceleration reverses from one frame to the next, divide the process noise by (1 + 100 x this): much stiffer on chatter.\n\nmax_accel (deg/s^2):\nHas no effect on this node - only the quaternion filters use it.\n\nreset (button):\nThe next input becomes the state outright, at rest. The filter also starts this way, from its first input, so there is no glide in from zero when the patch opens.\n\nOUTPUTS:\n\nfiltered:\nThe filtered values, the same shape as the input.\n\nREADING THE DEMO:\nMeasured on this input at the default 0.1: the spikes are almost gone (about 4 percent of each gets through), the jitter is six times smaller, and each step of 0.8 is reached in about a dozen frames. Drag max jump on the node: at 0.5 the steps take about four frames but a tenth of each spike shows; at 0.02 the output can no longer keep up even with the slow sine.\n\nTHE GLITCH OR THE MOVEMENT:\nA tracker throws two kinds of sudden change: a GLITCH, one bad frame that comes straight back, and a real QUICK MOVEMENT, a change that stays. On the frame it happens they look the same. Any filter that refuses the glitch will also hesitate on the quick movement; the filters in this family differ in how they make that bet. The demo input has both, so you can see each filter's choice.\n\nTHE FAMILY:\nt.ESEKF            ordinary numbers, three modes blended by motion\nt.quat_ESEKF       the same for quaternions (error-state)\nt.smart_clamp_kf   ordinary numbers, the correction per frame capped\nt.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap\nt.persistence_quat_kf      acceleration cap that gives way if the change persists\nt.hybrid_quat_kf   three-mode blending driving a smart-clamped filter\n\nRELATED:\nkalman_filter is a plain Kalman filter for single numbers; one_euro_filter adapts its smoothing to speed instead of clamping."
                 },
                 "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 78,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_noisy",
+                    "patcher id": 1088
                 },
                 "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
+                    "name": "text_block",
+                    "id": 385,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 62,
+                    "width": 329,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "a slow sine with jitter, a step now and then,\nand the odd one-frame spike - open it to see how",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 321,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "a slow sine with jitter, a step now and then,\nand the odd one-frame spike - open it to see how"
                 },
                 "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
+                    "name": "t",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 160,
+                    "width": 39,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t float float"
                 },
                 "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "init": "comment right first: the raw value to the plot, then",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 794,
+                    "position_y": 165,
+                    "width": 279,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "right first: the raw value to the plot, then",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "right first: the raw value to the plot, then"
                 },
                 "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
+                    "name": "t.reshape",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 230,
+                    "width": 243,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "1 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "t.reshape 1 1"
                 },
                 "8": {
-                    "name": "min y",
-                    "value": -2.0,
-                    "value_type": "float"
+                    "init": "comment one stream of one value: a [1, 1] tensor",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 794,
+                    "position_y": 245,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one stream of one value: a [1, 1] tensor",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one stream of one value: a [1, 1] tensor"
                 },
                 "9": {
-                    "name": "max y",
-                    "value": 2.0,
-                    "value_type": "float"
-                }
-            }
-        },
-        "12": {
-            "name": "t.smart_clamp_kf",
-            "id": 681,
-            "position_x": 30,
-            "position_y": 545,
-            "width": 209,
-            "height": 154,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "13": {
-            "name": "plot",
-            "id": 718,
-            "position_x": 30,
-            "position_y": 785,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
+                    "name": "t.smart_clamp_kf",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 340,
+                    "width": 209,
+                    "height": 154,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "max jump (clamp)",
+                            "value": 0.1,
+                            "value_type": "float"
+                        }
+                    },
+                    "highlight": true
                 },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
+                "10": {
+                    "name": "t",
+                    "id": 607,
+                    "position_x": 380,
+                    "position_y": 340,
+                    "width": 39,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t float"
                 },
-                "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
+                "11": {
+                    "name": "pack",
+                    "id": 644,
+                    "position_x": 380,
+                    "position_y": 400,
+                    "width": 33,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pack 2"
                 },
-                "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
+                "12": {
+                    "name": "plot",
+                    "id": 681,
+                    "position_x": 380,
+                    "position_y": 510,
+                    "width": 388,
+                    "height": 210,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 160,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 300.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.6,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 2.6,
+                            "value_type": "float"
+                        }
+                    }
                 },
-                "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
+                "13": {
+                    "name": "text_block",
+                    "id": 718,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 720,
+                    "width": 261,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "line 1: filtered.  line 2: the input.\nfive seconds, newest on the right",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 253,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "line 1: filtered.  line 2: the input.\nfive seconds, newest on the right"
                 },
-                "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
+                "14": {
+                    "init": "comment drag max jump on the node",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 794,
+                    "position_y": 290,
+                    "width": 162,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "drag max jump on the node",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "drag max jump on the node"
                 },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 824,
+                    "width": 148,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.smart_clamp_quat_kf"
                 },
-                "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 194,
+                    "position_y": 824,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.ESEKF"
                 },
-                "8": {
-                    "name": "min y",
-                    "value": -2.0,
-                    "value_type": "float"
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 270,
+                    "position_y": 824,
+                    "width": 98,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link kalman_filter"
                 },
-                "9": {
-                    "name": "max y",
-                    "value": 2.0,
-                    "value_type": "float"
-                }
-            }
-        },
-        "14": {
-            "name": "text_block",
-            "id": 755,
-            "annotation": true,
-            "position_x": 355,
-            "position_y": 970,
-            "width": 286,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "the spike cannot move it far in one frame\nbut a run of large steps still tracks",
-                    "value_type": "str"
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 868,
+                    "width": 109,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link one_euro_filter"
                 },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 189,
+                    "position_y": 868,
+                    "width": 115,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.sav_gol_filter"
                 },
-                "2": {
-                    "name": "width",
-                    "value": 278,
-                    "value_type": "int"
+                "20": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 977,
+                    "position_x": 30,
+                    "position_y": 790,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
                 },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
+                "21": {
+                    "name": "close",
+                    "id": 1014,
+                    "position_x": 24,
+                    "position_y": 942,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 }
             },
-            "text": "the spike cannot move it far in one frame\nbut a run of large steps still tracks"
-        },
-        "15": {
-            "name": "close",
-            "id": 792,
-            "position_x": 24,
-            "position_y": 993,
-            "width": 88,
-            "height": 44,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
+            "links": {
                 "0": {
-                    "name": "close patch",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "noisy",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "float",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "3": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "4": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "filtered",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "6": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
                 }
             }
-        }
-    },
-    "links": {
-        "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "trigger"
-        },
-        "4": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "5": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "operand"
-        },
-        "6": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "result",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "7": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "result",
-            "dest_node": 681,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "input"
-        },
-        "8": {
-            "source_node": 681,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "filtered",
-            "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
         }
     }
 }

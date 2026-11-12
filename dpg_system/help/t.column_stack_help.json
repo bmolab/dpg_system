@@ -1,0 +1,778 @@
+{
+    "height": 1722,
+    "width": 1706,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1236,
+    "name": "t.column_stack_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.column_stack_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.column_stack - rows as columns, side by side",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.column_stack - rows as columns, side by side",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.column_stack - rows as columns, side by side"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 898,
+            "position_y": 45,
+            "width": 768,
+            "height": 1096,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Joins tensors side by side as COLUMNS: each 1-D input becomes one column of the result.\n\nTwo rows of 8 become an 8 by 2 table - the first input down the left, the second down the right. That is the usual way to pair up x and y lists into points (8 points, each an x and a y), or to gather several signals into one table with a column per signal.\n\nHOW IT DIFFERS FROM t.hstack:\nt.hstack lays two rows of 8 end to end, as ONE row of 16. t.column_stack first stands each 1-D input up as a column of 8, then puts the columns side by side. For 2-D inputs the two agree: two 7 by 6 pictures become 7 by 12 either way.\n\nINPUTS OF DIFFERENT WIDTHS:\nThe inputs need only the same number of ROWS. A 2-D input adds all of its columns, so an 8 by 2 table and a row of 8 join into 8 by 3 - which is how to add one more column to a table you already have (the second half of the demo). Inputs with different numbers of rows cannot be joined: the console prints an error and nothing is sent.\n\nSYNTAX:\nt.column_stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.column_stack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it becomes the left-hand column(s). Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order, to the right. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Until something has reached tensor 2, tensor 1 comes out on its own as a single column ([8] becomes [8, 1]).\n\nOUTPUTS:\n\nstacked tensors:\nThe table: as many rows as the inputs, and one column per 1-D input plus all the columns of each 2-D input.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 values (drag stop on its t.linspace); tensor 2 the same ramp falling, made once when the patch opens. The first t.column_stack gives 8 rows of 2: rising down the left, falling down the right. That 8 by 2 table then goes into a second t.column_stack beside a row of 8 values all 0.5, and comes out 8 by 3 - the two columns and a third, all one middle colour.\n\nRELATED:\nt.hstack joins side by side without turning rows into columns. t.stack with dim 1 also makes the columns from 1-D inputs, but needs every input the same shape. t.vstack joins as rows. np.stack (axis 1) is the numpy way to make the columns.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1080,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Joins tensors side by side as COLUMNS: each 1-D input becomes one column of the result.\n\nTwo rows of 8 become an 8 by 2 table - the first input down the left, the second down the right. That is the usual way to pair up x and y lists into points (8 points, each an x and a y), or to gather several signals into one table with a column per signal.\n\nHOW IT DIFFERS FROM t.hstack:\nt.hstack lays two rows of 8 end to end, as ONE row of 16. t.column_stack first stands each 1-D input up as a column of 8, then puts the columns side by side. For 2-D inputs the two agree: two 7 by 6 pictures become 7 by 12 either way.\n\nINPUTS OF DIFFERENT WIDTHS:\nThe inputs need only the same number of ROWS. A 2-D input adds all of its columns, so an 8 by 2 table and a row of 8 join into 8 by 3 - which is how to add one more column to a table you already have (the second half of the demo). Inputs with different numbers of rows cannot be joined: the console prints an error and nothing is sent.\n\nSYNTAX:\nt.column_stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.column_stack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it becomes the left-hand column(s). Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order, to the right. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Until something has reached tensor 2, tensor 1 comes out on its own as a single column ([8] becomes [8, 1]).\n\nOUTPUTS:\n\nstacked tensors:\nThe table: as many rows as the inputs, and one column per 1-D input plus all the columns of each 2-D input.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 values (drag stop on its t.linspace); tensor 2 the same ramp falling, made once when the patch opens. The first t.column_stack gives 8 rows of 2: rising down the left, falling down the right. That 8 by 2 table then goes into a second t.column_stack beside a row of 8 values all 0.5, and comes out 8 by 3 - the two columns and a third, all one middle colour.\n\nRELATED:\nt.hstack joins side by side without turning rows into columns. t.stack with dim 1 also makes the columns from 1-D inputs, but needs every input the same shape. t.vstack joins as rows. np.stack (axis 1) is the numpy way to make the columns."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "name": "t.linspace",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 8,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0 1 8"
+        },
+        "5": {
+            "init": "comment tensor 1: rising. drag stop",
+            "name": "comment",
+            "id": 422,
+            "position_x": 546,
+            "position_y": 155,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tensor 1: rising. drag stop",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tensor 1: rising. drag stop"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 330,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "t.linspace",
+            "id": 496,
+            "position_x": 330,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 8,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 1 0 8"
+        },
+        "8": {
+            "init": "comment tensor 2: falling, made once",
+            "name": "comment",
+            "id": 533,
+            "position_x": 546,
+            "position_y": 195,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tensor 2: falling, made once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tensor 2: falling, made once"
+        },
+        "9": {
+            "name": "t.column_stack",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 101,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "10": {
+            "init": "comment two rows of 8 in, as two columns",
+            "name": "comment",
+            "id": 607,
+            "position_x": 546,
+            "position_y": 385,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two rows of 8 in, as two columns",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two rows of 8 in, as two columns"
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 188,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 250,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "t.info",
+            "id": 681,
+            "position_x": 260,
+            "position_y": 500,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 500,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "name": "t.linspace",
+            "id": 755,
+            "position_x": 330,
+            "position_y": 840,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 8,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0.5 0.5 8"
+        },
+        "15": {
+            "init": "comment tensor 2: eight values of 0.5, made once",
+            "name": "comment",
+            "id": 792,
+            "position_x": 546,
+            "position_y": 845,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tensor 2: eight values of 0.5, made once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tensor 2: eight values of 0.5, made once"
+        },
+        "16": {
+            "name": "t.column_stack",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 1060,
+            "width": 101,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "17": {
+            "init": "comment the 8 x 2 table beside a row of 8: different widths",
+            "name": "comment",
+            "id": 866,
+            "position_x": 546,
+            "position_y": 1065,
+            "width": 322,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the 8 x 2 table beside a row of 8: different widths",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the 8 x 2 table beside a row of 8: different widths"
+        },
+        "18": {
+            "name": "heat_map",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1180,
+            "width": 248,
+            "height": 300,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 250,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "name": "t.info",
+            "id": 940,
+            "position_x": 320,
+            "position_y": 1180,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "20": {
+            "name": "list",
+            "id": 977,
+            "position_x": 390,
+            "position_y": 1180,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 1544,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.hstack"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 112,
+            "position_y": 1544,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.stack"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 188,
+            "position_y": 1544,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.vstack"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 270,
+            "position_y": 1544,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.stack"
+        },
+        "25": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1162,
+            "position_x": 30,
+            "position_y": 1510,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "26": {
+            "name": "close",
+            "id": 1199,
+            "position_x": 24,
+            "position_y": 1618,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2"
+        },
+        "3": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2"
+        },
+        "4": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "stacked tensors",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "stacked tensors",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1"
+        },
+        "8": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "stacked tensors",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "stacked tensors",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "stacked tensors",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "12": {
+            "source_node": 940,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

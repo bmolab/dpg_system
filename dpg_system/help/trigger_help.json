@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The trigger node fires when a signal rises past a threshold, and again when it falls back.\n\nIt has two thresholds, not one, and that is the whole point. \nThe signal has to climb above the trigger threshold to turn the node on, \nand then fall below the RELEASE threshold - which you normally set lower - \nbefore it will turn off again. \nThe gap between the two is the dead zone where nothing happens.\n\nWithout that gap, a noisy signal sitting right on the threshold would \nrattle on and off many times a second. With it, the signal has to make a real \nexcursion before the node changes its mind. This is called hysteresis, \nand the hysteresis node is the same node with the trigger threshold preset \nto 0.2 to make the gap obvious.\n\nUse it to turn a continuous reading - a loudness, a speed, a distance - into a \nclean on/off decision that you can act on.\n\nSYNTAX:\ntrigger <threshold: float> <release threshold: float>\nhysteresis <threshold: float> <release threshold: float>\n\nEXAMPLE:\ntrigger 0.6 0.3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to watch. Receiving data here triggers the node. \nNumbers only - integers and floats, not arrays.\n\nthreshold:\nThe level the input must rise ABOVE to fire. Default 0.1, or 0.2 for hysteresis.\n\nrelease threshold:\nThe level the input must fall BELOW to release. Default 0.1. \nSet this lower than the trigger threshold; the distance between them is how \nmuch noise the node will ignore. Setting them equal removes the protection \nand you are back to a plain comparison.\n\ntrigger mode:\n\"output toggle\" sends 1 when it fires and 0 when it releases - a state you can \nuse to gate something. \n\"output bang\" sends a bang from each outlet instead - an event you can use to \nstart something.\n\nretrig delay:\nA minimum time, in seconds, before the node is allowed to fire again after \nfiring. Use it when a single physical event produces several bursts and you \nonly want the first.\n\nOUTPUTS: \n\nout:\nIn toggle mode, 1 on firing and 0 on release. In bang mode, a bang on firing.\n\nrelease:\nIn toggle mode, 1 on release. In bang mode, a bang on release. \nHaving the release on its own outlet lets you start one thing when the signal \narrives and a different thing when it goes away.\n\nRELATED:\ntogedge reports crossings of zero with no threshold and no dead zone. \nnoise_gate silences small values rather than reporting them.",
+                    "value": "The trigger node fires when a signal rises past a threshold, and again when it falls back.\n\nIt has two thresholds, not one, and that is the whole point.  The signal has to climb above the trigger threshold to turn the node on,  and then fall below the RELEASE threshold - which you normally set lower -  before it will turn off again. \nThe gap between the two is the dead zone where nothing happens.\n\nWithout that gap, a noisy signal sitting right on the threshold would  rattle on and off many times a second. With it, the signal has to make a real  excursion before the node changes its mind. This is called hysteresis,  and the hysteresis node is the same node with the trigger threshold preset  to 0.2 to make the gap obvious.\n\nUse it to turn a continuous reading - a loudness, a speed, a distance - into a  clean on/off decision that you can act on.\n\nSYNTAX:\ntrigger <threshold: float> <release threshold: float>\nhysteresis <threshold: float> <release threshold: float>\n\nEXAMPLE:\ntrigger 0.6 0.3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to watch. Receiving data here triggers the node.  Numbers only - integers and floats, not arrays.\n\nthreshold:\nThe level the input must rise ABOVE to fire. Default 0.1, or 0.2 for hysteresis.\n\nrelease threshold:\nThe level the input must fall BELOW to release. Default 0.1.  Set this lower than the trigger threshold; the distance between them is how  much noise the node will ignore. Setting them equal removes the protection  and you are back to a plain comparison.\n\ntrigger mode:\n\"output toggle\" sends 1 when it fires and 0 when it releases - a state you can  use to gate something. \n\"output bang\" sends a bang from each outlet instead - an event you can use to  start something.\n\nretrig delay:\nA minimum time, in seconds, before the node is allowed to fire again after  firing. Use it when a single physical event produces several bursts and you  only want the first.\n\nOUTPUTS: \n\nout:\nIn toggle mode, 1 on firing and 0 on release. In bang mode, a bang on firing.\n\nrelease:\nIn toggle mode, 1 on release. In bang mode, a bang on release.  Having the release on its own outlet lets you start one thing when the signal  arrives and a different thing when it goes away.\n\nRELATED:\ntogedge reports crossings of zero with no threshold and no dead zone.  noise_gate silences small values rather than reporting them.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,38 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "The trigger node fires when a signal rises past a threshold, and again when it falls back.\n\nIt has two thresholds, not one, and that is the whole point. \nThe signal has to climb above the trigger threshold to turn the node on, \nand then fall below the RELEASE threshold - which you normally set lower - \nbefore it will turn off again. \nThe gap between the two is the dead zone where nothing happens.\n\nWithout that gap, a noisy signal sitting right on the threshold would \nrattle on and off many times a second. With it, the signal has to make a real \nexcursion before the node changes its mind. This is called hysteresis, \nand the hysteresis node is the same node with the trigger threshold preset \nto 0.2 to make the gap obvious.\n\nUse it to turn a continuous reading - a loudness, a speed, a distance - into a \nclean on/off decision that you can act on.\n\nSYNTAX:\ntrigger <threshold: float> <release threshold: float>\nhysteresis <threshold: float> <release threshold: float>\n\nEXAMPLE:\ntrigger 0.6 0.3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to watch. Receiving data here triggers the node. \nNumbers only - integers and floats, not arrays.\n\nthreshold:\nThe level the input must rise ABOVE to fire. Default 0.1, or 0.2 for hysteresis.\n\nrelease threshold:\nThe level the input must fall BELOW to release. Default 0.1. \nSet this lower than the trigger threshold; the distance between them is how \nmuch noise the node will ignore. Setting them equal removes the protection \nand you are back to a plain comparison.\n\ntrigger mode:\n\"output toggle\" sends 1 when it fires and 0 when it releases - a state you can \nuse to gate something. \n\"output bang\" sends a bang from each outlet instead - an event you can use to \nstart something.\n\nretrig delay:\nA minimum time, in seconds, before the node is allowed to fire again after \nfiring. Use it when a single physical event produces several bursts and you \nonly want the first.\n\nOUTPUTS: \n\nout:\nIn toggle mode, 1 on firing and 0 on release. In bang mode, a bang on firing.\n\nrelease:\nIn toggle mode, 1 on release. In bang mode, a bang on release. \nHaving the release on its own outlet lets you start one thing when the signal \narrives and a different thing when it goes away.\n\nRELATED:\ntogedge reports crossings of zero with no threshold and no dead zone. \nnoise_gate silences small values rather than reporting them."
+            "text": "The trigger node fires when a signal rises past a threshold, and again when it falls back.\n\nIt has two thresholds, not one, and that is the whole point.  The signal has to climb above the trigger threshold to turn the node on,  and then fall below the RELEASE threshold - which you normally set lower -  before it will turn off again. \nThe gap between the two is the dead zone where nothing happens.\n\nWithout that gap, a noisy signal sitting right on the threshold would  rattle on and off many times a second. With it, the signal has to make a real  excursion before the node changes its mind. This is called hysteresis,  and the hysteresis node is the same node with the trigger threshold preset  to 0.2 to make the gap obvious.\n\nUse it to turn a continuous reading - a loudness, a speed, a distance - into a  clean on/off decision that you can act on.\n\nSYNTAX:\ntrigger <threshold: float> <release threshold: float>\nhysteresis <threshold: float> <release threshold: float>\n\nEXAMPLE:\ntrigger 0.6 0.3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to watch. Receiving data here triggers the node.  Numbers only - integers and floats, not arrays.\n\nthreshold:\nThe level the input must rise ABOVE to fire. Default 0.1, or 0.2 for hysteresis.\n\nrelease threshold:\nThe level the input must fall BELOW to release. Default 0.1.  Set this lower than the trigger threshold; the distance between them is how  much noise the node will ignore. Setting them equal removes the protection  and you are back to a plain comparison.\n\ntrigger mode:\n\"output toggle\" sends 1 when it fires and 0 when it releases - a state you can  use to gate something. \n\"output bang\" sends a bang from each outlet instead - an event you can use to  start something.\n\nretrig delay:\nA minimum time, in seconds, before the node is allowed to fire again after  firing. Use it when a single physical event produces several bursts and you  only want the first.\n\nOUTPUTS: \n\nout:\nIn toggle mode, 1 on firing and 0 on release. In bang mode, a bang on firing.\n\nrelease:\nIn toggle mode, 1 on release. In bang mode, a bang on release.  Having the release on its own outlet lets you start one thing when the signal  arrives and a different thing when it goes away.\n\nRELATED:\ntogedge reports crossings of zero with no threshold and no dead zone.  noise_gate silences small values rather than reporting them."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,12 +136,12 @@
             },
             "init": "signal 3.0 sin"
         },
-        "6": {
+        "4": {
             "init": "comment a slow rise and fall, 0 to 1",
             "name": "comment",
             "id": 459,
             "position_x": 436,
-            "position_y": 215,
+            "position_y": 135,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -186,11 +161,11 @@
             },
             "comment": "a slow rise and fall, 0 to 1"
         },
-        "7": {
+        "5": {
             "name": "trigger",
             "id": 496,
             "position_x": 30,
-            "position_y": 250,
+            "position_y": 170,
             "width": 197,
             "height": 84,
             "visibility": "show_all",
@@ -218,14 +193,15 @@
                     "value_type": "float"
                 }
             },
-            "init": "trigger 0.6 0.3"
+            "init": "trigger 0.6 0.3",
+            "highlight": true
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 533,
             "annotation": true,
             "position_x": 436,
-            "position_y": 380,
+            "position_y": 300,
             "width": 261,
             "height": 40,
             "visibility": "show_all",
@@ -260,11 +236,11 @@
             },
             "text": "fires above 0.6, releases below 0.3\nthe gap between them is the dead zone"
         },
-        "9": {
+        "7": {
             "name": "plot",
             "id": 570,
             "position_x": 30,
-            "position_y": 450,
+            "position_y": 370,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -323,11 +299,11 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "name": "counter",
             "id": 607,
             "position_x": 280,
-            "position_y": 450,
+            "position_y": 370,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -341,11 +317,11 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "name": "int",
             "id": 644,
             "position_x": 280,
-            "position_y": 545,
+            "position_y": 465,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -369,12 +345,12 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment counts releases",
             "name": "comment",
             "id": 681,
             "position_x": 436,
-            "position_y": 600,
+            "position_y": 520,
             "width": 101,
             "height": 30,
             "visibility": "show_all",
@@ -394,11 +370,11 @@
             },
             "comment": "counts releases"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 718,
             "position_x": 24,
-            "position_y": 658,
+            "position_y": 578,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -415,26 +391,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -444,7 +400,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "3": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -454,7 +410,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
@@ -464,7 +420,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "5": {
+        "3": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,

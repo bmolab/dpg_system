@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "text and text_display hold many lines of text rather than one value.\n\ntext is editable - type into it, and what you type is available to the patch. \ntext_display is for output: text arriving is added to it, and it scrolls as it \nfills, which makes it the place to put a running log, a transcript, or \nanything you want to read inside the patch rather than in a terminal.\n\nSYNTAX:\ntext\ntext_display\n\nINPUTS and PARAMETERS:\n\ntext in:\nThe text. On text_display each arrival is appended; on text it replaces what \nis there.\n\nwrap:\nWhether long lines fold to fit the width or run off the edge.\n\nheight / width:\nThe size of the box.\n\nmax_lines (text_display):\nHow many lines to keep. Older ones fall off the top once it is full, \nso a long-running log cannot grow without limit.\n\nautoscroll (text_display):\nWhether the view follows new text as it arrives. On is what you want while \nwatching; turn it off to read back through what has already gone by without \nbeing dragged to the bottom.\n\ncopy to clipboard (text_display):\nTakes the whole contents, for pasting somewhere else.\n\nfont size / bind to / parameter name:\nAs on the other text widgets.\n\nOUTPUTS: \n\nstring out / list out / message out:\nThe contents, as a single string, as a list of words, or as a message.\n\nA NOTE ON WRAPPING:\nOnly these two can wrap. The single-line string and message widgets cannot \nfold text or scroll it, so anything longer than the box simply disappears off \nthe end - if you are losing text, this is usually why, and text_display is \nthe fix.",
+                    "value": "text and text_display hold many lines of text rather than one value.\n\ntext is editable - type into it, and what you type is available to the patch. \ntext_display is for output: text arriving is added to it, and it scrolls as it  fills, which makes it the place to put a running log, a transcript, or  anything you want to read inside the patch rather than in a terminal.\n\nSYNTAX:\ntext\ntext_display\n\nINPUTS and PARAMETERS:\n\ntext in:\nThe text. On text_display each arrival is appended; on text it replaces what  is there.\n\nwrap:\nWhether long lines fold to fit the width or run off the edge.\n\nheight / width:\nThe size of the box.\n\nmax_lines (text_display):\nHow many lines to keep. Older ones fall off the top once it is full,  so a long-running log cannot grow without limit.\n\nautoscroll (text_display):\nWhether the view follows new text as it arrives. On is what you want while  watching; turn it off to read back through what has already gone by without  being dragged to the bottom.\n\ncopy to clipboard (text_display):\nTakes the whole contents, for pasting somewhere else.\n\nfont size / bind to / parameter name:\nAs on the other text widgets.\n\nOUTPUTS: \n\nstring out / list out / message out:\nThe contents, as a single string, as a list of words, or as a message.\n\nA NOTE ON WRAPPING:\nOnly these two can wrap. The single-line string and message widgets cannot  fold text or scroll it, so anything longer than the box simply disappears off  the end - if you are losing text, this is usually why, and text_display is  the fix.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,25 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "text and text_display hold many lines of text rather than one value.\n\ntext is editable - type into it, and what you type is available to the patch. \ntext_display is for output: text arriving is added to it, and it scrolls as it \nfills, which makes it the place to put a running log, a transcript, or \nanything you want to read inside the patch rather than in a terminal.\n\nSYNTAX:\ntext\ntext_display\n\nINPUTS and PARAMETERS:\n\ntext in:\nThe text. On text_display each arrival is appended; on text it replaces what \nis there.\n\nwrap:\nWhether long lines fold to fit the width or run off the edge.\n\nheight / width:\nThe size of the box.\n\nmax_lines (text_display):\nHow many lines to keep. Older ones fall off the top once it is full, \nso a long-running log cannot grow without limit.\n\nautoscroll (text_display):\nWhether the view follows new text as it arrives. On is what you want while \nwatching; turn it off to read back through what has already gone by without \nbeing dragged to the bottom.\n\ncopy to clipboard (text_display):\nTakes the whole contents, for pasting somewhere else.\n\nfont size / bind to / parameter name:\nAs on the other text widgets.\n\nOUTPUTS: \n\nstring out / list out / message out:\nThe contents, as a single string, as a list of words, or as a message.\n\nA NOTE ON WRAPPING:\nOnly these two can wrap. The single-line string and message widgets cannot \nfold text or scroll it, so anything longer than the box simply disappears off \nthe end - if you are losing text, this is usually why, and text_display is \nthe fix."
+            "text": "text and text_display hold many lines of text rather than one value.\n\ntext is editable - type into it, and what you type is available to the patch. \ntext_display is for output: text arriving is added to it, and it scrolls as it  fills, which makes it the place to put a running log, a transcript, or  anything you want to read inside the patch rather than in a terminal.\n\nSYNTAX:\ntext\ntext_display\n\nINPUTS and PARAMETERS:\n\ntext in:\nThe text. On text_display each arrival is appended; on text it replaces what  is there.\n\nwrap:\nWhether long lines fold to fit the width or run off the edge.\n\nheight / width:\nThe size of the box.\n\nmax_lines (text_display):\nHow many lines to keep. Older ones fall off the top once it is full,  so a long-running log cannot grow without limit.\n\nautoscroll (text_display):\nWhether the view follows new text as it arrives. On is what you want while  watching; turn it off to read back through what has already gone by without  being dragged to the bottom.\n\ncopy to clipboard (text_display):\nTakes the whole contents, for pasting somewhere else.\n\nfont size / bind to / parameter name:\nAs on the other text widgets.\n\nOUTPUTS: \n\nstring out / list out / message out:\nThe contents, as a single string, as a list of words, or as a message.\n\nA NOTE ON WRAPPING:\nOnly these two can wrap. The single-line string and message widgets cannot  fold text or scroll it, so anything longer than the box simply disappears off  the end - if you are losing text, this is usually why, and text_display is  the fix."
         },
         "3": {
-            "name": "toggle",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
             "name": "metro",
             "id": 385,
             "position_x": 30,
-            "position_y": 112,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -133,11 +121,11 @@
             },
             "init": "metro 700"
         },
-        "5": {
+        "4": {
             "name": "counter",
             "id": 422,
             "position_x": 30,
-            "position_y": 192,
+            "position_y": 132,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -151,11 +139,11 @@
                 }
             }
         },
-        "6": {
+        "5": {
             "name": "prepend",
             "id": 459,
             "position_x": 30,
-            "position_y": 290,
+            "position_y": 230,
             "width": 129,
             "height": 56,
             "visibility": "show_all",
@@ -164,11 +152,11 @@
             "properties": {},
             "init": "prepend line"
         },
-        "7": {
+        "6": {
             "name": "text_display",
             "id": 496,
             "position_x": 30,
-            "position_y": 370,
+            "position_y": 310,
             "width": 314,
             "height": 210,
             "visibility": "show_all",
@@ -205,15 +193,16 @@
                     "value": "24",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
-        "8": {
+        "7": {
             "name": "text_block",
             "id": 533,
             "annotation": true,
-            "position_x": 370,
-            "position_y": 605,
-            "width": 249,
+            "position_x": 322,
+            "position_y": 545,
+            "width": 317,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -221,8 +210,8 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "switch on: lines pile up and scroll\nuntick autoscroll to read back",
-                    "value_type": "str"
+                    "value": "check the metro's on: lines pile up and scroll\nuntick autoscroll to read back",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -231,7 +220,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 241,
+                    "value": 309,
                     "value_type": "int"
                 },
                 "3": {
@@ -245,13 +234,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "switch on: lines pile up and scroll\nuntick autoscroll to read back"
+            "text": "check the metro's on: lines pile up and scroll\nuntick autoscroll to read back"
         },
-        "9": {
+        "8": {
             "name": "close",
             "id": 570,
             "position_x": 24,
-            "position_y": 610,
+            "position_y": 550,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -268,16 +257,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -287,7 +266,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "2": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -297,7 +276,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "2": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,

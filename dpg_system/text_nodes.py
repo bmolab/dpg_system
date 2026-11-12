@@ -177,18 +177,10 @@ class WordReplaceNode(Node):
         find = self.find_input()
         replace = self.replace_input()
         if find != '':
-            if type(data) == list:
-                for i, w in enumerate(data):
-                    if type(w) == str:
-                        if w == find:
-                            data[i] = replace
+            # the string inlet has already turned a list into a string
+            if type(data) == str:
+                data = re.sub(r"\b{}\b".format(find), replace, data)
                 self.output.send(data)
-            elif type(data) == str:
-                if type(data) == str:
-                    data = re.sub(r"\b{}\b".format(find), replace, data)
-                    self.output.send(data)
-                else:
-                    self.output.send(data)
             else:
                 self.output.send(data)
         else:
@@ -219,6 +211,8 @@ class StringReplaceNode(Node):
         replace = self.replace_input()
         if find != '':
             if type(data) == list:
+                # work on a copy: other nodes may have been sent this same list
+                data = list(data)
                 for i, w in enumerate(data):
                     if type(w) == str:
                         w = re.sub(r"{}".format(find), replace, w)
@@ -249,6 +243,8 @@ class WordTriggerNode(Node):
         self.trigger_outputs = []
         for i in range(len(args)):
             self.trigger_outputs.append(self.add_output(self.find_list[i]))
+        # the incoming text is lower-cased before matching, so the arguments must be too
+        self.find_list = [any_to_string(f).lower() for f in self.find_list]
 
     def execute(self):
         data = any_to_string(self.input()).lower()
@@ -274,6 +270,8 @@ class WordFirstLetterNode(Node):
         self.trigger_outputs = []
         for i in range(len(args)):
             self.trigger_outputs.append(self.add_output(self.find_list[i]))
+        # the incoming text is lower-cased before matching, so the arguments must be too
+        self.find_list = [any_to_string(f).lower() for f in self.find_list]
 
     def execute(self):
         data = any_to_string(self.input()).lower()
@@ -316,7 +314,8 @@ class GatherSentences(Node):
         if self.enforce_spaces() and len(self.received_tokens) > 0 and len(data) > 0:
             previous = self.received_tokens[-1]
             if (len(previous) > 0 and previous[-1] not in ' \n(' and data[0] not in ' \n.,;:!?)'):
-                self.received_tokens.append(' ')
+                # the space travels with the fragment so '<backspace>' removes both
+                data = ' ' + data
         self.received_tokens.append(data)
 
     def execute(self):
@@ -338,7 +337,7 @@ class GatherSentences(Node):
                 if data == '<backspace>':
                     if len(self.received_tokens) > 0:
                         self.received_tokens = self.received_tokens[:-1]
-                        return
+                    return
                 if self.auto_sentence_end():
                     if data[-1] == '\n' and len(data) > 1:
                         if data[-2] == '\n':
@@ -853,39 +852,28 @@ class FuzzyMatchNode(Node):
             if type(data) == list:
                 data = ' '.join(data)
             if type(data) == str:
-                index = data.find('by ')
-                if index != -1:
-                    if index == 0 or data[index - 1] in [' ', ',', ':', ';']:
-                        index += 3
-                        if data[index:index + 2] != 'a ' and data[index:index + 4] != 'the ':
-                            indicator = 'by '
-                            substring = data[index:]
-                            prestring = data[:index]
-                            index = substring.find(' of ')
-                            index2 = substring.find(' from ')
-                            if index != -1:
-                                if index2 != -1:
-                                    if index < index2:
-                                        post_string = substring[index:]
-                                        substring = substring[:index]
-                                        found = True
-                                    else:
-                                        post_string = substring[index2:]
-                                        substring = substring[:index2]
-                                        found = True
-                                else:
-                                    post_string = substring[index:]
-                                    substring = substring[:index]
-                                    found = True
-                            elif index2 != -1:
-                                post_string = substring[index2:]
-                                substring = substring[:index2]
-                                found = True
+                # every whole-word "by " is a candidate ("nearby " is not one);
+                # when there are several, the one whose name scores best wins
+                candidates = []
+                for m in re.finditer(r'(?<!\w)by ', data):
+                    index = m.end()
+                    if data[index:index + 2] != 'a ' and data[index:index + 4] != 'the ':
+                        candidates.append(self.split_by_phrase(data, index))
+                if len(candidates) > 1:
+                    best = None
+                    for candidate in candidates:
+                        self.fuzzy_score(candidate[1])
+                        if best is None or self.best_score > best[0]:
+                            best = (self.best_score, candidate)
+                    candidates = [best[1]]
+                if len(candidates) > 0:
+                    indicator = 'by '
+                    prestring, substring, post_string, found = candidates[0]
                 if not found:
-                    index = data.find('style of ')
-                    if index != -1:
+                    matches = list(re.finditer(r'(?<!\w)style of ', data))
+                    if len(matches) > 0:
                         indicator = 'style of '
-                        index += len('style of ')
+                        index = matches[-1].end()
                         substring = data[index:]
                         prestring = data[:index]
                         found = True
@@ -915,6 +903,22 @@ class FuzzyMatchNode(Node):
                         self.output.send(data)
                 else:
                     self.output.send(data)
+
+    def split_by_phrase(self, data, index):
+        # the name runs from index up to " of " or " from ", whichever comes first
+        substring = data[index:]
+        prestring = data[:index]
+        post_string = ''
+        found = False
+        index = substring.find(' of ')
+        index2 = substring.find(' from ')
+        if index2 != -1 and (index == -1 or index2 < index):
+            index = index2
+        if index != -1:
+            post_string = substring[index:]
+            substring = substring[:index]
+            found = True
+        return prestring, substring, post_string, found
 
     def fuzzy_score(self, test):
         scores = {}
@@ -1044,7 +1048,7 @@ class CombineFIFONode(Node):
         self.last_was_progress = False
         self.lock = threading.Lock()
 
-    def dump_oldest(self, value):
+    def dump_oldest(self, value=None):
         for i in range(self.count):
             j = (self.pointer - i) % self.count
             if self.combine_list[j] != '':

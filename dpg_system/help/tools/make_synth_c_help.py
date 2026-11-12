@@ -1,90 +1,171 @@
-"""clean~, the data bridges, additive~ and shape_modes, vst~."""
+"""clean~, one_euro~, the data bridges, additive~ and shape_modes, vst~."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
-# --------------------------------------------------------- clean~ / one_euro~
-body = """These clean up a signal before it goes anywhere else.
+# ------------------------------------------------------------------- clean~
+body = """clean~ takes subsonics off the bottom of a signal and fizz off the top.
 
-THE NODES:
+condition~ is the same node.
 
-clean~      subsonics off the bottom, fizz off the top
-condition~  the same node
-one_euro~   smoothing that gets out of the way when you move
-smooth~     the same node
+THE CHANNEL STRIP'S HYGIENE STAGE:
+The intended place is source -> fader~ -> clean~ -> place~ -> audio_out~.
+It exists for when a bowed 5 Hz, or a low mode blooming out of a resonator,
+is eating headroom without being music.
 
-clean~ IS THE CHANNEL STRIP'S HYGIENE STAGE:
-The intended place is source -> fader~ -> clean~ -> place~ -> audio_out~. 
-It exists for when a bowed 5 Hz, or a low mode blooming out of a resonator, 
-is eating headroom without being music. 24 dB per octave each way, flat and 
-resonance-free between, and bypassed it passes the signal untouched.
+Physical models are the reason. They produce energy well below what anything
+can reproduce, and that energy is real - it moves the meters and steals the
+loudness - but nobody hears it. At the other end, hard folding and crushing
+leave a fizz near the top of the range.
 
-Physical models are the reason. They produce energy well below what anything 
-can reproduce, and that energy is real - it moves the meters and steals the 
-loudness - but nobody hears it.
-
-one_euro~ CHOOSES PER SAMPLE:
-Any fixed smoothing has to choose between passing jitter and lagging behind a 
-gesture, because those are the same setting. This one does not choose once. 
-At rest the cutoff drops to 'min cutoff' and the signal settles hard; as the 
-signal moves the cutoff opens in proportion to how fast it is moving, so a fast 
-gesture arrives on time.
-
-This is the audio-rate version of the one_euro_filter node, and it is what you 
-put between effort data and anything that will be heard - because control data 
-that steps is audible as zippering, and control data that lags feels dead.
+WHAT IT DOES:
+A high-pass at 'low cut' and a low-pass at 'high cut', each 24 dB per octave
+(fourth-order Butterworth), flat and resonance-free between. Not an
+instrument and not an EQ: it removes what was never meant, and passes
+everything that was. Pull 'low cut' down when the subsonics ARE the material.
 
 SYNTAX:
-clean~
-one_euro~
+clean~ [low cut] [high cut]
 
 EXAMPLE:
-clean~
+clean~ 30 12000
 
-INPUTS and PARAMETERS:
+INPUTS:
 
 left in / right in:
-The signal.
+The signal. With nothing patched to 'right in', the right outlet carries the
+filtered left signal.
 
-low cut / high cut (clean~):
-Where the two filters act.
+low cut:
+The high-pass frequency, 5 to 300 Hz. Default 25.
 
-min cutoff (one_euro~):
-The smoothing when nothing is moving. Lower is calmer. Set this first, with 
-beta at zero, until the resting signal is still.
+high cut:
+The low-pass frequency, 1000 to 20000 Hz. Default 16000.
 
-beta (one_euro~):
-How much movement opens the filter up. Raise it until fast gestures stop 
-lagging.
+Both are inlets, so a patch can move them.
 
-OUTPUTS: 
+bypass:
+Ticked, the signal passes through untouched.
+
+OUTPUTS:
 
 left out / right out:
-The conditioned signal."""
+The cleaned signal.
+
+RELATED:
+one_euro~ smooths a control signal before it is heard."""
+
+demo = [
+    {'key': 'nz', 'init': 'noise~', 'pos': (30, 62), 'w': 240, 'h': 260},
+    {'key': 'cl', 'init': 'clean~', 'pos': (30, 345), 'w': 240, 'h': 200},
+    {'key': 'c0', 'comment': True, 'text': 'drag high cut down: the top goes\ntick bypass to compare',
+     'pos': (30, 560)},
+    {'key': 'sc', 'init': 'scope~', 'pos': (300, 345), 'w': 260, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 630), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
+    {'key': 'c1', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 865)},
+]
+links = [('nz', 'out', 'cl', 'left in'),
+         ('cl', 'left out', 'sc', 'in'),
+         ('cl', 'left out', 'fo', 'left')]
+print(build('clean~', 'clean~ - take off what nobody hears',
+            body, demo, links, demo_width=590, text_width=800, text_height=700))
+
+# ----------------------------------------------------------------- one_euro~
+body = """one_euro~ smooths a signal, and gets out of the way when it moves.
+
+smooth~ is the same node.
+
+IT CHOOSES PER SAMPLE:
+Any fixed smoothing has to choose between passing jitter and lagging behind a
+gesture, because those are the same setting. This one does not choose once.
+At rest the cutoff drops to 'min cutoff' and the signal settles hard; as the
+signal moves, the cutoff opens in proportion to how fast it is moving, so a
+fast gesture arrives on time. It was designed for interactive motion data
+(Casiez and Roussel, 2012), which is what effort data is.
+
+It is what you put between effort data and anything that will be heard -
+because control data that steps is audible as zippering, and control data
+that lags feels dead. After ramp~ it rounds the corners between one frame's
+move and the next.
+
+SETTING IT:
+Set the two controls in order. Hold still and lower 'min cutoff' until the
+resting signal stops shivering. Then move, and raise 'beta' until the movement
+stops feeling dragged. Setting beta first tends to end with both too high.
+
+How fast the signal moves is measured in its own units per second, so the
+right beta depends on the range of the signal: a value that sweeps 0 to 1 in
+half a second is moving at 2.
+
+SYNTAX:
+one_euro~ [min cutoff] [beta]
+
+EXAMPLE:
+one_euro~ 1 1
+
+INPUTS:
+
+left in / right in:
+The signal. With nothing patched to 'right in', the right outlet carries the
+smoothed left signal.
+
+min cutoff:
+The cutoff when nothing is moving, in Hz. Lower is calmer and slower to set
+off. Default 1.
+
+beta:
+How much movement opens the filter up. Default 1.
+
+A signal patched to either of these is read once per audio block.
+
+bypass:
+Ticked, the signal passes through untouched.
+
+OPTIONS:
+
+speed cutoff:
+How heavily the speed measurement itself is smoothed, in Hz. Default 1. It is
+smoothed so that noise cannot open the filter and let more of itself through.
+
+reset:
+Forget the history; the next sample starts it again.
+
+OUTPUTS:
+
+left out / right out:
+The smoothed signal.
+
+RELATED:
+one_euro_filter is the same filter for ordinary per-frame data rather than ~
+signals. Use it on a stream of values or lists; use one_euro~ once the data is
+a signal."""
 
 demo = [
     {'key': 'sl', 'init': 'slider 0.0', 'pos': (30, 62), 'w': 220, 'h': 60,
      'props': {'min': 0.0, 'max': 1.0, 'format': '%.2f', 'width': 200}},
-    {'key': 'sg', 'init': 'sig~', 'pos': (30, 135), 'w': 200, 'h': 140},
-    {'key': 'oe', 'init': 'one_euro~', 'pos': (30, 290), 'w': 240, 'h': 180},
-    {'key': 'c0', 'comment': True, 'text': 'still at rest, quick when you move',
-     'pos': (30, 480)},
-    {'key': 'sc', 'init': 'scope~', 'pos': (300, 290), 'w': 260, 'h': 220},
-    {'key': 'md', 'init': 'modal~', 'pos': (30, 520), 'w': 260, 'h': 300},
-    {'key': 'cl', 'init': 'clean~', 'pos': (30, 926), 'w': 240, 'h': 200},
-    {'key': 'c1', 'comment': True, 'text': 'takes the inaudible rumble out',
-     'pos': (30, 1136)},
-    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 1176), 'w': 220, 'h': 220},
+    {'key': 'c0', 'comment': True, 'text': 'drag it: a control value, in steps',
+     'pos': (270, 62)},
+    {'key': 'sg', 'init': 'sig~', 'pos': (30, 135), 'w': 200, 'h': 140,
+     'props': {'glide': 0.0}},
+    {'key': 'oe', 'init': 'one_euro~', 'pos': (30, 300), 'w': 240, 'h': 180},
+    {'key': 'c1', 'comment': True, 'text': 'still at rest, quick when you move',
+     'pos': (30, 495)},
+    {'key': 'sc', 'init': 'scope~', 'pos': (300, 300), 'w': 260, 'h': 220},
+    {'key': 'vc', 'init': 'vco~ 220', 'pos': (30, 545), 'w': 220, 'h': 200},
+    {'key': 'c2', 'comment': True, 'text': 'the smoothed value as pitch', 'pos': (30, 755)},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 795), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
+    {'key': 'c3', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 1030)},
 ]
 links = [('sl', 'float out', 'sg', 'value'),
          ('sg', 'signal', 'oe', 'left in'),
          ('oe', 'left out', 'sc', 'in'),
-         ('oe', 'left out', 'md', 'excite in'),
-         ('md', 'out', 'cl', 'left in'),
-         ('cl', 'left out', 'fo', 'left')]
-print(build('clean~', 'clean~ and one_euro~ - conditioning before it is heard',
-            body, demo, links, demo_width=590, text_width=800, text_height=700))
+         ('oe', 'left out', 'vc', 'pitch'),
+         ('vc', 'left out', 'fo', 'left')]
+print(build('one_euro~', 'one_euro~ - smoothing that keeps up',
+            body, demo, links, demo_width=590, text_width=800, text_height=760))
 
 # ------------------------------------------------------------------ snapshot~
 body = """snapshot~ carries a signal's value back into the ordinary node world, once a frame.

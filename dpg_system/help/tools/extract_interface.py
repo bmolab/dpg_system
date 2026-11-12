@@ -52,8 +52,22 @@ class FileInfo:
         self.tree = ast.parse(self.src)
         self.classes = {}        # name -> ast.ClassDef
         self.bases = {}          # name -> [base names]
-        self.registrations = []  # (label, factory_class, data)
+        self.registrations = []  # (label, factory_class, data, line, enclosing def)
+        self.called = set()      # every function name this file calls
+        self.imports = []        # (module stem, [names] or ['*']) from 'from x import ...'
+        # the def each register_node call sits in (innermost, as ast.walk
+        # reaches nested defs after their parents)
+        encl = {}
+        for fd in ast.walk(self.tree):
+            if isinstance(fd, ast.FunctionDef):
+                for c in ast.walk(fd):
+                    encl[id(c)] = fd.name
         for n in ast.walk(self.tree):
+            if isinstance(n, ast.Call):
+                f = n.func
+                self.called.add(f.id if isinstance(f, ast.Name) else getattr(f, 'attr', None))
+            if isinstance(n, ast.ImportFrom) and n.module:
+                self.imports.append((n.module.split('.')[-1], [a.name for a in n.names]))
             if isinstance(n, ast.ClassDef):
                 self.classes[n.name] = n
                 self.bases[n.name] = [b.id for b in n.bases
@@ -72,8 +86,94 @@ class FileInfo:
                     if isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name):
                         cls = f.value.id      # SomeNode.factory
                 data = lit(n.args[2]) if len(n.args) > 2 else None
-                self.registrations.append((label, cls, data))
+                self.registrations.append((label, cls, data, n.lineno, encl.get(id(n))))
 
+
+
+_MISSING = object()
+
+
+def decide(test, name):
+    """True / False when an if-test depends only on the node's label
+    (self.label == 'np.ones', label in [...], and/or/not of those), None when
+    it cannot be decided statically."""
+    if name is None:
+        return None
+    if isinstance(test, ast.UnaryOp) and isinstance(test.op, ast.Not):
+        d = decide(test.operand, name)
+        return None if d is None else not d
+    if isinstance(test, ast.BoolOp):
+        ds = [decide(v, name) for v in test.values]
+        if isinstance(test.op, ast.And):
+            return False if False in ds else (True if all(d is True for d in ds) else None)
+        return True if True in ds else (False if all(d is False for d in ds) else None)
+    if not (isinstance(test, ast.Compare) and len(test.ops) == 1):
+        return None
+    left = test.left
+    is_label = (isinstance(left, ast.Name) and left.id == 'label') or \
+               (isinstance(left, ast.Attribute) and left.attr == 'label'
+                and isinstance(left.value, ast.Name) and left.value.id == 'self')
+    if not is_label:
+        return None
+    v = lit(test.comparators[0])
+    op = test.ops[0]
+    if isinstance(op, (ast.Eq, ast.NotEq)) and isinstance(v, str):
+        return (name == v) == isinstance(op, ast.Eq)
+    if isinstance(op, (ast.In, ast.NotIn)) and isinstance(v, (list, tuple, set)):
+        return (name in v) == isinstance(op, ast.In)
+    return None
+
+
+def pruned(cd, name, skip=()):
+    """Every ast node of a class in source order, as (node, env, conditional):
+    env holds the string literals local names have at that point, and
+    conditional is True inside a branch or loop that cannot be decided here.
+    Branches that test the label are followed only the way the registered
+    NAME goes, so a node that adds 'min'/'max' only for np.rand, or names its
+    outlet after its label, is reported per name rather than as the union of
+    all its branches. Methods named in skip (overridden by the subclass being
+    collected, without calling up) are left out."""
+    out = []
+
+    def visit(n, env, cond):
+        if isinstance(n, ast.FunctionDef):
+            env = {}                      # each method starts fresh
+        if isinstance(n, ast.If):
+            d = decide(n.test, name)
+            if d is True:
+                for s in n.body:
+                    visit(s, env, cond)
+                return
+            if d is False:
+                for s in n.orelse:
+                    visit(s, env, cond)
+                return
+            visit(n.test, env, cond)
+            a, b = dict(env), dict(env)
+            for s in n.body:
+                visit(s, a, True)
+            for s in n.orelse:
+                visit(s, b, True)
+            # a name both branches leave alike keeps its value; else unknown
+            env.clear()
+            env.update({k: v for k, v in a.items() if b.get(k, _MISSING) == v})
+            return
+        out.append((n, dict(env), cond))
+        loop = isinstance(n, (ast.For, ast.While, ast.ExceptHandler, ast.IfExp))
+        for c in ast.iter_child_nodes(n):
+            if n is cd and isinstance(c, ast.FunctionDef) and c.name in skip:
+                continue
+            visit(c, env, cond or loop)
+        if isinstance(n, ast.Assign) and len(n.targets) == 1 \
+                and isinstance(n.targets[0], ast.Name):
+            v = lit(n.value)
+            if isinstance(v, str):
+                env[n.targets[0].id] = v
+            else:
+                env.pop(n.targets[0].id, None)
+
+    visit(cd, {}, False)
+    return out
 
 
 def dispatch_map(cls_name, files):
@@ -141,8 +241,28 @@ def load_all():
     return files
 
 
-def collect(cls_name, files, seen=None, depth=0, prefer=None):
-    """Walk a class and its bases, gathering declared interface elements."""
+def overrides(cd):
+    """Methods a class defines that do not call the version they replace
+    (super().m(...) or Base.m(self, ...)) -- a base's copy never runs."""
+    own = set()
+    for fd in cd.body:
+        if not isinstance(fd, ast.FunctionDef):
+            continue
+        calls_up = any(isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
+                       and c.func.attr == fd.name
+                       and (isinstance(c.func.value, ast.Name)
+                            or (isinstance(c.func.value, ast.Call)
+                                and getattr(c.func.value.func, 'id', '') == 'super'))
+                       for c in ast.walk(fd))
+        if not calls_up:
+            own.add(fd.name)
+    return own
+
+
+def collect(cls_name, files, seen=None, depth=0, prefer=None, name=None, skip=frozenset()):
+    """Walk a class and its bases, gathering declared interface elements.
+    name is the registered label, used to follow label-dependent branches;
+    skip is the methods a subclass below has already replaced."""
     if seen is None:
         seen = set()
     if cls_name in seen or depth > 6:
@@ -153,21 +273,30 @@ def collect(cls_name, files, seen=None, depth=0, prefer=None):
     # search the module that registered the label before falling back to any.
     ordered = list(files.values())
     if prefer is not None:
-        ordered.sort(key=lambda f: 0 if f.path == prefer else 1)
+        # then the module the preferred file imports the name from: MotionSDK
+        # has its own class Node, and it must not stand in for node.py's
+        src = [m for m, names in files[prefer].imports
+               if cls_name in names or '*' in names] if prefer in files else []
+        ordered.sort(key=lambda f: 0 if f.path == prefer else
+                     1 if os.path.basename(f.path)[:-3] in src else 2)
     for fi in ordered:
         if cls_name not in fi.classes:
             continue
         cd = fi.classes[cls_name]
         # bases first, so inherited elements come first (matching construction order)
         for b in fi.bases.get(cls_name, []):
-            out += collect(b, files, seen, depth + 1, prefer=fi.path)
-        for n in ast.walk(cd):
+            out += collect(b, files, seen, depth + 1, prefer=fi.path, name=name,
+                           skip=skip | overrides(cd))
+        nodes = pruned(cd, name, skip)
+        for n, env, cond in nodes:
             if not (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)):
                 continue
             kind = ADDERS.get(n.func.attr)
             if kind is None:
                 continue
             label = lit(n.args[0]) if n.args else None
+            if label is None and n.args and isinstance(n.args[0], ast.Name):
+                label = env.get(n.args[0].id)     # out_label = 'array of ones'
             if label is None:
                 for kw in n.keywords:
                     if kw.arg == 'label':
@@ -187,11 +316,12 @@ def collect(cls_name, files, seen=None, depth=0, prefer=None):
                 'file': os.path.basename(fi.path),
                 'line': n.lineno,
                 'class': cls_name,
+                'conditional': cond,
             })
         # help_file_name is often set on a BASE class (TorchDistributionNode
         # carries 't.dist_help' for every t.dist.* node), so record it here and
         # let collect()'s base walk carry it down to the subclasses.
-        for n in ast.walk(cd):
+        for n, _, _ in nodes:
             if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Attribute) \
                     and n.targets[0].attr == 'help_file_name':
                 v = lit(n.value)
@@ -205,7 +335,7 @@ def collect(cls_name, files, seen=None, depth=0, prefer=None):
 
         # name_archive entries: link resolution accepts these as alternative
         # port names, so a cord aimed at an archived name does connect.
-        for n in ast.walk(cd):
+        for n, _, _ in nodes:
             if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) \
                     and n.func.attr == 'append' and n.args \
                     and isinstance(n.func.value, ast.Attribute) \
@@ -219,7 +349,7 @@ def collect(cls_name, files, seen=None, depth=0, prefer=None):
                                 'class': cls_name})
 
         # renames: some nodes relabel a port after construction
-        for n in ast.walk(cd):
+        for n, _, _ in nodes:
             if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) \
                     and n.func.attr in ('set_label', 'set_name') and n.args:
                 v = lit(n.args[0])
@@ -230,7 +360,7 @@ def collect(cls_name, files, seen=None, depth=0, prefer=None):
                                 'file': os.path.basename(fi.path), 'line': n.lineno,
                                 'class': cls_name})
         # combo item lists: <thing>.widget.combo_items = [...]
-        for n in ast.walk(cd):
+        for n, _, _ in nodes:
             if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Attribute) \
                     and n.targets[0].attr in ('combo_items', 'choices'):
                 v = lit(n.value)
@@ -247,25 +377,48 @@ def collect(cls_name, files, seen=None, depth=0, prefer=None):
 def main():
     files = load_all()
     index = {}
-    for fi in files.values():
-        for label, cls, data in fi.registrations:
-            if cls is None:
-                continue
-            dmap, ddef = dispatch_map(cls, files)
-            if dmap:
-                base = label.split('_')[-1]
-                cls = dmap.get(base) or dmap.get(label) or ddef or cls
-            index[label] = {
-                'class': cls,
-                'file': os.path.basename(fi.path),
-                'data': data,
-                'elements': collect(cls, files, prefer=fi.path),
-            }
+    # A registration only counts if the app runs it: dpg_app calls
+    # register_<module> for each module it imports, and other register_*
+    # functions are called from those. A copy left in a module nobody
+    # registers (lighting_nodes' color_source) must not overwrite the live one.
+    app_src = open(os.path.join(ROOT, 'dpg_app.py')).read()
+    called = set().union(*(fi.called for fi in files.values()))
+
+    def live(fi, fn):
+        stem = os.path.splitext(os.path.basename(fi.path))[0]
+        return fn is None or fn in called or \
+            (fn == 'register_' + stem and f"'{stem}'" in app_src)
+
+    regs = [(fi, r) for fi in files.values() for r in fi.registrations]
+    regs.sort(key=lambda x: live(x[0], x[1][4]))      # live ones written last
+    where = collections.defaultdict(list)    # label -> every place registering it
+    for fi, (label, cls, data, line, fn) in regs:
+        where[label].append(f'{os.path.relpath(fi.path, ROOT)}:{line} ({cls}'
+                            f'{"" if live(fi, fn) else ", never registered: " + str(fn) + " is not called"})')
+        if cls is None:
+            continue
+        dmap, ddef = dispatch_map(cls, files)
+        if dmap:
+            base = label.split('_')[-1]
+            cls = dmap.get(base) or dmap.get(label) or ddef or cls
+        index[label] = {
+            'class': cls,
+            'file': os.path.basename(fi.path),
+            'data': data,
+            'elements': collect(cls, files, prefer=fi.path, name=label),
+        }
     json.dump(index, open(sys.argv[1] if len(sys.argv) > 1 else 'iface.json', 'w'), indent=1)
     print('labels indexed:', len(index))
     noiface = [k for k, v in index.items() if not v['elements']]
     print('labels with no extracted interface:', len(noiface))
     print('  e.g.', noiface[:15])
+    # A name registered twice: the app keeps both factories, the node list
+    # shows it twice, and the first one registered builds the node -- an
+    # accident of import order.
+    dups = {k: v for k, v in where.items() if len(v) > 1}
+    print('labels registered more than once:', len(dups))
+    for k, v in sorted(dups.items()):
+        print(f'  {k}:', '; '.join(v))
 
 
 if __name__ == '__main__':

@@ -22,6 +22,7 @@ smpl-h_models/
 
 # Motion capture data files (loose in root or dpg_system)
 *.npz
+!dpg_system/help/data/*.npz
 *.npy
 *.npa
 
@@ -86,3 +87,11 @@ patches/
 
 # Generated noise-estimation histograms
 dpg_system/noise_estimation/hists/
+
+# per-rig Vive tracker names (written by the vive_tracker save_names button)
+dpg_system/vive_names.json
+
+# neural synth weights (regenerate: python -m dpg_system.neural_synth.convert_inception5h)
+dpg_system/neural_synth/*.pt
+# activation atlases (build: python -m dpg_system.neural_synth.atlas all)
+dpg_system/neural_synth/atlas/

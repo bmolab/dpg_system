@@ -1,364 +1,1376 @@
 {
-    "height": 901,
-    "width": 1596,
-    "position": [
-        100,
-        100
-    ],
-    "id": 644,
     "name": "t.linalg.svd_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.svd_help.json",
-    "nodes": {
+    "patches": {
         "0": {
-            "name": "",
-            "id": 237,
-            "position_x": 0,
-            "position_y": 0,
-            "width": 9,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "protected": true,
-            "presentation_state": "hidden",
-            "properties": {
+            "height": 910,
+            "width": 800,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1458,
+            "name": "make_matrix",
+            "parent_node_uuid": 459,
+            "nodes": {
                 "0": {
                     "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "id": 1495,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "in",
+                    "init": "in amount",
+                    "id": 1532,
+                    "position_x": 500,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1569,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "3": {
+                    "name": "t",
+                    "init": "t bang bang",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 140,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment ten times a second: the extra pattern first",
+                    "id": 1643,
+                    "position_x": 200,
+                    "position_y": 135,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "ten times a second: the extra pattern first",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "ten times a second: the extra pattern first"
+                },
+                "5": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1680,
+                    "position_x": 300,
+                    "position_y": 200,
+                    "width": 420,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "0.5 -0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "np.reshape",
+                    "init": "np.reshape 6 4",
+                    "id": 1717,
+                    "position_x": 300,
+                    "position_y": 260,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "comment",
+                    "init": "comment a checker: a third, independent pattern",
+                    "id": 1754,
+                    "position_x": 300,
+                    "position_y": 340,
+                    "width": 400,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a checker: a third, independent pattern",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a checker: a third, independent pattern"
+                },
+                "8": {
+                    "name": "*",
+                    "init": "*",
+                    "id": 1791,
+                    "position_x": 300,
+                    "position_y": 380,
+                    "width": 130,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "9": {
+                    "name": "comment",
+                    "init": "comment times the amount",
+                    "id": 1828,
+                    "position_x": 450,
+                    "position_y": 395,
+                    "width": 220,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "times the amount",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "times the amount"
+                },
+                "10": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1865,
+                    "position_x": 40,
+                    "position_y": 470,
+                    "width": 420,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "0.0 0.5 1.5 2.0 0.4 0.7 1.3 1.6 0.8 0.9 1.1 1.2 1.2 1.1 0.9 0.8 1.6 1.3 0.7 0.4 2.0 1.5 0.5 0.0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "11": {
+                    "name": "np.reshape",
+                    "init": "np.reshape 6 4",
+                    "id": 1902,
+                    "position_x": 40,
+                    "position_y": 530,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "12": {
+                    "name": "comment",
+                    "init": "comment 6 rows, each a blend of two patterns: rank 2",
+                    "id": 1939,
+                    "position_x": 40,
+                    "position_y": 610,
+                    "width": 440,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "6 rows, each a blend of two patterns: rank 2",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "6 rows, each a blend of two patterns: rank 2"
+                },
+                "13": {
+                    "name": "+",
+                    "init": "+",
+                    "id": 1976,
+                    "position_x": 40,
+                    "position_y": 650,
+                    "width": 130,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "14": {
+                    "name": "out",
+                    "init": "out matrix",
+                    "id": 2013,
+                    "position_x": 40,
+                    "position_y": 750,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1532,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "amount",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###operand"
+                },
+                "1": {
+                    "source_node": 1569,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "bang",
+                    "dest_node": 1680,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "3": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 1865,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 1680,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "5": {
+                    "source_node": 1717,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 1791,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1976,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###operand"
+                },
+                "7": {
+                    "source_node": 1865,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1902,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "8": {
+                    "source_node": 1902,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1976,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "9": {
+                    "source_node": 1976,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 2013,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "matrix"
                 }
             }
         },
         "1": {
-            "init": "comment t decompositions - what a matrix is made of",
-            "name": "comment",
-            "id": 274,
-            "position_x": 24,
-            "position_y": -4,
-            "width": 537,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
+            "height": 1616,
+            "width": 1698,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1421,
+            "name": "t.linalg.svd_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.svd_help.json",
+            "nodes": {
                 "0": {
-                    "name": "text",
-                    "value": "t decompositions - what a matrix is made of",
-                    "value_type": "str"
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "48",
-                    "value_type": "str"
-                }
-            },
-            "comment": "t decompositions - what a matrix is made of"
-        },
-        "2": {
-            "name": "text_block",
-            "id": 311,
-            "position_x": 738,
-            "position_y": 45,
-            "width": 818,
-            "height": 796,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "These break a matrix apart into the pieces it is made of.\n\nA matrix is a transformation. These nodes answer what that transformation is \nactually DOING - which directions it stretches, which it leaves alone, and how \nmuch of it could be thrown away without much being lost.\n\nTHE NODES:\n\nt.linalg.svd             singular value decomposition\nt.linalg.pca_low_rank    principal components, found approximately and quickly\nt.linalg.eig             eigenvalues and eigenvectors\nt.linalg.qr              QR decomposition\n\nSVD IS THE ONE TO KNOW:\nIt splits any matrix into a rotation, a set of scalings, and another rotation. \nThe scalings - the singular values - come out in descending order, and how \nquickly they fall away tells you how much of the data lives in how few \ndimensions. If the first three are large and the rest are near zero, your \nhigh-dimensional data is really three-dimensional with noise on top.\n\nThat is what makes it the tool for asking \"how many things are actually varying \nhere\". For a set of poses, or joint angles over time, the answer is usually far \nfewer than the number of channels.\n\npca_low_rank IS SVD WHEN YOU ONLY WANT THE TOP FEW:\nComputing a full decomposition of a large matrix is expensive and mostly wasted \nif you are going to keep six components. This finds the leading ones directly. \nIt also centres the data first by default, which is what makes it principal \ncomponent analysis rather than a bare decomposition - and centring matters, \nbecause otherwise the first component just points at where the data sits rather \nthan how it varies.\n\neig FINDS THE DIRECTIONS THAT DO NOT TURN:\nAn eigenvector is a direction the matrix only stretches, without rotating, \nand its eigenvalue is by how much. For a covariance matrix those directions are \nthe axes of variation. Note that eigenvalues can be complex even for real \nmatrices, which is the transformation containing a rotation.\n\nqr SPLITS INTO A ROTATION AND A TRIANGLE:\nMostly a building block - it is how least-squares problems get solved stably - \nbut Q is also a convenient way to get a set of mutually perpendicular directions \nout of a set of arbitrary ones.\n\nSYNTAX:\nt.linalg.svd\nt.linalg.pca_low_rank\n\nEXAMPLE:\nt.linalg.svd\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix. Receiving it triggers the node.\n\nfull (t.linalg.svd, pca_low_rank):\nWhether to compute the complete decomposition or only the part that carries \ninformation. The reduced form is smaller and faster and is usually what you want.\n\ncenter (pca_low_rank):\nSubtract the mean first. Leave it on unless you specifically want the \ndecomposition of the raw data.\n\nmode (t.linalg.qr):\nComplete or reduced.\n\nOUTPUTS: \n\nS tensor out:\nThe singular values - the amount of variation along each component, \nin descending order. This is the outlet to look at first; its shape tells you \nhow many dimensions your data really has.\n\nU / V / D tensor out:\nThe component directions.\n\nL / V tensor out (eig):\nThe eigenvalues and eigenvectors.\n\nQ / R tensor out (qr):\nThe perpendicular directions and the triangular factor.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
+                    "init": "comment t.linalg.svd - the patterns a matrix is made of",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 586,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.linalg.svd - the patterns a matrix is made of",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.linalg.svd - the patterns a matrix is made of"
                 },
                 "2": {
-                    "name": "width",
-                    "value": 810,
-                    "value_type": "int"
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 890,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1036,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Splits a matrix into three pieces - turn, stretch, turn - with the singular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out largest first, and how fast they fall away says how many independent patterns the matrix really holds. If the first two are large and the rest are near zero, the data is really two patterns mixed in different amounts, with noise on top. For a set of poses, or joint angles over time, the answer is usually far fewer than the number of channels. U says how much of each pattern each ROW uses; the rows of Vh are the patterns themselves.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32 tensor). Any shape, rows x columns; a stack of matrices is split one by one. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns - for a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild in this demo (with full on, the rebuild prints a shape error). Changing it does not send by itself; the next matrix uses it.\n\nOUTPUTS (sent right to left - Vh first, U last):\n\nU out:\nOne column per pattern, one row per input row: how much of each pattern each row uses.\n\nS out:\nThe singular values, largest first (1-D, never negative): how strong each pattern is.\n\nVh out:\nOne row per pattern, one column per input column: the patterns themselves, each of length 1.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend of two patterns, plus a checker pattern scaled by the slider. With the slider at 0 the singular values read about 4.9, 2.6, 0, 0 - two patterns, so two values. Raise the slider and a third singular value grows from 0. The fourth stays 0: there are still only three patterns. U and Vh are shown as pictures (blue above 0, red below). The bottom picture multiplies the three pieces back together - t.diag makes S into a square matrix, np.matmul does the products - and it is the input again.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points, centred first. t.linalg.eig finds the directions a square matrix only stretches. t.linalg.qr splits into perpendicular directions and a triangle. np.linalg.matrix_rank counts the singular values that are not zero. np.matmul rebuilds.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1020,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Splits a matrix into three pieces - turn, stretch, turn - with the singular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out largest first, and how fast they fall away says how many independent patterns the matrix really holds. If the first two are large and the rest are near zero, the data is really two patterns mixed in different amounts, with noise on top. For a set of poses, or joint angles over time, the answer is usually far fewer than the number of channels. U says how much of each pattern each ROW uses; the rows of Vh are the patterns themselves.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32 tensor). Any shape, rows x columns; a stack of matrices is split one by one. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns - for a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild in this demo (with full on, the rebuild prints a shape error). Changing it does not send by itself; the next matrix uses it.\n\nOUTPUTS (sent right to left - Vh first, U last):\n\nU out:\nOne column per pattern, one row per input row: how much of each pattern each row uses.\n\nS out:\nThe singular values, largest first (1-D, never negative): how strong each pattern is.\n\nVh out:\nOne row per pattern, one column per input column: the patterns themselves, each of length 1.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend of two patterns, plus a checker pattern scaled by the slider. With the slider at 0 the singular values read about 4.9, 2.6, 0, 0 - two patterns, so two values. Raise the slider and a third singular value grows from 0. The fourth stays 0: there are still only three patterns. U and Vh are shown as pictures (blue above 0, red below). The bottom picture multiplies the three pieces back together - t.diag makes S into a square matrix, np.matmul does the products - and it is the input again.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points, centred first. t.linalg.eig finds the directions a square matrix only stretches. t.linalg.qr splits into perpendicular directions and a triangle. np.linalg.matrix_rank counts the singular values that are not zero. np.matmul rebuilds."
                 },
                 "3": {
-                    "name": "height",
-                    "value": 780,
-                    "value_type": "int"
+                    "name": "load_bang",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 88,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
                 },
                 "4": {
-                    "name": "text_size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "text": "These break a matrix apart into the pieces it is made of.\n\nA matrix is a transformation. These nodes answer what that transformation is \nactually DOING - which directions it stretches, which it leaves alone, and how \nmuch of it could be thrown away without much being lost.\n\nTHE NODES:\n\nt.linalg.svd             singular value decomposition\nt.linalg.pca_low_rank    principal components, found approximately and quickly\nt.linalg.eig             eigenvalues and eigenvectors\nt.linalg.qr              QR decomposition\n\nSVD IS THE ONE TO KNOW:\nIt splits any matrix into a rotation, a set of scalings, and another rotation. \nThe scalings - the singular values - come out in descending order, and how \nquickly they fall away tells you how much of the data lives in how few \ndimensions. If the first three are large and the rest are near zero, your \nhigh-dimensional data is really three-dimensional with noise on top.\n\nThat is what makes it the tool for asking \"how many things are actually varying \nhere\". For a set of poses, or joint angles over time, the answer is usually far \nfewer than the number of channels.\n\npca_low_rank IS SVD WHEN YOU ONLY WANT THE TOP FEW:\nComputing a full decomposition of a large matrix is expensive and mostly wasted \nif you are going to keep six components. This finds the leading ones directly. \nIt also centres the data first by default, which is what makes it principal \ncomponent analysis rather than a bare decomposition - and centring matters, \nbecause otherwise the first component just points at where the data sits rather \nthan how it varies.\n\neig FINDS THE DIRECTIONS THAT DO NOT TURN:\nAn eigenvector is a direction the matrix only stretches, without rotating, \nand its eigenvalue is by how much. For a covariance matrix those directions are \nthe axes of variation. Note that eigenvalues can be complex even for real \nmatrices, which is the transformation containing a rotation.\n\nqr SPLITS INTO A ROTATION AND A TRIANGLE:\nMostly a building block - it is how least-squares problems get solved stably - \nbut Q is also a convenient way to get a set of mutually perpendicular directions \nout of a set of arbitrary ones.\n\nSYNTAX:\nt.linalg.svd\nt.linalg.pca_low_rank\n\nEXAMPLE:\nt.linalg.svd\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix. Receiving it triggers the node.\n\nfull (t.linalg.svd, pca_low_rank):\nWhether to compute the complete decomposition or only the part that carries \ninformation. The reduced form is smaller and faster and is usually what you want.\n\ncenter (pca_low_rank):\nSubtract the mean first. Leave it on unless you specifically want the \ndecomposition of the raw data.\n\nmode (t.linalg.qr):\nComplete or reduced.\n\nOUTPUTS: \n\nS tensor out:\nThe singular values - the amount of variation along each component, \nin descending order. This is the outlet to look at first; its shape tells you \nhow many dimensions your data really has.\n\nU / V / D tensor out:\nThe component directions.\n\nL / V tensor out (eig):\nThe eigenvalues and eigenvectors.\n\nQ / R tensor out (qr):\nThe perpendicular directions and the triangular factor."
-        },
-        "3": {
-            "name": "button",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t.rand",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 163,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.rand 6 6"
-        },
-        "5": {
-            "name": "heat_map",
-            "id": 422,
-            "position_x": 250,
-            "position_y": 120,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 6,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "name": "slider",
+                    "id": 385,
+                    "position_x": 150,
+                    "position_y": 62,
+                    "width": 210,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
+                    "init": "comment how much of a third pattern",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 624,
+                    "position_y": 75,
+                    "width": 174,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "how much of a third pattern",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "how much of a third pattern"
                 },
                 "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
+                    "name": "p",
+                    "id": 459,
+                    "position_x": 30,
+                    "position_y": 150,
+                    "width": 84,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_matrix",
+                    "patcher id": 1458
                 },
                 "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "6": {
-            "init": "comment a 6 by 6 matrix",
-            "name": "comment",
-            "id": 459,
-            "position_x": 484,
-            "position_y": 310,
-            "width": 101,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a 6 by 6 matrix",
-                    "value_type": "str"
+                    "name": "heat_map",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 240,
+                    "width": 188,
+                    "height": 250,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -2.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 2.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
                 },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
+                "8": {
+                    "init": "comment the input: 6 x 4",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 624,
+                    "position_y": 500,
+                    "width": 107,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the input: 6 x 4",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the input: 6 x 4"
+                },
+                "9": {
+                    "name": "t.linalg.svd",
+                    "id": 570,
+                    "position_x": 330,
+                    "position_y": 150,
+                    "width": 82,
+                    "height": 84,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "full",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    },
+                    "highlight": true
+                },
+                "10": {
+                    "init": "comment full off: the reduced form",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 624,
+                    "position_y": 160,
+                    "width": 168,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "full off: the reduced form",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "full off: the reduced form"
+                },
+                "11": {
+                    "name": "list",
+                    "id": 644,
+                    "position_x": 330,
+                    "position_y": 300,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "heat_map",
+                    "id": 681,
+                    "position_x": 330,
+                    "position_y": 360,
+                    "width": 268,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 260,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 50,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 4,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "13": {
+                    "init": "comment S: the singular values, largest first",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 624,
+                    "position_y": 470,
+                    "width": 236,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "S: the singular values, largest first",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "S: the singular values, largest first"
+                },
+                "14": {
+                    "name": "heat_map",
+                    "id": 755,
+                    "position_x": 30,
+                    "position_y": 540,
+                    "width": 188,
+                    "height": 250,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "comment U: 6 x 4, one column per pattern",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 624,
+                    "position_y": 800,
+                    "width": 205,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "U: 6 x 4, one column per pattern",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "U: 6 x 4, one column per pattern"
+                },
+                "16": {
+                    "name": "heat_map",
+                    "id": 829,
+                    "position_x": 330,
+                    "position_y": 540,
+                    "width": 188,
+                    "height": 250,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 4,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment Vh: 4 x 4, one pattern per row",
+                    "name": "comment",
+                    "id": 866,
+                    "position_x": 624,
+                    "position_y": 840,
+                    "width": 193,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "Vh: 4 x 4, one pattern per row",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "Vh: 4 x 4, one pattern per row"
+                },
+                "18": {
+                    "name": "t.diag",
+                    "id": 903,
+                    "position_x": 330,
+                    "position_y": 850,
+                    "width": 154,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "19": {
+                    "name": "np.matmul",
+                    "id": 940,
+                    "position_x": 330,
+                    "position_y": 960,
+                    "width": 95,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "20": {
+                    "init": "comment diag(S) x Vh",
+                    "name": "comment",
+                    "id": 977,
+                    "position_x": 624,
+                    "position_y": 1015,
+                    "width": 82,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "diag(S) x Vh",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "diag(S) x Vh"
+                },
+                "21": {
+                    "name": "np.matmul",
+                    "id": 1014,
+                    "position_x": 30,
+                    "position_y": 960,
+                    "width": 95,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "22": {
+                    "init": "comment U x that",
+                    "name": "comment",
+                    "id": 1051,
+                    "position_x": 624,
+                    "position_y": 975,
+                    "width": 58,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "U x that",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "U x that"
+                },
+                "23": {
+                    "name": "heat_map",
+                    "id": 1088,
+                    "position_x": 30,
+                    "position_y": 1050,
+                    "width": 188,
+                    "height": 250,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -2.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 2.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "24": {
+                    "init": "comment rebuilt: the input again",
+                    "name": "comment",
+                    "id": 1125,
+                    "position_x": 624,
+                    "position_y": 1310,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "rebuilt: the input again",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "rebuilt: the input again"
+                },
+                "25": {
+                    "name": "help_link",
+                    "id": 1162,
+                    "position_x": 30,
+                    "position_y": 1394,
+                    "width": 148,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.linalg.pca_low_rank"
+                },
+                "26": {
+                    "name": "help_link",
+                    "id": 1199,
+                    "position_x": 194,
+                    "position_y": 1394,
+                    "width": 92,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.linalg.eig"
+                },
+                "27": {
+                    "name": "help_link",
+                    "id": 1236,
+                    "position_x": 302,
+                    "position_y": 1394,
+                    "width": 85,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.linalg.qr"
+                },
+                "28": {
+                    "name": "help_link",
+                    "id": 1273,
+                    "position_x": 30,
+                    "position_y": 1438,
+                    "width": 146,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.linalg.matrix_rank"
+                },
+                "29": {
+                    "name": "help_link",
+                    "id": 1310,
+                    "position_x": 235,
+                    "position_y": 1438,
+                    "width": 72,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.matmul"
+                },
+                "30": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1347,
+                    "position_x": 30,
+                    "position_y": 1360,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "31": {
+                    "name": "close",
+                    "id": 1384,
+                    "position_x": 24,
+                    "position_y": 1512,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 }
             },
-            "comment": "a 6 by 6 matrix"
-        },
-        "7": {
-            "name": "t.linalg.svd",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 350,
-            "width": 82,
-            "height": 84,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
-            "name": "heat_map",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 500,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
+            "links": {
                 "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 385,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
                 },
                 "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float out",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "amount"
                 },
                 "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "matrix",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
                 },
                 "3": {
-                    "name": "sample count",
-                    "value": 6,
-                    "value_type": "int"
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "matrix",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
                 },
                 "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "Vh out",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
                 },
                 "5": {
-                    "name": "max y",
-                    "value": 4.0,
-                    "value_type": "float"
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "Vh out",
+                    "dest_node": 940,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
                 },
                 "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "S out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
                 },
                 "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "S out",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "8": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "S out",
+                    "dest_node": 903,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "9": {
+                    "source_node": 903,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 940,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "10": {
+                    "source_node": 940,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mat mul result",
+                    "dest_node": 1014,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "11": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "U out",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "12": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "U out",
+                    "dest_node": 1014,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "13": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mat mul result",
+                    "dest_node": 1088,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
                 }
             }
-        },
-        "9": {
-            "name": "text_block",
-            "id": 570,
-            "annotation": true,
-            "position_x": 484,
-            "position_y": 660,
-            "width": 224,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "the singular values, descending\nhow fast they fall is how few\ndimensions the data really has",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 216,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "the singular values, descending\nhow fast they fall is how few\ndimensions the data really has"
-        },
-        "10": {
-            "name": "close",
-            "id": 607,
-            "position_x": 24,
-            "position_y": 680,
-            "width": 88,
-            "height": 44,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "close patch",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        }
-    },
-    "links": {
-        "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "###input"
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "S tensor out",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
         }
     }
 }

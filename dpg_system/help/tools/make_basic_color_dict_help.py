@@ -1,247 +1,417 @@
-"""color_convert, the dict family, dict_search/list_box, the replace family."""
+"""The dict family (one page per node), dict_search/list_box, the replace family."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
-# -------------------------------------------------------------- color_convert
-body = """These nodes convert a colour from one way of describing it to another.
-
-A colour is three numbers, but what those three numbers MEAN depends on the 
-space you are working in, and the spaces are good at different things. 
-Converting between them is not decoration - it is what lets you say 
-"the same colour but brighter" without also changing its hue.
-
-THE SPACES:
-
-rgb   red, green, blue - how a screen makes light. 
-      Natural for output, awkward for adjustment: there is no component 
-      that means "brightness" or "how vivid".
-cmy   cyan, magenta, yellow - the inverse of rgb, how inks subtract light. 
-      Each value is simply one minus the rgb one.
-hsl   hue, saturation, lightness. Hue is the colour itself as an angle 
-      round the wheel, saturation is how vivid, lightness runs black to white 
-      with the pure colour at the middle.
-hsv   hue, saturation, value. Like hsl, but value runs black to the pure 
-      colour rather than through to white. Handy when you think of it as 
-      "how much light is on this".
-
-Reach for hsl or hsv whenever you want to CHANGE a colour - rotate the hue, 
-drain the saturation, dim it - then convert back to rgb to display it.
-
-THE NODES:
-
-There is one node per pairing, named for what it does:
-
-rgb_to_cmy   rgb_to_hsl   rgb_to_hsv
-cmy_to_rgb   cmy_to_hsl   cmy_to_hsv
-hsl_to_rgb   hsl_to_cmy   hsl_to_hsv
-hsv_to_rgb   hsv_to_cmy   hsv_to_hsl
-
-color_convert is the same node with nothing preset - choose both spaces 
-yourself from its menus. The named versions are just conveniences; every one 
-of them can be repointed after the fact, so a rgb_to_hsl node can be turned 
-into a hsv_to_rgb node without replacing it.
-
-SYNTAX:
-<from>_to_<to>
-color_convert
-
-EXAMPLE:
-rgb_to_hsl
-
-INPUTS and PARAMETERS:
-
-in:
-Three numbers - a list, or a NumPy array. Receiving data here triggers 
-the conversion.
-
-from / to:
-The spaces being converted between: rgb, cmy, hsl or hsv. 
-The node name sets these; the menus let you change them.
-
-in scale / out scale:
-What numeric range the values use, INDEPENDENTLY at each end:
-
-  0-1     0.0 to 1.0, the usual choice inside a patch
-  0-100   percentages, as design tools tend to use
-  0-255   bytes, as image files and many devices use
-
-Because the two are separate, this node also does the rescaling for you: 
-set in scale to 0-255 and out scale to 0-1 to bring an image's colours into 
-patch range in the same move as the conversion.
-
-HUE IS ALWAYS IN DEGREES:
-The scale settings apply to every component EXCEPT hue, which is always 0 to 
-360 whatever the scale says. Hue is an angle, not a proportion, and 360 of them 
-go round the circle regardless. This catches people out: an hsl value coming 
-out as [210, 0.5, 0.4] with a 0-1 scale is correct, not a bug.
-
-OUTPUTS: 
-
-out:
-The converted colour, as a list of three numbers in the output space and scale."""
-
-demo = starter() + [
-    {'key': 't2', 'init': 't 0.8', 'pos': (200, 66), 'w': 40, 'h': 46},
-    {'key': 't3', 'init': 't 0.5', 'pos': (260, 66), 'w': 40, 'h': 46},
-    {'key': 'sig', 'init': 'signal 6.0 saw', 'pos': (30, 132), 'w': 129, 'h': 78,
-     'props': SIG('saw', 6.0, 360.0, False)},
-    {'key': 'c0', 'comment': True, 'text': 'a hue sweeping round the wheel', 'pos': (30, 215)},
-    {'key': 'pk', 'init': 'pack 3', 'pos': (30, 255), 'w': 150, 'h': 100},
-    {'key': 'c1', 'comment': True, 'text': 'hue, saturation 0.8, lightness 0.5',
-     'pos': (30, 365)},
-    {'key': 'cc', 'init': 'hsl_to_rgb', 'pos': (30, 405), 'w': 170, 'h': 140,
-     'props': {'from': 'hsl', 'to': 'rgb', 'in scale': '0-1', 'out scale': '0-1'}},
-    {'key': 'hm', 'init': 'heat_map', 'pos': (30, 565), 'w': 208, 'h': 148,
-     'props': {'color': 'viridis', 'width': 200, 'height': 100, 'sample count': 3,
-               'min y': 0.0, 'max y': 1.0, 'update_mode': 'heat_map',
-               'number format': '%.2f'}},
-    {'key': 'c2', 'comment': True, 'text': 'red, green and blue rise and fall in turn\nset out scale to 0-255 for byte values',
-     'pos': (30, 725)},
-]
-links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('lb', 'out', 't2', ''), ('t2', '0.8', 'pk', 'in 2'),
-         ('lb', 'out', 't3', ''), ('t3', '0.5', 'pk', 'in 3'),
-         ('sig', '', 'pk', 'in 1'), ('pk', 'out', 'cc', 'in'),
-         ('cc', 'out', 'hm', 'y')]
-print(build('color_convert', 'color_convert - the same colour, described differently',
-            body, demo, links, demo_width=430, text_width=820, text_height=760))
+# color_convert is no longer generated here: color_convert_help.json is laid out
+# by hand, and derive_color_convert_help.py copies its layout into one page per
+# conversion (rgb_to_hsl, ...). Regenerating it here would overwrite the hand
+# layout on every rebuild.
 
 # ----------------------------------------------------------------------- dict
-body = """These nodes build dictionaries, take them apart, and look things up in them.
+body = """The dict node is a named store: a collection of entries, each a key and
+the value filed under it. You put entries in, ask for them back by key, and can
+save the whole collection to a file and load it again.
 
-A dictionary is a bundle of named values travelling as one thing. 
-Where a list says "three numbers, and you remember what they are", a dictionary 
-says "x is this, y is that, confidence is the other". 
-It is what you want when data has to survive being passed around a patch 
-without every node needing to agree on the ordering.
+A dictionary is a bundle of named values travelling as one thing. Where a list
+says "three numbers, and you remember what they are", a dictionary says "x is
+this, y is that, confidence is the other".
 
-THE NODES:
+The collection is also saved with the patch, so it is still there the next
+time the patch is opened.
 
-dict              a named store you can save to and load from disk
-construct_dict    gather several inlets into one dictionary
-gather_to_dict    the same as construct_dict
-dict_extract      split a dictionary into one outlet per named key
-unpack_dict       the same as dict_extract
-dict_keys         report just the names in a dictionary
-dict_retrieve     pull one value out, by a key you set
-dict_stream       send every key and value in turn, as pairs
+PUTTING ENTRIES IN:
+Send a list to 'store': the first element is the key, the rest is the value.
+"red 255 0 0" files the list 255 0 0 under red. A key with a single value
+after it files just that value. Sending a whole dictionary to 'store' - or
+text that starts with { and reads as JSON - replaces the entire collection.
 
-BUILDING ONE:
-construct_dict takes its keys as arguments, so "construct_dict x y" gives you an 
-x inlet and a y inlet. Fill them, then click "send dict" to emit the result. 
-The dictionary is emptied after each send, so each one is a fresh snapshot. 
-You can also add entries at run time through "labelled data in" by sending a 
-list whose first element is the key.
+GETTING THEM BACK:
+Send a key to 'retrieve by key'. If it is there, its value goes out of 'out';
+if not, the key goes out of 'unmatched' instead. Wire 'unmatched' up rather
+than assuming a lookup succeeded.
+A key containing / reaches into nested dictionaries: synth/freq looks up freq
+inside the dictionary filed under synth.
 
-TAKING ONE APART:
-dict_extract is the mirror image: name the keys as arguments and each gets its 
-own outlet, in order. dict_keys tells you what is in a dictionary you did not 
-build yourself. dict_stream sends every entry one at a time as a two-element 
-list - the way to loop over a dictionary's contents.
-
-LOOKING SOMETHING UP:
-dict_retrieve holds one key and reports the matching value whenever a dictionary 
-arrives - or whenever you change the key, if it already holds a dictionary. 
-That second behaviour matters: you can browse a dictionary you already have 
-without re-sending it.
+'retrieve by key' can store too. A list of two or more elements there files
+everything after the first under the first, always as a list. "delete red"
+removes red, and "append" followed by a value files the value under the next
+unused whole number.
 
 SYNTAX:
 dict <name>
+
+The name is only the label the node shows. It does not load anything; after a
+save or load the label shows the file's name.
+
+EXAMPLE:
+dict colours
+
+INPUTS and PARAMETERS:
+
+retrieve by key:
+A key to look up, or a list to store, as above.
+
+store:
+A key followed by its value, a whole dictionary, or JSON text.
+
+load:
+Click to choose a JSON file; its contents replace the collection.
+
+save:
+Click to choose where to write the collection as a JSON file.
+
+clear:
+Empties the collection.
+
+send dict:
+Sends the whole collection out of 'dict out'. The collection is kept.
+
+MESSAGES:
+These can be sent to any inlet.
+
+keys - send the list of keys out of 'out'
+next - send the next entry, as a one-entry dictionary; it stops at the last
+reset - make next start from the first entry again
+random - send one entry, chosen at random, as a one-entry dictionary
+dump - send every entry as a list: the key followed by its value. A value
+that is a list is spread out after the key; any other value - a number, a
+string - is one item
+search <beginning> - send, as one list, every entry whose value is itself a
+dictionary and whose path has a level beginning with the text: each item is
+the path and the dictionary found there
+save <file> / load <file> - save or load without the file dialog
+clear - empty the collection
+
+A consequence: an entry whose key is one of these words cannot be stored or
+looked up by sending a list that starts with it - the word is taken as the
+message.
+
+OUTPUTS:
+
+out:
+The value that was looked up, and the replies to the messages above.
+
+unmatched:
+The key, when nothing in the collection matches it.
+
+dict out:
+The whole collection, when 'send dict' is clicked.
+
+RELATED:
+construct_dict builds a dictionary from inlets, dict_extract and dict_retrieve
+take one apart, dict_keys lists its keys and dict_stream sends its entries one by
+one. dict_search finds a branch of a nested dictionary by typing."""
+
+demo = [
+    {'key': 'm1', 'init': 'message', 'pos': (30, 62), 'w': 180, 'h': 42,
+     'props': {'text in': 'red 255 0 0', 'font size': '24'}},
+    {'key': 'm2', 'init': 'message', 'pos': (30, 115), 'w': 180, 'h': 42,
+     'props': {'text in': 'green 0 255 0', 'font size': '24'}},
+    {'key': 'c0', 'comment': True, 'text': 'click to store: a key, then its value',
+     'pos': (30, 165)},
+    {'key': 'k1', 'init': 'message', 'pos': (260, 62), 'w': 120, 'h': 42,
+     'props': {'text in': 'red', 'font size': '24'}},
+    {'key': 'k2', 'init': 'message', 'pos': (260, 115), 'w': 120, 'h': 42,
+     'props': {'text in': 'purple', 'font size': '24'}},
+    {'key': 'k3', 'init': 'message', 'pos': (400, 115), 'w': 120, 'h': 42,
+     'props': {'text in': 'keys', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'then click to look up, or ask for the keys',
+     'pos': (260, 200)},
+    {'key': 'dc', 'init': 'dict', 'pos': (30, 240), 'w': 180, 'h': 180},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 450), 'w': 220, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'what was found', 'pos': (30, 500)},
+    {'key': 's1', 'init': 'string', 'pos': (300, 450), 'w': 160, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'a key that is not there', 'pos': (300, 500)},
+]
+links = [('m1', 'message out', 'dc', 'store'), ('m2', 'message out', 'dc', 'store'),
+         ('k1', 'message out', 'dc', 'retrieve by key'),
+         ('k2', 'message out', 'dc', 'retrieve by key'),
+         ('k3', 'message out', 'dc', 'retrieve by key'),
+         ('dc', 'out', 'l1', ''), ('dc', 'unmatched', 's1', '')]
+print(build('dict', 'dict - a store of named values', body, demo, links,
+            demo_width=560, text_width=830, text_height=900))
+
+
+def dict_source(text, x=30, y=62):
+    """button -> repeat_in_order 2 -> JSON text into a dict, then send it on.
+    The demos below need a ready-made dictionary; this is the shortest way."""
+    return [
+        {'key': 'btn', 'init': 'button', 'pos': (x, y), 'w': 88, 'h': 46},
+        {'key': 'c0', 'comment': True, 'text': 'click to send a dictionary', 'pos': (x, y + 53)},
+        {'key': 'rp', 'init': 'repeat_in_order 2', 'pos': (x, y + 88), 'w': 190, 'h': 70},
+        {'key': 'src', 'init': 'string', 'pos': (x, y + 173), 'w': 380, 'h': 42,
+         'props': {'text in': text, 'font size': '24'}},
+        {'key': 'dc', 'init': 'dict', 'pos': (x, y + 233), 'w': 160, 'h': 180},
+    ], [('btn', '', 'rp', ''),
+        ('rp', 'first', 'src', ''),
+        ('rp', 'second', 'dc', 'send dict'),
+        ('src', 'string out', 'dc', 'store')]
+
+
+SRC_XY = '{"x": 0.25, "y": 0.75, "name": "left hand"}'
+
+# ------------------------------------------------------------- construct_dict
+body = """The construct_dict node gathers several inlets into one dictionary.
+
+Its arguments are the keys: "construct_dict x y" has an x inlet and a y inlet.
+Fill them in any order, then click 'send dict' (or send anything to it) and the
+dictionary goes out - one bundle carrying every value under its name.
+
+gather_to_dict is another name for the same node.
+
+WHAT IS KEPT BETWEEN SENDS:
+The inlets named by the arguments keep their last value, so each send includes
+every one of them - a key whose inlet has never received anything is sent with
+no value. Entries added through 'labelled data in' are cleared after each send.
+
+ADDING ENTRIES AT RUN TIME:
+'labelled data in' takes a list whose first element is the key. The rest of the
+list becomes the value, and is always a list - "speed 3" files the list 3, not
+the number 3. A key that is also an argument is overwritten by that argument's
+inlet when the dictionary is sent.
+
+SYNTAX:
 construct_dict <key> <key> ...
-dict_extract <key> <key> ...
-dict_retrieve
+gather_to_dict <key> <key> ...
 
 EXAMPLE:
 construct_dict x y confidence
 
 INPUTS and PARAMETERS:
 
-dict / dict in / in:
-The dictionary. Receiving one triggers the node.
+send dict:
+Sends the dictionary.
 
-<key inlets> (construct_dict):
-One per argument. Values sit here until you send.
+<one inlet per key>:
+The value for that key. Arriving here does not send anything.
 
-labelled data in (construct_dict):
-Adds an entry at run time. Send a list whose first element is the key and 
-whose remainder is the value.
+labelled data in:
+A key followed by its value, added to the next dictionary only.
 
-send dict (construct_dict, dict):
-Emits the dictionary built so far, then clears it.
-
-key (dict_retrieve):
-The name to look up. Changing it re-reports from the dictionary already held.
-
-key count / key N (dict_extract):
-How many outlets are in use, and the key each one carries. 
-There are 32 outlets underneath; key count decides how many are visible.
-
-include key in output (dict_extract):
-When checked each outlet sends the key alongside the value, rather than the 
-value alone.
-
-store / retrieve by key / clear / load / save / name (dict):
-The dict node is a persistent store. Send a key and a value to "store", 
-send a key to "retrieve by key" to get it back, and use save and load to keep 
-the whole collection on disk under the name you gave it.
-
-MESSAGES (dict):
-clear, dump, save, load, search, next, reset, keys, random - 
-sent to the node as messages. "random" retrieves an arbitrary entry, 
-"next" walks through them in turn, and "keys" reports the names.
-
-OUTPUTS: 
+OUTPUTS:
 
 dict out:
-The assembled dictionary.
+The dictionary.
 
-keys out:
-A list of the names.
-
-value out:
-The one value that was looked up.
-
-key value lists out:
-Two-element lists, one per entry, sent in succession.
-
-unmatched (dict):
-The key, sent here instead when nothing in the store matches it. 
-Wire this up rather than assuming a lookup succeeded."""
+RELATED:
+dict_extract takes a dictionary apart again, one outlet per key.
+dict is a store you add to and look up from."""
 
 demo = [
     {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'c0', 'comment': True, 'text': 'click to build and send a dict', 'pos': (30, 115)},
+    {'key': 'c0', 'comment': True, 'text': 'click to fill both keys and send', 'pos': (30, 115)},
     # repeat_in_order so one click fills both keys BEFORE asking for the send
     {'key': 'rp', 'init': 'repeat_in_order 3', 'pos': (30, 150), 'w': 190, 'h': 70},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 235), 'w': 140, 'h': 42,
-     'props': {'text in': '0.25', 'font size': '24'}},
-    {'key': 'm2', 'init': 'message', 'pos': (200, 235), 'w': 140, 'h': 42,
-     'props': {'text in': '0.75', 'font size': '24'}},
+    {'key': 'm1', 'init': 'float', 'pos': (30, 235), 'w': 127, 'h': 42,
+     'props': dict(FLT, **{'': 0.25})},
+    {'key': 'm2', 'init': 'float', 'pos': (200, 235), 'w': 127, 'h': 42,
+     'props': dict(FLT, **{'': 0.75})},
     {'key': 'cd', 'init': 'construct_dict x y', 'pos': (30, 300), 'w': 180, 'h': 120},
     {'key': 'c1', 'comment': True, 'text': 'two named values in one bundle', 'pos': (30, 430)},
-    {'key': 'dk', 'init': 'dict_keys', 'pos': (30, 470), 'w': 140, 'h': 60},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 545), 'w': 160, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'the names it contains', 'pos': (30, 595)},
-    {'key': 'de', 'init': 'dict_extract x y', 'pos': (230, 470), 'w': 170, 'h': 100,
-     'props': {'key count': 2, 'key 0': 'x', 'key 1': 'y',
-               'include key in output': False}},
-    {'key': 'f1', 'init': 'float', 'pos': (230, 585), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'f2', 'init': 'float', 'pos': (230, 635), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c3', 'comment': True, 'text': 'one outlet per named key', 'pos': (230, 685)},
+    {'key': 'tx', 'init': 'text', 'pos': (30, 470), 'w': 400, 'h': 160},
 ]
 links = [('btn', '', 'rp', ''),
          ('rp', 'first', 'm1', ''), ('rp', 'second', 'm2', ''),
          ('rp', 'third', 'cd', 'send dict'),
-         ('m1', 'message out', 'cd', 'x'), ('m2', 'message out', 'cd', 'y'),
-         ('cd', 'dict out', 'dk', 'dict in'), ('dk', 'keys out', 'l1', ''),
-         ('cd', 'dict out', 'de', 'dict in'),
-         # dict_extract's outlets are all unnamed, so address them by index
-         ('de', '', 'f1', '', 0), ('de', '', 'f2', '', 1)]
-print(build('dict', 'dict - named values travelling together', body, demo, links,
-            demo_width=430, text_width=830, text_height=780))
+         ('m1', '', 'cd', 'x'), ('m2', '', 'cd', 'y'),
+         ('cd', 'dict out', 'tx', '###text in')]
+print(build('construct_dict', 'construct_dict - gather inlets into a dictionary', body,
+            demo, links, demo_width=460, text_width=800, text_height=700))
+
+# --------------------------------------------------------------- dict_extract
+body = """The dict_extract node takes a dictionary apart: one outlet per key you
+name, each sending the value filed under that key.
+
+"dict_extract x y" has an x outlet and a y outlet. When a dictionary arrives,
+each key that is in it sends its value; a key that is missing sends nothing.
+The outlets fire from right to left - the last key first - so the leftmost
+outlet is the last to send.
+
+unpack_dict is another name for the same node.
+
+WITH NO ARGUMENTS:
+dict_extract on its own takes its keys from the first dictionary it receives,
+and grows an outlet for each, sending that first dictionary's values once.
+The keys it learned are kept from then on.
+
+SYNTAX:
+dict_extract <key> <key> ...
+unpack_dict <key> <key> ...
+
+EXAMPLE:
+dict_extract x y confidence
+
+INPUTS and PARAMETERS:
+
+dict in:
+The dictionary to take apart.
+
+key count (option):
+How many outlets are shown, up to 32.
+
+key 0, key 1, ... (options):
+The key each outlet carries. Changing one relabels its outlet.
+
+include key in output (option):
+When ticked, each outlet sends its key and value together as a two-element
+list, rather than the value alone.
+
+OUTPUTS:
+
+<one outlet per key>:
+The value filed under that key.
+
+RELATED:
+dict_retrieve takes out one value, by a key that can change while the patch
+runs. construct_dict does the reverse of this node."""
+
+demo, links = dict_source(SRC_XY)
+demo += [
+    {'key': 'de', 'init': 'dict_extract x y', 'pos': (30, 520), 'w': 170, 'h': 100,
+     'props': {'key count': 2, 'key 0': 'x', 'key 1': 'y',
+               'include key in output': False}},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 640), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'f2', 'init': 'float', 'pos': (200, 640), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c3', 'comment': True, 'text': 'one outlet per named key -\nname is in the dictionary but not asked for',
+     'pos': (30, 695)},
+]
+links += [('dc', 'dict out', 'de', 'dict in'),
+          # dict_extract's outlets are all unnamed, so address them by index
+          ('de', '', 'f1', '', 0), ('de', '', 'f2', '', 1)]
+print(build('dict_extract', 'dict_extract - one outlet per key', body, demo, links,
+            demo_width=460, text_width=800, text_height=760))
+
+# ------------------------------------------------------------------ dict_keys
+body = """The dict_keys node reports the keys of a dictionary, as a list.
+
+Use it to see what is in a dictionary you did not build yourself - the output of
+an OSC query, a JSON file, a language model - before deciding what to take out.
+
+SYNTAX:
+dict_keys
+
+INPUTS and PARAMETERS:
+
+dict in:
+The dictionary. Anything that is not a dictionary is ignored.
+
+OUTPUTS:
+
+keys out:
+The keys, in the order they were added. Only the top level is listed; keys of
+dictionaries inside it are not.
+
+RELATED:
+dict_stream sends the keys together with their values, one entry at a time.
+dict_search lets a person browse a nested dictionary by typing."""
+
+demo, links = dict_source(SRC_XY)
+demo += [
+    {'key': 'dk', 'init': 'dict_keys', 'pos': (30, 520), 'w': 140, 'h': 60},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 600), 'w': 220, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'the keys it contains', 'pos': (30, 650)},
+]
+links += [('dc', 'dict out', 'dk', 'dict in'), ('dk', 'keys out', 'l1', '')]
+print(build('dict_keys', 'dict_keys - the names in a dictionary', body, demo, links,
+            demo_width=460, text_width=760, text_height=520))
+
+# -------------------------------------------------------------- dict_retrieve
+body = """The dict_retrieve node takes one value out of a dictionary, by a key you
+send it.
+
+It keeps a copy of the last dictionary it received. Whenever a dictionary
+arrives, or the key changes, it looks the key up and sends the value it finds.
+That second part matters: you can browse a dictionary you already have by
+changing the key, without sending the dictionary again.
+
+When the key is not in the dictionary nothing is sent.
+
+SYNTAX:
+dict_retrieve
+
+INPUTS and PARAMETERS:
+
+dict in:
+The dictionary to look in. It is kept until the next one arrives.
+
+key:
+The key to look up. A message box sends a list even for one word; a
+one-word list is read as that word, and a longer one as its words joined by
+spaces.
+
+OUTPUTS:
+
+value out:
+The value filed under the key.
+
+RELATED:
+dict_extract takes out several values at once, by keys fixed in advance.
+dict looks up by key in a collection it stores itself."""
+
+demo, links = dict_source(SRC_XY)
+demo += [
+    {'key': 'k1', 'init': 'message', 'pos': (270, 520), 'w': 120, 'h': 42,
+     'props': {'text in': 'x', 'font size': '24'}},
+    {'key': 'k2', 'init': 'message', 'pos': (270, 572), 'w': 120, 'h': 42,
+     'props': {'text in': 'name', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'then click a key - the value\ncomes back without resending',
+     'pos': (270, 625)},
+    {'key': 'dr', 'init': 'dict_retrieve', 'pos': (30, 700), 'w': 160, 'h': 80},
+    {'key': 's1', 'init': 'string', 'pos': (30, 800), 'w': 220, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+]
+links += [('dc', 'dict out', 'dr', 'dict in'),
+          ('k1', 'message out', 'dr', 'key'), ('k2', 'message out', 'dr', 'key'),
+          ('dr', 'value out', 's1', '')]
+print(build('dict_retrieve', 'dict_retrieve - one value, by a key you can change', body,
+            demo, links, demo_width=460, text_width=780, text_height=620))
+
+# ---------------------------------------------------------------- dict_stream
+body = """The dict_stream node sends every entry of a dictionary, one after
+another, each as a two-element list: the key, then its value.
+
+It is the way to loop over a dictionary's contents - everything downstream
+handles one entry at a time, in the order the entries were added.
+
+SYNTAX:
+dict_stream
+
+INPUTS and PARAMETERS:
+
+dict in:
+The dictionary. Anything that is not a dictionary is ignored.
+
+OUTPUTS:
+
+key value lists out:
+One list per entry, sent in quick succession. Something that only shows the
+latest value - a list box, say - ends up showing the last entry.
+
+RELATED:
+dict_keys sends just the keys, all at once.
+construct_dict's 'labelled data in' takes lists of the same shape, so a stream
+from this node can rebuild a dictionary."""
+
+demo, links = dict_source(SRC_XY)
+demo += [
+    {'key': 'ds', 'init': 'dict_stream', 'pos': (30, 520), 'w': 160, 'h': 60},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 600), 'w': 260, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'the last entry to arrive', 'pos': (30, 650)},
+    {'key': 'cnt', 'init': 'counter', 'pos': (320, 600), 'w': 123, 'h': 84},
+    {'key': 'i1', 'init': 'int', 'pos': (320, 700), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c4', 'comment': True, 'text': 'counts the entries -\nthree per click', 'pos': (320, 750)},
+]
+links += [('dc', 'dict out', 'ds', 'dict in'), ('ds', 'key value lists out', 'l1', ''),
+          ('ds', 'key value lists out', 'cnt', 'input'), ('cnt', 'count out', 'i1', '')]
+print(build('dict_stream', 'dict_stream - entries one at a time', body, demo, links,
+            demo_width=480, text_width=760, text_height=560))
+
 
 # ------------------------------------------------------- dict_search, list_box
 body = """The dict_search node lets you FIND a branch of a nested dictionary by typing

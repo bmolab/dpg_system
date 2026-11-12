@@ -51,7 +51,8 @@
                     "value_type": "string"
                 }
             },
-            "comment": "This is a comment!"
+            "comment": "This is a comment!",
+            "highlight": true
         },
         "2": {
             "init": "comment comment - add a single line text comment",
@@ -101,7 +102,8 @@
                     "value_type": "string"
                 }
             },
-            "comment": "This is a 30 point comment!"
+            "comment": "This is a 30 point comment!",
+            "highlight": true
         },
         "4": {
             "init": "comment This is a 36 point comment!",
@@ -126,7 +128,8 @@
                     "value_type": "string"
                 }
             },
-            "comment": "This is a 36 point comment!"
+            "comment": "This is a 36 point comment!",
+            "highlight": true
         },
         "5": {
             "init": "comment This is a 48 point comment!",
@@ -151,7 +154,8 @@
                     "value_type": "string"
                 }
             },
-            "comment": "This is a 48 point comment!"
+            "comment": "This is a 48 point comment!",
+            "highlight": true
         },
         "6": {
             "name": "text_block",
@@ -166,7 +170,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The comment node places floating text directly onto the node graph canvas. \n\nUnlike standard nodes, it renders with a transparent background, no border, and no title bar,\nmaking it look like a simple label. \n\nYou use this node to annotate your patch, label groups of nodes, add instructions, \nor leave notes for yourself without affecting the data flow.\n\nSYNTAX:\ncomment <text: string>\n\nEXAMPLE:\ncomment Audio Processing Section\n\nOPTIONS: (options are only visible if you select the comment and press the 'o' key).\n\ntext: \nThe content of the label. \nYou can type here to update the displayed message on the canvas.\n\nfont size:\nSelects the visual size of the text. \nAvailable options are 24, 30, 36, and 48.\n\nOUTPUTS: \n\nNone. \nThis node is purely visual and has no data output.",
+                    "value": "The comment node places floating text directly onto the node graph canvas. \n\nUnlike standard nodes, it renders with a transparent background, no border, and no title bar, making it look like a simple label. \n\nYou use this node to annotate your patch, label groups of nodes, add instructions,  or leave notes for yourself without affecting the data flow.\n\nSYNTAX:\ncomment <text: string>\n\nEXAMPLE:\ncomment Audio Processing Section\n\nOPTIONS: (options are only visible if you select the comment and press the 'o' key).\n\ntext: \nThe content of the label. \nYou can type here to update the displayed message on the canvas.\n\nfont size:\nSelects the visual size of the text. \nAvailable options are 24, 30, 36, and 48.\n\nOUTPUTS: \n\nNone. \nThis node is purely visual and has no data output.",
                     "value_type": "string"
                 },
                 "1": {
@@ -190,7 +194,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The comment node places floating text directly onto the node graph canvas. \n\nUnlike standard nodes, it renders with a transparent background, no border, and no title bar,\nmaking it look like a simple label. \n\nYou use this node to annotate your patch, label groups of nodes, add instructions, \nor leave notes for yourself without affecting the data flow.\n\nSYNTAX:\ncomment <text: string>\n\nEXAMPLE:\ncomment Audio Processing Section\n\nOPTIONS: (options are only visible if you select the comment and press the 'o' key).\n\ntext: \nThe content of the label. \nYou can type here to update the displayed message on the canvas.\n\nfont size:\nSelects the visual size of the text. \nAvailable options are 24, 30, 36, and 48.\n\nOUTPUTS: \n\nNone. \nThis node is purely visual and has no data output."
+            "text": "The comment node places floating text directly onto the node graph canvas. \n\nUnlike standard nodes, it renders with a transparent background, no border, and no title bar, making it look like a simple label. \n\nYou use this node to annotate your patch, label groups of nodes, add instructions,  or leave notes for yourself without affecting the data flow.\n\nSYNTAX:\ncomment <text: string>\n\nEXAMPLE:\ncomment Audio Processing Section\n\nOPTIONS: (options are only visible if you select the comment and press the 'o' key).\n\ntext: \nThe content of the label. \nYou can type here to update the displayed message on the canvas.\n\nfont size:\nSelects the visual size of the text. \nAvailable options are 24, 30, 36, and 48.\n\nOUTPUTS: \n\nNone. \nThis node is purely visual and has no data output."
         },
         "7": {
             "name": "close",

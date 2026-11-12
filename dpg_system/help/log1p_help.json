@@ -1,0 +1,733 @@
+{
+    "height": 706,
+    "width": 1455,
+    "position": [
+        351,
+        81
+    ],
+    "id": 1416,
+    "name": "log1p_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1444,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment log1p (log of 1 plus the input)",
+            "name": "comment",
+            "id": 1462,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 389,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "log1p (log of 1 plus the input)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "log1p (log of 1 plus the input)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1473,
+            "sid": 3,
+            "position_x": 729,
+            "position_y": 45,
+            "width": 686,
+            "height": 601,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "log1p gives the natural logarithm of 1 plus each value: log1p of x is log of (1 + x).\n\n0 comes out as 0, 1.718 as 1, -0.5 as -0.69. Because it starts from 1 + x, it is 0 at\n0 and well behaved near it, where log itself plunges to -infinity. Small values pass\nalmost unchanged (log1p of 0.01 is 0.00995); large ones are compressed like a log.\n\nUse it to compress something that is usually small but occasionally huge - a speed,\na count, a loudness, a jerk - when zero must stay zero. It is the reverse of exp then\n- 1.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nlog1p cell by cell (right).\n\nSYNTAX:\nlog1p\n\nEXAMPLES:\nlog1p      compress a speed that is mostly small and sometimes huge\nlog1p      a log-like scale that keeps 0 at 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe natural logarithm of 1 plus the input.\n\nBELOW -1:\n1 + x is then zero or negative, which has no logarithm. -1 gives -inf, and anything\nbelow it nan (not a number). Unlike log, log2 and log10, log1p does NOT take the\nabsolute value: inputs between -1 and 0 are valid and give negative results.\n\nSEE ALSO:\nlog     natural logarithm\nexp     e to the power of the input",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 678,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 585,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "log1p gives the natural logarithm of 1 plus each value: log1p of x is log of (1 + x).\n\n0 comes out as 0, 1.718 as 1, -0.5 as -0.69. Because it starts from 1 + x, it is 0 at\n0 and well behaved near it, where log itself plunges to -infinity. Small values pass\nalmost unchanged (log1p of 0.01 is 0.00995); large ones are compressed like a log.\n\nUse it to compress something that is usually small but occasionally huge - a speed,\na count, a loudness, a jerk - when zero must stay zero. It is the reverse of exp then\n- 1.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nlog1p cell by cell (right).\n\nSYNTAX:\nlog1p\n\nEXAMPLES:\nlog1p      compress a speed that is mostly small and sometimes huge\nlog1p      a log-like scale that keeps 0 at 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe natural logarithm of 1 plus the input.\n\nBELOW -1:\n1 + x is then zero or negative, which has no logarithm. -1 gives -inf, and anything\nbelow it nan (not a number). Unlike log, log2 and log10, log1p does NOT take the\nabsolute value: inputs between -1 and 0 are valid and give negative results.\n\nSEE ALSO:\nlog     natural logarithm\nexp     e to the power of the input"
+        },
+        "3": {
+            "name": "signal",
+            "id": 1507,
+            "sid": 6,
+            "position_x": 176,
+            "position_y": 101,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "log1p",
+            "name": "log1p",
+            "id": 1529,
+            "sid": 7,
+            "position_x": 333,
+            "position_y": 152,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "5": {
+            "name": "plot",
+            "id": 1539,
+            "sid": 8,
+            "position_x": 452,
+            "position_y": 110,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.1,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.8,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "text_block",
+            "id": 1590,
+            "sid": 9,
+            "position_x": 246,
+            "position_y": 49,
+            "width": 237,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "log1p of a sine wave from 0 to 1:\n0 to 0.69, bent over at the top",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "text": "log1p of a sine wave from 0 to 1:\n0 to 0.69, bent over at the top"
+        },
+        "7": {
+            "name": "float",
+            "id": 1607,
+            "sid": 10,
+            "position_x": 29,
+            "position_y": 301,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1.718,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.01,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "init": "log1p",
+            "name": "log1p",
+            "id": 1643,
+            "sid": 11,
+            "position_x": 190,
+            "position_y": 297,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "float",
+            "id": 1653,
+            "sid": 12,
+            "position_x": 310,
+            "position_y": 304,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.999896315728952,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.01,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "init": "comment drag this number",
+            "name": "comment",
+            "id": 1686,
+            "sid": 13,
+            "position_x": 42,
+            "position_y": 260,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag this number",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "drag this number"
+        },
+        "11": {
+            "name": "close",
+            "id": 1697,
+            "sid": 14,
+            "position_x": 24,
+            "position_y": 600,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "12": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 1783,
+            "sid": 20,
+            "position_x": 25,
+            "position_y": 462,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "13": {
+            "name": "heat_map",
+            "id": 2002,
+            "sid": 28,
+            "position_x": 170,
+            "position_y": 440,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 2116,
+            "sid": 31,
+            "position_x": 485,
+            "position_y": 440,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.5,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "load_bang",
+            "id": 2162,
+            "sid": 33,
+            "position_x": 25,
+            "position_y": 409,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "16": {
+            "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
+            "name": "comment",
+            "id": 2198,
+            "sid": 37,
+            "position_x": 61,
+            "position_y": 366,
+            "width": 561,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "arrays and tensors go through cell by cell: the input on the left, the result on the right",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
+        },
+        "17": {
+            "name": "log1p",
+            "id": 2217,
+            "sid": 39,
+            "position_x": 375,
+            "position_y": 486,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1507,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1529,
+            "dest_node_name": "log1p",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 1529,
+            "source_node_name": "log1p",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1539,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 1607,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1643,
+            "dest_node_name": "log1p",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 1643,
+            "source_node_name": "log1p",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1653,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2002,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2217,
+            "dest_node_name": "log1p",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 2217,
+            "source_node_name": "log1p",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 2116,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 2162,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1783,
+            "dest_node_name": "np.rand",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

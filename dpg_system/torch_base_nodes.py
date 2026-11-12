@@ -10,18 +10,20 @@ class TorchNode(Node):
         self.input = None
         self.output = None
 
-    def input_to_tensor(self):
+    def input_to_tensor(self, allow_empty=False):
         if self.input is not None:
             input_tensor = self.input()
             if input_tensor is None:
                 return input_tensor
+            if allow_empty and isinstance(input_tensor, (list, tuple)) and len(input_tensor) == 0:
+                return torch.zeros(0)   # any_to_tensor turns an empty list into None
             if not isinstance(input_tensor, torch.Tensor):
                 input_tensor = any_to_tensor(input_tensor, validate=True)
             # Treat empty tensors as "no data" — most downstream nodes call
             # shape-dependent ops that don't handle 0-element inputs gracefully.
             # Callers that need to distinguish empty from missing should access
-            # self.input() directly.
-            if input_tensor is not None and input_tensor.numel() > 0:
+            # self.input() directly, or pass allow_empty.
+            if input_tensor is not None and (allow_empty or input_tensor.numel() > 0):
                 return input_tensor
         return None
 
@@ -31,7 +33,6 @@ class TorchNode(Node):
         if match_tensor is not None:
             device = match_tensor.device
             dtype = match_tensor.dtype
-            requires_grad = match_tensor.requires_grad
         if not isinstance(input_tensor, torch.Tensor):
             input_tensor = any_to_tensor(input_tensor, device, dtype, requires_grad)
         else:
@@ -39,8 +40,9 @@ class TorchNode(Node):
             # Passing requires_grad as the third positional silently turns into
             # non_blocking=True and drops requires_grad. Set it on the tensor instead.
             input_tensor = input_tensor.to(device=device, dtype=dtype)
-            if input_tensor.requires_grad != requires_grad:
-                input_tensor.requires_grad_(requires_grad)
+            # only switch gradients on; never cut an incoming tensor out of training
+            if requires_grad and not input_tensor.requires_grad and input_tensor.is_floating_point():
+                input_tensor.requires_grad_(True)
         return input_tensor
 
     def data_to_torchvision_tensor(self, input_tensor, format='auto'):
@@ -137,7 +139,9 @@ class TorchDeviceDtypeNode(TorchNode):
         self.device = torch.device(device_name)
 
     def requires_grad_changed(self):
-        self.requires_grad = self.grad_input()
+        # a toggle sends 1 / 0, and torch refuses requires_grad=1 (TypeError),
+        # so the node stopped sending; torch wants a real bool
+        self.requires_grad = any_to_bool(self.grad_input())
 
     def dtype_changed(self):
         dtype = self.dtype_input()
@@ -204,9 +208,14 @@ class TorchInfoNode(TorchNode):
         self.dtype_output = self.add_output('dtype')
         self.device_output = self.add_output('device')
         self.requires_grad_output = self.add_output('grad')
+        # the labels show the readings, so links save by the outlets' names
+        for output in self.outputs:
+            output.save_name = output.get_label()
 
     def execute(self):
-        in_data = self.input_to_tensor()
+        # an empty tensor is still a tensor with a shape to report; dropping
+        # it left the previous input's shape showing
+        in_data = self.input_to_tensor(allow_empty=True)
         if in_data is not None:
             rg = 'inference'
             if in_data.requires_grad:
@@ -246,3 +255,44 @@ class TorchWithDimNode(TorchNode):
         if self.dim_input is not None:
             self.dim = self.dim_input()
 
+
+
+def run_with_cpu_fallback(op, *args, **kwargs):
+    """Run a torch op; when the tensors' device lacks it (MPS has no lstsq or
+    mode), run it on the CPU and move the results back to that device."""
+    try:
+        return op(*args, **kwargs)
+    except NotImplementedError:
+        device = next((a.device for a in args if isinstance(a, torch.Tensor)), None)
+        if device is None or device.type == 'cpu':
+            raise
+        cpu_args = [a.cpu() if isinstance(a, torch.Tensor) else a for a in args]
+        result = op(*cpu_args, **kwargs)
+        if isinstance(result, torch.Tensor):
+            return result.to(device)
+        return tuple(r.to(device) if isinstance(r, torch.Tensor) else r for r in result)
+
+
+def held_tensor(data):
+    """A cold inlet's data as a tensor, or None for nothing usable."""
+    if data is None:
+        return None
+    if isinstance(data, torch.Tensor):
+        return data
+    return any_to_tensor(data, validate=True)
+
+
+def float_like(tensor):
+    """Linear algebra wants floats: whole numbers become float32."""
+    if tensor.is_floating_point() or tensor.is_complex():
+        return tensor
+    return tensor.float()
+
+
+def scalar_or_graph(tensor):
+    """A one-number result as a plain float, unless it still carries
+    gradients: then it stays a tensor so a training loss can flow on to
+    t.optimize. Displays and math nodes take either."""
+    if isinstance(tensor, torch.Tensor) and tensor.numel() == 1 and not tensor.requires_grad:
+        return tensor.item()
+    return tensor

@@ -171,7 +171,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "init": "radio_h red green blue",
@@ -211,7 +212,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "message",

@@ -78,6 +78,100 @@ if torch is not None:
 m = make('* 3')
 check('* 3 <- int 4      stays integer', type(feed(m, 4)).__name__, 'int')
 
+print("\nArithmeticNode: % and // take a whole array as operand")
+# Both tested 'b == 0' on the operand, which raises for an array of more than
+# one element - exactly what the help pages' np.rand -> op demo sends.
+a, b = np.array([7.0, 7.0, 9.0]), np.array([2.0, 0.0, 4.0])
+for _label, _want in (('%', [1.0, 0.0, 1.0]), ('//', [3.0, np.inf, 2.0])):
+    m = make(_label)
+    m.operand_input.receive_data(b)
+    check(f'{_label} <- array, array operand', list(feed(m, a)), _want)
+
+print("\nArithmeticNode: a list goes through element by element")
+# Python's list operators concatenated ([1, 2, 3] + 2 -> [1, 2, 3, 2]) or
+# raised (a list * 0.5), so a list arriving at any arithmetic node went wrong.
+for _init, _in, _want in (('+ 2', [1, 2, 3], [3, 4, 5]), ('* 0.5', [2, 4], [1.0, 2.0]),
+                          ('- 1', (5, 6), [4, 5]), ('/ 4', [1, 2], [0.25, 0.5]),
+                          ('!- 10', [1, 2], [9, 8]), ('max 2', [1, 3], [2, 3]),
+                          ('% 3', [4, 5], [1, 2]), ('^ 2', [3, 4], [9.0, 16.0]),
+                          ('* 2', [[1, 2], [3, 4]], [[2, 4], [6, 8]]),
+                          ('+ 1', ['2', '3.5'], [3.0, 4.5])):
+    check(f'{_init} <- {_in!r}', feed(make(_init), _in), _want)
+_m = make('+ 2')
+check('+ 2 <- [1, 2] stays integer', [type(x).__name__ for x in feed(_m, [1, 2])], ['int', 'int'])
+check('+ 2 <- [1, 2] operand untouched', _m.operand, 2)
+check('+ 2 <- then 5   scalar still works', feed(_m, 5), 7)
+_m = make('^ 2')
+_m.operand_input.receive_data(-1)
+check('^ -1 <- [2, 4] (integers to a negative power)', feed(_m, [2, 4]), [0.5, 0.25])
+_m = make('+')
+_m.operand_input.receive_data([10, 20])
+check('+ [10, 20] <- 1   list operand, number input', feed(_m, 1), [11, 21])
+
+print("\nComparisonNode: a list is compared element by element")
+# Python list comparison raised for > and <, and == / != gave a single answer
+# for the whole list.
+for _init, _in, _want in (('> 2', [1, 2, 3], [False, False, True]),
+                          ('<= 2', (1, 2, 3), [True, True, False]),
+                          ('== 2', [2, 3, 2], [True, False, True]),
+                          ('!= 2', [[2, 3], [1, 2]], [[False, True], [True, False]])):
+    check(f'{_init} <- {_in!r}', feed(make(_init), _in), _want)
+_m = make('>= 2')
+_m.output_type_option.set('int')
+_m.output_type_changed()
+check('>= 2 <- [1, 2, 3]  output_type int', feed(_m, [1, 2, 3]), [0, 1, 1])
+check('>= 2 <- 3   scalar still works', feed(_m, 3), 1)
+_m = make('==')
+_m.operand_input.receive_data([1, 2, 3])
+check('== [1, 2, 3] <- [1, 0, 3]  list operand', feed(_m, [1, 0, 3]), [True, False, True])
+check('== [1, 2, 3] <- 2   number input', feed(_m, 2), [False, True, False])
+
+# ---------------------------------------------------------------------------
+print("\nchange / increasing / decreasing / pass: the gates")
+# increasing and decreasing compared the first value with None, which raised
+# before the value was remembered, so they failed on every value forever.
+# The input was conformed to the previous value's type, so after an int 0.4
+# went out as 0. 'pass >= 0.5' read its operand from the wrong argument (and
+# unpacked decode_arg backwards), so it was None and every test raised.
+def _passed(init, seq):
+    _n, _out = make(init), []
+    _orig = _n.output.send
+    _n.output.send = lambda v, *a, **k: (_out.append(v), _orig(v, *a, **k))[1]
+    for _v in seq:
+        _n.input.receive_data(_v)
+        _n.execute()
+    return _out
+_seq = [1, 3, 3, 2, 0.4, 0.6, 5]
+check('change     ' + repr(_seq), _passed('change', _seq), [1, 3, 2, 0.4, 0.6, 5])
+check('increasing ' + repr(_seq), _passed('increasing', _seq), [3, 0.6, 5])
+check('decreasing ' + repr(_seq), _passed('decreasing', _seq), [2, 0.4])
+check('pass       ' + repr(_seq), _passed('pass', _seq), _seq)
+check('pass >= 0.5 ' + repr(_seq), _passed('pass >= 0.5', _seq), [1, 3, 3, 2, 0.6, 5])
+check('pass > 2   ' + repr(_seq), _passed('pass > 2', _seq), [3, 3, 5])
+
+# ---------------------------------------------------------------------------
+print("\nOpSingleNode: a list goes through element by element")
+# any_to_float kept only a list's first number, so 'abs' of [-3, 4] sent 3.0
+# and norm of [3, 4] sent 1.0.
+for _label, _in, _want in (('abs', [-3, 4], [3.0, 4.0]), ('norm', [3, 4], [0.6, 0.8]),
+                           ('floor', [-2.5, 2.5], [-3.0, 2.0]), ('sqrt', (16, -4), [4.0, -2.0])):
+    check(f'{_label} <- {_in!r}', feed(make(_label), _in), _want)
+
+print("\nOpSingleTrigNode: a list goes through element by element")
+# math.sin of a list raised TypeError, so a list into any trig node sent nothing.
+for _label, _in, _want in (('sin', [30, 90], [0.5, 1.0]), ('acos', [0.5, -1], [60.0, 180.0]),
+                           ('atan', (1,), [45.0])):
+    _got = feed(make(_label), _in)
+    check(f'{_label} <- {_in!r}', _got is not None and np.allclose(_got, _want) and type(_got) is list, True)
+
+# ---------------------------------------------------------------------------
+print("\nparse_args: '>=' is a word, not a name=value setting")
+# '>='.split('=') is ['>', ''], and reading the empty value's first character
+# raised, so a comment titled '>= (greater than or equal)' was never created.
+for _text in ('>= (greater than or equal)', '<= 4', '!= 0'):
+    _c = make('comment ' + _text)
+    check(f'comment {_text!r} creates', _c is not None and _c.comment_text == _text, True)
+
 # ---------------------------------------------------------------------------
 print("\nSignalNode: the first thing it emits must be a float")
 # The 'on' inlet triggers execution, so an int 0 here reached arithmetic nodes

@@ -1,0 +1,664 @@
+{
+    "height": 941,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "hypot_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/hypot_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment hypot - the distance of a point from the origin",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 586,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hypot - the distance of a point from the origin",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "hypot - the distance of a point from the origin"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the length of the line from the origin to the point (x, y): the square root of x x + y y, the long side of a right-angled triangle whose other sides are x and y.\n\nIt is the distance between two points once you subtract one from the other, the speed of something moving with velocity (x, y), the size of a 2-D vector. Unlike squaring, adding and taking the square root yourself, it does not overflow or lose precision when the numbers are very large or very small.\n\nWith atan2, which gives the point's angle, it converts a point to polar form:\ndistance and direction.\n\nSYNTAX:\nhypot <y: float>\nDefault: y 0 (so hypot of x alone is the size of x).\n\nEXAMPLE:\nhypot 4\n\nINPUTS and PARAMETERS:\n\nx:\nOne side. A number, list, array or tensor - each element is paired with the matching element of y. Every input sends: the only inlet that makes the node send.\n\ny (float box, also an inlet):\nThe other side. A single number pairs with every x; a list, array or tensor must have the same shape as x. It does not send by itself: send y first, then x.\n\nOUTPUTS:\n\nlength:\nThe distance, never negative, the same shape as x.\n\nREADING THE DEMO:\nTop: a point moves round an ellipse, 1 wide and 0.5 high. Its distance from the centre swings between 1 (at the ends) and 0.5 (at the top and bottom), twice per turn.\n\nBottom: the classic 3 4 5 triangle: hypot of 3 and 4 is 5.\n\nRELATED:\natan2 gives the point's angle. np.linalg.norm gives the length of a vector of any number of dimensions. sqrt, ^ and + do the sum by hand.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the length of the line from the origin to the point (x, y): the square root of x x + y y, the long side of a right-angled triangle whose other sides are x and y.\n\nIt is the distance between two points once you subtract one from the other, the speed of something moving with velocity (x, y), the size of a 2-D vector. Unlike squaring, adding and taking the square root yourself, it does not overflow or lose precision when the numbers are very large or very small.\n\nWith atan2, which gives the point's angle, it converts a point to polar form:\ndistance and direction.\n\nSYNTAX:\nhypot <y: float>\nDefault: y 0 (so hypot of x alone is the size of x).\n\nEXAMPLE:\nhypot 4\n\nINPUTS and PARAMETERS:\n\nx:\nOne side. A number, list, array or tensor - each element is paired with the matching element of y. Every input sends: the only inlet that makes the node send.\n\ny (float box, also an inlet):\nThe other side. A single number pairs with every x; a list, array or tensor must have the same shape as x. It does not send by itself: send y first, then x.\n\nOUTPUTS:\n\nlength:\nThe distance, never negative, the same shape as x.\n\nREADING THE DEMO:\nTop: a point moves round an ellipse, 1 wide and 0.5 high. Its distance from the centre swings between 1 (at the ends) and 0.5 (at the top and bottom), twice per turn.\n\nBottom: the classic 3 4 5 triangle: hypot of 3 and 4 is 5.\n\nRELATED:\natan2 gives the point's angle. np.linalg.norm gives the length of a vector of any number of dimensions. sqrt, ^ and + do the sum by hand."
+        },
+        "3": {
+            "init": "comment a point going round an ellipse",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a point going round an ellipse",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a point going round an ellipse"
+        },
+        "4": {
+            "name": "signal",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "cos",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 cos"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "6": {
+            "init": "comment x 1 wide, y 0.5 high",
+            "name": "comment",
+            "id": 459,
+            "position_x": 340,
+            "position_y": 53,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "x 1 wide, y 0.5 high",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "x 1 wide, y 0.5 high"
+        },
+        "7": {
+            "name": "hypot",
+            "id": 496,
+            "position_x": 340,
+            "position_y": 92,
+            "width": 99,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "8": {
+            "init": "comment its distance from the centre",
+            "name": "comment",
+            "id": 533,
+            "position_x": 520,
+            "position_y": 53,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "its distance from the centre",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "its distance from the centre"
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 520,
+            "position_y": 92,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 300.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 607,
+            "position_x": 28,
+            "position_y": 335,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "11": {
+            "name": "load_bang",
+            "id": 644,
+            "position_x": 28,
+            "position_y": 370,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "init": "comment x 3 ...",
+            "name": "comment",
+            "id": 681,
+            "position_x": 140,
+            "position_y": 335,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "x 3 ...",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "x 3 ..."
+        },
+        "13": {
+            "name": "message",
+            "id": 718,
+            "position_x": 140,
+            "position_y": 370,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment ... and y 4",
+            "name": "comment",
+            "id": 755,
+            "position_x": 330,
+            "position_y": 335,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "... and y 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "... and y 4"
+        },
+        "15": {
+            "name": "hypot",
+            "id": 792,
+            "position_x": 330,
+            "position_y": 370,
+            "width": 99,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "hypot 4",
+            "highlight": true
+        },
+        "16": {
+            "init": "comment length",
+            "name": "comment",
+            "id": 829,
+            "position_x": 520,
+            "position_y": 335,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "length",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "length"
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 520,
+            "position_y": 370,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 554,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link atan2"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 112,
+            "position_y": 554,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linalg.norm"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 263,
+            "position_y": 554,
+            "width": 41,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link sqrt"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 337,
+            "position_y": 554,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.meshgrid"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 664,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "x"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "length",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "x"
+        },
+        "5": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "length",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

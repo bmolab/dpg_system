@@ -1,0 +1,699 @@
+{
+    "height": 1145,
+    "width": 1632,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "t.nn.log_softmax_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nn.log_softmax_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.nn.log_softmax - log shares, computed safely",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.nn.log_softmax - log shares, computed safely",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.nn.log_softmax - log shares, computed safely"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 804,
+            "position_y": 45,
+            "width": 788,
+            "height": 1006,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the natural logarithm of the softmax of a tensor, computed in one step so that it stays accurate.\n\nEach value becomes that value minus the log of the sum of e to all the values. The results are log probabilities: all zero or negative, the largest score closest to 0, and e to the outputs summing to 1. Use it when you will ADD probabilities in log form (scoring a sequence, a loss), or need to tell apart shares far too small to see in plain softmax.\n\nWHY NOT softmax THEN A LOG:\nSmall shares underflow to exactly 0 in plain softmax, and the log of 0 is minus infinity. With scores 0 and 200, softmax gives the 0 a share of exactly 0 in float32 and the log comes out minus infinity;\nlog_softmax gives -200, the right answer.\n\nA useful property: the GAPS between outputs are the gaps between the scores. Only the whole set moves, down by one amount, so that the shares it stands for add up to 1.\n\nSYNTAX:\nt.nn.log_softmax <dim: int>\nDefault dim 0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy array is turned into a float32 tensor first. An integer tensor is refused (the console reports \"not implemented for 'Long'\"): convert it with t.to float32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument. e to the values along that axis sums to 1; every other axis is a separate set. For a (frames, joints) tensor, dim 1 gives each frame's distribution across the joints; dim 0 gives each joint's distribution over time. Those are entirely different questions, and getting dim wrong is the usual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the only axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe log shares, the same shape as the input, all 0 or below.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page. At scale 1 the 3 comes out -0.96 (the log of its 0.38 share), and every other output sits exactly as far below it as its score did: the 2.5 at -1.46, the 0 at -3.96. The bottom strip runs from dark at -6 to bright at 0. The list shows the values. Raise the scale and the low scores sink much further while the winner climbs towards 0.\n\nALSO DOCUMENTED HERE: t.special.log_softmax\nt.special.log_softmax is the same operation (torch.special.log_softmax is torch's log_softmax under another name) with the same default, dim 0. Two differences in the node: it has NO dim inlet unless you type a dim as its argument (t.special.log_softmax 1 shows one), and its outlet is called 'tensor out' rather than 'output'.\n\nRELATED:\nt.nn.softmax is the plain shares. t.nn.logsigmoid is the two-choice case. t.cross_entropy_loss applies log_softmax internally. t.logcumsumexp is the running log of summed exponentials.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 990,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the natural logarithm of the softmax of a tensor, computed in one step so that it stays accurate.\n\nEach value becomes that value minus the log of the sum of e to all the values. The results are log probabilities: all zero or negative, the largest score closest to 0, and e to the outputs summing to 1. Use it when you will ADD probabilities in log form (scoring a sequence, a loss), or need to tell apart shares far too small to see in plain softmax.\n\nWHY NOT softmax THEN A LOG:\nSmall shares underflow to exactly 0 in plain softmax, and the log of 0 is minus infinity. With scores 0 and 200, softmax gives the 0 a share of exactly 0 in float32 and the log comes out minus infinity;\nlog_softmax gives -200, the right answer.\n\nA useful property: the GAPS between outputs are the gaps between the scores. Only the whole set moves, down by one amount, so that the shares it stands for add up to 1.\n\nSYNTAX:\nt.nn.log_softmax <dim: int>\nDefault dim 0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy array is turned into a float32 tensor first. An integer tensor is refused (the console reports \"not implemented for 'Long'\"): convert it with t.to float32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument. e to the values along that axis sums to 1; every other axis is a separate set. For a (frames, joints) tensor, dim 1 gives each frame's distribution across the joints; dim 0 gives each joint's distribution over time. Those are entirely different questions, and getting dim wrong is the usual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the only axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe log shares, the same shape as the input, all 0 or below.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page. At scale 1 the 3 comes out -0.96 (the log of its 0.38 share), and every other output sits exactly as far below it as its score did: the 2.5 at -1.46, the 0 at -3.96. The bottom strip runs from dark at -6 to bright at 0. The list shows the values. Raise the scale and the low scores sink much further while the winner climbs towards 0.\n\nALSO DOCUMENTED HERE: t.special.log_softmax\nt.special.log_softmax is the same operation (torch.special.log_softmax is torch's log_softmax under another name) with the same default, dim 0. Two differences in the node: it has NO dim inlet unless you type a dim as its argument (t.special.log_softmax 1 shows one), and its outlet is called 'tensor out' rather than 'output'.\n\nRELATED:\nt.nn.softmax is the plain shares. t.nn.logsigmoid is the two-choice case. t.cross_entropy_loss applies log_softmax internally. t.logcumsumexp is the running log of summed exponentials."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "4": {
+            "init": "comment re-sends the scores five times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 526,
+            "position_y": 72,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "re-sends the scores five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "re-sends the scores five times a second"
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 340,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1.0 2.0 0.5 3.0 1.5 0.0 2.5 1.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 310,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "init": "comment eight scores - edit them",
+            "name": "comment",
+            "id": 459,
+            "position_x": 526,
+            "position_y": 200,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eight scores - edit them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eight scores - edit them"
+        },
+        "7": {
+            "name": "heat_map",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 448,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 440,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment the scores: dark 0, bright 3",
+            "name": "comment",
+            "id": 533,
+            "position_x": 526,
+            "position_y": 330,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the scores: dark 0, bright 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the scores: dark 0, bright 3"
+        },
+        "9": {
+            "name": "slider",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "init": "comment scale: 0 to 5",
+            "name": "comment",
+            "id": 607,
+            "position_x": 526,
+            "position_y": 375,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scale: 0 to 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scale: 0 to 5"
+        },
+        "11": {
+            "name": "*",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 430,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "* 1.0"
+        },
+        "12": {
+            "init": "comment the scores times scale",
+            "name": "comment",
+            "id": 681,
+            "position_x": 526,
+            "position_y": 435,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the scores times scale",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the scores times scale"
+        },
+        "13": {
+            "name": "t.nn.log_softmax",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 111,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 448,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 440,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -6.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment the output: log shares, all below 0",
+            "name": "comment",
+            "id": 792,
+            "position_x": 526,
+            "position_y": 700,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the output: log shares, all below 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the output: log shares, all below 0"
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 470,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 440,
+                    "value_type": "int"
+                }
+            }
+        },
+        "17": {
+            "init": "comment the same values as numbers",
+            "name": "comment",
+            "id": 866,
+            "position_x": 526,
+            "position_y": 790,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same values as numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same values as numbers"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 894,
+            "width": 92,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.softmax"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 138,
+            "position_y": 894,
+            "width": 110,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.logsigmoid"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 264,
+            "position_y": 894,
+            "width": 142,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.cross_entropy_loss"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 938,
+            "width": 146,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.log_softmax"
+        },
+        "22": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 1012,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

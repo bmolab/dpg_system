@@ -1,0 +1,491 @@
+{
+    "height": 1021,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "np.isclose_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.isclose_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.isclose - which values are equal, within a tolerance",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 684,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.isclose - which values are equal, within a tolerance",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.isclose - which values are equal, within a tolerance"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Compares two arrays element by element and marks where they are equal to within a tolerance.\n\nTwo decimals that should be equal rarely are exactly: 0.1 + 0.2 is 0.30000000000000004, and a sensor at rest still jitters in its last digits. So == almost never matches decimals. np.isclose compares with a tolerance instead: two values count as equal if they differ by no more than the tolerance.\n\nUse it to find which joints have returned to a rest pose, which values match a target, which readings have stopped changing.\n\nSYNTAX:\nnp.isclose <tolerance: float>\nDefault: tolerance 0.001.\n\nINPUTS and PARAMETERS:\n\nin:\nThe values to test (a list is turned into one). Every input is compared and sent - the only inlet that makes the node send.\n\nin 2:\nWhat to compare them with, held: send it first. The same shape, or a single value to compare every element with.\n\ntolerance (float box, also an inlet):\nThe largest difference that still counts as equal.\n\nrelative (float box, also an inlet):\nAn extra allowance in proportion to the size of in 2: 0.01 allows a further 1% of it. 0 (the default) uses the tolerance alone. NumPy's own defaults are a relative 0.00001 and an absolute 0.00000001, too fine for most sensor data, so here the tolerance leads.\n\nOUTPUTS:\n\nclose:\nTrue where the two are within the tolerance, the shape of the inputs together.\n\nREADING THE DEMO:\n1.0 1.0005 1.01 against 1, within 0.001: the first two count as equal and 1.01 does not - true true false. A metro re-sends the values twice a second; change the tolerance and see the last one join them.\n\nRELATED:\nnp.allclose asks whether ALL of them are close, as one true or false. == compares exactly. np.all of a mask asks whether every element is true.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Compares two arrays element by element and marks where they are equal to within a tolerance.\n\nTwo decimals that should be equal rarely are exactly: 0.1 + 0.2 is 0.30000000000000004, and a sensor at rest still jitters in its last digits. So == almost never matches decimals. np.isclose compares with a tolerance instead: two values count as equal if they differ by no more than the tolerance.\n\nUse it to find which joints have returned to a rest pose, which values match a target, which readings have stopped changing.\n\nSYNTAX:\nnp.isclose <tolerance: float>\nDefault: tolerance 0.001.\n\nINPUTS and PARAMETERS:\n\nin:\nThe values to test (a list is turned into one). Every input is compared and sent - the only inlet that makes the node send.\n\nin 2:\nWhat to compare them with, held: send it first. The same shape, or a single value to compare every element with.\n\ntolerance (float box, also an inlet):\nThe largest difference that still counts as equal.\n\nrelative (float box, also an inlet):\nAn extra allowance in proportion to the size of in 2: 0.01 allows a further 1% of it. 0 (the default) uses the tolerance alone. NumPy's own defaults are a relative 0.00001 and an absolute 0.00000001, too fine for most sensor data, so here the tolerance leads.\n\nOUTPUTS:\n\nclose:\nTrue where the two are within the tolerance, the shape of the inputs together.\n\nREADING THE DEMO:\n1.0 1.0005 1.01 against 1, within 0.001: the first two count as equal and 1.01 does not - true true false. A metro re-sends the values twice a second; change the tolerance and see the last one join them.\n\nRELATED:\nnp.allclose asks whether ALL of them are close, as one true or false. == compares exactly. np.all of a mask asks whether every element is true."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment three values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three values"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1.0 1.0005 1.01",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 496,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "8": {
+            "name": "load_bang",
+            "id": 533,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment compared with 1, held",
+            "name": "comment",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "compared with 1, held",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "compared with 1, held"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment within 0.001?",
+            "name": "comment",
+            "id": 644,
+            "position_x": 400,
+            "position_y": 53,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "within 0.001?",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "within 0.001?"
+        },
+        "12": {
+            "name": "np.isclose",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 92,
+            "width": 148,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 600,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 420,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 454,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.allclose"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 158,
+            "position_y": 454,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link equal"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 240,
+            "position_y": 454,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.all"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 330,
+            "position_y": 454,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.where"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 564,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "close",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

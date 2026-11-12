@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The register node holds a value and sends it on when you ask.\n\nIt has three inlets and they do three different jobs. \nValues arriving at \"input\" are just watched - nothing is stored and nothing \ncomes out. Send anything to \"sample\" and whatever is currently at the input is \ncopied into the register, quietly. Send anything to \"trigger\" and the current \ninput is copied AND sent out.\n\nThe separation is the point. It lets you decide when to look and, separately, \nwhen to speak. A stream can run through the input all day; the register only \nnotices when you tell it to.\n\nSYNTAX:\nregister\n\nEXAMPLE:\nregister\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to be captured. This inlet is passive - data arriving here is held \nready but produces no output, and does not update the stored value.\n\nsample:\nCopies the current input into the register without sending anything. \nUse this to capture a value now and send it later.\n\ntrigger:\nCopies the current input into the register AND sends it out. \nAnything sent here works; only the arrival matters.\n\nOUTPUTS: \n\nout:\nThe stored value, sent when triggered. Before anything has been captured, \nthe register holds 0.\n\nRELATED:\nsample_hold does the opposite division of labour - data arriving at its input \ndrives the output continuously, and a switch decides whether the stored value \nfollows or freezes. Use sample_hold when you want a continuous stream out, \nand register when you want one value at a moment of your choosing.",
+                    "value": "The register node holds a value and sends it on when you ask.\n\nIt has three inlets and they do three different jobs.  Values arriving at \"input\" are just watched - nothing is stored and nothing  comes out. Send anything to \"sample\" and whatever is currently at the input is  copied into the register, quietly. Send anything to \"trigger\" and the current  input is copied AND sent out.\n\nThe separation is the point. It lets you decide when to look and, separately,  when to speak. A stream can run through the input all day; the register only  notices when you tell it to.\n\nSYNTAX:\nregister\n\nEXAMPLE:\nregister\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to be captured. This inlet is passive - data arriving here is held  ready but produces no output, and does not update the stored value.\n\nsample:\nCopies the current input into the register without sending anything.  Use this to capture a value now and send it later.\n\ntrigger:\nCopies the current input into the register AND sends it out.  Anything sent here works; only the arrival matters.\n\nOUTPUTS: \n\nout:\nThe stored value, sent when triggered. Before anything has been captured,  the register holds 0.\n\nRELATED:\nsample_hold does the opposite division of labour - data arriving at its input  drives the output continuously, and a switch decides whether the stored value  follows or freezes. Use sample_hold when you want a continuous stream out,  and register when you want one value at a moment of your choosing.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,31 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "The register node holds a value and sends it on when you ask.\n\nIt has three inlets and they do three different jobs. \nValues arriving at \"input\" are just watched - nothing is stored and nothing \ncomes out. Send anything to \"sample\" and whatever is currently at the input is \ncopied into the register, quietly. Send anything to \"trigger\" and the current \ninput is copied AND sent out.\n\nThe separation is the point. It lets you decide when to look and, separately, \nwhen to speak. A stream can run through the input all day; the register only \nnotices when you tell it to.\n\nSYNTAX:\nregister\n\nEXAMPLE:\nregister\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to be captured. This inlet is passive - data arriving here is held \nready but produces no output, and does not update the stored value.\n\nsample:\nCopies the current input into the register without sending anything. \nUse this to capture a value now and send it later.\n\ntrigger:\nCopies the current input into the register AND sends it out. \nAnything sent here works; only the arrival matters.\n\nOUTPUTS: \n\nout:\nThe stored value, sent when triggered. Before anything has been captured, \nthe register holds 0.\n\nRELATED:\nsample_hold does the opposite division of labour - data arriving at its input \ndrives the output continuously, and a switch decides whether the stored value \nfollows or freezes. Use sample_hold when you want a continuous stream out, \nand register when you want one value at a moment of your choosing."
+            "text": "The register node holds a value and sends it on when you ask.\n\nIt has three inlets and they do three different jobs.  Values arriving at \"input\" are just watched - nothing is stored and nothing  comes out. Send anything to \"sample\" and whatever is currently at the input is  copied into the register, quietly. Send anything to \"trigger\" and the current  input is copied AND sent out.\n\nThe separation is the point. It lets you decide when to look and, separately,  when to speak. A stream can run through the input all day; the register only  notices when you tell it to.\n\nSYNTAX:\nregister\n\nEXAMPLE:\nregister\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to be captured. This inlet is passive - data arriving here is held  ready but produces no output, and does not update the stored value.\n\nsample:\nCopies the current input into the register without sending anything.  Use this to capture a value now and send it later.\n\ntrigger:\nCopies the current input into the register AND sends it out.  Anything sent here works; only the arrival matters.\n\nOUTPUTS: \n\nout:\nThe stored value, sent when triggered. Before anything has been captured,  the register holds 0.\n\nRELATED:\nsample_hold does the opposite division of labour - data arriving at its input  drives the output continuously, and a switch decides whether the stored value  follows or freezes. Use sample_hold when you want a continuous stream out,  and register when you want one value at a moment of your choosing."
         },
         "3": {
-            "name": "toggle",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": true,
-                    "value_type": "bool"
-                }
-            }
-        },
-        "4": {
             "name": "metro",
             "id": 385,
             "position_x": 30,
-            "position_y": 112,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -139,11 +121,11 @@
             },
             "init": "metro 50"
         },
-        "5": {
+        "4": {
             "name": "random",
             "id": 422,
             "position_x": 30,
-            "position_y": 192,
+            "position_y": 132,
             "width": 123,
             "height": 56,
             "visibility": "show_all",
@@ -163,12 +145,12 @@
             },
             "init": "random 100.0"
         },
-        "6": {
+        "5": {
             "init": "comment a stream of changing numbers",
             "name": "comment",
             "id": 459,
             "position_x": 186,
-            "position_y": 280,
+            "position_y": 220,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -188,11 +170,11 @@
             },
             "comment": "a stream of changing numbers"
         },
-        "7": {
+        "6": {
             "name": "int",
             "id": 496,
             "position_x": 30,
-            "position_y": 315,
+            "position_y": 255,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -216,11 +198,11 @@
                 }
             }
         },
-        "8": {
+        "7": {
             "name": "button",
             "id": 533,
             "position_x": 30,
-            "position_y": 372,
+            "position_y": 312,
             "width": 45,
             "height": 42,
             "visibility": "show_all",
@@ -228,12 +210,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "init": "comment click to grab one value",
             "name": "comment",
             "id": 570,
             "position_x": 186,
-            "position_y": 425,
+            "position_y": 365,
             "width": 150,
             "height": 30,
             "visibility": "show_all",
@@ -253,23 +235,24 @@
             },
             "comment": "click to grab one value"
         },
-        "10": {
+        "9": {
             "name": "register",
             "id": 607,
             "position_x": 30,
-            "position_y": 460,
+            "position_y": 400,
             "width": 58,
             "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
-        "11": {
+        "10": {
             "name": "int",
             "id": 644,
             "position_x": 30,
-            "position_y": 575,
+            "position_y": 515,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -293,12 +276,12 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "init": "comment holds still until you click again",
             "name": "comment",
             "id": 681,
             "position_x": 186,
-            "position_y": 625,
+            "position_y": 565,
             "width": 211,
             "height": 30,
             "visibility": "show_all",
@@ -318,11 +301,11 @@
             },
             "comment": "holds still until you click again"
         },
-        "13": {
+        "12": {
             "name": "close",
             "id": 718,
             "position_x": 24,
-            "position_y": 647,
+            "position_y": 587,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -339,16 +322,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -358,7 +331,7 @@
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
-        "2": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -368,7 +341,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "3": {
+        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -378,7 +351,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "4": {
+        "3": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -388,7 +361,7 @@
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
-        "5": {
+        "4": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,

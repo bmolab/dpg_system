@@ -1,0 +1,968 @@
+{
+    "height": 832,
+    "width": 601,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1610,
+    "name": "nodes_numpy_scipy_rotations_angles_shapes_and_fits",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_scipy_rotations_angles_shapes_and_fits.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment SciPy: rotations, angles, shapes and fits",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 519,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SciPy: rotations, angles, shapes and fits",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SciPy: rotations, angles, shapes and fits",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_numpy < NumPy",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 83,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< NumPy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 67,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 131,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np. nodes work on numpy arrays.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "np. nodes work on numpy arrays.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link scipy.slerp scipy.slerp",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.slerp",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 154,
+            "width": 243,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "turn smoothly between orientations",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "turn smoothly between orientations",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link scipy.rotation_mean scipy.rotation_mean",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.rotation_mean",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 206,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the average of several orientations",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the average of several orientations",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link scipy.align_vectors scipy.align_vectors",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.align_vectors",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 258,
+            "width": 360,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the best rotation from one set of points onto another",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 352,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the best rotation from one set of points onto another",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link scipy.rotation_apply scipy.rotation_apply",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.rotation_apply",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 310,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "turn points by a rotation",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "turn points by a rotation",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link scipy.circmean scipy.circmean",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.circmean",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 362,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the average of angles",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the average of angles",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link scipy.circstd scipy.circstd",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.circstd",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 414,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how spread out angles are",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how spread out angles are",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link scipy.hilbert scipy.hilbert",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 462,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.hilbert",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 466,
+            "width": 280,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the envelope and phase of an oscillation",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the envelope and phase of an oscillation",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link scipy.detrend scipy.detrend",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 514,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.detrend",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 518,
+            "width": 138,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "take away a drift",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "take away a drift",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link scipy.convex_hull scipy.convex_hull",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 566,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.convex_hull",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 570,
+            "width": 243,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the space a set of points encloses",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the space a set of points encloses",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link scipy.kmeans scipy.kmeans",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 618,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.kmeans",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 622,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "sort points into k groups",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "sort points into k groups",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link scipy.procrustes scipy.procrustes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 670,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.procrustes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 674,
+            "width": 181,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how alike two shapes are",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 173,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how alike two shapes are",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link scipy.curve_fit scipy.curve_fit",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 722,
+            "width": 163,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.curve_fit",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 147,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 201,
+            "position_y": 726,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "fit any formula to data",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "fit any formula to data",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

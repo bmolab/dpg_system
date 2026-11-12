@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The string node converts any received input into a text string.\n\nIt is useful for casting numbers, lists, or objects into text format for display, \nlogging, or concatenation operations.\n\nSYNTAX:\n\nstring\n\nEXAMPLE:\n\nstring\n\nINPUTS AND PARAMETERS:\n\nin:\nThe data to be converted. \nAny data type received here (integers, floats, lists, arrays) is automatically cast to its \nstring representation immediately upon arrival.\n\nedit field:\nAny data you enter here is cast to a string and output.\n\ntrigger button:\nClicking on this button causes the string to be send out of the output again.\n\nOPTIONS:\nadapt_width: this determines how the string node adjusts to the length of the input string.\nThe options are: grow_to_fit, grow_or_shrink_to_fit, fixed width\n\nwidth: this sets the width of the text_field.\n\nOUTPUTS: \n\nstring out: The resulting text string.",
+                    "value": "The string node converts any received input into a text string.\n\nIt is useful for casting numbers, lists, or objects into text format for display,  logging, or concatenation operations.\n\nSYNTAX:\n\nstring\n\nEXAMPLE:\n\nstring\n\nINPUTS AND PARAMETERS:\n\nin:\nThe data to be converted. \nAny data type received here (integers, floats, lists, arrays) is automatically cast to its  string representation immediately upon arrival.\n\nedit field:\nAny data you enter here is cast to a string and output.\n\ntrigger button:\nClicking on this button causes the string to be send out of the output again.\n\nOPTIONS:\nadapt_width: this determines how the string node adjusts to the length of the input string.\nThe options are: grow_to_fit, grow_or_shrink_to_fit, fixed width\n\nwidth: this sets the width of the text_field.\n\nOUTPUTS: \n\nstring out: The resulting text string.",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The string node converts any received input into a text string.\n\nIt is useful for casting numbers, lists, or objects into text format for display, \nlogging, or concatenation operations.\n\nSYNTAX:\n\nstring\n\nEXAMPLE:\n\nstring\n\nINPUTS AND PARAMETERS:\n\nin:\nThe data to be converted. \nAny data type received here (integers, floats, lists, arrays) is automatically cast to its \nstring representation immediately upon arrival.\n\nedit field:\nAny data you enter here is cast to a string and output.\n\ntrigger button:\nClicking on this button causes the string to be send out of the output again.\n\nOPTIONS:\nadapt_width: this determines how the string node adjusts to the length of the input string.\nThe options are: grow_to_fit, grow_or_shrink_to_fit, fixed width\n\nwidth: this sets the width of the text_field.\n\nOUTPUTS: \n\nstring out: The resulting text string."
+            "text": "The string node converts any received input into a text string.\n\nIt is useful for casting numbers, lists, or objects into text format for display,  logging, or concatenation operations.\n\nSYNTAX:\n\nstring\n\nEXAMPLE:\n\nstring\n\nINPUTS AND PARAMETERS:\n\nin:\nThe data to be converted. \nAny data type received here (integers, floats, lists, arrays) is automatically cast to its  string representation immediately upon arrival.\n\nedit field:\nAny data you enter here is cast to a string and output.\n\ntrigger button:\nClicking on this button causes the string to be send out of the output again.\n\nOPTIONS:\nadapt_width: this determines how the string node adjusts to the length of the input string.\nThe options are: grow_to_fit, grow_or_shrink_to_fit, fixed width\n\nwidth: this sets the width of the text_field.\n\nOUTPUTS: \n\nstring out: The resulting text string."
         },
         "4": {
             "init": "np.rand 2 2",
@@ -388,7 +388,8 @@
                     "value": "24",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "name": "list",
@@ -426,7 +427,8 @@
                     "value": "24",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "12": {
             "init": "comment array",
@@ -489,7 +491,8 @@
                     "value": "24",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         }
     },
     "links": {

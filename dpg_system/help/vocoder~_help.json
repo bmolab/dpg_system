@@ -1,0 +1,412 @@
+{
+    "height": 1271,
+    "width": 1633,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "vocoder~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/vocoder~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment vocoder~ - one sound shaped by another",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 475,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vocoder~ - one sound shaped by another",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "vocoder~ - one sound shaped by another"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 765,
+            "position_y": 45,
+            "width": 828,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "vocoder~ imposes the shape of one sound on another.\n\nTWO INPUTS:\nThe 'modulator' is split into bands, and each band's level is followed. The  carrier is passed through the same bands, each turned up and down by those  levels. The result has the carrier's pitch and the modulator's shape. Speech  through an oscillator is the classic case, but nothing requires either to be  speech - a rhythmic modulator makes the carrier articulate.\n\nGive the carrier plenty to filter: a saw is good, a detuned vco~ stack  better. A single sine has nothing in most bands to let through.\n\nTHE BANDS:\nBy default 16 bands, spaced evenly in pitch (not in Hz) from 120 to 8000 Hz,  which is how hearing is spaced. The 'bands', 'low', 'high' and 'q' options  change the layout; q is how narrow each band is.\n\nTHE FOLLOWERS:\n'attack' and 'release' are how fast each band's level rises and falls, in  seconds. Fast attack with a slower release is what lets consonants arrive  intact while vowels hold; long releases smear the modulator into a wash.  'freeze' stops the followers where they are, turning the current spectrum  into a fixed filter that keeps its shape after the modulator stops.\n\n'sibilance' mixes noise into the carrier for the top third of the bands only,  which is what lets 's' and 't' through without the whole voice going breathy.\n\nPLAYING THE BANDS DIRECTLY:\nThe 'bands' outlet reports the band levels as a list. Set the 'band source'  option to 'list' and the analysis is ignored: a list sent to 'gains' sets  the bands instead, one number per band, lowest first. That turns the bank  into a spectral surface for effort data, a sequencer or a hand. Until a list  arrives every gain is 0, so it is silent.\n\nSYNTAX:\nvocoder~ <bands> <low Hz> <high Hz>\n\nEXAMPLE:\nvocoder~ 24 80 10000\n\nINPUTS and PARAMETERS:\n\nmodulator:\nThe signal whose shape is taken. Mono.\n\nleft carrier / right carrier:\nThe signal the shape is imposed on. With nothing in 'right carrier',  'right out' carries the same as 'left out'.\n\nattack / release:\nFollower times in seconds. Defaults 0.002 and 0.04.\n\nsibilance:\n0 to 1. Default 0.\n\nlevel:\nOutput gain. Default 1.\n\nThese four take a number or a patched signal, which is added to the knob's  value. They are read once per audio block.\n\ngains:\nA list of band gains, used when 'band source' is 'list'.\n\nfreeze:\nHolds the band levels where they are.\n\nbypass:\nTicked, the left carrier passes through untouched.\n\nOPTIONS:\nbands (2 to 32, default 16), low (default 120), high (default 8000), q  (default 6), band source (modulator or list), report bands (default on).\n\nOUTPUTS: \n\nleft out / right out:\nThe carrier, shaped.\n\nbands:\nThe band levels as a list, sent each frame they change, while 'report  bands' is on.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "vocoder~ imposes the shape of one sound on another.\n\nTWO INPUTS:\nThe 'modulator' is split into bands, and each band's level is followed. The  carrier is passed through the same bands, each turned up and down by those  levels. The result has the carrier's pitch and the modulator's shape. Speech  through an oscillator is the classic case, but nothing requires either to be  speech - a rhythmic modulator makes the carrier articulate.\n\nGive the carrier plenty to filter: a saw is good, a detuned vco~ stack  better. A single sine has nothing in most bands to let through.\n\nTHE BANDS:\nBy default 16 bands, spaced evenly in pitch (not in Hz) from 120 to 8000 Hz,  which is how hearing is spaced. The 'bands', 'low', 'high' and 'q' options  change the layout; q is how narrow each band is.\n\nTHE FOLLOWERS:\n'attack' and 'release' are how fast each band's level rises and falls, in  seconds. Fast attack with a slower release is what lets consonants arrive  intact while vowels hold; long releases smear the modulator into a wash.  'freeze' stops the followers where they are, turning the current spectrum  into a fixed filter that keeps its shape after the modulator stops.\n\n'sibilance' mixes noise into the carrier for the top third of the bands only,  which is what lets 's' and 't' through without the whole voice going breathy.\n\nPLAYING THE BANDS DIRECTLY:\nThe 'bands' outlet reports the band levels as a list. Set the 'band source'  option to 'list' and the analysis is ignored: a list sent to 'gains' sets  the bands instead, one number per band, lowest first. That turns the bank  into a spectral surface for effort data, a sequencer or a hand. Until a list  arrives every gain is 0, so it is silent.\n\nSYNTAX:\nvocoder~ <bands> <low Hz> <high Hz>\n\nEXAMPLE:\nvocoder~ 24 80 10000\n\nINPUTS and PARAMETERS:\n\nmodulator:\nThe signal whose shape is taken. Mono.\n\nleft carrier / right carrier:\nThe signal the shape is imposed on. With nothing in 'right carrier',  'right out' carries the same as 'left out'.\n\nattack / release:\nFollower times in seconds. Defaults 0.002 and 0.04.\n\nsibilance:\n0 to 1. Default 0.\n\nlevel:\nOutput gain. Default 1.\n\nThese four take a number or a patched signal, which is added to the knob's  value. They are read once per audio block.\n\ngains:\nA list of band gains, used when 'band source' is 'list'.\n\nfreeze:\nHolds the band levels where they are.\n\nbypass:\nTicked, the left carrier passes through untouched.\n\nOPTIONS:\nbands (2 to 32, default 16), low (default 120), high (default 8000), q  (default 6), band source (modulator or list), report bands (default on).\n\nOUTPUTS: \n\nleft out / right out:\nThe carrier, shaped.\n\nbands:\nThe band levels as a list, sent each frame they change, while 'report  bands' is on."
+        },
+        "3": {
+            "name": "noise~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 193,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sputter",
+                    "value": 0.8,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "rate",
+                    "value": 4.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 554,
+            "position_y": 332,
+            "width": 157,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the modulator: noise\nbroken up by sputter",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 149,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the modulator: noise\nbroken up by sputter"
+        },
+        "5": {
+            "name": "vco~",
+            "id": 422,
+            "position_x": 300,
+            "position_y": 62,
+            "width": 199,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 110"
+        },
+        "6": {
+            "init": "comment the carrier: a saw",
+            "name": "comment",
+            "id": 459,
+            "position_x": 554,
+            "position_y": 272,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the carrier: a saw",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the carrier: a saw"
+        },
+        "7": {
+            "name": "vocoder~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 145,
+            "height": 196,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "8": {
+            "name": "plot",
+            "id": 533,
+            "position_x": 320,
+            "position_y": 390,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "bar",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 16.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the band levels, low to high",
+            "name": "comment",
+            "id": 570,
+            "position_x": 554,
+            "position_y": 560,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the band levels, low to high",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the band levels, low to high"
+        },
+        "10": {
+            "name": "fader_out~",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fader",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "fader_out~ 1 2"
+        },
+        "11": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 644,
+            "position_x": 554,
+            "position_y": 955,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1058,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "modulator"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left carrier"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bands",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "right out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "right"
+        }
+    }
+}

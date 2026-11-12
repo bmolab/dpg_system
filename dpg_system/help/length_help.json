@@ -515,7 +515,8 @@
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "highlight": true
         }
     },
     "links": {

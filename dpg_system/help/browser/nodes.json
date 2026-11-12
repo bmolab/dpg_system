@@ -1,6 +1,6 @@
 {
-    "height": 948,
-    "width": 613,
+    "height": 584,
+    "width": 1198,
     "position": [
         100,
         100
@@ -562,8 +562,8 @@
         "18": {
             "init": "help_link nodes_body Body and motion",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 526,
+            "position_x": 609,
+            "position_y": 162,
             "width": 163,
             "height": 44,
             "properties": {
@@ -586,8 +586,8 @@
         "19": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 201,
-            "position_y": 530,
+            "position_x": 786,
+            "position_y": 166,
             "width": 311,
             "height": 28,
             "properties": {
@@ -626,8 +626,8 @@
         "20": {
             "init": "help_link nodes_graphics 3D graphics",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 578,
+            "position_x": 609,
+            "position_y": 214,
             "width": 163,
             "height": 44,
             "properties": {
@@ -650,8 +650,8 @@
         "21": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 201,
-            "position_y": 582,
+            "position_x": 786,
+            "position_y": 218,
             "width": 354,
             "height": 28,
             "properties": {
@@ -690,8 +690,8 @@
         "22": {
             "init": "help_link nodes_video Video and images",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 630,
+            "position_x": 609,
+            "position_y": 266,
             "width": 163,
             "height": 44,
             "properties": {
@@ -714,8 +714,8 @@
         "23": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 201,
-            "position_y": 634,
+            "position_x": 786,
+            "position_y": 270,
             "width": 255,
             "height": 28,
             "properties": {
@@ -754,8 +754,8 @@
         "24": {
             "init": "help_link nodes_numpy NumPy",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 682,
+            "position_x": 609,
+            "position_y": 318,
             "width": 163,
             "height": 44,
             "properties": {
@@ -778,8 +778,8 @@
         "25": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 201,
-            "position_y": 686,
+            "position_x": 786,
+            "position_y": 322,
             "width": 335,
             "height": 28,
             "properties": {
@@ -818,8 +818,8 @@
         "26": {
             "init": "help_link nodes_torch PyTorch",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 734,
+            "position_x": 609,
+            "position_y": 370,
             "width": 163,
             "height": 44,
             "properties": {
@@ -842,8 +842,8 @@
         "27": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 201,
-            "position_y": 738,
+            "position_x": 786,
+            "position_y": 374,
             "width": 372,
             "height": 28,
             "properties": {
@@ -882,8 +882,8 @@
         "28": {
             "init": "help_link nodes_ai AI models",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 786,
+            "position_x": 609,
+            "position_y": 422,
             "width": 163,
             "height": 44,
             "properties": {
@@ -906,8 +906,8 @@
         "29": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 201,
-            "position_y": 790,
+            "position_x": 786,
+            "position_y": 426,
             "width": 243,
             "height": 28,
             "properties": {
@@ -946,8 +946,8 @@
         "30": {
             "init": "help_link nodes_devices Devices and networks",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 838,
+            "position_x": 609,
+            "position_y": 474,
             "width": 163,
             "height": 44,
             "properties": {
@@ -970,8 +970,8 @@
         "31": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 201,
-            "position_y": 842,
+            "position_x": 786,
+            "position_y": 478,
             "width": 249,
             "height": 28,
             "properties": {

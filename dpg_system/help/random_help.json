@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The random nodes produce a fresh random number each time they are triggered.\n\nThey do not run on their own. Send anything into the trigger inlet - typically \nfrom a metro - and one number comes out. The remaining inlets shape the \ndistribution those numbers are drawn from, and hold their values between triggers.\n\nrandom is the plain one: every value in the range equally likely. \nThe random.* nodes each draw from a named statistical distribution, so that some \noutcomes are more likely than others. Which one you want depends on what the \nnumber is FOR - an even spread is rarely what natural variation looks like.\n\nTHE NODES:\n\nrandom                  even spread across the range - every value equally likely\nrandom.gauss            the bell curve: clustered around a mean, rare far away\nrandom.normalvariate    the same bell curve by its formal name\nrandom.lognormvariate   a bell curve in the logarithm - always positive, \n                        with a long tail to the right. Good for durations \n                        and sizes, which cannot go negative\nrandom.expovariate      waiting times between events that happen at a steady \n                        average rate - many short gaps, a few long ones\nrandom.paretovariate    the classic long tail: mostly small, occasionally huge\nrandom.gammavariate     positive, skewed, adjustable in both shape and spread\nrandom.betavariate      confined between 0 and 1, with the weight of the \n                        distribution wherever you put it - useful for a \n                        random proportion or probability\nrandom.weibullvariate   time until something fails; the shape decides whether \n                        failure gets more or less likely as time passes\nrandom.triangular       a spread between a low and a high limit, peaking at \n                        a value you choose - the simple way to say \n                        \"around here, never outside these bounds\"\nrandom.vonmisesvariate  the bell curve wrapped around a circle, for angles, \n                        where 359 degrees and 1 degree are neighbours\n\nSYNTAX:\nrandom <range: float>\nrandom.gauss <mean: float> <deviation: float>\nrandom.triangular <low: float> <high: float> <peak: float>\n\nEXAMPLE:\nrandom.gauss 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntrigger:\nReceiving anything here produces one new random number. \nThe value sent is ignored - only its arrival matters.\n\nrange (random only):\nThe upper limit. Values come out between 0 and range, \nor between minus range and plus range when the bipolar option is checked.\n\nbipolar (random only):\nWhen checked, the spread is centred on zero rather than starting there.\n\nmean / dev:\nOn the bell-curve nodes: the centre of the distribution, and how far values \ntypically stray from it. About two thirds of values land within one deviation \nof the mean. On random.vonmisesvariate these are named mu and kappa, \nand kappa works the other way round - larger kappa means MORE tightly clustered.\n\nalpha / beta / lambda:\nThe shape parameters of the gamma, beta, Weibull, Pareto and exponential \ndistributions. Drag them and watch the histogram; that is faster than \nreasoning about them.\n\nlow / high / mode:\nOn random.triangular: the two limits, and the most likely value in between.\n\nOUTPUTS: \n\nout:\nA single float. One value per trigger - these nodes do not fill arrays. \nTo build up a spread, trigger repeatedly and collect the results.",
+                    "value": "The random nodes produce a fresh random number each time they are triggered.\n\nThey do not run on their own. Send anything into the trigger inlet - typically  from a metro - and one number comes out. The remaining inlets shape the  distribution those numbers are drawn from, and hold their values between triggers.\n\nrandom is the plain one: every value in the range equally likely.  The random.* nodes each draw from a named statistical distribution, so that some  outcomes are more likely than others. Which one you want depends on what the  number is FOR - an even spread is rarely what natural variation looks like.\n\nTHE NODES:\n\nrandom                  even spread across the range - every value equally likely\nrandom.gauss            the bell curve: clustered around a mean, rare far away\nrandom.normalvariate    the same bell curve by its formal name\nrandom.lognormvariate   a bell curve in the logarithm - always positive, \n                        with a long tail to the right. Good for durations \n                        and sizes, which cannot go negative\nrandom.expovariate      waiting times between events that happen at a steady \n                        average rate - many short gaps, a few long ones\nrandom.paretovariate    the classic long tail: mostly small, occasionally huge\nrandom.gammavariate     positive, skewed, adjustable in both shape and spread\nrandom.betavariate      confined between 0 and 1, with the weight of the \n                        distribution wherever you put it - useful for a \n                        random proportion or probability\nrandom.weibullvariate   time until something fails; the shape decides whether \n                        failure gets more or less likely as time passes\nrandom.triangular       a spread between a low and a high limit, peaking at \n                        a value you choose - the simple way to say \n                        \"around here, never outside these bounds\"\nrandom.vonmisesvariate  the bell curve wrapped around a circle, for angles, \n                        where 359 degrees and 1 degree are neighbours\n\nSYNTAX:\nrandom <range: float>\nrandom.gauss <mean: float> <deviation: float>\nrandom.triangular <low: float> <high: float> <peak: float>\n\nEXAMPLE:\nrandom.gauss 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntrigger:\nReceiving anything here produces one new random number.  The value sent is ignored - only its arrival matters.\n\nrange (random only):\nThe upper limit. Values come out between 0 and range,  or between minus range and plus range when the bipolar option is checked.\n\nbipolar (random only):\nWhen checked, the spread is centred on zero rather than starting there.\n\nmean / dev:\nOn the bell-curve nodes: the centre of the distribution, and how far values  typically stray from it. About two thirds of values land within one deviation  of the mean. On random.vonmisesvariate these are named mu and kappa,  and kappa works the other way round - larger kappa means MORE tightly clustered.\n\nalpha / beta / lambda:\nThe shape parameters of the gamma, beta, Weibull, Pareto and exponential  distributions. Drag them and watch the histogram; that is faster than  reasoning about them.\n\nlow / high / mode:\nOn random.triangular: the two limits, and the most likely value in between.\n\nOUTPUTS: \n\nout:\nA single float. One value per trigger - these nodes do not fill arrays.  To build up a spread, trigger repeatedly and collect the results.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,31 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "The random nodes produce a fresh random number each time they are triggered.\n\nThey do not run on their own. Send anything into the trigger inlet - typically \nfrom a metro - and one number comes out. The remaining inlets shape the \ndistribution those numbers are drawn from, and hold their values between triggers.\n\nrandom is the plain one: every value in the range equally likely. \nThe random.* nodes each draw from a named statistical distribution, so that some \noutcomes are more likely than others. Which one you want depends on what the \nnumber is FOR - an even spread is rarely what natural variation looks like.\n\nTHE NODES:\n\nrandom                  even spread across the range - every value equally likely\nrandom.gauss            the bell curve: clustered around a mean, rare far away\nrandom.normalvariate    the same bell curve by its formal name\nrandom.lognormvariate   a bell curve in the logarithm - always positive, \n                        with a long tail to the right. Good for durations \n                        and sizes, which cannot go negative\nrandom.expovariate      waiting times between events that happen at a steady \n                        average rate - many short gaps, a few long ones\nrandom.paretovariate    the classic long tail: mostly small, occasionally huge\nrandom.gammavariate     positive, skewed, adjustable in both shape and spread\nrandom.betavariate      confined between 0 and 1, with the weight of the \n                        distribution wherever you put it - useful for a \n                        random proportion or probability\nrandom.weibullvariate   time until something fails; the shape decides whether \n                        failure gets more or less likely as time passes\nrandom.triangular       a spread between a low and a high limit, peaking at \n                        a value you choose - the simple way to say \n                        \"around here, never outside these bounds\"\nrandom.vonmisesvariate  the bell curve wrapped around a circle, for angles, \n                        where 359 degrees and 1 degree are neighbours\n\nSYNTAX:\nrandom <range: float>\nrandom.gauss <mean: float> <deviation: float>\nrandom.triangular <low: float> <high: float> <peak: float>\n\nEXAMPLE:\nrandom.gauss 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntrigger:\nReceiving anything here produces one new random number. \nThe value sent is ignored - only its arrival matters.\n\nrange (random only):\nThe upper limit. Values come out between 0 and range, \nor between minus range and plus range when the bipolar option is checked.\n\nbipolar (random only):\nWhen checked, the spread is centred on zero rather than starting there.\n\nmean / dev:\nOn the bell-curve nodes: the centre of the distribution, and how far values \ntypically stray from it. About two thirds of values land within one deviation \nof the mean. On random.vonmisesvariate these are named mu and kappa, \nand kappa works the other way round - larger kappa means MORE tightly clustered.\n\nalpha / beta / lambda:\nThe shape parameters of the gamma, beta, Weibull, Pareto and exponential \ndistributions. Drag them and watch the histogram; that is faster than \nreasoning about them.\n\nlow / high / mode:\nOn random.triangular: the two limits, and the most likely value in between.\n\nOUTPUTS: \n\nout:\nA single float. One value per trigger - these nodes do not fill arrays. \nTo build up a spread, trigger repeatedly and collect the results."
+            "text": "The random nodes produce a fresh random number each time they are triggered.\n\nThey do not run on their own. Send anything into the trigger inlet - typically  from a metro - and one number comes out. The remaining inlets shape the  distribution those numbers are drawn from, and hold their values between triggers.\n\nrandom is the plain one: every value in the range equally likely.  The random.* nodes each draw from a named statistical distribution, so that some  outcomes are more likely than others. Which one you want depends on what the  number is FOR - an even spread is rarely what natural variation looks like.\n\nTHE NODES:\n\nrandom                  even spread across the range - every value equally likely\nrandom.gauss            the bell curve: clustered around a mean, rare far away\nrandom.normalvariate    the same bell curve by its formal name\nrandom.lognormvariate   a bell curve in the logarithm - always positive, \n                        with a long tail to the right. Good for durations \n                        and sizes, which cannot go negative\nrandom.expovariate      waiting times between events that happen at a steady \n                        average rate - many short gaps, a few long ones\nrandom.paretovariate    the classic long tail: mostly small, occasionally huge\nrandom.gammavariate     positive, skewed, adjustable in both shape and spread\nrandom.betavariate      confined between 0 and 1, with the weight of the \n                        distribution wherever you put it - useful for a \n                        random proportion or probability\nrandom.weibullvariate   time until something fails; the shape decides whether \n                        failure gets more or less likely as time passes\nrandom.triangular       a spread between a low and a high limit, peaking at \n                        a value you choose - the simple way to say \n                        \"around here, never outside these bounds\"\nrandom.vonmisesvariate  the bell curve wrapped around a circle, for angles, \n                        where 359 degrees and 1 degree are neighbours\n\nSYNTAX:\nrandom <range: float>\nrandom.gauss <mean: float> <deviation: float>\nrandom.triangular <low: float> <high: float> <peak: float>\n\nEXAMPLE:\nrandom.gauss 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntrigger:\nReceiving anything here produces one new random number.  The value sent is ignored - only its arrival matters.\n\nrange (random only):\nThe upper limit. Values come out between 0 and range,  or between minus range and plus range when the bipolar option is checked.\n\nbipolar (random only):\nWhen checked, the spread is centred on zero rather than starting there.\n\nmean / dev:\nOn the bell-curve nodes: the centre of the distribution, and how far values  typically stray from it. About two thirds of values land within one deviation  of the mean. On random.vonmisesvariate these are named mu and kappa,  and kappa works the other way round - larger kappa means MORE tightly clustered.\n\nalpha / beta / lambda:\nThe shape parameters of the gamma, beta, Weibull, Pareto and exponential  distributions. Drag them and watch the histogram; that is faster than  reasoning about them.\n\nlow / high / mode:\nOn random.triangular: the two limits, and the most likely value in between.\n\nOUTPUTS: \n\nout:\nA single float. One value per trigger - these nodes do not fill arrays.  To build up a spread, trigger repeatedly and collect the results."
         },
         "3": {
-            "name": "toggle",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 50,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": true,
-                    "value_type": "bool"
-                }
-            }
-        },
-        "4": {
             "name": "metro",
             "id": 385,
             "position_x": 30,
-            "position_y": 98,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -139,12 +121,12 @@
             },
             "init": "metro 20"
         },
-        "5": {
+        "4": {
             "init": "comment trigger it fast",
             "name": "comment",
             "id": 422,
             "position_x": 474,
-            "position_y": 116,
+            "position_y": 70,
             "width": 101,
             "height": 30,
             "visibility": "show_all",
@@ -164,24 +146,25 @@
             },
             "comment": "trigger it fast"
         },
-        "6": {
+        "5": {
             "name": "random.gauss",
             "id": 459,
             "position_x": 30,
-            "position_y": 188,
+            "position_y": 142,
             "width": 117,
             "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "random.gauss 0.0 1.0"
+            "init": "random.gauss 0.0 1.0",
+            "highlight": true
         },
-        "7": {
+        "6": {
             "name": "plot",
             "id": 496,
             "position_x": 240,
-            "position_y": 170,
+            "position_y": 124,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -240,12 +223,12 @@
                 }
             }
         },
-        "8": {
+        "7": {
             "init": "comment mostly near the mean, rarely far away",
             "name": "comment",
             "id": 533,
             "position_x": 474,
-            "position_y": 298,
+            "position_y": 252,
             "width": 236,
             "height": 30,
             "visibility": "show_all",
@@ -265,11 +248,11 @@
             },
             "comment": "mostly near the mean, rarely far away"
         },
-        "9": {
+        "8": {
             "name": "random",
             "id": 570,
             "position_x": 30,
-            "position_y": 345,
+            "position_y": 299,
             "width": 123,
             "height": 56,
             "visibility": "show_all",
@@ -287,13 +270,14 @@
                     "value_type": "bool"
                 }
             },
-            "init": "random 1.0"
+            "init": "random 1.0",
+            "highlight": true
         },
-        "10": {
+        "9": {
             "name": "plot",
             "id": 607,
             "position_x": 240,
-            "position_y": 365,
+            "position_y": 319,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -352,12 +336,12 @@
                 }
             }
         },
-        "11": {
+        "10": {
             "name": "text_block",
             "id": 644,
             "annotation": true,
             "position_x": 474,
-            "position_y": 435,
+            "position_y": 389,
             "width": 249,
             "height": 40,
             "visibility": "show_all",
@@ -392,11 +376,11 @@
             },
             "text": "plain random: no value preferred\ndrag mean and dev on the node above"
         },
-        "12": {
+        "11": {
             "name": "close",
             "id": 681,
             "position_x": 24,
-            "position_y": 573,
+            "position_y": 527,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -413,16 +397,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -432,7 +406,7 @@
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
-        "2": {
+        "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -442,7 +416,7 @@
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
-        "3": {
+        "2": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -452,7 +426,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "3": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,

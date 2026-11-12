@@ -1,0 +1,590 @@
+{
+    "height": 1251,
+    "width": 1523,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "fuzzy_match_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/fuzzy_match_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment fuzzy_match - correct a name to the closest in a list",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 660,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fuzzy_match - correct a name to the closest in a list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fuzzy_match - correct a name to the closest in a list"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 675,
+            "position_y": 45,
+            "width": 808,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The fuzzy_match node corrects a name in a phrase to the closest name in a list you give it.\n\nIt was made for image-generation prompts built from recognised speech: \"a harbour painted by rembrant\" should reach the image model as \"a harbour painted by Rembrandt\". Recognition gives you names that are close but wrong, and exact matching against a list misses most of them.\n\nWHERE IT LOOKS FOR THE NAME:\nIt does not search the whole phrase. It looks for the name after \"by \" - up to \" of \" or \" from \" if either follows - or, failing that, after \"style of \". \"by a\" and \"by the\" are not taken as names, and \"by\" has to be in small letters and be a word of its own - \"nearby \" is not a \"by \". When the phrase has several \"by \"s, each is tried and the one whose name scores best is used. With several \"style of \"s, the last one is used.\n\nA phrase with neither is passed through unchanged. So is a phrase where the name in front of \" of \" or \" from \" is longer than 32 characters or 5 spaces;\nno score is sent for that one.\n\nHOW CLOSE IS CLOSE ENOUGH:\nEvery name in the list is scored against the words found, from 0 to 100, ignoring capitals; a short name inside a long stretch of words scores lower than the same name on its own. If the best score is above 'threshold' (60 by default), the name in the phrase is replaced by the best one from the list. Otherwise the phrase goes out as it came in.\n\n'score out' reports the best score each time - and reads 20 when nothing scored higher than that, which includes a phrase with no name to look for.\nWatch it while tuning: a threshold set without looking at real scores is a guess.\n\nTHE LIST:\nA JSON file holding a list of names. A JSON dictionary works too: its keys are the names. Give the file as the node's argument, click 'load match file' to\nchoose one, or send the message \"path <file>\". With no list loaded nothing is\never replaced.\n\nSYNTAX:\nfuzzy_match <file>\n\nEXAMPLE:\nfuzzy_match painters.json\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe phrase. Receiving it triggers the node. A list is read as its words joined by spaces; anything else is ignored.\n\nload match file:\nClick to choose the list's file.\n\nthreshold:\nThe score a match must beat to be used.\n\npath (option):\nThe list's file. Setting it loads the file.\n\nOUTPUTS:\n\nstring out:\nThe phrase, with the name corrected when a match was good enough.\n\nscore out:\nThe best score found.\n\nreplacement out:\nThe words that were put in, with \"by \" or \"style of \" in front - \"by Rembrandt\". Sent only when a replacement was made.\n\nRELATED:\nword_gate passes only the words in a vocabulary.\nstring_replace swaps exact text for other text.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The fuzzy_match node corrects a name in a phrase to the closest name in a list you give it.\n\nIt was made for image-generation prompts built from recognised speech: \"a harbour painted by rembrant\" should reach the image model as \"a harbour painted by Rembrandt\". Recognition gives you names that are close but wrong, and exact matching against a list misses most of them.\n\nWHERE IT LOOKS FOR THE NAME:\nIt does not search the whole phrase. It looks for the name after \"by \" - up to \" of \" or \" from \" if either follows - or, failing that, after \"style of \". \"by a\" and \"by the\" are not taken as names, and \"by\" has to be in small letters and be a word of its own - \"nearby \" is not a \"by \". When the phrase has several \"by \"s, each is tried and the one whose name scores best is used. With several \"style of \"s, the last one is used.\n\nA phrase with neither is passed through unchanged. So is a phrase where the name in front of \" of \" or \" from \" is longer than 32 characters or 5 spaces;\nno score is sent for that one.\n\nHOW CLOSE IS CLOSE ENOUGH:\nEvery name in the list is scored against the words found, from 0 to 100, ignoring capitals; a short name inside a long stretch of words scores lower than the same name on its own. If the best score is above 'threshold' (60 by default), the name in the phrase is replaced by the best one from the list. Otherwise the phrase goes out as it came in.\n\n'score out' reports the best score each time - and reads 20 when nothing scored higher than that, which includes a phrase with no name to look for.\nWatch it while tuning: a threshold set without looking at real scores is a guess.\n\nTHE LIST:\nA JSON file holding a list of names. A JSON dictionary works too: its keys are the names. Give the file as the node's argument, click 'load match file' to\nchoose one, or send the message \"path <file>\". With no list loaded nothing is\never replaced.\n\nSYNTAX:\nfuzzy_match <file>\n\nEXAMPLE:\nfuzzy_match painters.json\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe phrase. Receiving it triggers the node. A list is read as its words joined by spaces; anything else is ignored.\n\nload match file:\nClick to choose the list's file.\n\nthreshold:\nThe score a match must beat to be used.\n\npath (option):\nThe list's file. Setting it loads the file.\n\nOUTPUTS:\n\nstring out:\nThe phrase, with the name corrected when a match was good enough.\n\nscore out:\nThe best score found.\n\nreplacement out:\nThe words that were put in, with \"by \" or \"style of \" in front - \"by Rembrandt\". Sent only when a replacement was made.\n\nRELATED:\nword_gate passes only the words in a vocabulary.\nstring_replace swaps exact text for other text."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 396,
+            "position_y": 115,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click first: writes a small list of\nnames to a file and loads it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click first: writes a small list of\nnames to a file and loads it"
+        },
+        "5": {
+            "name": "repeat_in_order",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 170,
+            "width": 101,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "repeat_in_order 3"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 255,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "{\"Rembrandt\": 1, \"Vermeer\": 1, \"Turner\": 1, \"Hokusai\": 1}",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 310,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "save /tmp/fuzzy_match_names.json",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "dict",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 101,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "message",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 570,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "path /tmp/fuzzy_match_names.json",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "string",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a harbour painted by rembrant",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "string",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 692,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a garden in the style of hokusia",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment then click a phrase",
+            "name": "comment",
+            "id": 681,
+            "position_x": 396,
+            "position_y": 742,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then click a phrase",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then click a phrase"
+        },
+        "13": {
+            "name": "fuzzy_match",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 780,
+            "width": 148,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "14": {
+            "name": "string",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 985,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment the phrase, name corrected",
+            "name": "comment",
+            "id": 792,
+            "position_x": 396,
+            "position_y": 1035,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the phrase, name corrected",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the phrase, name corrected"
+        },
+        "16": {
+            "name": "float",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 1075,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment how close the best name was",
+            "name": "comment",
+            "id": 866,
+            "position_x": 396,
+            "position_y": 1125,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how close the best name was",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how close the best name was"
+        },
+        "18": {
+            "name": "string",
+            "id": 903,
+            "position_x": 240,
+            "position_y": 1075,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 1147,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "first",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "second",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "third",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "store"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "retrieve by key"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "string in"
+        },
+        "7": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "string in"
+        },
+        "8": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "string in"
+        },
+        "9": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "10": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "score out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "replacement out",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

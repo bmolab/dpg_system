@@ -1,11 +1,11 @@
 {
-    "height": 1616,
-    "width": 1454,
+    "height": 1336,
+    "width": 1386,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "gl_text_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_text_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 606,
+            "position_x": 538,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These draw text into the scene.\n\nTHE NODES:\n\ngl_text         text in the scene, from the Latin character set \ngl_korean_text  the same, drawing Hangul syllables\n\nWHERE THE TEXT GOES:\nThe text is drawn flat, facing along the chain's current z axis, at \n'position_x' and 'position_y' in the chain's current coordinates and two units \nfurther away than whatever came before it. Lighting and depth testing are \nswitched off while it draws, so it is never shaded and never hidden behind \nanything drawn before it.\n\nBecause the older system has no camera, text placed straight after gl_context \n(or after nodes that do not transform, like gl_light) stays fixed on the \nwindow: right for a title, a readout, or a state indicator. Put a \ngl_translate, gl_rotate or gl_scale before it and the text moves with them, \nlike any other shape - which places a label beside the thing it names, but \nalso means a rotation can turn it edge-on until it vanishes.\n\nWHAT CAN BE SENT:\nA string is drawn as it is. A list is drawn piece by piece, with 'separator' \nbetween pieces. A piece can also be a pair - some text and a weight - and is \nthen drawn with its transparency multiplied by that weight raised to 'alpha \npower', and left out entirely when the weight is zero or less. That makes a \nlist of words with confidences, say, readable at a glance.\n\ngl_korean_text:\nBuilds its glyphs from the Hangul syllable block only. Letters, digits and \nspaces are not in it and are skipped, so words run together. Its default font \nhas no Hangul, so it needs a Korean font named as its argument or in 'font', \nand building over eleven thousand glyphs takes a long time. Its glyph atlas \nlooks to be laid out for 256 characters rather than for the Hangul range, so \ntreat it as unfinished.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_text <font size>\ngl_text <font file>\ngl_korean_text <font file> <font size>\n\nA number argument is the font size, a word is the font file. Either order.\n\nEXAMPLE:\ngl_text 36\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\ntext:\nWhat to draw: a string, or a list as above.\n\nposition_x / position_y:\nWhere the text starts, in the chain's current coordinates - its left end, \nwith the letters hanging below that height.\n\nalpha:\nOverall transparency, 0 to 1.\n\nscale:\nThe size of the letters in the scene. 1 is the default.\n\nfont:\nThe font file. Inconsolata-g.otf by default.\n\nsize (option):\nThe size the font is rendered at, 24 by default for gl_text and 6 for \ngl_korean_text. A larger size gives sharper letters and also draws them \nlarger, since the drawn size is this times 'scale'.\n\ncolour (option):\nThe text colour. (Older versions labelled it 'alpha', the same as the \ntransparency inlet; patches saved then still load their colour.)\n\nalpha power / separator (options):\nFor lists, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing. The text's own offset does not carry downstream.\n\nRELATED:\nmgl_text is the newer equivalent. gl_button_grid, which used to share this \npage, draws a grid of highlighted squares in the same way.",
+                    "value": "These draw text into the scene.\n\nTHE NODES:\n\ngl_text         text in the scene, from the Latin character set \ngl_korean_text  the same, drawing Hangul syllables\n\nWHERE THE TEXT GOES:\nThe text is drawn flat, facing along the chain's current z axis, at  'position_x' and 'position_y' in the chain's current coordinates and two units  further away than whatever came before it. Lighting and depth testing are  switched off while it draws, so it is never shaded and never hidden behind  anything drawn before it.\n\nBecause the older system has no camera, text placed straight after gl_context  (or after nodes that do not transform, like gl_light) stays fixed on the  window: right for a title, a readout, or a state indicator. Put a  gl_translate, gl_rotate or gl_scale before it and the text moves with them,  like any other shape - which places a label beside the thing it names, but  also means a rotation can turn it edge-on until it vanishes.\n\nWHAT CAN BE SENT:\nA string is drawn as it is. A list is drawn piece by piece, with 'separator'  between pieces. A piece can also be a pair - some text and a weight - and is  then drawn with its transparency multiplied by that weight raised to 'alpha  power', and left out entirely when the weight is zero or less. That makes a  list of words with confidences, say, readable at a glance.\n\ngl_korean_text:\nBuilds its glyphs from the Hangul syllable block only. Letters, digits and  spaces are not in it and are skipped, so words run together. Its default font  has no Hangul, so it needs a Korean font named as its argument or in 'font',  and building over eleven thousand glyphs takes a long time. Its glyph atlas  looks to be laid out for 256 characters rather than for the Hangul range, so  treat it as unfinished.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_text <font size>\ngl_text <font file>\ngl_korean_text <font file> <font size>\n\nA number argument is the font size, a word is the font file. Either order.\n\nEXAMPLE:\ngl_text 36\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\ntext:\nWhat to draw: a string, or a list as above.\n\nposition_x / position_y:\nWhere the text starts, in the chain's current coordinates - its left end,  with the letters hanging below that height.\n\nalpha:\nOverall transparency, 0 to 1.\n\nscale:\nThe size of the letters in the scene. 1 is the default.\n\nfont:\nThe font file. Inconsolata-g.otf by default.\n\nsize (option):\nThe size the font is rendered at, 24 by default for gl_text and 6 for  gl_korean_text. A larger size gives sharper letters and also draws them  larger, since the drawn size is this times 'scale'.\n\ncolour (option):\nThe text colour. (Older versions labelled it 'alpha', the same as the  transparency inlet; patches saved then still load their colour.)\n\nalpha power / separator (options):\nFor lists, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing. The text's own offset does not carry downstream.\n\nRELATED:\nmgl_text is the newer equivalent. gl_button_grid, which used to share this  page, draws a grid of highlighted squares in the same way.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These draw text into the scene.\n\nTHE NODES:\n\ngl_text         text in the scene, from the Latin character set \ngl_korean_text  the same, drawing Hangul syllables\n\nWHERE THE TEXT GOES:\nThe text is drawn flat, facing along the chain's current z axis, at \n'position_x' and 'position_y' in the chain's current coordinates and two units \nfurther away than whatever came before it. Lighting and depth testing are \nswitched off while it draws, so it is never shaded and never hidden behind \nanything drawn before it.\n\nBecause the older system has no camera, text placed straight after gl_context \n(or after nodes that do not transform, like gl_light) stays fixed on the \nwindow: right for a title, a readout, or a state indicator. Put a \ngl_translate, gl_rotate or gl_scale before it and the text moves with them, \nlike any other shape - which places a label beside the thing it names, but \nalso means a rotation can turn it edge-on until it vanishes.\n\nWHAT CAN BE SENT:\nA string is drawn as it is. A list is drawn piece by piece, with 'separator' \nbetween pieces. A piece can also be a pair - some text and a weight - and is \nthen drawn with its transparency multiplied by that weight raised to 'alpha \npower', and left out entirely when the weight is zero or less. That makes a \nlist of words with confidences, say, readable at a glance.\n\ngl_korean_text:\nBuilds its glyphs from the Hangul syllable block only. Letters, digits and \nspaces are not in it and are skipped, so words run together. Its default font \nhas no Hangul, so it needs a Korean font named as its argument or in 'font', \nand building over eleven thousand glyphs takes a long time. Its glyph atlas \nlooks to be laid out for 256 characters rather than for the Hangul range, so \ntreat it as unfinished.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_text <font size>\ngl_text <font file>\ngl_korean_text <font file> <font size>\n\nA number argument is the font size, a word is the font file. Either order.\n\nEXAMPLE:\ngl_text 36\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\ntext:\nWhat to draw: a string, or a list as above.\n\nposition_x / position_y:\nWhere the text starts, in the chain's current coordinates - its left end, \nwith the letters hanging below that height.\n\nalpha:\nOverall transparency, 0 to 1.\n\nscale:\nThe size of the letters in the scene. 1 is the default.\n\nfont:\nThe font file. Inconsolata-g.otf by default.\n\nsize (option):\nThe size the font is rendered at, 24 by default for gl_text and 6 for \ngl_korean_text. A larger size gives sharper letters and also draws them \nlarger, since the drawn size is this times 'scale'.\n\ncolour (option):\nThe text colour. (Older versions labelled it 'alpha', the same as the \ntransparency inlet; patches saved then still load their colour.)\n\nalpha power / separator (options):\nFor lists, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing. The text's own offset does not carry downstream.\n\nRELATED:\nmgl_text is the newer equivalent. gl_button_grid, which used to share this \npage, draws a grid of highlighted squares in the same way."
+            "text": "These draw text into the scene.\n\nTHE NODES:\n\ngl_text         text in the scene, from the Latin character set \ngl_korean_text  the same, drawing Hangul syllables\n\nWHERE THE TEXT GOES:\nThe text is drawn flat, facing along the chain's current z axis, at  'position_x' and 'position_y' in the chain's current coordinates and two units  further away than whatever came before it. Lighting and depth testing are  switched off while it draws, so it is never shaded and never hidden behind  anything drawn before it.\n\nBecause the older system has no camera, text placed straight after gl_context  (or after nodes that do not transform, like gl_light) stays fixed on the  window: right for a title, a readout, or a state indicator. Put a  gl_translate, gl_rotate or gl_scale before it and the text moves with them,  like any other shape - which places a label beside the thing it names, but  also means a rotation can turn it edge-on until it vanishes.\n\nWHAT CAN BE SENT:\nA string is drawn as it is. A list is drawn piece by piece, with 'separator'  between pieces. A piece can also be a pair - some text and a weight - and is  then drawn with its transparency multiplied by that weight raised to 'alpha  power', and left out entirely when the weight is zero or less. That makes a  list of words with confidences, say, readable at a glance.\n\ngl_korean_text:\nBuilds its glyphs from the Hangul syllable block only. Letters, digits and  spaces are not in it and are skipped, so words run together. Its default font  has no Hangul, so it needs a Korean font named as its argument or in 'font',  and building over eleven thousand glyphs takes a long time. Its glyph atlas  looks to be laid out for 256 characters rather than for the Hangul range, so  treat it as unfinished.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials,  shaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its  relatives live in this world, and because the fixed-function pipeline they use  is sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_text\ngl_text <font size>\ngl_text <font file>\ngl_korean_text <font file> <font size>\n\nA number argument is the font size, a word is the font file. Either order.\n\nEXAMPLE:\ngl_text 36\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the drawing.\n\ntext:\nWhat to draw: a string, or a list as above.\n\nposition_x / position_y:\nWhere the text starts, in the chain's current coordinates - its left end,  with the letters hanging below that height.\n\nalpha:\nOverall transparency, 0 to 1.\n\nscale:\nThe size of the letters in the scene. 1 is the default.\n\nfont:\nThe font file. Inconsolata-g.otf by default.\n\nsize (option):\nThe size the font is rendered at, 24 by default for gl_text and 6 for  gl_korean_text. A larger size gives sharper letters and also draws them  larger, since the drawn size is this times 'scale'.\n\ncolour (option):\nThe text colour. (Older versions labelled it 'alpha', the same as the  transparency inlet; patches saved then still load their colour.)\n\nalpha power / separator (options):\nFor lists, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing. The text's own offset does not carry downstream.\n\nRELATED:\nmgl_text is the newer equivalent. gl_button_grid, which used to share this  page, draws a grid of highlighted squares in the same way."
         },
         "3": {
             "name": "gl_context",
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "load_action",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "load_action",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 516,
+            "position_y": 236,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -129,11 +117,11 @@
             "properties": {},
             "init": "load_action fixed on the window"
         },
-        "6": {
+        "5": {
             "name": "gl_text",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 626,
+            "position_y": 346,
             "width": 154,
             "height": 126,
             "visibility": "show_all",
@@ -145,14 +133,15 @@
                     "value": "Inconsolata-g.otf",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
-        "7": {
+        "6": {
             "name": "text_block",
-            "id": 496,
+            "id": 459,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 901,
+            "position_x": 210,
+            "position_y": 621,
             "width": 298,
             "height": 40,
             "visibility": "show_all",
@@ -187,11 +176,11 @@
             },
             "text": "straight after the context: no transform is\nin force, so it stays put on the window"
         },
-        "8": {
+        "7": {
             "name": "gl_translate",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 951,
+            "position_y": 671,
             "width": 99,
             "height": 98,
             "visibility": "show_all",
@@ -216,11 +205,11 @@
             },
             "init": "gl_translate 0 -0.5 0"
         },
-        "9": {
+        "8": {
             "name": "load_action",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
-            "position_y": 1131,
+            "position_y": 851,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -229,11 +218,11 @@
             "properties": {},
             "init": "load_action moved by the translate"
         },
-        "10": {
+        "9": {
             "name": "gl_text",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
-            "position_y": 1241,
+            "position_y": 961,
             "width": 154,
             "height": 126,
             "visibility": "show_all",
@@ -245,14 +234,15 @@
                     "value": "Inconsolata-g.otf",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
-        "11": {
+        "10": {
             "name": "text_block",
-            "id": 644,
+            "id": 607,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 1516,
+            "position_x": 210,
+            "position_y": 1236,
             "width": 268,
             "height": 40,
             "visibility": "show_all",
@@ -287,11 +277,11 @@
             },
             "text": "after a transform: it moves, and would\nturn, with everything else downstream"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1397,
+            "position_y": 1117,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -312,7 +302,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl_chain",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -321,28 +311,28 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 459,
+            "source_output_name": "out",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": "text"
         },
         "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 459,
+            "source_output_name": "gl chain out",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "text"
+            "dest_input_name": "gl chain in"
         },
         "3": {
-            "source_node": 459,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 533,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -351,18 +341,8 @@
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
-        },
-        "5": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text"

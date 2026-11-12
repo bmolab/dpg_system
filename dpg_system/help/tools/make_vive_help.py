@@ -7,10 +7,11 @@ from help_common import SIG, PLOT, INT, FLT, starter
 body = """Position and orientation from a Vive tracker, in room coordinates.
 
 THESE NODES ARE LINUX ONLY:
-They need OpenVR and a running SteamVR, together with the triad_openvr wrapper
-alongside this file. On any other platform the module does not load at all -
-the console says so at startup and the nodes simply do not exist, so a patch
-built around them will open with those nodes missing rather than half working.
+They need OpenVR and a running SteamVR (the triad_openvr wrapper they use is
+included, as vive_openvr.py). On any other platform the module does not load at
+all - the console says so at startup and the nodes simply do not exist, so a
+patch built around them will open with those nodes missing rather than half
+working.
 
 That is worth knowing before you go looking for a fault: if 'vive_tracker' is
 not in the node list, the machine is the reason.
@@ -54,7 +55,21 @@ filtered. Euler angles are easier to read on screen and are the right choice for
 a display or a single angle you want to threshold, but they wrap and they gimbal
 and they do not average sensibly.
 
-'which_tracker' selects between up to four.
+TRACKER NAMES:
+'which_tracker' lists the trackers by name. Out of the box the names are just
+tracker_1, tracker_2 ... handed out in the order SteamVR happens to report them,
+so tracker_1 can be a different physical tracker from one day to the next.
+
+To pin them down, press 'save_names'. That writes every connected device's name
+and serial number to dpg_system/vive_names.json. Edit the names in that file -
+'left_wrist', 'prop', whatever means something - and press 'reload_names'. From
+then on each tracker is called by its own name every time dpg_system starts, and
+a patch saved with 'which_tracker' set to 'left_wrist' finds that tracker even if
+it is switched on late. A tracker not listed in the file still turns up with an
+ordinary tracker_N name.
+
+Once bound, a node stays with that physical tracker: if it drops out and comes
+back, the node picks it up again rather than wandering to another one.
 
 vive_base_stations IS A DIAGNOSTIC, NOT A SOURCE:
 It does not track anything. It watches the base stations and reports whether
@@ -94,7 +109,11 @@ enable_in:
 Start reading.
 
 which_tracker / output_format:
-Which of up to four, and quaternion, euler or matrix.
+Which tracker, by name, and quaternion, euler or matrix.
+
+save_names / reload_names:
+Write the current names and serials to vive_names.json; read your edited names
+back in.
 
 capture_FL_corner ... capture_BL_corner:
 Record the tracker's position at each corner, in order.

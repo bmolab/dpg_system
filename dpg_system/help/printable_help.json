@@ -1,0 +1,270 @@
+{
+    "height": 761,
+    "width": 1580,
+    "position": [
+        100,
+        100
+    ],
+    "id": 570,
+    "name": "printable_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/printable_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment printable - keep only plain characters",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 475,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "printable - keep only plain characters",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "printable - keep only plain characters"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 742,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "printable keeps only plain characters and drops everything else.\n\n\"Plain\" here means the basic English keyboard set: the letters a to z and A to Z, the digits, ordinary punctuation, spaces, tabs and carriage returns. Everything outside that set is removed - other control characters and invisible formatting, but also every\naccented letter, curly quotes, long dashes, symbols, emoji and every non-Latin script.\n\nWHAT IT IS FOR:\nText that arrived from somewhere else - off a network, out of a file, from a speech service - and has things in it that are not really part of the text. Those are the strings that look correct and behave oddly: a comparison that fails, a width that is wrong, a word that will not match.\n\nWHAT IT COSTS:\nIt does not translate anything, it deletes. \"caf\u00e9\" becomes \"caf\", a curly quoted word loses its quotes, and text in another language can vanish completely. Use it where plain English is what you expect; anywhere else it destroys the text.\n\nA non-breaking space is removed too, not turned into a space, so the words on either side run together.\n\nWHAT IT TAKES:\nAnything; it is turned into a string first. A list of words is joined with spaces, a float is written with three decimals, and line breaks are removed. If nothing is left, nothing is sent.\n\nSYNTAX:\nprintable\n\nINPUTS:\n\ncharacters in:\nThe text. Receiving it triggers the node.\n\nOUTPUTS:\n\nprintable characters out:\nWhat survives.\n\nRELATED:\nunescape_text turns HTML codes into characters - run it first, since printable would leave the codes behind as plain text.\nstring_replace to take out particular characters while keeping others.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "printable keeps only plain characters and drops everything else.\n\n\"Plain\" here means the basic English keyboard set: the letters a to z and A to Z, the digits, ordinary punctuation, spaces, tabs and carriage returns. Everything outside that set is removed - other control characters and invisible formatting, but also every\naccented letter, curly quotes, long dashes, symbols, emoji and every non-Latin script.\n\nWHAT IT IS FOR:\nText that arrived from somewhere else - off a network, out of a file, from a speech service - and has things in it that are not really part of the text. Those are the strings that look correct and behave oddly: a comparison that fails, a width that is wrong, a word that will not match.\n\nWHAT IT COSTS:\nIt does not translate anything, it deletes. \"caf\u00e9\" becomes \"caf\", a curly quoted word loses its quotes, and text in another language can vanish completely. Use it where plain English is what you expect; anywhere else it destroys the text.\n\nA non-breaking space is removed too, not turned into a space, so the words on either side run together.\n\nWHAT IT TAKES:\nAnything; it is turned into a string first. A list of words is joined with spaces, a float is written with three decimals, and line breaks are removed. If nothing is left, nothing is sent.\n\nSYNTAX:\nprintable\n\nINPUTS:\n\ncharacters in:\nThe text. Receiving it triggers the node.\n\nOUTPUTS:\n\nprintable characters out:\nWhat survives.\n\nRELATED:\nunescape_text turns HTML codes into characters - run it first, since printable would leave the codes behind as plain text.\nstring_replace to take out particular characters while keeping others."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 370,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "caf\u00e9 \u201cquoted\u201d \u2014 plain text",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment click to send it",
+            "name": "comment",
+            "id": 385,
+            "position_x": 426,
+            "position_y": 112,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send it"
+        },
+        "5": {
+            "name": "printable",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 156,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 245,
+            "width": 370,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 426,
+            "position_y": 295,
+            "width": 286,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the accent, the curly quotes and the dash\nare gone - deleted, not translated",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the accent, the curly quotes and the dash\nare gone - deleted, not translated"
+        },
+        "8": {
+            "name": "close",
+            "id": 533,
+            "position_x": 24,
+            "position_y": 317,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "characters in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "printable characters out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

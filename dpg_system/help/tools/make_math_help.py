@@ -4,83 +4,10 @@ from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
 
-# ------------------------------------------------------------------ arithmetic
-body = """The arithmetic nodes each perform one calculation on the value arriving at the left inlet, 
-using a second value - the operand - held in the right inlet.
-
-They all work the same way. The left inlet takes the data and triggers the calculation; 
-the right inlet holds the other number, which you can type, drag, or send from elsewhere. 
-The operand keeps its value between calculations, so you set it once and it stays put.
-
-All of them accept single numbers, lists, NumPy arrays and PyTorch tensors. 
-When the input and the operand are different kinds of thing, the operand is converted 
-to match the input, so feeding an array into a node with a single number as its operand 
-applies that number to every element.
-
-You give the starting operand as an argument when you create the node. 
-Whether you write it with a decimal point matters: "* 2" gives you an integer operand 
-and a stepped slider, "* 2.0" gives you a floating point one.
-
-THE NODES:
-
-+     add                    -     subtract
-*     multiply               /     divide
-//    divide, discarding any remainder
-%     modulo - the remainder after division
-^     raise to a power       pow   the same as ^
-min   the smaller of the two values
-max   the larger of the two values
-mod   the same as %
-!-    reverse subtract - operand minus input, rather than input minus operand
-!/    reverse divide - operand divided by input
-perm  permutations: the number of ordered ways to pick operand items from input items
-combination   the number of unordered ways to make that same pick
-
-SYNTAX:
-<operator> <operand: int or float>
-
-EXAMPLE:
-* 0.5
-
-INPUTS and PARAMETERS:
-
-in:
-The data to be operated on. Receiving data here triggers the calculation.
-
-operand:
-The second value in the calculation. 
-Setting it does not itself produce output - the node waits for the next value at "in".
-
-OUTPUTS: 
-
-result:
-The result of the calculation, in the same shape as the input.
-
-A NOTE ON DIVISION:
-Dividing by zero does not raise an error and does not stop your patch. 
-For single numbers the result is 0; for arrays the division is done with 
-NumPy's error reporting switched off. Likewise "%" and "mod" return 0 
-when the operand is zero. The idea is that a live patch should keep running."""
-
-demo = starter() + [
-    {'key': 'sig', 'init': 'signal', 'pos': (30, 132), 'w': 129, 'h': 78,
-     'props': SIG('sin', 2.0)},
-    {'key': 'mul', 'init': '* 0.5', 'pos': (30, 232), 'w': 120, 'h': 70,
-     'props': {'operand': 0.5}},
-    {'key': 'p1', 'init': 'plot', 'pos': (210, 205), 'w': 208, 'h': 176,
-     'props': PLOT()},
-    {'key': 'c1', 'comment': True, 'text': 'a sine wave, halved\ndrag the operand and watch it change', 'pos': (30, 310)},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 405), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'add', 'init': '+ 100', 'pos': (30, 462), 'w': 120, 'h': 70,
-     'props': {'operand': 100}},
-    {'key': 'i2', 'init': 'int', 'pos': (30, 552), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c3', 'comment': True, 'text': 'drag this number', 'pos': (172, 410)},
-]
-links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('sig', '', 'mul', 'in'), ('mul', 'result', 'p1', 'y'),
-         ('i1', 'int out', 'add', 'in'), ('add', 'result', 'i2', '')]
-print(build('arithmetic', 'arithmetic - one calculation, one operand', body,
-            demo, links, demo_width=440, text_width=800, text_height=660))
+# arithmetic is no longer generated here: arithmetic_help.json is laid out by
+# hand, and derive_arithmetic_help.py copies its layout into one page per
+# operation (add, subtract, ..., combination). Regenerating it here would
+# overwrite the hand layout on every rebuild.
 
 # ----------------------------------------------------------------- math_single
 body = """These nodes each apply one mathematical function to whatever arrives at their inlet.
@@ -296,91 +223,10 @@ print(build('comparison', 'comparison - test a value, report true or false', bod
             demo, links, demo_width=445, text_width=790, text_height=620))
 
 
-# ---------------------------------------------------------------------- change
-body = """These nodes act as gates that let a value through only when it passes a test. 
-Unlike the comparison nodes, what comes out is the value itself, not true or false.
+# change, increasing, decreasing and pass are no longer generated here:
+# increasing_help.json is laid out by hand, and derive_gate_help.py copies its
+# layout into the other three. Regenerating them here would undo that.
 
-change, increasing and decreasing all compare the incoming value against the 
-PREVIOUS one. They are filters on a stream: they suppress the frames where 
-nothing interesting happened, and pass the ones where something did.
-
-pass is the same machinery with the test switched off, so everything goes through. 
-On its own it is a patch-cord tidy; given arguments it becomes a gate with 
-whatever comparison you choose.
-
-THE NODES:
-
-change       passes a value only when it differs from the one before it
-increasing   passes a value only when it is larger than the one before it
-decreasing   passes a value only when it is smaller than the one before it
-pass         passes everything, unless you give it a comparison to apply
-
-You use change to stop a slow part of the patch being retriggered by a stream 
-that is repeating the same number, and increasing or decreasing to catch the 
-moment a reading starts to move one way.
-
-SYNTAX:
-change
-pass <comparison> <operand: int or float>
-
-EXAMPLE:
-change
-pass >= 0.5
-
-INPUTS and PARAMETERS:
-
-in:
-The value to be tested and possibly passed on. Receiving data here triggers the node.
-
-comparison_property:
-The test to apply, chosen from a menu: !=, ==, >, >=, <, <= or always. 
-change, increasing and decreasing set this for you; you can still change it by hand.
-
-operand_property:
-The value being compared against. 
-While self_compare is checked this is filled in automatically after each value 
-arrives, and shows you what the node will compare against next.
-
-self_compare:
-When checked, the node compares each value against the previous one - this is 
-what makes change, increasing and decreasing behave the way their names suggest. 
-When unchecked, it compares against a fixed operand you set yourself, 
-turning the node into a threshold gate.
-
-force_int:
-When checked, values are rounded to whole numbers before being compared. 
-Useful when a noisy float stream would otherwise register as "changed" on every frame. 
-It affects only the comparison - what comes out is the unrounded value.
-
-OUTPUTS: 
-
-result:
-The input value, unchanged, on the occasions when the test succeeds. 
-When the test fails, nothing at all is sent. 
-
-For arrays and tensors the test passes if ANY element satisfies it, 
-and the whole array is then sent."""
-
-demo = starter() + [
-    {'key': 'sig', 'init': 'signal', 'pos': (30, 132), 'w': 129, 'h': 78,
-     'props': SIG('saw', 4.0, 5.0, False)},
-    {'key': 'fl', 'init': 'floor', 'pos': (30, 232), 'w': 100, 'h': 50},
-    {'key': 'c0', 'comment': True, 'text': 'a staircase - the same number for many frames',
-     'pos': (30, 290)},
-    {'key': 'i0', 'init': 'int', 'pos': (215, 235), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'ch', 'init': 'change', 'pos': (30, 330), 'w': 120, 'h': 100,
-     'props': {'self_compare': True, 'force_int': False}},
-    {'key': 'cnt', 'init': 'counter', 'pos': (215, 335), 'w': 123, 'h': 84,
-     'props': {'step': 1}},
-    {'key': 'i1', 'init': 'int', 'pos': (215, 430), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c1', 'comment': True, 'text': 'counts steps, not frames', 'pos': (30, 442)},
-]
-links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('sig', '', 'fl', 'in'), ('fl', 'result', 'i0', ''),
-         ('fl', 'result', 'ch', 'in'), ('ch', 'result', 'cnt', 'input'),
-         ('cnt', 'count out', 'i1', '')]
-print(build('change', 'change - pass a value on only when it has moved', body,
-            demo, links, demo_width=380, text_width=800, text_height=690))
 
 # ------------------------------------------------------------------- crossfade
 body = """The crossfade node blends smoothly between two inputs.
@@ -447,64 +293,8 @@ print(build('crossfade', 'crossfade - blend between two inputs', body,
             demo, links, demo_width=400, text_width=780, text_height=580))
 
 
-# ------------------------------------------------------------------ accumulate
-body = """The accumulate node adds up everything it is given and reports the running total.
-
-Each value that arrives is added to the total so far, and the new total is sent out. 
-It is a running sum, kept between frames - the node remembers.
-
-You use it to integrate a stream: turning a rate into a distance, a speed into a 
-position, or a series of increments into a count. 
-Feeding it a stream of 1s makes it a simple counter.
-
-SYNTAX:
-accumulate
-
-EXAMPLE:
-accumulate
-
-INPUTS and PARAMETERS:
-
-in:
-The value to add to the running total. 
-Receiving data here triggers the node - it adds, then sends the new total. 
-Negative values subtract, so a stream that goes both ways will wander up and down.
-
-set:
-Sets the running total directly, discarding what was there. 
-The new total is sent out immediately. 
-Use this to jump the accumulator to a known starting point.
-
-reset:
-A button that returns the total to zero and sends that zero out. 
-Click it, or send it anything from elsewhere in the patch.
-
-OUTPUTS: 
-
-sum:
-The running total after the latest value has been added.
-
-A NOTE ON TYPE:
-Incoming values are converted to a single number - an integer if they look like 
-one, otherwise a float. This node keeps a scalar total; 
-it does not accumulate arrays element by element."""
-
-demo = [
-    {'key': 'met', 'init': 'metro 100', 'pos': (30, 62), 'w': 129, 'h': 70,
-     'props': {'on': True, 'period': 100.0, 'units': 'milliseconds'}},
-    {'key': 'tog', 'init': 'toggle', 'pos': (30, 20), 'w': 45, 'h': 42,
-     'props': {'': True}},
-    {'key': 'c0', 'comment': True, 'text': 'ten values a second', 'pos': (172, 80)},
-    {'key': 'tt', 'init': 't 1', 'pos': (30, 148), 'w': 22, 'h': 46},
-    {'key': 'c1', 'comment': True, 'text': 'each tick becomes the number 1', 'pos': (68, 152)},
-    {'key': 'acc', 'init': 'accumulate', 'pos': (30, 215), 'w': 140, 'h': 100},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 340), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c2', 'comment': True, 'text': 'click reset on the node to zero it', 'pos': (185, 250)},
-]
-links = [('tog', '', 'met', 'on'), ('met', '', 'tt', ''),
-         ('tt', '1', 'acc', 'in'), ('acc', 'sum', 'i1', '')]
-print(build('accumulate', 'accumulate - a running total', body,
-            demo, links, demo_width=430, text_width=780, text_height=520))
+# accumulate is no longer generated here: accumulate_help.json is laid out by
+# hand. Regenerating it here would overwrite that layout on every rebuild.
 
 # --------------------------------------------------------- continuous_rotation
 body = """The continuous_rotation node removes the jump that happens when an angle wraps around.

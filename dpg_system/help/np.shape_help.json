@@ -1,0 +1,803 @@
+{
+    "height": 1172,
+    "width": 1797,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1236,
+    "name": "np.shape_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.shape_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.shape - how many along each axis",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.shape - how many along each axis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.shape - how many along each axis"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 989,
+            "position_y": 45,
+            "width": 768,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Reports the shape of an array: how many entries along each axis, as a list.\n\nIt is the first thing to check when a node refuses data or does something odd with it - most \"why won't this work\" problems in array work are a shape mismatch rather than a data problem, and the shape is often not what the picture suggests.\n\nWHAT THE LIST MEANS:\nOne number per axis. [3, 5] is three rows of five. [12] is a plain row of twelve, a 1-D array. [1, 12] holds the same twelve numbers as a 2-D array with a single row - many nodes treat these two differently even though they draw the same. A colour image is [rows, columns, 3]. A single number is measured as an array of one value: [1].\n\nSYNTAX:\nnp.shape\nIt takes no arguments.\n\nINPUTS:\n\nnp in:\nAny array. A list is measured as the array it would become, and a torch tensor is measured too. Receiving it is what makes the node send.\n\nOUTPUTS:\n\nshape:\nA list of whole numbers, one per axis, outermost first.\n\nREADING THE DEMO:\nTop: change dim 0 or dim 1 on np.rand, then click its button. The heat_map shows the new array and np.shape follows - dim 0 is the number of rows, dim 1 the number of columns.\n\nBottom: two arrays that LOOK identical. The first strip is np.linspace's output, shape [8]. The second is the same strip after np.reshape 1 8: shape [1, 8]. Only np.shape can tell them apart.\n\nRELATED:\nt.info reports the shape of a torch tensor, along with its type and device. np.reshape changes a shape; np.expand_dims and np.squeeze add or remove axes of length 1 - the difference between [8] and [1, 8].",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Reports the shape of an array: how many entries along each axis, as a list.\n\nIt is the first thing to check when a node refuses data or does something odd with it - most \"why won't this work\" problems in array work are a shape mismatch rather than a data problem, and the shape is often not what the picture suggests.\n\nWHAT THE LIST MEANS:\nOne number per axis. [3, 5] is three rows of five. [12] is a plain row of twelve, a 1-D array. [1, 12] holds the same twelve numbers as a 2-D array with a single row - many nodes treat these two differently even though they draw the same. A colour image is [rows, columns, 3]. A single number is measured as an array of one value: [1].\n\nSYNTAX:\nnp.shape\nIt takes no arguments.\n\nINPUTS:\n\nnp in:\nAny array. A list is measured as the array it would become, and a torch tensor is measured too. Receiving it is what makes the node send.\n\nOUTPUTS:\n\nshape:\nA list of whole numbers, one per axis, outermost first.\n\nREADING THE DEMO:\nTop: change dim 0 or dim 1 on np.rand, then click its button. The heat_map shows the new array and np.shape follows - dim 0 is the number of rows, dim 1 the number of columns.\n\nBottom: two arrays that LOOK identical. The first strip is np.linspace's output, shape [8]. The second is the same strip after np.reshape 1 8: shape [1, 8]. Only np.shape can tell them apart.\n\nRELATED:\nt.info reports the shape of a torch tensor, along with its type and device. np.reshape changes a shape; np.expand_dims and np.squeeze add or remove axes of length 1 - the difference between [8] and [1, 8]."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment starts both demos when the page opens",
+            "name": "comment",
+            "id": 385,
+            "position_x": 686,
+            "position_y": 70,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "starts both demos when the page opens",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "starts both demos when the page opens"
+        },
+        "5": {
+            "name": "np.rand",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dim 0",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dim 1",
+                    "value": 5,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 3 5"
+        },
+        "6": {
+            "init": "comment change dim 0 / dim 1, then click the button",
+            "name": "comment",
+            "id": 459,
+            "position_x": 686,
+            "position_y": 135,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "change dim 0 / dim 1, then click the button",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "change dim 0 / dim 1, then click the button"
+        },
+        "7": {
+            "name": "heat_map",
+            "id": 496,
+            "position_x": 220,
+            "position_y": 130,
+            "width": 258,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 250,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 150,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "np.shape",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 160,
+            "position_y": 350,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment [rows, columns]",
+            "name": "comment",
+            "id": 607,
+            "position_x": 686,
+            "position_y": 355,
+            "width": 101,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "[rows, columns]",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "[rows, columns]"
+        },
+        "11": {
+            "name": "np.linspace",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.linspace 0 1 8"
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 328,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 40,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "np.shape",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 640,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 530,
+            "position_y": 640,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment a 1-D row of 8",
+            "name": "comment",
+            "id": 792,
+            "position_x": 686,
+            "position_y": 645,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a 1-D row of 8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a 1-D row of 8"
+        },
+        "16": {
+            "name": "np.reshape",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 750,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 1 8"
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 840,
+            "width": 328,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 40,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "name": "np.shape",
+            "id": 903,
+            "position_x": 400,
+            "position_y": 840,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "19": {
+            "name": "list",
+            "id": 940,
+            "position_x": 530,
+            "position_y": 840,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "init": "comment the same picture: a 2-D array of 1 row",
+            "name": "comment",
+            "id": 977,
+            "position_x": 686,
+            "position_y": 845,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same picture: a 2-D array of 1 row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same picture: a 2-D array of 1 row"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 994,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.info"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 100,
+            "position_y": 994,
+            "width": 79,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.reshape"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 195,
+            "position_y": 994,
+            "width": 104,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.expand_dims"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 315,
+            "position_y": 994,
+            "width": 79,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.squeeze"
+        },
+        "25": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1162,
+            "position_x": 30,
+            "position_y": 960,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "26": {
+            "name": "close",
+            "id": 1199,
+            "position_x": 24,
+            "position_y": 1068,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "9": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "10": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "11": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

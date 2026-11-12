@@ -1,0 +1,1037 @@
+{
+    "height": 572,
+    "width": 1290,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1684,
+    "name": "nodes_math_colour",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math_colour.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Colour",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 89,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Colour",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Colour",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_math < Math",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 76,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< Math",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 124,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 292,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Numbers, lists and arrays in; results out.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Numbers, lists and arrays in; results out.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link color_convert all of the colour conversions",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "all of the colour conversions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 154,
+            "width": 268,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the same colour, described differently",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the same colour, described differently",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link rgb_to_cmy rgb_to_cmy",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "rgb_to_cmy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 206,
+            "width": 286,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "red, green, blue to cyan, magenta, yellow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "red, green, blue to cyan, magenta, yellow",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link rgb_to_hsl rgb_to_hsl",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "rgb_to_hsl",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 258,
+            "width": 317,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "red, green, blue to hue, saturation, lightness",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 309,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "red, green, blue to hue, saturation, lightness",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link rgb_to_hsv rgb_to_hsv",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "rgb_to_hsv",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 310,
+            "width": 292,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "red, green, blue to hue, saturation, value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "red, green, blue to hue, saturation, value",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link cmy_to_rgb cmy_to_rgb",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "cmy_to_rgb",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 362,
+            "width": 286,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "cyan, magenta, yellow to red, green, blue",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 278,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "cyan, magenta, yellow to red, green, blue",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link cmy_to_hsl cmy_to_hsl",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "cmy_to_hsl",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 414,
+            "width": 348,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "cyan, magenta, yellow to hue, saturation, lightness",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "cyan, magenta, yellow to hue, saturation, lightness",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link cmy_to_hsv cmy_to_hsv",
+            "name": "help_link",
+            "position_x": 664,
+            "position_y": 150,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "cmy_to_hsv",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 896,
+            "position_y": 154,
+            "width": 323,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "cyan, magenta, yellow to hue, saturation, value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 315,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "cyan, magenta, yellow to hue, saturation, value",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link hsl_to_rgb hsl_to_rgb",
+            "name": "help_link",
+            "position_x": 664,
+            "position_y": 202,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "hsl_to_rgb",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 896,
+            "position_y": 206,
+            "width": 317,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hue, saturation, lightness to red, green, blue",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 309,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hue, saturation, lightness to red, green, blue",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link hsl_to_cmy hsl_to_cmy",
+            "name": "help_link",
+            "position_x": 664,
+            "position_y": 254,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "hsl_to_cmy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 896,
+            "position_y": 258,
+            "width": 348,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hue, saturation, lightness to cyan, magenta, yellow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hue, saturation, lightness to cyan, magenta, yellow",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link hsl_to_hsv hsl_to_hsv",
+            "name": "help_link",
+            "position_x": 664,
+            "position_y": 306,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "hsl_to_hsv",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 896,
+            "position_y": 310,
+            "width": 354,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hue, saturation, lightness to hue, saturation, value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 346,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hue, saturation, lightness to hue, saturation, value",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link hsv_to_rgb hsv_to_rgb",
+            "name": "help_link",
+            "position_x": 664,
+            "position_y": 358,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "hsv_to_rgb",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 896,
+            "position_y": 362,
+            "width": 292,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hue, saturation, value to red, green, blue",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hue, saturation, value to red, green, blue",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link hsv_to_cmy hsv_to_cmy",
+            "name": "help_link",
+            "position_x": 664,
+            "position_y": 410,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "hsv_to_cmy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 896,
+            "position_y": 414,
+            "width": 323,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hue, saturation, value to cyan, magenta, yellow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 315,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hue, saturation, value to cyan, magenta, yellow",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link hsv_to_hsl hsv_to_hsl",
+            "name": "help_link",
+            "position_x": 664,
+            "position_y": 462,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "hsv_to_hsl",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 896,
+            "position_y": 466,
+            "width": 354,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hue, saturation, value to hue, saturation, lightness",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 346,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hue, saturation, value to hue, saturation, lightness",
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

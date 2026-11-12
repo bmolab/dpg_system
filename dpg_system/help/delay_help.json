@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The delay node holds data for a specific number of update frames before releasing it to the output.\n\nIt creates a time lag between the input and output. \nUnlike the metronome or timer nodes, this node operates on \"frames\" (application update cycles), \nmaking it useful for synchronizing events within the visual update loop. \n\nSYNTAX:\n\ndelay <frames: int>\n\nEXAMPLE:\n\ndelay 60\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nData received here is stored in a buffer and released after the specified number of frames.\n\ndelay: \nSets the length of the delay buffer in frames. \nFor example, if the application runs at 60fps, a delay of 60 equals 1 second. \nChanging this value dynamically resizes the internal buffer.\n\ncancel:\nWhen a signal is received here, the internal buffer is immediately cleared (filled with empty data). \nThis effectively stops any pending data from being output.\n\nOUTPUTS: \n\nout:\nThe delayed data. \nIf data was received at the input 'N' frames ago, it appears here now.",
+                    "value": "The delay node holds data for a specific number of update frames before releasing it to the output.\n\nIt creates a time lag between the input and output.  Unlike the metronome or timer nodes, this node operates on \"frames\" (application update cycles),  making it useful for synchronizing events within the visual update loop. \n\nSYNTAX:\n\ndelay <frames: int>\n\nEXAMPLE:\n\ndelay 60\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nData received here is stored in a buffer and released after the specified number of frames.\n\ndelay: \nSets the length of the delay buffer in frames. \nFor example, if the application runs at 60fps, a delay of 60 equals 1 second.  Changing this value dynamically resizes the internal buffer.\n\ncancel:\nWhen a signal is received here, the internal buffer is immediately cleared (filled with empty data).  This effectively stops any pending data from being output.\n\nOUTPUTS: \n\nout:\nThe delayed data. \nIf data was received at the input 'N' frames ago, it appears here now.",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The delay node holds data for a specific number of update frames before releasing it to the output.\n\nIt creates a time lag between the input and output. \nUnlike the metronome or timer nodes, this node operates on \"frames\" (application update cycles), \nmaking it useful for synchronizing events within the visual update loop. \n\nSYNTAX:\n\ndelay <frames: int>\n\nEXAMPLE:\n\ndelay 60\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nData received here is stored in a buffer and released after the specified number of frames.\n\ndelay: \nSets the length of the delay buffer in frames. \nFor example, if the application runs at 60fps, a delay of 60 equals 1 second. \nChanging this value dynamically resizes the internal buffer.\n\ncancel:\nWhen a signal is received here, the internal buffer is immediately cleared (filled with empty data). \nThis effectively stops any pending data from being output.\n\nOUTPUTS: \n\nout:\nThe delayed data. \nIf data was received at the input 'N' frames ago, it appears here now."
+            "text": "The delay node holds data for a specific number of update frames before releasing it to the output.\n\nIt creates a time lag between the input and output.  Unlike the metronome or timer nodes, this node operates on \"frames\" (application update cycles),  making it useful for synchronizing events within the visual update loop. \n\nSYNTAX:\n\ndelay <frames: int>\n\nEXAMPLE:\n\ndelay 60\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nData received here is stored in a buffer and released after the specified number of frames.\n\ndelay: \nSets the length of the delay buffer in frames. \nFor example, if the application runs at 60fps, a delay of 60 equals 1 second.  Changing this value dynamically resizes the internal buffer.\n\ncancel:\nWhen a signal is received here, the internal buffer is immediately cleared (filled with empty data).  This effectively stops any pending data from being output.\n\nOUTPUTS: \n\nout:\nThe delayed data. \nIf data was received at the input 'N' frames ago, it appears here now."
         },
         "4": {
             "init": "np.rand 4 4",
@@ -171,7 +171,8 @@
                     "value": 60,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "heat_map",

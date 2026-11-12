@@ -1,0 +1,521 @@
+{
+    "height": 1121,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "scipy.kmeans_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.kmeans_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scipy.kmeans - sort points into k groups",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scipy.kmeans - sort points into k groups",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scipy.kmeans - sort points into k groups"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Sorts a set of points - positions, poses, feature vectors of any length - into k groups of points that lie close together, and gives which group each point is in and the centre of each group. k-means clustering.\n\nUse it to find where people tend to gather on a floor, to build a small vocabulary of recurring poses or gestures from a recording (each centre a typical pose), to divide a point cloud into objects, or to quantize a continuous feature into a few states.\n\nSYNTAX:\nscipy.kmeans <k: int>\nDefault: k 3.\n\nINPUTS and PARAMETERS:\n\npoints:\nThe points, as rows of coordinates (a plain list is points on a line). Every input is grouped and sent. Rows with nan are left out.\n\nk (int box, also an inlet):\nHow many groups.\n\nfollow:\nAn option, under the node. On (the default), each new set starts from the last set's centres, so group 0 stays the same group from one frame to the next as the points move. Off, every set is grouped afresh, and the numbers can swap.\n\nseed:\nAn option, under the node. -1 (the default) picks the starting centres differently each run; any other number repeats the same grouping.\n\nOUTPUTS:\n\nlabels:\nWhich group each point is in: 0 to k - 1.\n\ncentres:\nThe centre of each group, one row each. Sent first, then the labels.\n\nREADING THE DEMO:\nSix points: three near 0 0 and three near 5 5. With k 2 the labels are three of one number and three of the other, and the centres are about 0.1 0.13 and 5 5. A metro re-sends the points twice a second; the labels stay put because follow is on.\n\nRELATED:\nscipy.kdtree finds which of a fixed set of points is nearest. pc_cluster_filter groups the points of a point cloud. scipy.label finds regions in a grid.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Sorts a set of points - positions, poses, feature vectors of any length - into k groups of points that lie close together, and gives which group each point is in and the centre of each group. k-means clustering.\n\nUse it to find where people tend to gather on a floor, to build a small vocabulary of recurring poses or gestures from a recording (each centre a typical pose), to divide a point cloud into objects, or to quantize a continuous feature into a few states.\n\nSYNTAX:\nscipy.kmeans <k: int>\nDefault: k 3.\n\nINPUTS and PARAMETERS:\n\npoints:\nThe points, as rows of coordinates (a plain list is points on a line). Every input is grouped and sent. Rows with nan are left out.\n\nk (int box, also an inlet):\nHow many groups.\n\nfollow:\nAn option, under the node. On (the default), each new set starts from the last set's centres, so group 0 stays the same group from one frame to the next as the points move. Off, every set is grouped afresh, and the numbers can swap.\n\nseed:\nAn option, under the node. -1 (the default) picks the starting centres differently each run; any other number repeats the same grouping.\n\nOUTPUTS:\n\nlabels:\nWhich group each point is in: 0 to k - 1.\n\ncentres:\nThe centre of each group, one row each. Sent first, then the labels.\n\nREADING THE DEMO:\nSix points: three near 0 0 and three near 5 5. With k 2 the labels are three of one number and three of the other, and the centres are about 0.1 0.13 and 5 5. A metro re-sends the points twice a second; the labels stay put because follow is on.\n\nRELATED:\nscipy.kdtree finds which of a fixed set of points is nearest. pc_cluster_filter groups the points of a point cloud. scipy.label finds regions in a grid."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment three points near 0 0, three near 5 5",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "three points near 0 0, three near 5 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "three points near 0 0, three near 5 5"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0 0.2 0.1 0.1 0.3 5 5 5.2 4.9 4.8 5.1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "np.reshape",
+            "id": 496,
+            "position_x": 590,
+            "position_y": 92,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 6 2"
+        },
+        "8": {
+            "init": "comment two groups",
+            "name": "comment",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 220,
+            "width": 70,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two groups",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two groups"
+        },
+        "9": {
+            "name": "scipy.kmeans",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 255,
+            "width": 99,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "scipy.kmeans 2",
+            "highlight": true
+        },
+        "10": {
+            "init": "comment which group",
+            "name": "comment",
+            "id": 607,
+            "position_x": 400,
+            "position_y": 220,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "which group",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "which group"
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 400,
+            "position_y": 255,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment their centres",
+            "name": "comment",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 330,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "their centres",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "their centres"
+        },
+        "13": {
+            "name": "round",
+            "id": 718,
+            "position_x": 400,
+            "position_y": 365,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 520,
+            "position_y": 365,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 534,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.kdtree"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 166,
+            "position_y": 534,
+            "width": 121,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link pc_cluster_filter"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 340,
+            "position_y": 534,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.label"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 468,
+            "position_y": 534,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.unique"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 644,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "points"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "labels",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "centres",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -358,7 +358,10 @@ class MGLSMPLMeshNode(MGLShapeNode):
             if vertices is None:
                 return
             self.render_geometry(vertices, indices)
-        
+            # a pose that arrived before the model loaded (first draw) gave no vertices; show it now
+            if self.last_pose is not None and self.prev_vbo_data is None:
+                self._repose_last()
+
         # Update VBO with deformed vertices if available
         if self.prev_vbo_data is not None and self.vbo is not None:
             data = self.prev_vbo_data.astype('f4')

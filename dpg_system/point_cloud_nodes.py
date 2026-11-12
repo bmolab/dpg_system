@@ -1309,6 +1309,10 @@ class PointCloudInfoNode(PointCloudNode):
     def execute(self):
         pts = self._get_cloud()
         if pts is None:
+            # an empty frame still passes through, so downstream sees it clear
+            raw_pts, _ = unwrap_cloud(self.in_raw)
+            if raw_pts is not None and np.size(raw_pts) == 0:
+                self.passthrough_output.send(self.in_raw)
             self.count_output.send(0)
             return
         self.passthrough_output.send(self.in_raw)   # frame unchanged, dict or raw
@@ -1411,9 +1415,22 @@ class PointCloudClusterFilterNode(PointCloudNode):
         self._state_size = 0
         self._last_time = None   # for the measured dt
 
-    def _reset_state(self, k):
+    def _reset_state(self, k, stable_ids=False):
         """Drop the per-cluster history when the lattice changes shape — a new
-        box count means cluster 7 is a different piece of the room."""
+        box count means cluster 7 is a different piece of the room. Clusters
+        that are not a lattice (pc_regions') keep their ids for good, so a
+        change of count there is a region added or the last ones gone: the
+        history of the rest is kept, and new ones start from zero."""
+        if stable_ids and self._state_size not in (None, k) and self._last_time is not None:
+            def fit(a):
+                out = np.zeros(k, dtype=np.float32)
+                n = min(k, a.size)
+                out[:n] = a[:n]
+                return out
+            self._filtered, self._speed, self._last = (
+                fit(self._filtered), fit(self._speed), fit(self._last))
+            self._state_size = k
+            return
         if self._state_size != k:
             self._filtered = np.zeros(k, dtype=np.float32)
             self._speed = np.zeros(k, dtype=np.float32)
@@ -1467,8 +1484,8 @@ class PointCloudClusterFilterNode(PointCloudNode):
             degree = smooth
         return (self._filtered * degree + x * (1.0 - degree)).astype(np.float32)
 
-    def _process(self, values):
-        self._reset_state(values.size)
+    def _process(self, values, stable_ids=False):
+        self._reset_state(values.size, stable_ids)
         out = values
 
         threshold = max(0.0, float(self.threshold_input()))
@@ -1513,7 +1530,7 @@ class PointCloudClusterFilterNode(PointCloudNode):
             self.output.send(raw)
             return
         values = np.asarray(clusters['values'], dtype=np.float32).reshape(-1)
-        out_values = self._process(values)
+        out_values = self._process(values, stable_ids=clusters.get('shape') is None)
 
         clusters = dict(clusters)
         clusters['values'] = out_values

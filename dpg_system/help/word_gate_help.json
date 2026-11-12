@@ -1,0 +1,318 @@
+{
+    "height": 781,
+    "width": 1331,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "word_gate_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/word_gate_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment word_gate - pass only known words",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 414,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "word_gate - pass only known words",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "word_gate - pass only known words"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 483,
+            "position_y": 45,
+            "width": 808,
+            "height": 676,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The word_gate node passes only the words that are in its vocabulary, and drops the rest.\n\nThat is how you keep a text stream to a known set of words - useful when the words are going to drive something that only understands certain ones, and as a way of ignoring the noise in a recognition stream without having to list what to reject.\n\nHOW IT READS THE TEXT:\nThe incoming text is broken into words at anything that is not a letter or an apostrophe, so numbers and punctuation never get through. Each word is looked up as it is, then in small letters. A word that is not in the vocabulary on its own can still pass as the second half of a two-word entry: with \"new york\" in the vocabulary, \"New York\" passes as one item.\n\nThe words that pass are sent as one string, joined by spaces. When nothing passes, nothing is sent.\n\nTHE VOCABULARY IS A DICTIONARY:\nEach entry is a word and what to send in its place. 'include word' files a word under itself, so it passes unchanged. A dictionary arriving at 'dictionary in' replaces the vocabulary, and can map a word to something else: {\"crimson\": \"red\"} lets crimson through as red.\n\nSYNTAX:\nword_gate\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe text to filter. Receiving it triggers the node.\n\ndictionary in:\nA dictionary that replaces the vocabulary.\n\nload dictionary:\nThe path of a JSON file holding the vocabulary as a dictionary. Entering a path here, or sending one, loads it and replaces the vocabulary.\n\ninclude word:\nAdds to the vocabulary. A list adds each of its words; a single string is added whole, so a string node holding \"new york\" adds the two-word entry.\n\nOUTPUTS:\n\ngated string out:\nThe words that passed, or what the vocabulary maps them to.\n\nRELATED:\nword_trigger fires on particular words rather than passing them along. string_replace and dict_replace substitute without filtering anything out.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 660,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The word_gate node passes only the words that are in its vocabulary, and drops the rest.\n\nThat is how you keep a text stream to a known set of words - useful when the words are going to drive something that only understands certain ones, and as a way of ignoring the noise in a recognition stream without having to list what to reject.\n\nHOW IT READS THE TEXT:\nThe incoming text is broken into words at anything that is not a letter or an apostrophe, so numbers and punctuation never get through. Each word is looked up as it is, then in small letters. A word that is not in the vocabulary on its own can still pass as the second half of a two-word entry: with \"new york\" in the vocabulary, \"New York\" passes as one item.\n\nThe words that pass are sent as one string, joined by spaces. When nothing passes, nothing is sent.\n\nTHE VOCABULARY IS A DICTIONARY:\nEach entry is a word and what to send in its place. 'include word' files a word under itself, so it passes unchanged. A dictionary arriving at 'dictionary in' replaces the vocabulary, and can map a word to something else: {\"crimson\": \"red\"} lets crimson through as red.\n\nSYNTAX:\nword_gate\n\nINPUTS and PARAMETERS:\n\nstring in:\nThe text to filter. Receiving it triggers the node.\n\ndictionary in:\nA dictionary that replaces the vocabulary.\n\nload dictionary:\nThe path of a JSON file holding the vocabulary as a dictionary. Entering a path here, or sending one, loads it and replaces the vocabulary.\n\ninclude word:\nAdds to the vocabulary. A list adds each of its words; a single string is added whole, so a string node holding \"new york\" adds the two-word entry.\n\nOUTPUTS:\n\ngated string out:\nThe words that passed, or what the vocabulary maps them to.\n\nRELATED:\nword_trigger fires on particular words rather than passing them along. string_replace and dict_replace substitute without filtering anything out."
+        },
+        "3": {
+            "name": "message",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "red green blue",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 241,
+            "position_y": 62,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click first: adds three words\nto the vocabulary",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click first: adds three words\nto the vocabulary"
+        },
+        "5": {
+            "name": "string",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 125,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "The red car stopped at the green light.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment then click to send the sentence",
+            "name": "comment",
+            "id": 459,
+            "position_x": 241,
+            "position_y": 175,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then click to send the sentence",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then click to send the sentence"
+        },
+        "7": {
+            "name": "word_gate",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 215,
+            "width": 185,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "8": {
+            "name": "string",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment only the words it knows",
+            "name": "comment",
+            "id": 570,
+            "position_x": 241,
+            "position_y": 420,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only the words it knows",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "only the words it knows"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 442,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "include word"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "string in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gated string out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

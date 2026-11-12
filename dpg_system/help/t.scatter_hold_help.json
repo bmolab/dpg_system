@@ -1,0 +1,578 @@
+{
+    "height": 1075,
+    "width": 1625,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "t.scatter_hold_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.scatter_hold_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.scatter_hold - assemble a tensor from index, value pairs",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 721,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.scatter_hold - assemble a tensor from index, value pairs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.scatter_hold - assemble a tensor from index, value pairs"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 817,
+            "position_y": 45,
+            "width": 768,
+            "height": 936,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Holds a 1-D tensor and writes values into it from index, value pairs, keeping everything else as it was.\n\nSend it 3 0.8 and slot 3 becomes 0.8; send 3 0.8 7 0.2 and two slots change at once. It remembers between messages, so values arriving one at a time, from different nodes and at different rates, build up into a single tensor that always holds the latest of each - per-joint readings that arrive separately and something downstream that wants them all together.\n\nSYNTAX:\nt.scatter_hold <length: int>\nDefault length 16.\n\nEXAMPLE:\nt.scatter_hold 8\n\nINPUTS and PARAMETERS:\n\nlist of index value pairs:\nAlternating positions and values: index, value, index, value... (a list, an array or a tensor). Writes them and sends the whole tensor. An odd number of entries is ignored - it cannot be read as pairs. Indices are rounded down to whole numbers and pulled into range: anything below 0 writes slot 0 and anything past the end writes the LAST slot, so a stray index quietly overwrites an end slot rather than failing.\n\nlength of target tensor (drag int, also an inlet):\nHow many slots. Changing it makes a new tensor of zeros - what was held is lost. Minimum 1.\n\nclear (button, also an inlet):\nSets every slot back to zero and sends the cleared tensor, so a display downstream clears at once.\n\nOUTPUTS:\n\noutput:\nThe whole held tensor (float32) after each write - not just the slots that changed - so anything downstream always sees the complete current state. Each send is a copy: a tensor already sent is not changed by later writes, so a node further on that keeps one (var, a buffer) keeps the state at that moment.\n\nREADING THE DEMO:\nThe first message is sent once on load. Click either message: each changes only its own slots and the rest keep\nwhat they had. Drag the slider to write its value into the slot named by the int box (3 to start); pak sends the pair on every move, so that one slot follows the slider. Type another number in the int box to move the slider to another slot - the old one keeps its last value. Click clear on the node and the strip goes back to zeros at once; move the slider or click a message to start building it up again.\n\nRELATED:\nt.scatter writes a whole source tensor into a target at given positions, without holding anything. np.edit writes into a region of a numpy array. t.index_select reads values out by position.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 920,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Holds a 1-D tensor and writes values into it from index, value pairs, keeping everything else as it was.\n\nSend it 3 0.8 and slot 3 becomes 0.8; send 3 0.8 7 0.2 and two slots change at once. It remembers between messages, so values arriving one at a time, from different nodes and at different rates, build up into a single tensor that always holds the latest of each - per-joint readings that arrive separately and something downstream that wants them all together.\n\nSYNTAX:\nt.scatter_hold <length: int>\nDefault length 16.\n\nEXAMPLE:\nt.scatter_hold 8\n\nINPUTS and PARAMETERS:\n\nlist of index value pairs:\nAlternating positions and values: index, value, index, value... (a list, an array or a tensor). Writes them and sends the whole tensor. An odd number of entries is ignored - it cannot be read as pairs. Indices are rounded down to whole numbers and pulled into range: anything below 0 writes slot 0 and anything past the end writes the LAST slot, so a stray index quietly overwrites an end slot rather than failing.\n\nlength of target tensor (drag int, also an inlet):\nHow many slots. Changing it makes a new tensor of zeros - what was held is lost. Minimum 1.\n\nclear (button, also an inlet):\nSets every slot back to zero and sends the cleared tensor, so a display downstream clears at once.\n\nOUTPUTS:\n\noutput:\nThe whole held tensor (float32) after each write - not just the slots that changed - so anything downstream always sees the complete current state. Each send is a copy: a tensor already sent is not changed by later writes, so a node further on that keeps one (var, a buffer) keeps the state at that moment.\n\nREADING THE DEMO:\nThe first message is sent once on load. Click either message: each changes only its own slots and the rest keep\nwhat they had. Drag the slider to write its value into the slot named by the int box (3 to start); pak sends the pair on every move, so that one slot follows the slider. Type another number in the int box to move the slider to another slot - the old one keeps its last value. Click clear on the node and the strip goes back to zeros at once; move the slider or click a message to start building it up again.\n\nRELATED:\nt.scatter writes a whole source tensor into a target at given positions, without holding anything. np.edit writes into a region of a numpy array. t.index_select reads values out by position."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 50,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 110,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2 0.9 5 0.4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 210,
+            "position_y": 110,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0.7 7 0.2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment click: index, value, index, value",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 115,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click: index, value, index, value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click: index, value, index, value"
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 170,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "name": "slider",
+            "id": 533,
+            "position_x": 160,
+            "position_y": 170,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
+        },
+        "9": {
+            "init": "comment left: which slot. right: its value",
+            "name": "comment",
+            "id": 570,
+            "position_x": 484,
+            "position_y": 175,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left: which slot. right: its value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "left: which slot. right: its value"
+        },
+        "10": {
+            "name": "pak",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pak i f"
+        },
+        "11": {
+            "name": "t.scatter_hold",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 234,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "length of target tensor",
+                    "value": 8,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.scatter_hold 8",
+            "highlight": true
+        },
+        "12": {
+            "init": "comment click clear to zero it",
+            "name": "comment",
+            "id": 681,
+            "position_x": 484,
+            "position_y": 345,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click clear to zero it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click clear to zero it"
+        },
+        "13": {
+            "name": "heat_map",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 428,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 420,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment the eight slots: each write changes only its own",
+            "name": "comment",
+            "id": 755,
+            "position_x": 484,
+            "position_y": 580,
+            "width": 303,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the eight slots: each write changes only its own",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the eight slots: each write changes only its own"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 664,
+            "width": 73,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.scatter"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 119,
+            "position_y": 664,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.edit"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 195,
+            "position_y": 664,
+            "width": 104,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.index_select"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 315,
+            "position_y": 664,
+            "width": 35,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link pak"
+        },
+        "19": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 738,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "list of index value pairs"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "list of index value pairs"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "int"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "float"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "list of index value pairs"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

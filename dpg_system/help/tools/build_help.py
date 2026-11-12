@@ -5,6 +5,10 @@ A help patch is: a title comment (top left), a locked text_block of prose
 and a close button at the bottom left.
 """
 import json, os
+from strip_starters import strip_patch, strip_toggles
+from reflow_prose import reflow
+from compact_see_also import compact
+from highlight_featured import mark_featured
 
 HELP_DIR = '/Users/drokeby/dpg_system/dpg_system/help'
 
@@ -54,8 +58,22 @@ def _props(d):
     return out
 
 
+# A new mgl_context opens its own 960 x 960 window. A help page is a self-contained
+# demo, so its contexts draw in the node unless the spec says otherwise.
+MGL_CONTEXT_HELP_PROPS = {'display_mode': 'node', 'width': 640, 'height': 480,
+                          'display_width': 640, 'display_height': 480}
+
+
+def _demo_props(d):
+    """A demo entry's properties, with the help-page settings of an mgl_context."""
+    props = d.get('props', {})
+    if d['init'].split(' ')[0] == 'mgl_context':
+        props = {**props, **{k: v for k, v in MGL_CONTEXT_HELP_PROPS.items() if k not in props}}
+    return props
+
+
 def build(name, title, body, demo, links, demo_width=520,
-          text_width=780, text_height=620, out_dir=HELP_DIR, subpatch=None):
+          text_width=780, text_height=620, out_dir=HELP_DIR, subpatch=None, keep_toggles=False):
     """
     name        file stem, e.g. 'sample_hold'  -> sample_hold_help.json
     title       big comment across the top
@@ -96,7 +114,9 @@ def build(name, title, body, demo, links, demo_width=520,
          'comment': title})
 
     text_x = demo_width + TEXT_X_PAD
-    # prose
+    # prose: one line per paragraph, so the text_block wraps it to its own
+    # width (the generators write it hard-wrapped at about 72 columns)
+    body = reflow(body)
     add({'name': 'text_block', 'id': new_id(),
          'position_x': text_x, 'position_y': 45,
          'width': text_width + 8, 'height': text_height + 16,
@@ -145,7 +165,7 @@ def build(name, title, body, demo, links, demo_width=520,
                  'width': d.get('w', 130), 'height': d.get('h', 70),
                  'visibility': 'show_all', 'draggable': True,
                  'presentation_state': 'show_all',
-                 'properties': _props(d.get('props', {}))}
+                 'properties': _props(_demo_props(d))}
         if ' ' in init:
             entry['init'] = init
         add(entry)
@@ -184,62 +204,86 @@ def build(name, title, body, demo, links, demo_width=520,
         'links': lk,
     }
     path = os.path.join(out_dir, name + '_help.json')
+    # SEE ALSO: the label on its own line, the buttons close together under it
+    compact(patch)
 
     if subpatch is None:
+        # a signal saved with 'on' true starts by itself: drop load_bang -> t 1
+        # starters that do nothing else (see strip_starters.py)
+        strip_patch(patch)
+        if not keep_toggles:
+            strip_toggles(patch)
+        mark_featured(patch, name)      # the node the page is about, highlighted
         json.dump(patch, open(path, 'w'), indent=4)
         return path
 
     # A subpatcher is two patches in one file, linked both ways: the parent
     # node's 'patcher id' is the subpatch's id, and the subpatch's
-    # 'parent_node_uuid' is the parent node's id.
-    host_id = ids[subpatch['host']]
-    sub_id = new_id()
-    for nc in nodes.values():
-        if nc.get('id') == host_id:
-            nc['patcher id'] = sub_id
-            break
+    # 'parent_node_uuid' is the parent node's id. A page may carry several
+    # (a list), each hosted by its own p node.
+    subpatches = subpatch if isinstance(subpatch, list) else [subpatch]
+    subs = []
+    for subpatch in subpatches:
+        host_id = ids[subpatch['host']]
+        sub_id = new_id()
+        for nc in nodes.values():
+            if nc.get('id') == host_id:
+                nc['patcher id'] = sub_id
+                break
 
-    sub_nodes, sub_ids = {}, {}
-    sub_nodes['0'] = {
-        'name': '', 'id': new_id(), 'position_x': 0, 'position_y': 0,
-        'width': 9, 'height': 30, 'visibility': 'show_all', 'draggable': True,
-        'protected': True, 'presentation_state': 'hidden',
-        'properties': {'0': {'name': '', 'value': None, 'value_type': 'NoneType'}},
-    }
-    for i, d in enumerate(subpatch['demo'], start=1):
-        nid_ = new_id()
-        sub_ids[d['key']] = nid_
-        x, y = d['pos']
-        sub_nodes[str(i)] = {
-            'name': d['init'].split(' ')[0], 'init': d['init'], 'id': nid_,
-            'position_x': x, 'position_y': y,
-            'width': d.get('w', 140), 'height': d.get('h', 60),
-            'visibility': 'show_all', 'draggable': True,
-            'presentation_state': 'show_all',
-            'properties': _props(d.get('props', {})),
+        sub_nodes, sub_ids = {}, {}
+        sub_nodes['0'] = {
+            'name': '', 'id': new_id(), 'position_x': 0, 'position_y': 0,
+            'width': 9, 'height': 30, 'visibility': 'show_all', 'draggable': True,
+            'protected': True, 'presentation_state': 'hidden',
+            'properties': {'0': {'name': '', 'value': None, 'value_type': 'NoneType'}},
         }
-    sub_lk = {}
-    for j, link in enumerate(subpatch.get('links', [])):
-        sk, so, dk, di = link[:4]
-        sub_lk[str(j)] = {
-            'source_node': sub_ids[sk], 'source_node_name': '',
-            'source_output_index': link[4] if len(link) > 4 else 0,
-            'source_output_name': so,
-            'dest_node': sub_ids[dk], 'dest_node_name': '',
-            'dest_input_index': link[5] if len(link) > 5 else 0,
-            'dest_input_name': di,
+        for i, d in enumerate(subpatch['demo'], start=1):
+            nid_ = new_id()
+            sub_ids[d['key']] = nid_
+            x, y = d['pos']
+            sub_nodes[str(i)] = {
+                'name': d['init'].split(' ')[0], 'init': d['init'], 'id': nid_,
+                'position_x': x, 'position_y': y,
+                'width': d.get('w', 140), 'height': d.get('h', 60),
+                'visibility': 'show_all', 'draggable': True,
+                'presentation_state': 'show_all',
+                'properties': _props(_demo_props(d)),
+            }
+            if d['init'].startswith('comment '):
+                # a comment loads its text from 'comment', not from init
+                txt = d['init'][len('comment '):]
+                sub_nodes[str(i)]['comment'] = txt
+                sub_nodes[str(i)]['properties'] = _props({'text': txt})
+        sub_lk = {}
+        for j, link in enumerate(subpatch.get('links', [])):
+            sk, so, dk, di = link[:4]
+            sub_lk[str(j)] = {
+                'source_node': sub_ids[sk], 'source_node_name': '',
+                'source_output_index': link[4] if len(link) > 4 else 0,
+                'source_output_name': so,
+                'dest_node': sub_ids[dk], 'dest_node_name': '',
+                'dest_input_index': link[5] if len(link) > 5 else 0,
+                'dest_input_name': di,
+            }
+        sub = {
+            'height': max([d['pos'][1] + d.get('h', 60) for d in subpatch['demo']]) + 80,
+            'width': max([d['pos'][0] + d.get('w', 140) for d in subpatch['demo']]) + 80,
+            'position': [160, 160],
+            'id': sub_id,
+            'name': subpatch['name'],
+            'parent_node_uuid': host_id,
+            'nodes': sub_nodes,
+            'links': sub_lk,
         }
-    sub = {
-        'height': max([d['pos'][1] + d.get('h', 60) for d in subpatch['demo']]) + 80,
-        'width': max([d['pos'][0] + d.get('w', 140) for d in subpatch['demo']]) + 80,
-        'position': [160, 160],
-        'id': sub_id,
-        'name': subpatch['name'],
-        'parent_node_uuid': host_id,
-        'nodes': sub_nodes,
-        'links': sub_lk,
-    }
+        subs.append(sub)
+    allp = subs + [patch]
     doc = {'name': name + '_help', 'path': path,
-           'patches': {'0': sub, '1': patch}}
+           'patches': {str(k): pt for k, pt in enumerate(allp)}}
+    for pt in allp:
+        strip_patch(pt)
+        if not keep_toggles:
+            strip_toggles(pt)
+    mark_featured(doc, name)            # the node the page is about, highlighted
     json.dump(doc, open(path, 'w'), indent=4)
     return path

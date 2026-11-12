@@ -1,0 +1,468 @@
+{
+    "height": 1121,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "elbow_hinge_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/elbow_hinge_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment elbow_hinge - how far the forearms leave their elbow hinges",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 733,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "elbow_hinge - how far the forearms leave their elbow hinges",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "elbow_hinge - how far the forearms leave their elbow hinges"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Measures an impossibility in a take of Shadow data. The elbow is a hinge: seen from the upper arm, the forearm can only point somewhere around one fixed circle - bending moves it around the circle, and forearm twist does not move it at all. However the dancer moves, a real arm stays on that circle. A frame where the forearm points off it cannot have happened, so how far off it is measures an error in the sensors, not how natural the pose looks.\n\nBy default the circle is the one a real elbow bends on: forward, as SMPL's does from its rest pose. That pins the upper arm's roll at every bend. Or the circle can be fitted to the take, assuming nothing about the dancer's elbow; then a constant twist of the upper arm (which turns the whole circle) cannot be seen, and a correction learned against it can drift in roll where nothing shows it. Either way elbow_hinge wants a take (many frames), not one pose. The loss is ready for t.optimize, to learn a correction such as shadow_mag_correct's.\n\nSYNTAX:\nelbow_hinge\n\nINPUTS and PARAMETERS:\n\ntake in:\nShadow quaternions, (frames, 37 or 20 joints, 4), scalar first. A tensor carrying gradients keeps them.\n\nrobust width:\nAn option, in degrees (4 by default). Misses smaller than this count by their square, larger ones only in proportion, so a few wild frames cannot dominate.\n\narms:\nAn option: both (the default), left or right - which arms make the loss.\n\ncircle:\nAn option: forward (the default) or fitted - see above.\n\nOUTPUTS:\n\nloss:\nOne number for t.optimize; smaller is better.\n\noff hinge:\nFor each frame, how far each forearm is off its circle, in degrees: (frames, 2), left then right.\n\nrms:\nThe typical miss over the take, in degrees, left then right.\n\nREADING THE DEMO:\nA made-up take, 600 frames of both elbows bending to 100 degrees and back. In the clean version nothing else happens, and both forearms stay exactly on their circles:\n0. In the other, each upper-arm sensor misreads its roll by up to 6 degrees as time\ngoes by, and the forearms are pushed off by about 3 degrees.\n\nRELATED:\nshadow_mag_correct is the correction it is meant to judge; t.optimize learns it. elbow_turn measures the T-pose turn as a single number for the take. The full learning setup on a real take is examples/shadow_mag_learning.json.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Measures an impossibility in a take of Shadow data. The elbow is a hinge: seen from the upper arm, the forearm can only point somewhere around one fixed circle - bending moves it around the circle, and forearm twist does not move it at all. However the dancer moves, a real arm stays on that circle. A frame where the forearm points off it cannot have happened, so how far off it is measures an error in the sensors, not how natural the pose looks.\n\nBy default the circle is the one a real elbow bends on: forward, as SMPL's does from its rest pose. That pins the upper arm's roll at every bend. Or the circle can be fitted to the take, assuming nothing about the dancer's elbow; then a constant twist of the upper arm (which turns the whole circle) cannot be seen, and a correction learned against it can drift in roll where nothing shows it. Either way elbow_hinge wants a take (many frames), not one pose. The loss is ready for t.optimize, to learn a correction such as shadow_mag_correct's.\n\nSYNTAX:\nelbow_hinge\n\nINPUTS and PARAMETERS:\n\ntake in:\nShadow quaternions, (frames, 37 or 20 joints, 4), scalar first. A tensor carrying gradients keeps them.\n\nrobust width:\nAn option, in degrees (4 by default). Misses smaller than this count by their square, larger ones only in proportion, so a few wild frames cannot dominate.\n\narms:\nAn option: both (the default), left or right - which arms make the loss.\n\ncircle:\nAn option: forward (the default) or fitted - see above.\n\nOUTPUTS:\n\nloss:\nOne number for t.optimize; smaller is better.\n\noff hinge:\nFor each frame, how far each forearm is off its circle, in degrees: (frames, 2), left then right.\n\nrms:\nThe typical miss over the take, in degrees, left then right.\n\nREADING THE DEMO:\nA made-up take, 600 frames of both elbows bending to 100 degrees and back. In the clean version nothing else happens, and both forearms stay exactly on their circles:\n0. In the other, each upper-arm sensor misreads its roll by up to 6 degrees as time\ngoes by, and the forearms are pushed off by about 3 degrees.\n\nRELATED:\nshadow_mag_correct is the correction it is meant to judge; t.optimize learns it. elbow_turn measures the T-pose turn as a single number for the take. The full learning setup on a real take is examples/shadow_mag_learning.json."
+        },
+        "3": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "4": {
+            "name": "load_bang",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 88,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment a made-up take",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a made-up take",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a made-up take"
+        },
+        "6": {
+            "name": "np.load",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "path",
+                    "value": "dpg_system/help/data/elbow_hinge_example.npz",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment clean, then misread",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 230,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "clean, then misread",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "clean, then misread"
+        },
+        "8": {
+            "name": "dict_extract",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 265,
+            "width": 82,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "dict_extract clean quats"
+        },
+        "9": {
+            "init": "comment off the hinge, left right",
+            "name": "comment",
+            "id": 570,
+            "position_x": 420,
+            "position_y": 53,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "off the hinge, left right",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "off the hinge, left right"
+        },
+        "10": {
+            "name": "elbow_hinge",
+            "id": 607,
+            "position_x": 420,
+            "position_y": 92,
+            "width": 76,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 640,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "elbow_hinge",
+            "id": 681,
+            "position_x": 420,
+            "position_y": 265,
+            "width": 76,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 640,
+            "position_y": 265,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 430,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 464,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link elbow_turn"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 151,
+            "position_y": 464,
+            "width": 127,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link shadow_mag_correct"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 333,
+            "position_y": 464,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.optimize"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 454,
+            "position_y": 464,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.param"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 574,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "send"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dict out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "clean",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quats",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rms",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rms",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

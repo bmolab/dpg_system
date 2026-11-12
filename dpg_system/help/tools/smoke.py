@@ -102,7 +102,12 @@ def main():
             label = getattr(n, 'label', '')
             if label in SKIP:
                 continue
-            for out in getattr(n, 'outputs', []):
+            shown = getattr(n, 'show_output', None)
+            for oi, out in enumerate(getattr(n, 'outputs', [])):
+                # A subpatcher has 20 outlets but shows only those its out
+                # nodes made; the hidden ones are not part of the demo.
+                if shown is not None and oi < len(shown) and not shown[oi]:
+                    continue
                 # A ~ node's signal outlets carry samples through the compiled
                 # DSP graph, not messages -- there is nothing to tap, and
                 # headlessly the audio callback is not running at all, so every
@@ -112,13 +117,26 @@ def main():
                     continue
                 key = (id(n), label, out.get_label())
                 seen[key] = []
-                def tap(v, _k=key, _orig=out.send, *a, **k):
-                    seen[_k].append(v)
+                # A node may hand its value to set_value() and then call a bare
+                # send(), which only triggers the children -- so the value is
+                # taken from whichever of the two carries it.
+                def tap(v=None, _k=key, _orig=out.send, *a, **k):
+                    if v is not None:
+                        seen[_k].append(v)
                     return _orig(v, *a, **k)
+                def tap_set(v, _k=key, _orig=out.set_value):
+                    if v is not None:
+                        seen[_k].append(v)
+                    return _orig(v)
                 out.send = tap
+                out.set_value = tap_set
 
         buttons = [n for n in editor._nodes if getattr(n, 'label', '') == 'button']
-        frames = 40 if click else FRAMES
+        # --click used to run only 40 frames (under a second): a metro of a
+        # second or more sends its first bang during load, before the taps
+        # above exist, and its next tick fell after the run, so every such
+        # demo read as 'metro never sent'. Clicking needs the full window too.
+        frames = FRAMES
         for i in range(frames):
             if click and i in (5, 20) and buttons:
                 for b in buttons:

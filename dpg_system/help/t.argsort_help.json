@@ -1,0 +1,695 @@
+{
+    "height": 1286,
+    "width": 1762,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "t.argsort_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.argsort_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.argsort - the positions that would sort a tensor",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 623,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.argsort - the positions that would sort a tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.argsort - the positions that would sort a tensor"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 954,
+            "position_y": 45,
+            "width": 768,
+            "height": 1096,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Gives the positions that would put a tensor in order: the index of the smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when you want to reorder something ELSE by the same ranking: sort joints by speed, then use the same order for their names or colours; find which three sensors read highest; rank a set of scores and keep track of whose they were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is in cell 5 of the input. Reading the input at each index in turn gives the values sorted.\n\nSYNTAX:\nt.argsort <dim: int>\nWith no argument it ranks along the LAST axis (each row of a table on its\nown) and there is no dim inlet. Give an axis - t.argsort 0 - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.argsort\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is ranked and sent - the only inlet that makes the node send.\n\ndim (int box, only with an argument):\nWhich axis to rank along. For a 2-D tensor, -1 or 1 ranks each row (indices are column numbers), 0 ranks each column (indices are row numbers).\n\ndescending (checkbox):\nLargest first. Changing it does not send by itself; the next tensor uses it.\n\nstable (checkbox):\nEqual values keep their original order. Without it, the order of ties is not guaranteed - which matters when the ranking drives something that would flicker between two joints that are momentarily equal.\n\nOUTPUTS:\n\noutput:\nThe indices, whole numbers (int64), the same shape as the input.\n\nREADING THE DEMO:\nt.rand makes 8 values when the patch opens; click its small button for new ones. The top strip shows them with their values. The middle strip and the list are the indices from t.argsort: the first names the cell of the top strip holding the smallest value, the next the cell holding the next smallest, and so on.\n\nThe bottom strip USES those indices: t.take_along_dim reads the values at the positions it is given, in the order given, so it sends the values sorted. Its indices inlet does not trigger it - the values arriving at tensor in do - so the cord into t.argsort was made first, and the indices are already waiting. Tick descending, click t.rand, and every strip below the first turns round.\n\nTo reorder something ELSE by the same ranking, send the other tensor into t.take_along_dim instead - the indices still come from the first.\n\nRELATED:\nnp.argsort is the NumPy version (descending is an option there). np.sort gives the sorted values directly. t.take_along_dim reads values at the indices. t.argmax is the first entry of a descending argsort, on its own. t.flip reverses an index list.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1080,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Gives the positions that would put a tensor in order: the index of the smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when you want to reorder something ELSE by the same ranking: sort joints by speed, then use the same order for their names or colours; find which three sensors read highest; rank a set of scores and keep track of whose they were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is in cell 5 of the input. Reading the input at each index in turn gives the values sorted.\n\nSYNTAX:\nt.argsort <dim: int>\nWith no argument it ranks along the LAST axis (each row of a table on its\nown) and there is no dim inlet. Give an axis - t.argsort 0 - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.argsort\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is ranked and sent - the only inlet that makes the node send.\n\ndim (int box, only with an argument):\nWhich axis to rank along. For a 2-D tensor, -1 or 1 ranks each row (indices are column numbers), 0 ranks each column (indices are row numbers).\n\ndescending (checkbox):\nLargest first. Changing it does not send by itself; the next tensor uses it.\n\nstable (checkbox):\nEqual values keep their original order. Without it, the order of ties is not guaranteed - which matters when the ranking drives something that would flicker between two joints that are momentarily equal.\n\nOUTPUTS:\n\noutput:\nThe indices, whole numbers (int64), the same shape as the input.\n\nREADING THE DEMO:\nt.rand makes 8 values when the patch opens; click its small button for new ones. The top strip shows them with their values. The middle strip and the list are the indices from t.argsort: the first names the cell of the top strip holding the smallest value, the next the cell holding the next smallest, and so on.\n\nThe bottom strip USES those indices: t.take_along_dim reads the values at the positions it is given, in the order given, so it sends the values sorted. Its indices inlet does not trigger it - the values arriving at tensor in do - so the cord into t.argsort was made first, and the indices are already waiting. Tick descending, click t.rand, and every strip below the first turns round.\n\nTo reorder something ELSE by the same ranking, send the other tensor into t.take_along_dim instead - the indices still come from the first.\n\nRELATED:\nnp.argsort is the NumPy version (descending is an option there). np.sort gives the sorted values directly. t.take_along_dim reads values at the indices. t.argmax is the first entry of a descending argsort, on its own. t.flip reverses an index list."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "shape",
+                    "value": "[8]",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "5": {
+            "init": "comment 8 values - click t.rand's button for new ones",
+            "name": "comment",
+            "id": 422,
+            "position_x": 584,
+            "position_y": 135,
+            "width": 285,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "8 values - click t.rand's button for new ones",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "8 values - click t.rand's button for new ones"
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 310,
+            "width": 528,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment the values, cells 0 to 7",
+            "name": "comment",
+            "id": 496,
+            "position_x": 584,
+            "position_y": 315,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the values, cells 0 to 7",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the values, cells 0 to 7"
+        },
+        "8": {
+            "name": "t.argsort",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 86,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "descending",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "stable",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "highlight": true
+        },
+        "9": {
+            "init": "comment tick descending, then click t.rand",
+            "name": "comment",
+            "id": 570,
+            "position_x": 584,
+            "position_y": 445,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "tick descending, then click t.rand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "tick descending, then click t.rand"
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 570,
+            "width": 528,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "greys",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 7.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment indices that would order the input smallest to largest",
+            "name": "comment",
+            "id": 644,
+            "position_x": 584,
+            "position_y": 575,
+            "width": 340,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "indices that would order the input smallest to largest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "indices that would order the input smallest to largest"
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 700,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "t.take_along_dim",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 760,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment reads the input at those indices",
+            "name": "comment",
+            "id": 755,
+            "position_x": 584,
+            "position_y": 765,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "reads the input at those indices",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "reads the input at those indices"
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 890,
+            "width": 528,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment the values read in that order: sorted",
+            "name": "comment",
+            "id": 829,
+            "position_x": 584,
+            "position_y": 895,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the values read in that order: sorted",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the values read in that order: sorted"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 1064,
+            "width": 79,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.argsort"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 125,
+            "position_y": 1064,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.sort"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 201,
+            "position_y": 1064,
+            "width": 117,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.take_along_dim"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 334,
+            "position_y": 1064,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.argmax"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 1108,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.flip"
+        },
+        "22": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 30,
+            "position_y": 1030,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 1182,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "indices in"
+        },
+        "6": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

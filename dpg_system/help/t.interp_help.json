@@ -1,0 +1,821 @@
+{
+    "height": 1121,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1347,
+    "name": "t.interp_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.interp_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.interp - look up values between the points of a table",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 684,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.interp - look up values between the points of a table",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.interp - look up values between the points of a table"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Draws straight lines between the points of a table and reads values off them. The table is a set of positions (xp) and the values at them (fp); for each x you send, t.interp finds where it falls among the positions and blends the two nearest values in proportion.\n\nUse it as a breakpoint curve - a control that rises fast, levels off and rises again, drawn with a few points - or as a lookup table, a transfer function, a calibration from raw sensor readings to real units. Send it many x at once to resample at any positions, not only evenly spaced ones: a movement recorded with uneven timestamps read off at steady frames, or played back along a tempo curve (time-warping) - x is then the moment in the recording to read at each output frame. A table of poses (one row per position) gives back whole poses.\n\nt.interpolate resizes by an even factor; t.interp reads wherever you ask. The work is done on x's device.\n\nSYNTAX:\nt.interp\n\nINPUTS and PARAMETERS:\n\nx:\nWhere to read the table: a number, list or tensor of any shape. Every input is looked up and sent - the only inlet that makes the node send.\n\nxp:\nThe positions of the table's points. They are held; send them first. If they are not in increasing order they are sorted (with their values) for you. If xp is never sent, the positions are 0, 1, 2 ... - the index of each value - so x 1.5 reads halfway between the second and third values.\n\nfp:\nThe values at those positions, held. One per position. A 2-D fp - one row per position, with several columns - is read column by column, so a table of xyz points gives back xyz points.\n\nOUTPUTS:\n\nvalues:\nThe value read at each x, the shape of x (plus fp's columns). Below the first position the first value is given, and above the last the last: the curve is held flat beyond its ends.\n\nREADING THE DEMO:\nTop: a curve with three points: at 0 it is 0, at 0.25 it has already reached 0.875, and at 1 it is 1. 64 positions from 0 to 1 read through it rise steeply then level off - the shape of the table, not a straight line.\n\nBottom: with no xp, the table 0 10 30 is indexed by position. 0.5 is halfway between 0 and 10, so 5; 1.5 halfway between 10 and 30, so 20; 2 and beyond are 30.\n\nRELATED:\nt.interpolate resamples by an even factor. np.interp is the numpy version. lerp blends between two values by a fraction; t.linspace makes evenly spaced positions.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Draws straight lines between the points of a table and reads values off them. The table is a set of positions (xp) and the values at them (fp); for each x you send, t.interp finds where it falls among the positions and blends the two nearest values in proportion.\n\nUse it as a breakpoint curve - a control that rises fast, levels off and rises again, drawn with a few points - or as a lookup table, a transfer function, a calibration from raw sensor readings to real units. Send it many x at once to resample at any positions, not only evenly spaced ones: a movement recorded with uneven timestamps read off at steady frames, or played back along a tempo curve (time-warping) - x is then the moment in the recording to read at each output frame. A table of poses (one row per position) gives back whole poses.\n\nt.interpolate resizes by an even factor; t.interp reads wherever you ask. The work is done on x's device.\n\nSYNTAX:\nt.interp\n\nINPUTS and PARAMETERS:\n\nx:\nWhere to read the table: a number, list or tensor of any shape. Every input is looked up and sent - the only inlet that makes the node send.\n\nxp:\nThe positions of the table's points. They are held; send them first. If they are not in increasing order they are sorted (with their values) for you. If xp is never sent, the positions are 0, 1, 2 ... - the index of each value - so x 1.5 reads halfway between the second and third values.\n\nfp:\nThe values at those positions, held. One per position. A 2-D fp - one row per position, with several columns - is read column by column, so a table of xyz points gives back xyz points.\n\nOUTPUTS:\n\nvalues:\nThe value read at each x, the shape of x (plus fp's columns). Below the first position the first value is given, and above the last the last: the curve is held flat beyond its ends.\n\nREADING THE DEMO:\nTop: a curve with three points: at 0 it is 0, at 0.25 it has already reached 0.875, and at 1 it is 1. 64 positions from 0 to 1 read through it rise steeply then level off - the shape of the table, not a straight line.\n\nBottom: with no xp, the table 0 10 30 is indexed by position. 0.5 is halfway between 0 and 10, so 5; 1.5 halfway between 10 and 30, so 20; 2 and beyond are 30.\n\nRELATED:\nt.interpolate resamples by an even factor. np.interp is the numpy version. lerp blends between two values by a fraction; t.linspace makes evenly spaced positions."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment positions",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "positions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "positions"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0.25 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment values at them",
+            "name": "comment",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 270,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "values at them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "values at them"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 305,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0.875 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment 64 positions, 0 to 1",
+            "name": "comment",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 53,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "64 positions, 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "64 positions, 0 to 1"
+        },
+        "12": {
+            "name": "t.linspace",
+            "id": 681,
+            "position_x": 380,
+            "position_y": 92,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.linspace 0 1 64"
+        },
+        "13": {
+            "init": "comment read off the curve",
+            "name": "comment",
+            "id": 718,
+            "position_x": 380,
+            "position_y": 230,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "read off the curve",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "read off the curve"
+        },
+        "14": {
+            "name": "t.interp",
+            "id": 755,
+            "position_x": 380,
+            "position_y": 265,
+            "width": 58,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "15": {
+            "init": "comment steep, then level",
+            "name": "comment",
+            "id": 792,
+            "position_x": 600,
+            "position_y": 230,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "steep, then level",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "steep, then level"
+        },
+        "16": {
+            "name": "plot",
+            "id": 829,
+            "position_x": 600,
+            "position_y": 265,
+            "width": 218,
+            "height": 180,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 64.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "init": "comment with no positions: by index",
+            "name": "comment",
+            "id": 866,
+            "position_x": 180,
+            "position_y": 480,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "with no positions: by index",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "with no positions: by index"
+        },
+        "18": {
+            "name": "message",
+            "id": 903,
+            "position_x": 180,
+            "position_y": 515,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 10 30",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment x",
+            "name": "comment",
+            "id": 940,
+            "position_x": 180,
+            "position_y": 580,
+            "width": 15,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "x",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "x"
+        },
+        "20": {
+            "name": "message",
+            "id": 977,
+            "position_x": 180,
+            "position_y": 615,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0.5 1.5 2 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "21": {
+            "name": "t.interp",
+            "id": 1014,
+            "position_x": 400,
+            "position_y": 515,
+            "width": 58,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "22": {
+            "init": "comment values",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 600,
+            "position_y": 480,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "values"
+        },
+        "23": {
+            "name": "list",
+            "id": 1088,
+            "position_x": 600,
+            "position_y": 515,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "24": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "25": {
+            "name": "help_link",
+            "id": 1162,
+            "position_x": 30,
+            "position_y": 754,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.interpolate"
+        },
+        "26": {
+            "name": "help_link",
+            "id": 1199,
+            "position_x": 174,
+            "position_y": 754,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.interp"
+        },
+        "27": {
+            "name": "help_link",
+            "id": 1236,
+            "position_x": 287,
+            "position_y": 754,
+            "width": 41,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link lerp"
+        },
+        "28": {
+            "name": "help_link",
+            "id": 1273,
+            "position_x": 361,
+            "position_y": 754,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.linspace"
+        },
+        "29": {
+            "name": "close",
+            "id": 1310,
+            "position_x": 24,
+            "position_y": 864,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xp"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "fp"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "x"
+        },
+        "7": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "fp"
+        },
+        "9": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "10": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "x"
+        },
+        "11": {
+            "source_node": 1014,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 1088,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,420 +1,1253 @@
 {
-    "height": 1368,
-    "width": 1737,
-    "position": [
-        100,
-        100
-    ],
-    "id": 718,
     "name": "t.ESEKF_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.ESEKF_help.json",
-    "nodes": {
+    "patches": {
         "0": {
-            "name": "",
-            "id": 237,
-            "position_x": 0,
-            "position_y": 0,
-            "width": 9,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "protected": true,
-            "presentation_state": "hidden",
-            "properties": {
+            "height": 690,
+            "width": 880,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1199,
+            "name": "make_noisy",
+            "parent_node_uuid": 348,
+            "nodes": {
                 "0": {
                     "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "1": {
-            "init": "comment t.ESEKF - error-state, rotationally invariant",
-            "name": "comment",
-            "id": 274,
-            "position_x": 24,
-            "position_y": -4,
-            "width": 561,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "t.ESEKF - error-state, rotationally invariant",
-                    "value_type": "str"
+                    "id": 1236,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "48",
-                    "value_type": "str"
-                }
-            },
-            "comment": "t.ESEKF - error-state, rotationally invariant"
-        },
-        "2": {
-            "name": "text_block",
-            "id": 311,
-            "position_x": 879,
-            "position_y": 45,
-            "width": 818,
-            "height": 816,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "The error-state extended Kalman filters: the most careful option here.\n\nTHE NODES:\n\nt.ESEKF       for ordinary numeric streams\nt.quat_ESEKF  for quaternions\n\nWHAT 'ERROR-STATE' MEANS AND WHY IT HELPS:\nAn ordinary Kalman filter tracks the quantity itself. An error-state filter\ntracks the SMALL DIFFERENCE between its prediction and reality, and applies that\ncorrection to the prediction afterwards.\n\nFor rotations this is the difference between working and not. A rotation lives\non a curved space where addition is meaningless, but a small error near the\ncurrent orientation behaves almost like an ordinary vector - so the filter's\narithmetic is valid, and it stays valid at any orientation. The result is\nrotationally invariant: the filter behaves the same whichever way the body\nhappens to be facing.\n\nThat last property is what you want when a filter's behaviour must not depend\non which direction the performer is standing.\n\nTHE TRISTATE BLEND:\nBoth of these run damping and responsive modes and blend continuously between\nthem, with a third path for rejecting acceleration that is not physically\nplausible. The 'alphas' outlet reports all three, so you can see which regime\nthe filter is in at any moment.\n\nContinuous blending rather than switching is deliberate and matters: a filter\nthat flips modes introduces a step at every flip, replacing the artefact you\nwere removing with one of its own.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.ESEKF\nt.quat_ESEKF\n\nEXAMPLE:\nt.quat_ESEKF\n\nINPUTS and PARAMETERS:\n\ninput / quaternions:\nThe streams.\n\ndt (sec):\nTime between frames. Everything the filter reasons about scales with this.\n\nBlending Speed:\nHow quickly it moves between damping and responsive behaviour.\n\nAcceleration Rejection:\nThe threshold beyond which a change is treated as implausible rather than fast.\n\nDamping Mode / Responsive Mode:\nThe two regimes' settings.\n\nreset:\nClear the state.\n\nOUTPUTS: \n\nfiltered:\nThe result.\n\nalphas (damp, resp, err):\nThe blend between the three regimes. This is the diagnostic outlet - plot it\nwhile tuning, because the numbers on the node tell you what you asked for and\nthis tells you what the filter is actually doing.\n\nCHOOSING BETWEEN THESE AND THE SIMPLER ONES:\nThese are the most principled and the most to set up. When a smart-clamped\nfilter removes your glitches without hurting the movement, use that. Reach for\nthese when the simpler filters are forcing a choice you do not want to make, or\nwhen rotational invariance genuinely matters - which it does as soon as a\nfilter's behaviour differs depending on which way the performer is facing.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "signal",
+                    "init": "signal 4.0 sin",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
                 },
                 "2": {
-                    "name": "width",
-                    "value": 810,
-                    "value_type": "int"
+                    "name": "comment",
+                    "init": "comment the movement: one slow cycle every 4 seconds",
+                    "id": 1310,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the movement: one slow cycle every 4 seconds",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the movement: one slow cycle every 4 seconds"
                 },
                 "3": {
-                    "name": "height",
-                    "value": 800,
-                    "value_type": "int"
+                    "name": "tick",
+                    "init": "tick",
+                    "id": 1347,
+                    "position_x": 420,
+                    "position_y": 110,
+                    "width": 33,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
                 },
                 "4": {
-                    "name": "text_size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "text": "The error-state extended Kalman filters: the most careful option here.\n\nTHE NODES:\n\nt.ESEKF       for ordinary numeric streams\nt.quat_ESEKF  for quaternions\n\nWHAT 'ERROR-STATE' MEANS AND WHY IT HELPS:\nAn ordinary Kalman filter tracks the quantity itself. An error-state filter\ntracks the SMALL DIFFERENCE between its prediction and reality, and applies that\ncorrection to the prediction afterwards.\n\nFor rotations this is the difference between working and not. A rotation lives\non a curved space where addition is meaningless, but a small error near the\ncurrent orientation behaves almost like an ordinary vector - so the filter's\narithmetic is valid, and it stays valid at any orientation. The result is\nrotationally invariant: the filter behaves the same whichever way the body\nhappens to be facing.\n\nThat last property is what you want when a filter's behaviour must not depend\non which direction the performer is standing.\n\nTHE TRISTATE BLEND:\nBoth of these run damping and responsive modes and blend continuously between\nthem, with a third path for rejecting acceleration that is not physically\nplausible. The 'alphas' outlet reports all three, so you can see which regime\nthe filter is in at any moment.\n\nContinuous blending rather than switching is deliberate and matters: a filter\nthat flips modes introduces a step at every flip, replacing the artefact you\nwere removing with one of its own.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.ESEKF\nt.quat_ESEKF\n\nEXAMPLE:\nt.quat_ESEKF\n\nINPUTS and PARAMETERS:\n\ninput / quaternions:\nThe streams.\n\ndt (sec):\nTime between frames. Everything the filter reasons about scales with this.\n\nBlending Speed:\nHow quickly it moves between damping and responsive behaviour.\n\nAcceleration Rejection:\nThe threshold beyond which a change is treated as implausible rather than fast.\n\nDamping Mode / Responsive Mode:\nThe two regimes' settings.\n\nreset:\nClear the state.\n\nOUTPUTS: \n\nfiltered:\nThe result.\n\nalphas (damp, resp, err):\nThe blend between the three regimes. This is the diagnostic outlet - plot it\nwhile tuning, because the numbers on the node tell you what you asked for and\nthis tells you what the filter is actually doing.\n\nCHOOSING BETWEEN THESE AND THE SIMPLER ONES:\nThese are the most principled and the most to set up. When a smart-clamped\nfilter removes your glitches without hurting the movement, use that. Reach for\nthese when the simpler filters are forcing a choice you do not want to make, or\nwhen rotational invariance genuinely matters - which it does as soon as a\nfilter's behaviour differs depending on which way the performer is facing."
-        },
-        "3": {
-            "name": "shadow",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 119,
-            "height": 168,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "active_joints",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 400,
-            "width": 144,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "t.quat_ESEKF",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 505,
-            "width": 240,
-            "height": 336,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "init": "comment a whole pose in, a whole pose out",
-            "name": "comment",
-            "id": 459,
-            "position_x": 594,
-            "position_y": 780,
-            "width": 211,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a whole pose in, a whole pose out",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a whole pose in, a whole pose out"
-        },
-        "7": {
-            "name": "quaternion_diff_and_axis",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 861,
-            "width": 197,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
-            "name": "plot",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 1056,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
-                },
-                "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
+                    "name": "comment",
+                    "init": "comment every frame",
+                    "id": 1384,
+                    "position_x": 470,
+                    "position_y": 115,
+                    "width": 160,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "every frame",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "every frame"
                 },
                 "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
+                    "name": "random.gauss",
+                    "init": "random.gauss 0.0 0.04",
+                    "id": 1421,
+                    "position_x": 240,
+                    "position_y": 170,
+                    "width": 175,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
                 },
                 "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "name": "comment",
+                    "init": "comment jitter",
+                    "id": 1458,
+                    "position_x": 240,
+                    "position_y": 280,
+                    "width": 120,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "jitter",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "jitter"
                 },
                 "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
+                    "name": "random",
+                    "init": "random 1.0",
+                    "id": 1495,
+                    "position_x": 440,
+                    "position_y": 170,
+                    "width": 140,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
                 },
                 "8": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "name": ">",
+                    "init": "> 0.985",
+                    "id": 1532,
+                    "position_x": 440,
+                    "position_y": 270,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.985,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "output_type",
+                            "value": "float",
+                            "value_type": "str"
+                        }
+                    }
                 },
                 "9": {
-                    "name": "max y",
-                    "value": 0.2,
-                    "value_type": "float"
-                }
-            }
-        },
-        "9": {
-            "init": "comment per-joint speed, before and after",
-            "name": "comment",
-            "id": 570,
-            "position_x": 594,
-            "position_y": 1241,
-            "width": 211,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "per-joint speed, before and after",
-                    "value_type": "str"
+                    "name": "*",
+                    "init": "* 1.5",
+                    "id": 1569,
+                    "position_x": 440,
+                    "position_y": 340,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 1.5,
+                            "value_type": "float"
+                        }
+                    }
                 },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
+                "10": {
+                    "name": "comment",
+                    "init": "comment about one frame in 70: a spike of 1.5",
+                    "id": 1606,
+                    "position_x": 440,
+                    "position_y": 400,
+                    "width": 360,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "about one frame in 70: a spike of 1.5",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "about one frame in 70: a spike of 1.5"
+                },
+                "11": {
+                    "name": "signal",
+                    "init": "signal 5.0 square",
+                    "id": 1643,
+                    "position_x": 40,
+                    "position_y": 170,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "square",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 0.4,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "comment",
+                    "init": "comment a sudden step that stays: up 0.8, down 0.8",
+                    "id": 1680,
+                    "position_x": 40,
+                    "position_y": 260,
+                    "width": 180,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a sudden step that stays: up 0.8, down 0.8",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a sudden step that stays: up 0.8, down 0.8"
+                },
+                "13": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1717,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "14": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1754,
+                    "position_x": 40,
+                    "position_y": 380,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "15": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1791,
+                    "position_x": 40,
+                    "position_y": 450,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "16": {
+                    "name": "out",
+                    "init": "out noisy",
+                    "id": 1828,
+                    "position_x": 40,
+                    "position_y": 530,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
                 }
             },
-            "comment": "per-joint speed, before and after"
-        },
-        "10": {
-            "name": "heat_map",
-            "id": 607,
-            "position_x": 360,
-            "position_y": 505,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
+            "links": {
                 "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
                 },
                 "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1754,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
                 },
                 "3": {
-                    "name": "sample count",
-                    "value": 3,
-                    "value_type": "int"
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1532,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
                 },
                 "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "source_node": 1532,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1569,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
                 },
                 "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
+                    "source_node": 1569,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
                 },
                 "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
+                    "source_node": 1643,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
                 },
                 "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 1717,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1754,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "9": {
+                    "source_node": 1754,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "10": {
+                    "source_node": 1791,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1828,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "noisy"
                 }
             }
-        },
-        "11": {
-            "name": "text_block",
-            "id": 644,
-            "annotation": true,
-            "position_x": 594,
-            "position_y": 665,
-            "width": 255,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "the alphas: damp, responsive, error\nthis says what the filter is doing -\nthe settings only say what you asked",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 247,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "the alphas: damp, responsive, error\nthis says what the filter is doing -\nthe settings only say what you asked"
-        },
-        "12": {
-            "name": "close",
-            "id": 681,
-            "position_x": 24,
-            "position_y": 1264,
-            "width": 88,
-            "height": 44,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "close patch",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        }
-    },
-    "links": {
-        "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "body 1 quaternions",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "full pose quats in"
         },
         "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "active joint quats out",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "quaternions"
-        },
-        "2": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "filtered",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "quaternions in"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "magnitudes",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "4": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "alphas (damp, resp, err)",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
+            "height": 1865,
+            "width": 1961,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1162,
+            "name": "t.ESEKF_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.ESEKF_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.ESEKF - a Kalman filter with three moods",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 525,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.ESEKF - a Kalman filter with three moods",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.ESEKF - a Kalman filter with three moods"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1153,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1726,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Smooths streams of ordinary numbers with a Kalman filter that shifts between three behaviours - damping, responsive and error-correcting - according to how fast the input moves and how far it strays.\n\nUse it on positions, joint angles or any measured values that jitter when still and must keep up when they move. A fixed smoother has to pick one compromise; this one relaxes its smoothing as the motion speeds up and tightens it again at rest.\n\nHOW IT WORKS:\nUnderneath is a constant-velocity Kalman filter: it keeps a position and a velocity per value, predicts the next frame, and corrects towards the measurement. How hard it corrects depends on two noise settings - how much it distrusts the measurement (Meas Noise) and how much it expects the velocity to change (Vel Noise). The node holds three sets of these:\n\n   damping            for stillness: distrust the input, smooth hard\n   responsive         for motion: trust the input, follow quickly\n   error correction   for when the estimate is far off: snap back\n\nEvery frame it measures the input's speed (the distance between this frame and the last, per second) and the error (how far the input is from where the filter predicted). Speed between Min and Max Motion fades in the responsive set; error between Min and Max Error fades in the error set; the rest stays damping. The three weights (the ALPHAS) glide towards their targets at Blending Speed, so the filter never switches abruptly. Despite the name it is not an error-state filter - that is its quaternion sibling, t.quat_ESEKF. This is the same three-mode design for numbers that can simply be added.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all of them one moment in time. Every row gets its own filter state, so a whole body - 22 joints, one row each - is filtered in one operation. The first frame (and any change in the number of rows) builds the state afresh. A 1-D input of n values is one stream of n values;\nit comes back as [1, n]. A tensor with more than two dimensions is treated as [first dimension, everything else] and reshaped back.\n\nSYNTAX:\nt.ESEKF\nNo arguments.\n\nEXAMPLE:\nt.ESEKF\n\nINPUTS and PARAMETERS:\n\ninput:\nThe values, [streams, values]. Each arrival runs one filter step and sends. A list is turned into a tensor.\n\ndt (sec) (float, default 1/60):\nThe time between frames. Speeds are measured with it, so it must match the real frame rate. Zero or less: nothing is sent.\n\nBlending Speed (float, 0.01 to 1, default 0.1):\nHow far the alphas move towards their targets each frame. 1 jumps at once; 0.1 takes some tens of frames to change mode.\n\nreset (button):\nThe next input becomes the filter's state outright (velocity zero) - use it when the data jumps on purpose, such as a new take.\n\nAccel Rejection Factor (float, default 0, off):\nWhen the filter's estimated acceleration reverses direction from one frame to the next, multiply the measurement noise by (1 + factor) and divide the velocity noise by it - stiffer just when the input chatters.\n\nDamp Meas Noise / Damp Vel Noise (defaults 0.1, 0.01):\nResponsive Meas Noise / Resp Vel Noise (defaults 0.01, 1.0):\nErr Correct Meas Noise / Err Correct Vel Noise (defaults 0.001, 10.0): The three behaviours. Meas Noise is the expected size of the jitter, in the input's own units: larger smooths more. Vel Noise is how much the velocity may change per second: larger follows changes faster.\n\nMin / Max Motion (units/s) (defaults 1, 5):\nSpeeds over which the responsive set fades in.\n\nMin / Max Error (units) (defaults 0.5, 2):\nDistances from the prediction over which the error set fades in.\n\nOUTPUTS:\n\nfiltered:\nThe filtered values, [streams, values].\n\nalphas:\n[streams, 3]: the weights of damping, responsive and error correction, summing to 1. Watch it while tuning: it says which mode the filter is actually in.\n\nREADING THE DEMO:\nJitter alone moves the input fast enough to count as motion (0.04 of jitter per frame at 60 frames a second is over 2 units a second), so the alphas wander between damping and responsive. A spike is cut to about half and fades over five frames; a step is followed within one or two frames. Drag the slider (Damp Meas Noise) up: at 0.8 the jitter is three times smaller again and spikes are cut to a fifth, but each step now takes about five frames.\n\nTHE FAMILY:\nt.ESEKF            ordinary numbers, three modes blended by motion\nt.quat_ESEKF       the same for quaternions (error-state)\nt.smart_clamp_kf   ordinary numbers, the correction per frame capped\nt.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap\nt.persistence_quat_kf      acceleration cap that gives way if the change persists\nt.hybrid_quat_kf   three-mode blending driving a smart-clamped filter\n\nRELATED:\nkalman_filter is a plain one-dimensional Kalman filter for single numbers. one_euro_filter and filter are simpler smoothers.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1710,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Smooths streams of ordinary numbers with a Kalman filter that shifts between three behaviours - damping, responsive and error-correcting - according to how fast the input moves and how far it strays.\n\nUse it on positions, joint angles or any measured values that jitter when still and must keep up when they move. A fixed smoother has to pick one compromise; this one relaxes its smoothing as the motion speeds up and tightens it again at rest.\n\nHOW IT WORKS:\nUnderneath is a constant-velocity Kalman filter: it keeps a position and a velocity per value, predicts the next frame, and corrects towards the measurement. How hard it corrects depends on two noise settings - how much it distrusts the measurement (Meas Noise) and how much it expects the velocity to change (Vel Noise). The node holds three sets of these:\n\n   damping            for stillness: distrust the input, smooth hard\n   responsive         for motion: trust the input, follow quickly\n   error correction   for when the estimate is far off: snap back\n\nEvery frame it measures the input's speed (the distance between this frame and the last, per second) and the error (how far the input is from where the filter predicted). Speed between Min and Max Motion fades in the responsive set; error between Min and Max Error fades in the error set; the rest stays damping. The three weights (the ALPHAS) glide towards their targets at Blending Speed, so the filter never switches abruptly. Despite the name it is not an error-state filter - that is its quaternion sibling, t.quat_ESEKF. This is the same three-mode design for numbers that can simply be added.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all of them one moment in time. Every row gets its own filter state, so a whole body - 22 joints, one row each - is filtered in one operation. The first frame (and any change in the number of rows) builds the state afresh. A 1-D input of n values is one stream of n values;\nit comes back as [1, n]. A tensor with more than two dimensions is treated as [first dimension, everything else] and reshaped back.\n\nSYNTAX:\nt.ESEKF\nNo arguments.\n\nEXAMPLE:\nt.ESEKF\n\nINPUTS and PARAMETERS:\n\ninput:\nThe values, [streams, values]. Each arrival runs one filter step and sends. A list is turned into a tensor.\n\ndt (sec) (float, default 1/60):\nThe time between frames. Speeds are measured with it, so it must match the real frame rate. Zero or less: nothing is sent.\n\nBlending Speed (float, 0.01 to 1, default 0.1):\nHow far the alphas move towards their targets each frame. 1 jumps at once; 0.1 takes some tens of frames to change mode.\n\nreset (button):\nThe next input becomes the filter's state outright (velocity zero) - use it when the data jumps on purpose, such as a new take.\n\nAccel Rejection Factor (float, default 0, off):\nWhen the filter's estimated acceleration reverses direction from one frame to the next, multiply the measurement noise by (1 + factor) and divide the velocity noise by it - stiffer just when the input chatters.\n\nDamp Meas Noise / Damp Vel Noise (defaults 0.1, 0.01):\nResponsive Meas Noise / Resp Vel Noise (defaults 0.01, 1.0):\nErr Correct Meas Noise / Err Correct Vel Noise (defaults 0.001, 10.0): The three behaviours. Meas Noise is the expected size of the jitter, in the input's own units: larger smooths more. Vel Noise is how much the velocity may change per second: larger follows changes faster.\n\nMin / Max Motion (units/s) (defaults 1, 5):\nSpeeds over which the responsive set fades in.\n\nMin / Max Error (units) (defaults 0.5, 2):\nDistances from the prediction over which the error set fades in.\n\nOUTPUTS:\n\nfiltered:\nThe filtered values, [streams, values].\n\nalphas:\n[streams, 3]: the weights of damping, responsive and error correction, summing to 1. Watch it while tuning: it says which mode the filter is actually in.\n\nREADING THE DEMO:\nJitter alone moves the input fast enough to count as motion (0.04 of jitter per frame at 60 frames a second is over 2 units a second), so the alphas wander between damping and responsive. A spike is cut to about half and fades over five frames; a step is followed within one or two frames. Drag the slider (Damp Meas Noise) up: at 0.8 the jitter is three times smaller again and spikes are cut to a fifth, but each step now takes about five frames.\n\nTHE FAMILY:\nt.ESEKF            ordinary numbers, three modes blended by motion\nt.quat_ESEKF       the same for quaternions (error-state)\nt.smart_clamp_kf   ordinary numbers, the correction per frame capped\nt.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap\nt.persistence_quat_kf      acceleration cap that gives way if the change persists\nt.hybrid_quat_kf   three-mode blending driving a smart-clamped filter\n\nRELATED:\nkalman_filter is a plain one-dimensional Kalman filter for single numbers. one_euro_filter and filter are simpler smoothers."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 78,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_noisy",
+                    "patcher id": 1199
+                },
+                "4": {
+                    "name": "text_block",
+                    "id": 385,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 62,
+                    "width": 329,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "a slow sine with jitter, a step now and then,\nand the odd one-frame spike - open it to see how",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 321,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "a slow sine with jitter, a step now and then,\nand the odd one-frame spike - open it to see how"
+                },
+                "5": {
+                    "name": "t",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 160,
+                    "width": 39,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t float float"
+                },
+                "6": {
+                    "init": "comment right first: the raw value to the plot, then",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 794,
+                    "position_y": 165,
+                    "width": 279,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "right first: the raw value to the plot, then",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "right first: the raw value to the plot, then"
+                },
+                "7": {
+                    "name": "t.reshape",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 230,
+                    "width": 243,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "1 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "t.reshape 1 1"
+                },
+                "8": {
+                    "init": "comment one stream of one value: a [1, 1] tensor",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 794,
+                    "position_y": 245,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one stream of one value: a [1, 1] tensor",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one stream of one value: a [1, 1] tensor"
+                },
+                "9": {
+                    "name": "t.ESEKF",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 340,
+                    "width": 228,
+                    "height": 322,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "Damp Meas Noise",
+                            "value": 0.1,
+                            "value_type": "float"
+                        }
+                    },
+                    "highlight": true
+                },
+                "10": {
+                    "name": "t",
+                    "id": 607,
+                    "position_x": 380,
+                    "position_y": 340,
+                    "width": 39,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t float"
+                },
+                "11": {
+                    "name": "pack",
+                    "id": 644,
+                    "position_x": 380,
+                    "position_y": 400,
+                    "width": 33,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pack 2"
+                },
+                "12": {
+                    "name": "plot",
+                    "id": 681,
+                    "position_x": 380,
+                    "position_y": 510,
+                    "width": 388,
+                    "height": 210,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 160,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 300.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.6,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 2.6,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "13": {
+                    "name": "text_block",
+                    "id": 718,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 720,
+                    "width": 261,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "line 1: filtered.  line 2: the input.\nfive seconds, newest on the right",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 253,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "line 1: filtered.  line 2: the input.\nfive seconds, newest on the right"
+                },
+                "14": {
+                    "name": "plot",
+                    "id": 755,
+                    "position_x": 380,
+                    "position_y": 780,
+                    "width": 388,
+                    "height": 170,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 120,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 300.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -0.05,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.05,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "15": {
+                    "name": "text_block",
+                    "id": 792,
+                    "annotation": true,
+                    "position_x": 794,
+                    "position_y": 950,
+                    "width": 317,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "the alphas: 1 damping, 2 responsive, 3 error -\nwhich mode the filter is in, moment to moment",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 309,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "the alphas: 1 damping, 2 responsive, 3 error -\nwhich mode the filter is in, moment to moment"
+                },
+                "16": {
+                    "name": "slider",
+                    "id": 829,
+                    "position_x": 380,
+                    "position_y": 160,
+                    "width": 230,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": 0.1,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": 0.01,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "width",
+                            "value": 200,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment drag: Damp Meas Noise",
+                    "name": "comment",
+                    "id": 866,
+                    "position_x": 794,
+                    "position_y": 205,
+                    "width": 138,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "drag: Damp Meas Noise",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "drag: Damp Meas Noise"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 1064,
+                    "width": 92,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.quat_ESEKF"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 138,
+                    "position_y": 1064,
+                    "width": 117,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.smart_clamp_kf"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 271,
+                    "position_y": 1064,
+                    "width": 98,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link kalman_filter"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 30,
+                    "position_y": 1108,
+                    "width": 109,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link one_euro_filter"
+                },
+                "22": {
+                    "name": "help_link",
+                    "id": 1051,
+                    "position_x": 189,
+                    "position_y": 1108,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link filter"
+                },
+                "23": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1088,
+                    "position_x": 30,
+                    "position_y": 1030,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "24": {
+                    "name": "close",
+                    "id": 1125,
+                    "position_x": 24,
+                    "position_y": 1182,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "noisy",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "float",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "3": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "4": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "filtered",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "6": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "7": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "alphas",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "8": {
+                    "source_node": 829,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "Damp Meas Noise"
+                }
+            }
         }
     }
 }

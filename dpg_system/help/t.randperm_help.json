@@ -1,0 +1,500 @@
+{
+    "height": 1021,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "t.randperm_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.randperm_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.randperm - shuffle",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 254,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.randperm - shuffle",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.randperm - shuffle"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Shuffles a tensor into a random order: every item kept, each exactly once, in a new order every time. Given a whole number n instead, it shuffles 0 to n-1.\n\nUse it for a random running order of scenes, a play order of clips that repeats none until all have played, a random assignment of performers to parts, or a shuffled set of positions to take values from (with t.index_select or t.take). For a stack of poses or recordings, one per row, it shuffles the rows. A shuffled tensor stays on its device.\n\nSYNTAX:\nt.randperm\n\nINPUTS and PARAMETERS:\n\nin:\nA list or tensor to shuffle - for a 2-D tensor, whole rows are shuffled - or a single whole number n, for the numbers 0 to n-1 shuffled (a message box sends 8 as a list of one; that counts as n too). Every input is shuffled and sent.\n\nseed:\nAn option, under the node. -1 (the default) draws different numbers every time the patch opens. Any other number starts the same sequence every time - the same \"random\" piece on every run, which is what you want for rehearsal, comparison and debugging.\n\nOUTPUTS:\n\nshuffled:\nThe same items in a random order.\n\nREADING THE DEMO:\nTop: 10 20 30 40 50 in a new order every second. Bottom: 8, which makes the numbers 0 to 7 in a random order - a set of positions for t.index_select.\n\nRELATED:\nt.multinomial picks some at random, by probability. t.sort and t.argsort put things back in order. np.random.permutation is the numpy version.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Shuffles a tensor into a random order: every item kept, each exactly once, in a new order every time. Given a whole number n instead, it shuffles 0 to n-1.\n\nUse it for a random running order of scenes, a play order of clips that repeats none until all have played, a random assignment of performers to parts, or a shuffled set of positions to take values from (with t.index_select or t.take). For a stack of poses or recordings, one per row, it shuffles the rows. A shuffled tensor stays on its device.\n\nSYNTAX:\nt.randperm\n\nINPUTS and PARAMETERS:\n\nin:\nA list or tensor to shuffle - for a 2-D tensor, whole rows are shuffled - or a single whole number n, for the numbers 0 to n-1 shuffled (a message box sends 8 as a list of one; that counts as n too). Every input is shuffled and sent.\n\nseed:\nAn option, under the node. -1 (the default) draws different numbers every time the patch opens. Any other number starts the same sequence every time - the same \"random\" piece on every run, which is what you want for rehearsal, comparison and debugging.\n\nOUTPUTS:\n\nshuffled:\nThe same items in a random order.\n\nREADING THE DEMO:\nTop: 10 20 30 40 50 in a new order every second. Bottom: 8, which makes the numbers 0 to 7 in a random order - a set of positions for t.index_select.\n\nRELATED:\nt.multinomial picks some at random, by probability. t.sort and t.argsort put things back in order. np.random.permutation is the numpy version."
+        },
+        "3": {
+            "init": "comment every second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 1000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 1000"
+        },
+        "5": {
+            "init": "comment five numbers",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five numbers"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "10 20 30 40 50",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment shuffled",
+            "name": "comment",
+            "id": 496,
+            "position_x": 420,
+            "position_y": 53,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shuffled",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shuffled"
+        },
+        "8": {
+            "name": "t.randperm",
+            "id": 533,
+            "position_x": 420,
+            "position_y": 92,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 420,
+            "position_y": 180,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment a whole number: 0 to 7 shuffled",
+            "name": "comment",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 270,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a whole number: 0 to 7 shuffled",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a whole number: 0 to 7 shuffled"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 180,
+            "position_y": 305,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "t.randperm",
+            "id": 681,
+            "position_x": 420,
+            "position_y": 305,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 420,
+            "position_y": 390,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 490,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 524,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.multinomial"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 174,
+            "position_y": 524,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.argsort"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 287,
+            "position_y": 524,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.index_select"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 438,
+            "position_y": 524,
+            "width": 146,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.random.permutation"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 634,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shuffled",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shuffled",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

@@ -1,0 +1,624 @@
+{
+    "height": 1271,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "scipy.local_maxima_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.local_maxima_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scipy.local_maxima - the peaks of a grid",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scipy.local_maxima - the peaks of a grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scipy.local_maxima - the peaks of a grid"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Finds the peaks of a grid - cells higher than every other cell in their neighbourhood - and gives their positions and heights, highest first, and how many there are. It is the 2-D (or 3-D) counterpart of scipy.find_peaks.\n\nscipy.label finds regions above a threshold, so two hills that run into each other become one region. local_maxima finds the summits, so two people standing close in an occupancy map, or two bright spots in a camera image, are still two. Use it for hot spots in a heat map, the centres of people in a depth or occupancy grid, the brightest points of an image, the strongest cells of a spectrogram.\n\nIt is built on scipy.ndimage.maximum_filter, which is how peaks in a grid are usually found; SciPy has no function by this name.\n\nSYNTAX:\nscipy.local_maxima <size: int> <threshold: float>\nDefaults: size 3, threshold 0.5.\n\nINPUTS and PARAMETERS:\n\nin:\nThe grid (any number of axes). Every input is searched and sent.\n\nsize (int box, also an inlet):\nHow wide a neighbourhood a peak must top, in cells: 3 compares each cell with the 8 around it; larger keeps only peaks that stand out over a wider area, and merges close ones.\n\nthreshold (float box, also an inlet):\nPeaks below this are ignored.\n\nOUTPUTS:\n\npositions:\nWhere each peak is, row then column (in cells), highest peak first. A flat top gives its middle.\n\nvalues:\nThe height of each.\n\ncount:\nHow many peaks. Sent first, then values, then positions.\n\nREADING THE DEMO:\nRandom values smoothed into hills (left), new every two seconds. With a neighbourhood of 5 and a threshold of 0.55, the summits are found: the count and their positions are listed, highest first.\n\nRELATED:\nscipy.label finds whole regions above a threshold. scipy.find_peaks finds peaks along a line. scipy.gaussian_filter smooths a grid first, so its peaks are hills and not noise.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Finds the peaks of a grid - cells higher than every other cell in their neighbourhood - and gives their positions and heights, highest first, and how many there are. It is the 2-D (or 3-D) counterpart of scipy.find_peaks.\n\nscipy.label finds regions above a threshold, so two hills that run into each other become one region. local_maxima finds the summits, so two people standing close in an occupancy map, or two bright spots in a camera image, are still two. Use it for hot spots in a heat map, the centres of people in a depth or occupancy grid, the brightest points of an image, the strongest cells of a spectrogram.\n\nIt is built on scipy.ndimage.maximum_filter, which is how peaks in a grid are usually found; SciPy has no function by this name.\n\nSYNTAX:\nscipy.local_maxima <size: int> <threshold: float>\nDefaults: size 3, threshold 0.5.\n\nINPUTS and PARAMETERS:\n\nin:\nThe grid (any number of axes). Every input is searched and sent.\n\nsize (int box, also an inlet):\nHow wide a neighbourhood a peak must top, in cells: 3 compares each cell with the 8 around it; larger keeps only peaks that stand out over a wider area, and merges close ones.\n\nthreshold (float box, also an inlet):\nPeaks below this are ignored.\n\nOUTPUTS:\n\npositions:\nWhere each peak is, row then column (in cells), highest peak first. A flat top gives its middle.\n\nvalues:\nThe height of each.\n\ncount:\nHow many peaks. Sent first, then values, then positions.\n\nREADING THE DEMO:\nRandom values smoothed into hills (left), new every two seconds. With a neighbourhood of 5 and a threshold of 0.55, the summits are found: the count and their positions are listed, highest first.\n\nRELATED:\nscipy.label finds whole regions above a threshold. scipy.find_peaks finds peaks along a line. scipy.gaussian_filter smooths a grid first, so its peaks are hills and not noise."
+        },
+        "3": {
+            "init": "comment every two seconds",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every two seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every two seconds"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2000.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 2000"
+        },
+        "5": {
+            "init": "comment 24 x 24 random values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "24 x 24 random values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "24 x 24 random values"
+        },
+        "6": {
+            "name": "np.rand",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 24 24"
+        },
+        "7": {
+            "init": "comment smoothed into hills",
+            "name": "comment",
+            "id": 496,
+            "position_x": 360,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smoothed into hills",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smoothed into hills"
+        },
+        "8": {
+            "name": "scipy.gaussian_filter",
+            "id": 533,
+            "position_x": 360,
+            "position_y": 92,
+            "width": 143,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "scipy.gaussian_filter 2"
+        },
+        "9": {
+            "init": "comment the summits",
+            "name": "comment",
+            "id": 570,
+            "position_x": 600,
+            "position_y": 53,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the summits",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the summits"
+        },
+        "10": {
+            "name": "scipy.local_maxima",
+            "id": 607,
+            "position_x": 600,
+            "position_y": 92,
+            "width": 148,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "scipy.local_maxima 5 0.55",
+            "highlight": true
+        },
+        "11": {
+            "init": "comment the hills",
+            "name": "comment",
+            "id": 644,
+            "position_x": 28,
+            "position_y": 290,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the hills",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the hills"
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 28,
+            "position_y": 325,
+            "width": 218,
+            "height": 260,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.35,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.65,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment how many",
+            "name": "comment",
+            "id": 718,
+            "position_x": 300,
+            "position_y": 290,
+            "width": 58,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how many"
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 300,
+            "position_y": 325,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment where: row, column, highest first",
+            "name": "comment",
+            "id": 792,
+            "position_x": 300,
+            "position_y": 400,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "where: row, column, highest first",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "where: row, column, highest first"
+        },
+        "16": {
+            "name": "round",
+            "id": 829,
+            "position_x": 300,
+            "position_y": 435,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 300,
+            "position_y": 520,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 674,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.label"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 158,
+            "position_y": 674,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.find_peaks"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 325,
+            "position_y": 674,
+            "width": 146,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.gaussian_filter"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 530,
+            "position_y": 674,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.argmax"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 784,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "filtered",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "filtered",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "positions",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

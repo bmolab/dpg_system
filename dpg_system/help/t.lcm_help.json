@@ -1,0 +1,831 @@
+{
+    "name": "t.lcm_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.lcm_help.json",
+    "patches": {
+        "0": {
+            "height": 610,
+            "width": 680,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1125,
+            "name": "make_counts",
+            "parent_node_uuid": 681,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1162,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "in",
+                    "init": "in bang",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "t.linspace",
+                    "init": "t.linspace 1 12 12",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 140,
+                    "width": 190,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 12.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "steps",
+                            "value": 12,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "3": {
+                    "name": "comment",
+                    "init": "comment the numbers 1 to 12, as a row",
+                    "id": 1273,
+                    "position_x": 250,
+                    "position_y": 155,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the numbers 1 to 12, as a row",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the numbers 1 to 12, as a row"
+                },
+                "4": {
+                    "name": "t.reshape",
+                    "init": "t.reshape 12 1",
+                    "id": 1310,
+                    "position_x": 240,
+                    "position_y": 320,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "12, 1",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "comment",
+                    "init": "comment and stood up as a column, 12 rows of 1",
+                    "id": 1347,
+                    "position_x": 240,
+                    "position_y": 400,
+                    "width": 360,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "and stood up as a column, 12 rows of 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "and stood up as a column, 12 rows of 1"
+                },
+                "6": {
+                    "name": "out",
+                    "init": "out row",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 450,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out column",
+                    "id": 1421,
+                    "position_x": 240,
+                    "position_y": 450,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "row"
+                },
+                "2": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "3": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "column"
+                }
+            }
+        },
+        "1": {
+            "height": 1262,
+            "width": 1845,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1088,
+            "name": "t.lcm_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.lcm_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.lcm - the least common multiple",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 414,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.lcm - the least common multiple",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.lcm - the least common multiple"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1037,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 901,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Finds, element by element, the least common multiple of two tensors of whole numbers: the smallest number both divide into exactly.\n\nThe lcm of 4 and 6 is 12. In a patch it answers \"when do these line up again?\": two loops of 4 and 6 beats coincide every 12 beats, so the lcm of two cycle lengths is the length of the combined pattern before it repeats.\n\nSYNTAX:\nt.lcm\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes that differ only where one has length 1. The demo's table is exactly that - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole numbers (64-bit integers) before the work is done, so lists and float tensors can go straight in. A value with a fraction is rounded to the NEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value like 11.9999 that should have been 12 does not quietly become 11. For a different rule put t.floor or t.ceil in front.\n\nZERO:\nThe lcm of anything with 0 is 0 (0 is the only multiple of 0).\n\nOUTPUTS:\n\nlcm tensor out:\nThe least common multiples, as 64-bit integers, in the broadcast shape. They grow quickly - the lcm of 11 and 12 is already 132.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 24, 18 and 12 give 36, 7 and 21 give 21, 9 and 0 give 0.\n\nBottom: every pair from 1 to 12. Row r, column c holds the lcm of r+1 and c+1 (the top-left cell is 1 and 1). Pairs with nothing in common multiply out in full and glow brightest towards the bottom right (11 and 12 give 132); pairs that share factors stay dark, and the diagonal - a number with itself - is only the number.\n\nRELATED:\nt.gcd is the other half: the largest number dividing both. For any pair, gcd times lcm is the pair multiplied together. t.round and t.floor make whole numbers from fractions.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 885,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Finds, element by element, the least common multiple of two tensors of whole numbers: the smallest number both divide into exactly.\n\nThe lcm of 4 and 6 is 12. In a patch it answers \"when do these line up again?\": two loops of 4 and 6 beats coincide every 12 beats, so the lcm of two cycle lengths is the length of the combined pattern before it repeats.\n\nSYNTAX:\nt.lcm\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes that differ only where one has length 1. The demo's table is exactly that - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole numbers (64-bit integers) before the work is done, so lists and float tensors can go straight in. A value with a fraction is rounded to the NEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value like 11.9999 that should have been 12 does not quietly become 11. For a different rule put t.floor or t.ceil in front.\n\nZERO:\nThe lcm of anything with 0 is 0 (0 is the only multiple of 0).\n\nOUTPUTS:\n\nlcm tensor out:\nThe least common multiples, as 64-bit integers, in the broadcast shape. They grow quickly - the lcm of 11 and 12 is already 132.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 24, 18 and 12 give 36, 7 and 21 give 21, 9 and 0 give 0.\n\nBottom: every pair from 1 to 12. Row r, column c holds the lcm of r+1 and c+1 (the top-left cell is 1 and 1). Pairs with nothing in common multiply out in full and glow brightest towards the bottom right (11 and 12 give 132); pairs that share factors stay dark, and the diagonal - a number with itself - is only the number.\n\nRELATED:\nt.gcd is the other half: the largest number dividing both. For any pair, gcd times lcm is the pair multiplied together. t.round and t.floor make whole numbers from fractions."
+                },
+                "3": {
+                    "name": "button",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 45,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "load_bang",
+                    "id": 385,
+                    "position_x": 150,
+                    "position_y": 62,
+                    "width": 88,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "5": {
+                    "init": "comment click, or open the page, to send both",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 568,
+                    "position_y": 67,
+                    "width": 236,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "click, or open the page, to send both",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "click, or open the page, to send both"
+                },
+                "6": {
+                    "name": "message",
+                    "id": 459,
+                    "position_x": 330,
+                    "position_y": 130,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "8 12 21 0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "7": {
+                    "name": "message",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 130,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "12 18 7 9",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "8": {
+                    "init": "comment b (sent first) and a",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 568,
+                    "position_y": 180,
+                    "width": 131,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "b (sent first) and a",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "b (sent first) and a"
+                },
+                "9": {
+                    "name": "t.lcm",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 220,
+                    "width": 95,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "10": {
+                    "name": "list",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 320,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "11": {
+                    "init": "comment lcm: 24 36 21 0",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 568,
+                    "position_y": 372,
+                    "width": 101,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "lcm: 24 36 21 0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "lcm: 24 36 21 0"
+                },
+                "12": {
+                    "name": "p",
+                    "id": 681,
+                    "position_x": 30,
+                    "position_y": 430,
+                    "width": 84,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_counts",
+                    "patcher id": 1125
+                },
+                "13": {
+                    "init": "comment 1 to 12 as a row (to b) and as a column (to a)",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 568,
+                    "position_y": 445,
+                    "width": 291,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "1 to 12 as a row (to b) and as a column (to a)",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "1 to 12 as a row (to b) and as a column (to a)"
+                },
+                "14": {
+                    "name": "t.lcm",
+                    "id": 755,
+                    "position_x": 30,
+                    "position_y": 520,
+                    "width": 95,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "15": {
+                    "name": "heat_map",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 620,
+                    "width": 512,
+                    "height": 338,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 504,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 288,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 12,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 132.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "16": {
+                    "init": "comment lcm of every pair from 1 to 12 - pairs sharing no factor are brightest",
+                    "name": "comment",
+                    "id": 829,
+                    "position_x": 568,
+                    "position_y": 960,
+                    "width": 439,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "lcm of every pair from 1 to 12 - pairs sharing no factor are brightest",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "lcm of every pair from 1 to 12 - pairs sharing no factor are brightest"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 30,
+                    "position_y": 1084,
+                    "width": 48,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.gcd"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 94,
+                    "position_y": 1084,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.round"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 170,
+                    "position_y": 1084,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.floor"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 246,
+                    "position_y": 1084,
+                    "width": 54,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.ceil"
+                },
+                "21": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1014,
+                    "position_x": 30,
+                    "position_y": 1050,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "22": {
+                    "name": "close",
+                    "id": 1051,
+                    "position_x": 24,
+                    "position_y": 1158,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "bang"
+                },
+                "3": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "bang"
+                },
+                "6": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor b in"
+                },
+                "7": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor a in"
+                },
+                "8": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "lcm tensor out",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "9": {
+                    "source_node": 681,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "row",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor b in"
+                },
+                "10": {
+                    "source_node": 681,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "column",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor a in"
+                },
+                "11": {
+                    "source_node": 755,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "lcm tensor out",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

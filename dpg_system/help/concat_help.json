@@ -341,7 +341,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "init": "comment concat 5",
@@ -381,7 +382,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The concat node joins multiple lists into a single sequential list.\n\nIt appends the contents of subsequent inputs to the end of the first input's data.\n\nSYNTAX:\n\nconcatenate <count: int>\n\nEXAMPLE:\n\nconcatenate 3\n\nINPUTS AND PARAMETERS:\n\nlist in 'n' (variable):\nThe lists to be joined. \nBy default, only the first (top/left) input triggers the output. \nThe other inputs just update their stored values.\n\nOPTIONS: (select the concat node and press 'o')\n\nall inputs trigger:\nWhen checked, receiving data on ANY input pin will immediately trigger the output. \nWhen unchecked, only the first input pin triggers execution.\n\nOUTPUTS: \n\nconcatenated list out:\nThe combined list containing all elements from all inputs, ordered from first input to last.",
+                    "value": "The concat node joins multiple lists into a single sequential list.\n\nIt appends the contents of subsequent inputs to the end of the first input's data.\n\nSYNTAX:\n\nconcatenate <count: int>\n\nEXAMPLE:\n\nconcatenate 3\n\nINPUTS AND PARAMETERS:\n\nlist in 'n' (variable):\nThe lists to be joined. \nBy default, only the first (top/left) input triggers the output.  The other inputs just update their stored values.\n\nOPTIONS: (select the concat node and press 'o')\n\nall inputs trigger:\nWhen checked, receiving data on ANY input pin will immediately trigger the output.  When unchecked, only the first input pin triggers execution.\n\nOUTPUTS: \n\nconcatenated list out:\nThe combined list containing all elements from all inputs, ordered from first input to last.",
                     "value_type": "string"
                 },
                 "1": {
@@ -405,7 +406,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The concat node joins multiple lists into a single sequential list.\n\nIt appends the contents of subsequent inputs to the end of the first input's data.\n\nSYNTAX:\n\nconcatenate <count: int>\n\nEXAMPLE:\n\nconcatenate 3\n\nINPUTS AND PARAMETERS:\n\nlist in 'n' (variable):\nThe lists to be joined. \nBy default, only the first (top/left) input triggers the output. \nThe other inputs just update their stored values.\n\nOPTIONS: (select the concat node and press 'o')\n\nall inputs trigger:\nWhen checked, receiving data on ANY input pin will immediately trigger the output. \nWhen unchecked, only the first input pin triggers execution.\n\nOUTPUTS: \n\nconcatenated list out:\nThe combined list containing all elements from all inputs, ordered from first input to last."
+            "text": "The concat node joins multiple lists into a single sequential list.\n\nIt appends the contents of subsequent inputs to the end of the first input's data.\n\nSYNTAX:\n\nconcatenate <count: int>\n\nEXAMPLE:\n\nconcatenate 3\n\nINPUTS AND PARAMETERS:\n\nlist in 'n' (variable):\nThe lists to be joined. \nBy default, only the first (top/left) input triggers the output.  The other inputs just update their stored values.\n\nOPTIONS: (select the concat node and press 'o')\n\nall inputs trigger:\nWhen checked, receiving data on ANY input pin will immediately trigger the output.  When unchecked, only the first input pin triggers execution.\n\nOUTPUTS: \n\nconcatenated list out:\nThe combined list containing all elements from all inputs, ordered from first input to last."
         }
     },
     "links": {

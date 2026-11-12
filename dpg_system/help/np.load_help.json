@@ -1,0 +1,531 @@
+{
+    "height": 1205,
+    "width": 1888,
+    "position": [
+        100,
+        100
+    ],
+    "id": 903,
+    "name": "np.load_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.load_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.load - read an .npz file",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 340,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.load - read an .npz file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.load - read an .npz file"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1050,
+            "position_y": 45,
+            "width": 798,
+            "height": 1066,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Reads a numpy .npz file and sends the arrays in it, as a dictionary.\n\nAn .npz is several named arrays saved together in one file - the usual way numpy data is shipped, and the format of most motion-capture archives (AMASS, for one). Because it holds several arrays, what comes out is a DICTIONARY: one entry per array, under its name. Use dict_keys to find out what is in a file you did not write, and the dict nodes (dict_extract and friends) to take out the arrays you want.\n\nLOADING:\nClick \"load\" and choose a file. It is read straight away and sent. \"send\" sends the same contents again without re-reading the file.\n\nTo load a file by name instead, send the node the message \"path\" followed by the file's path, as the message box in the demo does. That sets the path and reads the file at once - from a patch, with no dialog.\n\nThe path is saved with the patch (it is the \"path\" option), and when the patch is opened again the file is read and sent automatically. A path typed after the name (np.load /path/to/file.npz) fills in that option and is read as soon as the node is made; so is a path typed into the option. A path that is not absolute is looked for relative to the folder the app was started from - normally the top folder of the installation, the one holding dpg_system_main.py, which is why the demo's path starts with dpg_system/help.\n\nA plain .npy file (a single array, as np.save writes) is read too, and sent as a dictionary with that one array under the key data.\n\nIf the file cannot be read, the error is printed to the console and nothing is sent.\n\nA WORD OF CAUTION:\nThe file is read with numpy's pickle support switched on, so that arrays of mixed objects load. A pickled file can run code as it loads - only open .npz files you trust.\n\nSYNTAX:\nnp.load <path>\n\nEXAMPLE:\nnp.load dpg_system/help/data/np_load_example.npz\n\nINPUTS and PARAMETERS:\n\nload:\nA button. Choose a file, read it and send it. Any inlet also accepts the\nmessage \"path <file>\".\n\nsend:\nA button. Send the last file read, again.\n\npath (option):\nThe file to read. Set by \"load\" or by a \"path\" message; read automatically when the patch opens.\n\nOUTPUTS:\n\ndict out:\nA dictionary of the file's arrays, keyed by name.\n\nREADING THE DEMO:\nThe help comes with a small file, np_load_example.npz, holding two arrays:\n\"rings\", a 16 x 16 target of concentric rings, and \"checker\", an 8 x 12 checkerboard of 2 x 2 squares, both with values from 0 to 1. Click the message box to load it: dict_keys lists the two names, and dict_extract takes each array out by name for a heat_map.\n\nRELATED:\ndict_keys and dict_extract unpack the dictionary. np.sequence records and plays back a series of arrays.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1050,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Reads a numpy .npz file and sends the arrays in it, as a dictionary.\n\nAn .npz is several named arrays saved together in one file - the usual way numpy data is shipped, and the format of most motion-capture archives (AMASS, for one). Because it holds several arrays, what comes out is a DICTIONARY: one entry per array, under its name. Use dict_keys to find out what is in a file you did not write, and the dict nodes (dict_extract and friends) to take out the arrays you want.\n\nLOADING:\nClick \"load\" and choose a file. It is read straight away and sent. \"send\" sends the same contents again without re-reading the file.\n\nTo load a file by name instead, send the node the message \"path\" followed by the file's path, as the message box in the demo does. That sets the path and reads the file at once - from a patch, with no dialog.\n\nThe path is saved with the patch (it is the \"path\" option), and when the patch is opened again the file is read and sent automatically. A path typed after the name (np.load /path/to/file.npz) fills in that option and is read as soon as the node is made; so is a path typed into the option. A path that is not absolute is looked for relative to the folder the app was started from - normally the top folder of the installation, the one holding dpg_system_main.py, which is why the demo's path starts with dpg_system/help.\n\nA plain .npy file (a single array, as np.save writes) is read too, and sent as a dictionary with that one array under the key data.\n\nIf the file cannot be read, the error is printed to the console and nothing is sent.\n\nA WORD OF CAUTION:\nThe file is read with numpy's pickle support switched on, so that arrays of mixed objects load. A pickled file can run code as it loads - only open .npz files you trust.\n\nSYNTAX:\nnp.load <path>\n\nEXAMPLE:\nnp.load dpg_system/help/data/np_load_example.npz\n\nINPUTS and PARAMETERS:\n\nload:\nA button. Choose a file, read it and send it. Any inlet also accepts the\nmessage \"path <file>\".\n\nsend:\nA button. Send the last file read, again.\n\npath (option):\nThe file to read. Set by \"load\" or by a \"path\" message; read automatically when the patch opens.\n\nOUTPUTS:\n\ndict out:\nA dictionary of the file's arrays, keyed by name.\n\nREADING THE DEMO:\nThe help comes with a small file, np_load_example.npz, holding two arrays:\n\"rings\", a 16 x 16 target of concentric rings, and \"checker\", an 8 x 12 checkerboard of 2 x 2 squares, both with values from 0 to 1. Click the message box to load it: dict_keys lists the two names, and dict_extract takes each array out by name for a heat_map.\n\nRELATED:\ndict_keys and dict_extract unpack the dictionary. np.sequence records and plays back a series of arrays."
+        },
+        "3": {
+            "name": "message",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 570,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "path dpg_system/help/data/np_load_example.npz",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 540,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment click to load the example file",
+            "name": "comment",
+            "id": 385,
+            "position_x": 704,
+            "position_y": 72,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to load the example file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to load the example file"
+        },
+        "5": {
+            "name": "np.load",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "6": {
+            "name": "dict_keys",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "list",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment the names of the arrays inside it",
+            "name": "comment",
+            "id": 533,
+            "position_x": 704,
+            "position_y": 330,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the names of the arrays inside it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the names of the arrays inside it"
+        },
+        "9": {
+            "name": "dict_extract",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 82,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "key count",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "key 0",
+                    "value": "rings",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "key 1",
+                    "value": "checker",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "include key in output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "init": "dict_extract rings checker"
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 490,
+            "width": 248,
+            "height": 290,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "greys",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 16,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 310,
+            "position_y": 490,
+            "width": 368,
+            "height": 290,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "greys",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment left: \"rings\" (16 x 16). right: \"checker\" (8 x 12)",
+            "name": "comment",
+            "id": 681,
+            "position_x": 704,
+            "position_y": 500,
+            "width": 316,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left: \"rings\" (16 x 16). right: \"checker\" (8 x 12)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "left: \"rings\" (16 x 16). right: \"checker\" (8 x 12)"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 834,
+            "width": 73,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link dict_keys"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 119,
+            "position_y": 834,
+            "width": 92,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link dict_extract"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 227,
+            "position_y": 834,
+            "width": 85,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.sequence"
+        },
+        "16": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 800,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "17": {
+            "name": "close",
+            "id": 866,
+            "position_x": 24,
+            "position_y": 908,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "load"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dict out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "keys out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dict out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

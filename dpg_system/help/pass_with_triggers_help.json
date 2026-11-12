@@ -37,7 +37,8 @@
             "height": 70,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "highlight": true
         },
         "2": {
             "name": "message",
@@ -202,7 +203,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The pass_with_triggers node allows you to sequence events around a specific data transmission. \n\nIt acts as a wrapper for a data flow. \nWhen data is received, the node fires a \"bang\" immediately before passing the data along, \nand another \"bang\" immediately after. \n\nYou use this node to set up conditions before processing a value \n(like resetting a counter or opening a gate) and to trigger cleanup or notification events afterwards.\n\nSYNTAX:\npass_with_triggers\n\nEXAMPLE:\npass_with_triggers\n\nINPUTS and PARAMETERS:\n\ninput: \nThe trigger source. Receiving any data here initiates the three-step sequence. \nThe data received here is preserved and passed to the middle output.\n\nOUTPUTS:\n\npre_trigger:\nFires first. Sends a \"bang\" trigger immediately before the data is passed.\n\npass input:\nFires second. The original data received at the input is sent out here.\n\npost_trigger:\nFires last. Sends a \"bang\" trigger immediately after the data has been passed.",
+                    "value": "The pass_with_triggers node allows you to sequence events around a specific data transmission. \n\nIt acts as a wrapper for a data flow. \nWhen data is received, the node fires a \"bang\" immediately before passing the data along,  and another \"bang\" immediately after. \n\nYou use this node to set up conditions before processing a value  (like resetting a counter or opening a gate) and to trigger cleanup or notification events afterwards.\n\nSYNTAX:\npass_with_triggers\n\nEXAMPLE:\npass_with_triggers\n\nINPUTS and PARAMETERS:\n\ninput: \nThe trigger source. Receiving any data here initiates the three-step sequence.  The data received here is preserved and passed to the middle output.\n\nOUTPUTS:\n\npre_trigger:\nFires first. Sends a \"bang\" trigger immediately before the data is passed.\n\npass input:\nFires second. The original data received at the input is sent out here.\n\npost_trigger:\nFires last. Sends a \"bang\" trigger immediately after the data has been passed.",
                     "value_type": "string"
                 },
                 "1": {
@@ -226,7 +227,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The pass_with_triggers node allows you to sequence events around a specific data transmission. \n\nIt acts as a wrapper for a data flow. \nWhen data is received, the node fires a \"bang\" immediately before passing the data along, \nand another \"bang\" immediately after. \n\nYou use this node to set up conditions before processing a value \n(like resetting a counter or opening a gate) and to trigger cleanup or notification events afterwards.\n\nSYNTAX:\npass_with_triggers\n\nEXAMPLE:\npass_with_triggers\n\nINPUTS and PARAMETERS:\n\ninput: \nThe trigger source. Receiving any data here initiates the three-step sequence. \nThe data received here is preserved and passed to the middle output.\n\nOUTPUTS:\n\npre_trigger:\nFires first. Sends a \"bang\" trigger immediately before the data is passed.\n\npass input:\nFires second. The original data received at the input is sent out here.\n\npost_trigger:\nFires last. Sends a \"bang\" trigger immediately after the data has been passed."
+            "text": "The pass_with_triggers node allows you to sequence events around a specific data transmission. \n\nIt acts as a wrapper for a data flow. \nWhen data is received, the node fires a \"bang\" immediately before passing the data along,  and another \"bang\" immediately after. \n\nYou use this node to set up conditions before processing a value  (like resetting a counter or opening a gate) and to trigger cleanup or notification events afterwards.\n\nSYNTAX:\npass_with_triggers\n\nEXAMPLE:\npass_with_triggers\n\nINPUTS and PARAMETERS:\n\ninput: \nThe trigger source. Receiving any data here initiates the three-step sequence.  The data received here is preserved and passed to the middle output.\n\nOUTPUTS:\n\npre_trigger:\nFires first. Sends a \"bang\" trigger immediately before the data is passed.\n\npass input:\nFires second. The original data received at the input is sent out here.\n\npost_trigger:\nFires last. Sends a \"bang\" trigger immediately after the data has been passed."
         },
         "8": {
             "name": "close",

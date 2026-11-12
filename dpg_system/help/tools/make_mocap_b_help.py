@@ -308,209 +308,615 @@ print(build('json_npz_frame_picker', 'json_npz_frame_picker - reviewing flagged 
             body, demo, links, demo_width=480, text_width=800, text_height=1260))
 
 # ----------------------------------------------------------------- mag_offset
-body = """These measure and correct magnetometer errors - the main source of yaw drift 
-in an inertial suit.
+body = """mag_offset measures a magnetometer: it collects the field readings as the
+sensor is turned, fits a sphere to them, and tells you how far that sphere sits
+from the origin.
 
 WHY THIS MATTERS:
-An IMU works out which way is down from gravity, and that is reliable. 
-Which way is NORTH it takes from the magnetic field, and that is not: any steel 
-near the sensor distorts the field, and the sensor reads a heading that is 
-wrong by an amount depending on where it is and which way it is facing.
+An inertial sensor works out which way is down from gravity, and that is
+reliable. Which way is NORTH it takes from the magnetic field, and that is not:
+a bit of magnetised metal travelling with the sensor adds its own field to the
+earth's, and the sensor reads a heading that is wrong by an amount that depends
+on which way it is facing. The result is a limb turned about the vertical, which
+no downstream filtering will remove, because it is not noise.
 
-The result is a yaw error - a limb rotated about the vertical - that no 
-downstream filtering will remove, because it is not noise. It is a consistent 
-wrong answer, and it has to be measured and subtracted.
-
-THE NODES:
-
-mag_offset          measure a sensor's field, by fitting a sphere to it
-mag_yaw_correct     correct yaw errors per sensor
-shadow_arm_correct  the interactive version of the upper-arm offset fit
-
-mag_offset AND WHAT THE SPHERE MEANS:
-Turn a sensor through every orientation and its magnetometer readings should 
-trace a sphere centred on the origin, with a radius equal to the field 
-strength. What you actually get is a sphere displaced from the origin - and 
-that displacement is the hard-iron offset, the steel travelling with the sensor.
+WHAT THE SPHERE MEANS:
+Turn a clean sensor through every orientation and its readings trace a sphere
+centred on the origin, with a radius equal to the strength of the field. A
+magnetised sensor traces the same sphere, moved off the origin - and that
+displacement is the hard-iron offset, the field the sensor carries with it.
 
 So the fit gives you three things:
-  'center'    the hard-iron offset - what to subtract
-  'radius'    the field strength the sensor is seeing
-  'residual'  how well a sphere fits at all - a large residual means the 
-              distortion is not a simple offset and cannot be corrected this way
+  centre     the hard-iron offset, x y z - what the sensor adds to every reading
+  radius     the strength of the field the sensor is in
+  residual   how far, on average, the readings sit from the fitted sphere - a
+             measure of how well a sphere fits at all
 
-For reference, a clean sensor in this studio reads about 54.6 microtesla with 
-a centre offset near 1.5 and a residual around 0.42. A centre offset that is a 
-large fraction of the radius is a sensor that needs recalibrating, not 
-correcting in software.
+READING THE NUMBERS:
+Judge the offset by its length as a percentage of the radius. As a reference,
+a clean chest sensor in the 2026 studio assessments read a radius of 54.6
+microtesla, an offset about 1.5 microtesla long (under 3 percent of the radius)
+and a residual of 0.42 microtesla. Clean sensors there ran from about 0.3 to 3
+percent; the sensors that needed recalibrating carried 7 to 33 percent.
 
-mag_yaw_correct HAS TWO CORRECTIONS, AND THEY ARE DIFFERENT:
-'Global yaw' is pre-multiplied around world vertical, and addresses ongoing 
-magnetometer error - the sensor's heading being wrong in the room.
-'Local yaw' is post-multiplied in the sensor's own frame, and addresses 
-calibration error baked into the T-pose identity - the sensor being mounted 
-rotated on the limb.
+The radius should match the local earth field - about 54.5 microtesla in
+Toronto. A low radius usually means the sensor was not turned through enough
+orientations, not that the sensor's scale is wrong. A high residual with a small
+offset means either too little coverage again, or a distortion that is not a
+simple offset (soft iron).
 
-They look similar and are not interchangeable. A global error changes as the 
-performer moves around the room; a local one is fixed to the limb. If a 
-correction holds in one part of the room and fails in another, it is the global 
-one; if it holds everywhere but only for one limb, it is the local one.
+A sensor with a large offset needs recalibrating in Shadow, not correcting in
+software.
 
-shadow_arm_correct:
-The live version of the offline upper-arm fit. Lowered arms hang biased, and 
-the cause is a constant per-upper-arm offset at the shoulder. This applies the 
-same per-arm fit plus anatomical dials - twist, abduction, flex, elbow, wrist, 
-hand twist - with sliders, so you tune while watching the render rather than 
-generating files and reloading.
+HOW TO MEASURE A SENSOR:
+Stay in one spot, waist height or higher, and turn the sensor slowly through as
+many orientations as you can - every face pointing every way. Do not walk
+around while you turn it, and do not do it near the floor: the field of the room
+itself varies from place to place, and moving through that variation while
+turning mixes it into a fit that assumes one field. (To map the room itself,
+do the opposite: keep one sensor in a fixed orientation and move it.)
+
+COLLECTING:
+Each reading arriving at 'magnetometer' is kept if it is at least 'min point
+spacing' away from the last one kept, so holding the sensor still does not pile
+up points in one place. Readings of exactly zero are ignored. Only the newest
+'max points' are kept. The fit starts once there are 8 points, and every kept
+reading refits and sends everything again.
+
+The units are whatever comes in; from shadow_sensor they are microtesla.
 
 SYNTAX:
 mag_offset
+
+EXAMPLE:
+mag_offset
+
+INPUTS and PARAMETERS:
+
+magnetometer:
+One reading, three numbers x y z - an array or a list.
+
+clear:
+Discard the collected readings and start again. Sends the empty result.
+
+max points:
+How many readings to keep, newest first. Default 2000.
+
+offset (uT) / radius (uT) / fit residual / samples:
+The current fit, and how many readings it is based on.
+
+OPTIONS:
+
+min point spacing:
+How far a reading must be from the last one kept, in the units of the
+readings. Default 1.
+
+OUTPUTS:
+
+cloud:
+All the kept readings, one row each.
+
+centered cloud:
+The same readings with the offset taken away - they should now sit on a
+sphere around the origin.
+
+center:
+The offset, x y z.
+
+radius / residual:
+The fit, as above.
+
+RELATED:
+shadow_sensor supplies the readings from a suit.
+mgl_point_cloud can draw 'cloud' or 'centered cloud' in 3-D."""
+
+demo = [
+    {'key': 'met', 'init': 'metro 50', 'pos': (30, 62), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 50.0, 'units': 'milliseconds'}},
+    {'key': 'c0', 'comment': True, 'text': 'a new reading every 50 milliseconds',
+     'pos': (330, 62)},
+    {'key': 'nr', 'init': 'np.rand 3', 'pos': (30, 150), 'w': 140, 'h': 100,
+     'props': {'min': -1.0, 'max': 1.0}},
+    {'key': 'no', 'init': 'norm', 'pos': (30, 270), 'w': 80, 'h': 42},
+    {'key': 'c1', 'comment': True, 'text': 'a random direction, one unit long',
+     'pos': (330, 270)},
+    {'key': 'mu', 'init': '* 54.6', 'pos': (30, 330), 'w': 120, 'h': 42},
+    {'key': 'c2', 'comment': True, 'text': 'scaled to the strength of the field',
+     'pos': (330, 330)},
+    {'key': 'ad', 'init': '+ 3.', 'pos': (30, 390), 'w': 120, 'h': 42},
+    {'key': 'c3', 'comment': True, 'text': 'a magnetised sensor: 3 microtesla added\nto x, y and z - drag it to change',
+     'pos': (330, 390)},
+    {'key': 'mo', 'init': 'mag_offset', 'pos': (30, 450), 'w': 240, 'h': 240},
+    {'key': 'c4', 'comment': True, 'text': 'offset 3, 3, 3 and radius 54.6\nresidual near zero: these points\nlie exactly on a sphere',
+     'pos': (330, 450)},
+]
+links = [('met', '', 'nr', ''), ('nr', 'random array', 'no', 'in'),
+         ('no', 'result', 'mu', 'in'), ('mu', 'result', 'ad', 'in'),
+         ('ad', 'result', 'mo', 'magnetometer')]
+print(build('mag_offset', 'mag_offset - how far off the field is', body,
+            demo, links, demo_width=620, text_width=820, text_height=1300))
+
+# ------------------------------------------------------------ mag_yaw_correct
+body = """mag_yaw_correct turns individual joints of a 20-joint pose about the vertical,
+to take out heading errors that a magnetometer has put into the suit data.
+
+THE SLIDERS:
+Every joint has two sliders, in degrees:
+  head, neck, spine3 ... r_wrist             the global correction
+  head_cal, neck_cal ... r_wrist_cal         the local correction
+
+They follow the 20 active joints in order: head is the base of the skull, neck
+the upper vertebrae, spine3, spine2 and spine1 the mid vertebrae, lower
+vertebrae and spine pelvis, pelvis the pelvis anchor, then hips, knees and
+ankles, and l_collar / r_collar the shoulder blades, then shoulders, elbows and
+wrists.
+
+TWO CORRECTIONS, AND THEY ARE DIFFERENT:
+The global correction turns the joint about the vertical of the room. A value
+of 10 turns it by -10 degrees: you enter the error, and it is taken back out.
+It is meant for an ongoing magnetometer error - the sensor's heading being wrong
+in the room.
+
+The local correction turns the joint about its own up axis (its y axis, which
+is vertical in the T-pose), by the value as given. It is meant for an error baked in at calibration - the sensor's idea
+of its T-pose being turned on the limb.
+
+A global error comes from the field around the sensor, so a fixed global
+correction may hold in one part of the room and not another; a local one is
+fixed to the limb and holds everywhere.
+
+EACH JOINT ON ITS OWN:
+The corrections act on each joint's orientation in the room, and the pose is
+then turned back into joint-to-joint rotations. So correcting one joint does
+not carry the joints below it: in the example the elbows are turned and the
+wrists keep the direction they had, which shows up as the opposite turn in the
+wrist rows. Each sensor's error is its own, so this is what you want.
+
+symmetric AND sync:
+Both are on by default and act when you move a slider.
+'symmetric' copies the value to the same slider on the other side - hip, knee,
+ankle, collar, shoulder, elbow, wrist - with the same sign.
+'sync local/global' copies a joint's global value to its local slider and back,
+so the joint gets both turns with the same angle. That is right when the
+magnetic error is the same at every orientation of the sensor. Note that for a
+joint that is upright and only turned about the vertical, the two then cancel,
+and you will see no change.
+
+WHAT IT TAKES:
+A 20-joint pose, 20 rows of w x y z (or the same 80 numbers in one row), from
+active_joints, active_pose or a take. A 37-row pose straight from shadow is
+ignored - put active_joints in between. With every slider at zero the pose
+passes through unchanged.
+
+SYNTAX:
 mag_yaw_correct
 
 EXAMPLE:
-mag_offset
+mag_yaw_correct
 
 INPUTS and PARAMETERS:
 
-magnetometer (mag_offset):
-The raw field readings, from shadow_sensor.
-
-clear:
-Discard the accumulated cloud and start the fit again.
-
 pose in:
-The pose to correct.
+The 20-joint pose to correct.
 
-symmetric / sync local-global (mag_yaw_correct):
-Mirror the correction left to right, and tie the two corrections together.
+symmetric:
+Copy each slider move to the other side. On by default.
 
-fit / load fit npz / take file (shadow_arm_correct):
-Run the fit, load a saved one, and the take to fit against.
+sync local/global:
+Tie each joint's global and local sliders together. On by default.
 
-OUTPUTS: 
+reset:
+Set every slider back to zero.
 
-cloud / centered cloud (mag_offset):
-The readings as measured, and after the offset is removed - the second should 
-be centred on the origin.
+head ... r_wrist:
+The global corrections, in degrees.
 
-center / radius / residual:
-The fit. See above for what each means.
+head_cal ... r_wrist_cal:
+The local corrections, in degrees.
+
+OUTPUT:
 
 pose out:
-The corrected pose.
+The corrected 20-joint pose.
 
-HOW TO MEASURE A SENSOR:
-Hold the sensor still in a fixed orientation and read the field; then another 
-orientation; and so on. Do NOT sweep it continuously - a sweep through a 
-gradient in the room mixes the room's variation into the sensor's, and the fit 
-then describes neither."""
+RELATED:
+mag_offset measures a sensor's magnetic offset.
+shadow_arm_correct fits and corrects a fixed upper-arm error.
+pose_adjust applies fixed corrections joint by joint."""
 
 demo = [
-    {'key': 'ss', 'init': 'shadow_sensor', 'pos': (30, 62), 'w': 240, 'h': 180},
-    {'key': 'mo', 'init': 'mag_offset', 'pos': (30, 260), 'w': 240, 'h': 240},
-    {'key': 'c0', 'comment': True, 'text': 'turn the sensor through many orientations',
-     'pos': (30, 515)},
-    {'key': 'f1', 'init': 'float', 'pos': (310, 260), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'f2', 'init': 'float', 'pos': (310, 315), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'f3', 'init': 'float', 'pos': (310, 370), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c1', 'comment': True, 'text': 'centre, radius, residual\na clean sensor here reads about 54.6', 'pos': (310, 420)},
-    {'key': 'sh', 'init': 'shadow', 'pos': (30, 560), 'w': 280, 'h': 320},
-    {'key': 'my', 'init': 'mag_yaw_correct', 'pos': (30, 900), 'w': 280, 'h': 240},
-    {'key': 'c3', 'comment': True, 'text': 'global yaw: wrong heading in the room\nlocal yaw: sensor mounted rotated',
-     'pos': (30, 1155)},
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click to send the pose', 'pos': (330, 62)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 130), 'w': 321, 'h': 350},
+    {'key': 'c1', 'comment': True, 'text': 'every joint at rest', 'pos': (330, 130)},
+    {'key': 'my', 'init': 'mag_yaw_correct', 'pos': (30, 500), 'w': 144, 'h': 644,
+     'props': {'symmetric': True, 'sync local/global': False,
+               'l_elbow': 30.0, 'r_elbow': 30.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'both elbows: a global correction of 30\nsync is off, so only the global turn applies',
+     'pos': (330, 500)},
+    {'key': 'qe', 'init': 'quaternion_to_euler', 'pos': (30, 1165), 'w': 125, 'h': 42,
+     'props': {'degrees': True}},
+    {'key': 've', 'init': 'vector', 'pos': (30, 1230), 'w': 160, 'h': 126},
+    {'key': 'c3', 'comment': True,
+     'text': 'x y z angles in degrees, one row per joint\nelbow rows: -30 about y (the vertical)\nwrist rows: +30, so the hands keep\nthe direction they had',
+     'pos': (330, 1230)},
 ]
-links = [('ss', 'magnetometer', 'mo', 'magnetometer'),
-         ('mo', 'center', 'f1', ''), ('mo', 'radius', 'f2', ''),
-         ('mo', 'residual', 'f3', ''),
-         ('sh', 'body 1 quaternions', 'my', 'pose in')]
-print(build('mag_offset', 'mag_offset - measuring and correcting the field', body,
-            demo, links, demo_width=600, text_width=820, text_height=820))
+links = [('btn', '', 'ap', 'in'), ('ap', 'out', 'my', 'pose in'),
+         ('my', 'pose out', 'qe', 'quaternion'),
+         ('qe', 'euler angles', 've', 'in')]
+print(build('mag_yaw_correct', 'mag_yaw_correct - turning joints back to true heading',
+            body, demo, links, demo_width=640, text_width=820, text_height=1300))
+
+# --------------------------------------------------------- shadow_arm_correct
+body = """shadow_arm_correct fixes Shadow recordings in which the arms hang wrongly - a
+lowered arm biased out to the side or twisted - although the calibration
+looked fine.
+
+THE CAUSE IT CORRECTS:
+The error was traced to a fixed rotation of each upper-arm sensor (Shadow's
+Shoulder joint); the shoulder blades, spine and forearms are comparatively
+clean. In the takes it was built for, the left arm's error was close to a pure
+turn about the vertical - a magnetometer heading error - while the right arm's
+was more of a tilt.
+
+This node is the live version of the script
+smpl_utilities/correct_upper_arm_offset.py: the same correction, with sliders,
+so you can tune it while watching the render instead of writing files and
+reloading them.
+
+WHAT IT CHANGES:
+Only the shoulder, elbow and wrist rows of each arm. The fitted correction and
+the twist turn the upper arm while the forearm and hand keep the orientation
+they had in the room, so the elbow row changes to absorb the shoulder
+correction. The other dials move the arm as described below.
+
+FITTING A TAKE:
+Fill in:
+  take file    a Shadow take, an .npz with 'quats' (and 'positions' if you
+               have them), 37 or 20 joints
+  sym ranges   frames where the performer holds a left-right symmetric pose,
+               as first:last pairs separated by commas - 100:250,900:1000
+  relax        one first:last range of relaxed arm swing, such as walking;
+               the moments in it when the arms pass each other symmetrically
+               are found and used as well
+
+then press 'fit'. It finds the fixed rotation for each upper arm that makes the
+two arms the best mirror images over those frames, plus, for each arm, a
+heading error that changes with the compass direction the arm points. A report
+goes to the console. Ranges outside the take are clamped or skipped, with a
+message.
+
+The fit can only see the DIFFERENCE between the arms. Turning both arms by the
+same amount leaves them mirror images, so that part of the error is invisible
+to it - which is what the dials are for.
+
+'load fit npz' loads a fit saved by the script's --save-fit instead. The node
+does not save fits itself; 'export armfix' saves the corrected take.
+
+THE DIALS:
+All in degrees, applied after the fit.
+  twist        both upper arms about their own long axis
+  abduct_l / abduct_r
+               each arm out to the side, about the body's front-back axis
+  flex         both arms forward (positive) or back
+  elbow        open both elbows about their hinge
+  wrist        extend both wrists
+  wtwist       roll both hands about their long axis
+With 'symmetric' on (the default), abduct_l sets both arms and abduct_r is
+ignored, so the dials cannot break the left-right balance the fit found.
+
+THE BODY'S AXES:
+Abduction and flex need to know which way the body faces. With Shadow
+positions at 'positions in' it uses the line between the shoulders; without,
+it uses the chest sensor's orientation. Do not send SMPL joint positions - they
+are in a different frame.
+
+SYNTAX:
+shadow_arm_correct
+
+EXAMPLE:
+shadow_arm_correct
+
+INPUTS and PARAMETERS:
+
+pose in:
+A Shadow pose, 37 rows or the 20 active joints, w x y z. Each one is
+corrected and sent.
+
+positions in:
+Optional Shadow joint positions, 37 or 20 rows, for the body's axes.
+
+take file / sym ranges / relax / fit:
+Fit the per-arm correction from a take - see above.
+
+load fit npz:
+Load a saved fit instead.
+
+symmetric:
+Tie the two abduction dials. On by default.
+
+twist / abduct_l / abduct_r / flex / elbow / wrist / wtwist:
+The dials, in degrees.
+
+reset dials:
+Set every dial to zero. The fit is kept.
+
+export armfix:
+Apply the current fit and dials to every frame of the take file and write it
+next to it with _armfix added to the name; every other array in the file is
+copied unchanged. Needs 'take file' to be filled in: without one it says so
+in the console and writes nothing - a fit npz holds only the correction, not
+a take to correct.
+
+OUTPUT:
+
+pose out:
+The corrected pose, in the same layout as it came in.
+
+RELATED:
+mag_yaw_correct turns single joints about the vertical.
+mag_offset measures a sensor's magnetic offset."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click to send the pose', 'pos': (330, 62)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 130), 'w': 321, 'h': 350},
+    {'key': 'c1', 'comment': True, 'text': 'every joint at rest', 'pos': (330, 130)},
+    {'key': 'sa', 'init': 'shadow_arm_correct', 'pos': (30, 500), 'w': 166, 'h': 266,
+     'props': {'symmetric': True, 'abduct_l': 20.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'no fit loaded - just the abduct dial\nsymmetric on, so 20 moves both arms',
+     'pos': (330, 500)},
+    {'key': 'qe', 'init': 'quaternion_to_euler', 'pos': (30, 790), 'w': 125, 'h': 42,
+     'props': {'degrees': True}},
+    {'key': 've', 'init': 'vector', 'pos': (30, 855), 'w': 160, 'h': 126},
+    {'key': 'c3', 'comment': True,
+     'text': 'x y z angles in degrees, one row per joint\nleft shoulder +20 about z, right -20:\nboth arms out by 20, mirror images',
+     'pos': (330, 855)},
+]
+links = [('btn', '', 'ap', 'in'), ('ap', 'out', 'sa', 'pose in'),
+         ('sa', 'pose out', 'qe', 'quaternion'),
+         ('qe', 'euler angles', 've', 'in')]
+print(build('shadow_arm_correct', 'shadow_arm_correct - arms that hang wrongly',
+            body, demo, links, demo_width=640, text_width=820, text_height=1400))
 
 # ------------------------------------------------------------- cadence_filter
-body = """These deal with artefacts in the data rather than with the movement in it.
+body = """cadence_filter removes a rhythm that the recording put into the data, not the
+movement.
 
-THE NODES:
+WHAT CADENCE IS:
+A sensor running at one rate and delivered at another leaves a pattern in the
+data that repeats every few frames. Shadow files recorded at 100 Hz and saved at
+60 are an example: from one saved frame to the next, the movement advances by
+two sensor frames, then two, then one, over and over - a cycle three frames
+long. A sensor running at about 33 Hz and upsampled to 100 Hz leaves the same
+kind of three-frame cycle.
 
-cadence_filter  remove the stepping left by upsampling
-check_burst     find frames where the data jumps implausibly
+That pattern is not movement, but every measure built on frame-to-frame change
+reads it as movement, at a fixed frequency, all the time. It inflates jerk,
+it triggers glitch detectors, and it is the reason a still performer can look
+busy.
 
-cadence_filter AND WHAT CADENCE IS:
-A sensor running at one rate and delivered at another leaves a pattern in the 
-data: some frames repeat, others do not, in a regular cycle. Shadow files show 
-a 2,2,1 pattern from a 100 Hz stream being delivered at 60 - two frames the 
-same, two the same, one different, over and over.
+HOW IT REMOVES IT:
+Each number that arrives is averaged with the ones before it - a causal moving
+average over 'window' frames. A pattern that repeats every N frames averages to
+nothing over a window of N frames, so the default window of 3 removes a
+three-frame cadence exactly.
 
-That pattern is not movement, but every derivative-based measure reads it as 
-movement, at a fixed frequency, all the time. It inflates jerk, it triggers 
-glitch detectors, and it is the reason a still performer can look busy.
+Causal means it uses only past frames, so it works on a live stream. The price
+is a fixed lag: half a window less half a frame, which is one frame at a window
+of 3.
 
-A causal moving average removes it. A window of 3 removes the 33.3 Hz cadence 
-that comes from ~33 Hz sensors upsampled to 100. The filter is causal - it uses 
-only past frames - so it works on a live stream and adds a fixed small lag 
-rather than needing the future.
-
-check_burst FINDS THE IMPLAUSIBLE:
-It compares each frame against the previous ones and reports where the change 
-is too large to be real movement. That is how you find dropped frames, tracking 
-failures and the teleports that show up in some recorded datasets.
-
-Its several thresholds exist because there is no single number that separates a 
-glitch from fast motion. 'threshold 1' and 'threshold 2 previous' look at the 
-change and the change before it - a genuine movement builds, a glitch does not. 
-'jerk threshold pct' works on the proportion rather than the absolute size, 
-which is what makes it usable across joints that move at very different speeds.
+WHAT IT AVERAGES:
+Every number on its own, with no knowledge of what the numbers are. That is
+right for positions, and close enough for rotations that change little from
+frame to frame. It is not right across a jump in representation: a quaternion
+that flips sign, or an axis-angle that wraps round, inside the window blends two
+descriptions of the same rotation into a wrong one for a frame or two. The
+quaternions it produces are not renormalized.
 
 SYNTAX:
 cadence_filter
-check_burst
 
 EXAMPLE:
 cadence_filter
 
-INPUTS and PARAMETERS:
+INPUTS:
 
-pose in / trans in (cadence_filter):
-The pose and the translation. Both are filtered; the window applies to each.
+pose in:
+Any array of numbers - a pose, a list, a single value. Each arrival is filtered
+and sent from 'pose out'.
 
-diff array / previous frame array / previous diff array (check_burst):
-The current change, the previous frame and the previous change.
+trans in:
+The same, kept separately, sent from 'trans out'. The two inlets have their
+own histories, so they can run on different streams.
 
-threshold 1 / threshold 2 previous / threshold low:
-The levels a change has to exceed to count.
+PROPERTIES:
 
-jerk threshold pct:
-The proportional threshold.
+enable:
+Off, or a window below 2, passes the data through unchanged.
 
-OUTPUTS: 
+window:
+How many frames are averaged. Set it to the length of the cadence cycle.
+
+OUTPUTS:
 
 pose out / trans out:
-The filtered data.
+The filtered data, the same shape as it came in. A single number goes out
+as a single number.
 
-file_dict (check_burst):
-What was found, and where.
+The history starts out filled with the first frame, so there is no ramp up
+from zero. Changing the window, or the size of what arrives, starts it again.
 
-A WORD ON FILTERING TRANSLATION SEPARATELY:
-The translation channel comes from a body-mounted sensor that projects from the 
-body and has mass, so it flops in vigorous movement - especially vertical 
-movement - in ways the joint rotations do not. It wants its own, heavier 
-filtering, and it should never be gate-opened on the assumption that a large 
-change means real motion."""
+A WORD ON TRANSLATION:
+The translation channel comes from a body-mounted sensor that projects from the
+body and has mass, so it flops in vigorous movement - especially vertical
+movement - in ways the joint rotations do not. It wants its own, heavier
+filtering after this, and it should never be gate-opened on the assumption that
+a large change means real motion.
+
+RELATED:
+check_burst flags frames where the data jumps implausibly.
+quaternion_diff_and_axis measures how much each joint turns per frame -
+the measure the cadence shows up in."""
 
 demo = [
-    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
-    {'key': 'cf', 'init': 'cadence_filter', 'pos': (30, 400), 'w': 260, 'h': 160},
-    {'key': 'c0', 'comment': True, 'text': 'a window of 3 removes the 33 Hz cadence\ncausal, so it works on a live stream',
-     'pos': (30, 575)},
-    {'key': 'qd', 'init': 'quaternion_diff_and_axis', 'pos': (30, 650), 'w': 280, 'h': 180},
-    {'key': 'p1', 'init': 'plot', 'pos': (30, 845), 'w': 208, 'h': 176,
-     'props': PLOT(0.0, 0.5)},
-    {'key': 'c2', 'comment': True, 'text': 'compare with and without the filter:\nthe cadence shows up as constant motion',
-     'pos': (30, 1030)},
+    {'key': 'sg', 'init': 'signal 3.0 sin', 'pos': (30, 62), 'w': 129, 'h': 70,
+     'props': SIG('sin', 3.0)},
+    {'key': 'tk', 'init': 'tick', 'pos': (200, 62), 'w': 60, 'h': 46},
+    {'key': 'ct', 'init': 'counter 3', 'pos': (200, 120), 'w': 140, 'h': 100},
+    {'key': 'ml', 'init': '* 0.3', 'pos': (200, 235), 'w': 88, 'h': 56,
+     'props': {'operand': 0.3}},
+    {'key': 'c0', 'comment': True, 'text': 'a step that repeats every 3 frames',
+     'pos': (360, 120)},
+    {'key': 'ad', 'init': '+ 0.0', 'pos': (30, 310), 'w': 88, 'h': 56,
+     'props': {'operand': 0.0}},
+    {'key': 'p0', 'init': 'plot', 'pos': (30, 385), 'w': 208, 'h': 176,
+     'props': PLOT(-1.2, 1.8)},
+    {'key': 'c1', 'comment': True, 'text': 'a slow movement with the cadence on it',
+     'pos': (30, 570)},
+    {'key': 'cf', 'init': 'cadence_filter', 'pos': (300, 310), 'w': 200, 'h': 140},
+    {'key': 'p1', 'init': 'plot', 'pos': (300, 470), 'w': 208, 'h': 176,
+     'props': PLOT(-1.2, 1.8)},
+    {'key': 'c2', 'comment': True, 'text': 'window 3: the movement, without the cadence\nset window to 1 to compare',
+     'pos': (300, 655)},
 ]
-links = [('sh', 'body 1 quaternions', 'cf', 'pose in'),
-         ('cf', 'pose out', 'qd', 'quaternions in'),
-         ('qd', 'magnitudes', 'p1', 'y')]
-print(build('cadence_filter', 'cadence_filter - artefacts, not movement', body,
+links = [('tk', '', 'ct', 'input'),
+         ('ct', 'count out', 'ml', 'in'),
+         ('ml', 'result', 'ad', 'operand'),
+         ('sg', '', 'ad', 'in'),
+         ('ad', 'result', 'p0', 'y'),
+         ('ad', 'result', 'cf', 'pose in'),
+         ('cf', 'pose out', 'p1', 'y')]
+print(build('cadence_filter', 'cadence_filter - remove a recording rhythm', body,
+            demo, links, demo_width=620, text_width=810, text_height=740))
+
+# ---------------------------------------------------------------- check_burst
+body = """check_burst flags frames where the data jumps in a way real movement does not,
+and keeps a list of them per file.
+
+It was made for scanning recorded datasets for glitches - dropped frames,
+tracking failures, and the joints that teleport in some AMASS takes - by playing
+each file through it frame by frame.
+
+WHAT IT IS GIVEN:
+Three arrays, one value per joint, and the frame number and file name to file
+the result under. Typically the arrays come from quaternion_diff_and_axis and
+its own previous outputs:
+
+diff array            how much each joint's motion changed this frame
+previous frame array  how fast each joint was moving on the previous frame
+previous diff array   how much it changed on the previous frame
+
+The values are expected to be sizes - zero or positive - one per joint, in the
+same order in all three.
+
+WHEN A FRAME IS FLAGGED:
+First the overall change has to be big: the length of 'diff array', taken as
+one vector, must exceed 'threshold 1'. Then either of two things marks it as
+a glitch rather than a fast movement:
+
+The joint with the biggest change was almost still on the previous frame -
+below 'threshold 2 previous'. Real movement builds; a glitch starts from
+nowhere.
+
+Or, from frame 2 on, any joint's change differs from its previous change by
+more than 'threshold low' AND by more than 'jerk threshold pct' times the
+average of the two.
+Being relative, this test works across joints that move at very different
+speeds. Despite the name it is a fraction: 0.5 means half.
+
+Each flagged frame is printed to the console and added to the list for that
+file.
+
+SYNTAX:
+check_burst
+
+EXAMPLE:
+check_burst
+
+INPUTS:
+
+diff array:
+This frame's change per joint. Arriving here runs the test, so send the other
+inputs first.
+
+previous frame array / previous diff array:
+The previous frame's speed and change per joint.
+
+frame:
+The frame number. Frame 0 is skipped, since it has no previous frame, and
+frame 1 gets only the first test. Left unconnected, nothing is skipped and
+events are filed with no frame number.
+
+file:
+The name the events are filed under. A list of words is joined into one
+name.
+
+threshold 1 / threshold 2 previous / threshold low / jerk threshold pct:
+The tests above.
+
+save burst files / save path:
+Write everything found so far to a JSON file. The default is burst_files.json
+in your home folder; a path starting with ~ means your home folder.
+
+clear:
+Forget everything found so far, and send the empty result.
+
+OUTPUT:
+
+file_dict:
+Everything found so far, sent on every frame: for each file name, a list of
+events, each with the frame number, the arrays, and which joints jumped and by
+how much. The list keeps growing until 'clear' is clicked.
+
+RELATED:
+cadence_filter takes out the regular stepping that would otherwise read as
+jerk on every frame.
+json_random_event_window reads the saved file back and steps through the
+events it found."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click: send one frame', 'pos': (140, 62)},
+    {'key': 'rp', 'init': 'repeat_in_order 5', 'pos': (30, 120), 'w': 220, 'h': 110},
+    {'key': 'mf', 'init': 'message', 'pos': (150, 120), 'w': 80, 'h': 42,
+     'props': {'text in': '12', 'font size': '24'}},
+    {'key': 'mi', 'init': 'int', 'pos': (30, 250), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'mn', 'init': 'string', 'pos': (190, 250), 'w': 140, 'h': 42,
+     'props': {'text in': 'take_A', 'font size': '24'}},
+    {'key': 'mp', 'init': 'message', 'pos': (30, 305), 'w': 220, 'h': 42,
+     'props': {'text in': '0.0 0.3 0.2', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'previous speeds: joint 0 was still',
+     'pos': (270, 305)},
+    {'key': 'mq', 'init': 'message', 'pos': (30, 360), 'w': 220, 'h': 42,
+     'props': {'text in': '0.55 0.05 0.0', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'previous changes', 'pos': (270, 360)},
+    {'key': 'md', 'init': 'message', 'pos': (30, 415), 'w': 220, 'h': 42,
+     'props': {'text in': '0.6 0.05 0.0', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'this frame: joint 0 jumps', 'pos': (270, 415)},
+    {'key': 'cb', 'init': 'check_burst', 'pos': (30, 480), 'w': 260, 'h': 300},
+    {'key': 'dk', 'init': 'dict_keys', 'pos': (30, 685), 'w': 140, 'h': 60},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 745), 'w': 200, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c4', 'comment': True,
+     'text': 'take_A appears: the frame was flagged\nmake the previous speeds 0.5 0.3 0.2\nand click again: joint 0 was already\nmoving, so no new event is printed',
+     'pos': (30, 800)},
+]
+links = [('btn', '', 'rp', ''),
+         ('rp', 'first', 'mf', ''), ('rp', 'second', 'mn', ''),
+         ('rp', 'third', 'mp', ''), ('rp', 'fourth', 'mq', ''),
+         ('rp', 'fifth', 'md', ''),
+         ('mf', 'message out', 'mi', ''),
+         ('mi', 'int out', 'cb', 'frame'),
+         ('mn', 'string out', 'cb', 'file'),
+         ('mp', 'message out', 'cb', 'previous frame array'),
+         ('mq', 'message out', 'cb', 'previous diff array'),
+         ('md', 'message out', 'cb', 'diff array'),
+         ('cb', 'file_dict', 'dk', 'dict in'),
+         ('dk', 'keys out', 'l1', '')]
+print(build('check_burst', 'check_burst - flag implausible jumps', body,
             demo, links, demo_width=620, text_width=810, text_height=740))
 
 # ------------------------------------------------------------- sensor_to_root

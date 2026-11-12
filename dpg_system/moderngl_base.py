@@ -189,6 +189,7 @@ class MGLNativeWindow:
         self._blit_vao  = None
         self._visible = False
         self.ui_events = []             # drained by the owning MGLContextNode
+        self.applied_size = None        # the size last given to show()
         self._buttons_down = set()
         self._last_cursor = (0, 0)
 
@@ -349,7 +350,9 @@ class MGLNativeWindow:
         gfw.glfwSetWindowSize.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
         gfw.glfwSetWindowTitle.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
         gfw.glfwShowWindow.argtypes = [ctypes.c_void_p]
-        gfw.glfwSetWindowSize(self._win, int(width), int(height))
+        if self.applied_size != (int(width), int(height)):
+            gfw.glfwSetWindowSize(self._win, int(width), int(height))
+            self.applied_size = (int(width), int(height))
         gfw.glfwSetWindowTitle(self._win, title.encode() if isinstance(title, str) else title)
         if not self._visible:
             gfw.glfwShowWindow(self._win)
@@ -399,6 +402,14 @@ class MGLNativeWindow:
             ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
         gfw.glfwGetWindowSize(self._win, ctypes.byref(w), ctypes.byref(h))
         return (w.value, h.value)
+
+    def poll_user_resize(self):
+        """The new size if the window was resized other than through show()."""
+        size = self.get_size()
+        if size is None or self.applied_size is None or size == self.applied_size:
+            return None
+        self.applied_size = size
+        return size
 
     def blit(self, render_target):
         """Blit render_target.texture to this window.
@@ -509,6 +520,7 @@ class MGLDisplayWindow:
         self._visible = False
         self._fullscreen = False
         self.ui_events = []   # drained by the owning MGLContextNode
+        self.applied_size = None  # the size last given to show(), in window units
         self._focused = False
 
         # Synthetic key repeat: pyglet's Cocoa view drops repeat keyDown
@@ -733,7 +745,12 @@ class MGLDisplayWindow:
                 if self._fullscreen:
                     self._win.set_fullscreen(False)
                     self._fullscreen = False
-                self._win.set_size(int(width), int(height))
+                    self.applied_size = None
+                # Only when it changes: setting it every frame would undo the
+                # user dragging the window's edge the moment they let go.
+                if self.applied_size != (int(width), int(height)):
+                    self._win.set_size(int(width), int(height))
+                    self.applied_size = (int(width), int(height))
             self._win.set_caption(title if isinstance(title, str) else str(title))
             if not self._visible:
                 self._win.set_visible(True)
@@ -808,6 +825,23 @@ class MGLDisplayWindow:
             except Exception:
                 return None
         return None
+
+    def poll_user_resize(self):
+        """The new size if the window was resized other than through show()."""
+        if self._fullscreen or self.applied_size is None:
+            return None
+        size = self.get_size()
+        if size is None:
+            return None
+        # On a Retina display get_size() is in pixels and set_size() in points.
+        ns_window = getattr(self._win, '_nswindow', None)
+        if ns_window is not None:
+            scale = ns_window.backingScaleFactor()
+            size = (round(size[0] / scale), round(size[1] / scale))
+        if size == self.applied_size:
+            return None
+        self.applied_size = size
+        return size
 
     def blit(self, render_target):
         """Render render_target.texture to this window's backbuffer.

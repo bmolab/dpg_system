@@ -1,11 +1,11 @@
 {
-    "height": 1618,
-    "width": 1729,
+    "height": 1072,
+    "width": 1743,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 607,
     "name": "clean~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/clean~_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment clean~ and one_euro~ - conditioning before it is heard",
+            "init": "comment clean~ - take off what nobody hears",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 672,
+            "width": 439,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "clean~ and one_euro~ - conditioning before it is heard",
+                    "value": "clean~ - take off what nobody hears",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "clean~ and one_euro~ - conditioning before it is heard"
+            "comment": "clean~ - take off what nobody hears"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 881,
+            "position_x": 895,
             "position_y": 45,
             "width": 808,
             "height": 716,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These clean up a signal before it goes anywhere else.\n\nTHE NODES:\n\nclean~      subsonics off the bottom, fizz off the top\ncondition~  the same node\none_euro~   smoothing that gets out of the way when you move\nsmooth~     the same node\n\nclean~ IS THE CHANNEL STRIP'S HYGIENE STAGE:\nThe intended place is source -> fader~ -> clean~ -> place~ -> audio_out~. \nIt exists for when a bowed 5 Hz, or a low mode blooming out of a resonator, \nis eating headroom without being music. 24 dB per octave each way, flat and \nresonance-free between, and bypassed it passes the signal untouched.\n\nPhysical models are the reason. They produce energy well below what anything \ncan reproduce, and that energy is real - it moves the meters and steals the \nloudness - but nobody hears it.\n\none_euro~ CHOOSES PER SAMPLE:\nAny fixed smoothing has to choose between passing jitter and lagging behind a \ngesture, because those are the same setting. This one does not choose once. \nAt rest the cutoff drops to 'min cutoff' and the signal settles hard; as the \nsignal moves the cutoff opens in proportion to how fast it is moving, so a fast \ngesture arrives on time.\n\nThis is the audio-rate version of the one_euro_filter node, and it is what you \nput between effort data and anything that will be heard - because control data \nthat steps is audible as zippering, and control data that lags feels dead.\n\nSYNTAX:\nclean~\none_euro~\n\nEXAMPLE:\nclean~\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal.\n\nlow cut / high cut (clean~):\nWhere the two filters act.\n\nmin cutoff (one_euro~):\nThe smoothing when nothing is moving. Lower is calmer. Set this first, with \nbeta at zero, until the resting signal is still.\n\nbeta (one_euro~):\nHow much movement opens the filter up. Raise it until fast gestures stop \nlagging.\n\nOUTPUTS: \n\nleft out / right out:\nThe conditioned signal.",
+                    "value": "clean~ takes subsonics off the bottom of a signal and fizz off the top.\n\ncondition~ is the same node.\n\nTHE CHANNEL STRIP'S HYGIENE STAGE:\nThe intended place is source -> fader~ -> clean~ -> place~ -> audio_out~. It exists for when a bowed 5 Hz, or a low mode blooming out of a resonator, is eating headroom without being music.\n\nPhysical models are the reason. They produce energy well below what anything can reproduce, and that energy is real - it moves the meters and steals the loudness - but nobody hears it. At the other end, hard folding and crushing leave a fizz near the top of the range.\n\nWHAT IT DOES:\nA high-pass at 'low cut' and a low-pass at 'high cut', each 24 dB per octave (fourth-order Butterworth), flat and resonance-free between. Not an instrument and not an EQ: it removes what was never meant, and passes everything that was. Pull 'low cut' down when the subsonics ARE the material.\n\nSYNTAX:\nclean~ [low cut] [high cut]\n\nEXAMPLE:\nclean~ 30 12000\n\nINPUTS:\n\nleft in / right in:\nThe signal. With nothing patched to 'right in', the right outlet carries the filtered left signal.\n\nlow cut:\nThe high-pass frequency, 5 to 300 Hz. Default 25.\n\nhigh cut:\nThe low-pass frequency, 1000 to 20000 Hz. Default 16000.\n\nBoth are inlets, so a patch can move them.\n\nbypass:\nTicked, the signal passes through untouched.\n\nOUTPUTS:\n\nleft out / right out:\nThe cleaned signal.\n\nRELATED:\none_euro~ smooths a control signal before it is heard.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,96 +90,78 @@
                     "value_type": "str"
                 }
             },
-            "text": "These clean up a signal before it goes anywhere else.\n\nTHE NODES:\n\nclean~      subsonics off the bottom, fizz off the top\ncondition~  the same node\none_euro~   smoothing that gets out of the way when you move\nsmooth~     the same node\n\nclean~ IS THE CHANNEL STRIP'S HYGIENE STAGE:\nThe intended place is source -> fader~ -> clean~ -> place~ -> audio_out~. \nIt exists for when a bowed 5 Hz, or a low mode blooming out of a resonator, \nis eating headroom without being music. 24 dB per octave each way, flat and \nresonance-free between, and bypassed it passes the signal untouched.\n\nPhysical models are the reason. They produce energy well below what anything \ncan reproduce, and that energy is real - it moves the meters and steals the \nloudness - but nobody hears it.\n\none_euro~ CHOOSES PER SAMPLE:\nAny fixed smoothing has to choose between passing jitter and lagging behind a \ngesture, because those are the same setting. This one does not choose once. \nAt rest the cutoff drops to 'min cutoff' and the signal settles hard; as the \nsignal moves the cutoff opens in proportion to how fast it is moving, so a fast \ngesture arrives on time.\n\nThis is the audio-rate version of the one_euro_filter node, and it is what you \nput between effort data and anything that will be heard - because control data \nthat steps is audible as zippering, and control data that lags feels dead.\n\nSYNTAX:\nclean~\none_euro~\n\nEXAMPLE:\nclean~\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal.\n\nlow cut / high cut (clean~):\nWhere the two filters act.\n\nmin cutoff (one_euro~):\nThe smoothing when nothing is moving. Lower is calmer. Set this first, with \nbeta at zero, until the resting signal is still.\n\nbeta (one_euro~):\nHow much movement opens the filter up. Raise it until fast gestures stop \nlagging.\n\nOUTPUTS: \n\nleft out / right out:\nThe conditioned signal."
+            "text": "clean~ takes subsonics off the bottom of a signal and fizz off the top.\n\ncondition~ is the same node.\n\nTHE CHANNEL STRIP'S HYGIENE STAGE:\nThe intended place is source -> fader~ -> clean~ -> place~ -> audio_out~. It exists for when a bowed 5 Hz, or a low mode blooming out of a resonator, is eating headroom without being music.\n\nPhysical models are the reason. They produce energy well below what anything can reproduce, and that energy is real - it moves the meters and steals the loudness - but nobody hears it. At the other end, hard folding and crushing leave a fizz near the top of the range.\n\nWHAT IT DOES:\nA high-pass at 'low cut' and a low-pass at 'high cut', each 24 dB per octave (fourth-order Butterworth), flat and resonance-free between. Not an instrument and not an EQ: it removes what was never meant, and passes everything that was. Pull 'low cut' down when the subsonics ARE the material.\n\nSYNTAX:\nclean~ [low cut] [high cut]\n\nEXAMPLE:\nclean~ 30 12000\n\nINPUTS:\n\nleft in / right in:\nThe signal. With nothing patched to 'right in', the right outlet carries the filtered left signal.\n\nlow cut:\nThe high-pass frequency, 5 to 300 Hz. Default 25.\n\nhigh cut:\nThe low-pass frequency, 1000 to 20000 Hz. Default 16000.\n\nBoth are inlets, so a patch can move them.\n\nbypass:\nTicked, the signal passes through untouched.\n\nOUTPUTS:\n\nleft out / right out:\nThe cleaned signal.\n\nRELATED:\none_euro~ smooths a control signal before it is heard."
         },
         "3": {
-            "name": "slider",
+            "name": "noise~",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 230,
-            "height": 42,
+            "width": 193,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "min",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "max",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                },
-                "3": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                }
-            },
-            "init": "slider 0.0"
+            "properties": {}
         },
         "4": {
-            "name": "sig~",
+            "name": "clean~",
             "id": 385,
             "position_x": 30,
-            "position_y": 135,
-            "width": 129,
-            "height": 98,
+            "position_y": 345,
+            "width": 193,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "5": {
-            "name": "one_euro~",
+            "name": "text_block",
             "id": 422,
-            "position_x": 30,
-            "position_y": 290,
-            "width": 151,
-            "height": 112,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "init": "comment still at rest, quick when you move",
-            "name": "comment",
-            "id": 459,
+            "annotation": true,
             "position_x": 634,
-            "position_y": 480,
-            "width": 217,
-            "height": 30,
+            "position_y": 560,
+            "width": 231,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "still at rest, quick when you move",
+                    "name": "block",
+                    "value": "drag high cut down: the top goes\ntick bypass to compare",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "still at rest, quick when you move"
+            "text": "drag high cut down: the top goes\ntick bypass to compare"
         },
-        "7": {
+        "6": {
             "name": "scope~",
-            "id": 496,
+            "id": 459,
             "position_x": 300,
-            "position_y": 290,
+            "position_y": 345,
             "width": 308,
             "height": 248,
             "visibility": "show_all",
@@ -187,37 +169,32 @@
             "presentation_state": "show_all",
             "properties": {}
         },
+        "7": {
+            "name": "fader_out~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fader",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "fader_out~ 1 2"
+        },
         "8": {
-            "name": "modal~",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 520,
-            "width": 228,
-            "height": 386,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "name": "clean~",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 926,
-            "width": 193,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
-            "init": "comment takes the inaudible rumble out",
+            "init": "comment raise the fader to hear it",
             "name": "comment",
-            "id": 607,
+            "id": 533,
             "position_x": 634,
-            "position_y": 1136,
-            "width": 193,
+            "position_y": 865,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -225,7 +202,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "takes the inaudible rumble out",
+                    "value": "raise the fader to hear it",
                     "value_type": "str"
                 },
                 "1": {
@@ -234,26 +211,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "takes the inaudible rumble out"
+            "comment": "raise the fader to hear it"
         },
-        "11": {
-            "name": "fader_out~",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 1176,
-            "width": 70,
-            "height": 308,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "fader_out~ 1 2"
-        },
-        "12": {
+        "9": {
             "name": "close",
-            "id": 681,
+            "id": 570,
             "position_x": 24,
-            "position_y": 1514,
+            "position_y": 968,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -273,58 +237,28 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "float out",
+            "source_output_name": "out",
             "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "value"
+            "dest_input_name": "left in"
         },
         "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "signal",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "left in"
-        },
-        "2": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
-            "source_node": 422,
+        "2": {
+            "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "excite in"
-        },
-        "4": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "left in"
-        },
-        "5": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "left out",
-            "dest_node": 644,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left"

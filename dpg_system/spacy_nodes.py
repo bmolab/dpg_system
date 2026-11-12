@@ -961,7 +961,12 @@ class RephraseNode(SpacyNode):
         self.root_index = -1
         self.indent = 0
         now = time.time()
-        if sentence == 'no' or sentence == 'wrong' or sentence == 'go back':
+        # 'no' / 'wrong' / 'go back' restore the previous phrase whenever they arrive;
+        # the restored phrase must not be folded into the current one as a new fragment
+        stepping_back = sentence in ['no', 'wrong', 'go back']
+        if stepping_back:
+            if len(self.previous_sentence) == 0:
+                return
             sentence = self.previous_sentence
 
         self.previous_sentence = self.sentence
@@ -970,7 +975,7 @@ class RephraseNode(SpacyNode):
 
         self.replace_sim_threshold = self.replace_sim_threshold_property()
         self.clear_input_pause = self.clear_input_pause_property()
-        if now - self.last_input_time < self.clear_input_pause:
+        if not stepping_back and now - self.last_input_time < self.clear_input_pause:
             rewritten_sentence = self.conditional_parse(sentence, clip_score=clip_score)
             if len(rewritten_sentence) > 0:
                 sentence = rewritten_sentence

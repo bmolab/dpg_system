@@ -1,0 +1,648 @@
+{
+    "height": 1371,
+    "width": 2156,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "neural_atlas_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/neural_atlas_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment neural_atlas - directions to grow, from an activation atlas",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 733,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "neural_atlas - directions to grow, from an activation atlas",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "neural_atlas - directions to grow, from an activation atlas"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1308,
+            "position_y": 45,
+            "width": 808,
+            "height": 1266,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "neural_atlas chooses what neural_synth grows from an activation atlas: a map of what one layer of the network does with real photographs.\n\nIt follows the Distill article \"Activation Atlas\" (Carter, Armstrong, Schubert, Johnson and Olah, 2019), which was made for this same network.\n\nWHAT AN ATLAS IS:\nAt each spot of a photograph, a layer of the network produces one number per channel - a few hundred numbers that together say what the network sees there. Lucid (Google's interpretability library) published 100,000 of these, taken at random spots of ImageNet photographs, for every block of the network. The atlas lays them out on a square map so that similar ones land near each other, cuts the map into a grid, and averages each cell.\n\nEach cell's average is a direction in the layer: a mix of all its channels, rather than the one channel neural_synth's 'feature' picks. Growing a direction grows what that region of photographs looked like to the network - fur, mountain ranges, shower curtains, snakes. Neighbouring cells hold related things, so walking from cell to cell moves gradually through what the layer knows.\n\nEach cell is also labelled with the image classes it leans toward, found by running its average through the rest of the network to the classifier. The labels are hints, not names: in the middle layers a cell of shaggy fur leans toward \"Irish wolfhound, fur coat, West Highland white terrier\".\n\nCHOOSING A CELL:\n'find' takes a word and goes to the cell that leans most toward classes with that word in their name ('volcano', 'snake', 'wolfhound'; plurals work). The same word again goes to the next best of up to 20 matches. 'cell' takes a position, x then y, counted from the top left (the nearest cell that holds anything is used). 'next' steps, as set by 'walk': 'neighbour' moves to a random adjacent cell it has not just visited, 'snake' runs along the rows, back and forth, 'random' jumps anywhere, and 'matches' steps through the results of the last 'find'.\n\nEach choice sends the direction out of 'direction' (for neural_synth's 'direction' input), the cell's position out of 'cell', and its three leading classes out of 'classes'.\n\nLinking neural_synth's 'done' to 'next', with neural_synth's 'at end' on 'hold', makes an endless walk: each finished picture moves the atlas one cell and starts the next.\n\nLAYERS AND GRIDS:\n'layer' picks one of the nine Inception blocks, mixed3a to mixed5b. Early ones are textures and patterns, mixed4 parts and materials, mixed5 objects and creatures. 'grid' is 10, 20 or 40 cells across: coarser cells average more photographs and are broader in what they hold; finer ones are more particular. Changing either keeps the same place on the map.\n\n'whiten' (option, on by default) weighs the direction against how the channels usually fire together, as the article did, so it stresses what is particular to the cell rather than what every cell shares. 'current cell' (option) holds the chosen position, so a saved patch comes back to it.\n\nIn neural_synth, the 'direction cossim' option sets how strongly the picture is pushed to match the direction rather than just to respond to it (1 by default, 0 for not at all; higher values give softer pictures).\n\nBUILDING THE ATLASES:\nThe atlases live in dpg_system/neural_synth/atlas, one file per layer (about 5 MB each). Each is built once from Lucid's published activations (100 to 400 MB downloaded, then deleted) in a minute or two:\npython -m dpg_system.neural_synth.atlas all\nor a single layer, such as mixed4c. Building needs the umap-learn package.\n\nSYNTAX:\nneural_atlas [layer]\n\nEXAMPLE:\nneural_atlas mixed4c\n\nINPUTS and PARAMETERS:\n\ncell:\nA position on the grid, x y.\n\nfind:\nA class name to look for; again for the next match.\n\nnext:\nStep to another cell, as set by 'walk'.\n\nlayer:\nThe network block the atlas maps.\n\ngrid:\n10, 20 or 40 cells across.\n\nwalk:\nneighbour, snake, random or matches.\n\nwhiten (option):\nWeigh the direction against how the channels usually fire together.\n\ncurrent cell (option):\nThe chosen position, kept with the patch.\n\nOUTPUTS:\n\ndirection:\nThe cell's direction, for neural_synth.\n\ncell:\nIts position, x y.\n\nclasses:\nThe three classes it leans toward most.\n\nRELATED:\nneural_synth grows the directions.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1250,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "neural_atlas chooses what neural_synth grows from an activation atlas: a map of what one layer of the network does with real photographs.\n\nIt follows the Distill article \"Activation Atlas\" (Carter, Armstrong, Schubert, Johnson and Olah, 2019), which was made for this same network.\n\nWHAT AN ATLAS IS:\nAt each spot of a photograph, a layer of the network produces one number per channel - a few hundred numbers that together say what the network sees there. Lucid (Google's interpretability library) published 100,000 of these, taken at random spots of ImageNet photographs, for every block of the network. The atlas lays them out on a square map so that similar ones land near each other, cuts the map into a grid, and averages each cell.\n\nEach cell's average is a direction in the layer: a mix of all its channels, rather than the one channel neural_synth's 'feature' picks. Growing a direction grows what that region of photographs looked like to the network - fur, mountain ranges, shower curtains, snakes. Neighbouring cells hold related things, so walking from cell to cell moves gradually through what the layer knows.\n\nEach cell is also labelled with the image classes it leans toward, found by running its average through the rest of the network to the classifier. The labels are hints, not names: in the middle layers a cell of shaggy fur leans toward \"Irish wolfhound, fur coat, West Highland white terrier\".\n\nCHOOSING A CELL:\n'find' takes a word and goes to the cell that leans most toward classes with that word in their name ('volcano', 'snake', 'wolfhound'; plurals work). The same word again goes to the next best of up to 20 matches. 'cell' takes a position, x then y, counted from the top left (the nearest cell that holds anything is used). 'next' steps, as set by 'walk': 'neighbour' moves to a random adjacent cell it has not just visited, 'snake' runs along the rows, back and forth, 'random' jumps anywhere, and 'matches' steps through the results of the last 'find'.\n\nEach choice sends the direction out of 'direction' (for neural_synth's 'direction' input), the cell's position out of 'cell', and its three leading classes out of 'classes'.\n\nLinking neural_synth's 'done' to 'next', with neural_synth's 'at end' on 'hold', makes an endless walk: each finished picture moves the atlas one cell and starts the next.\n\nLAYERS AND GRIDS:\n'layer' picks one of the nine Inception blocks, mixed3a to mixed5b. Early ones are textures and patterns, mixed4 parts and materials, mixed5 objects and creatures. 'grid' is 10, 20 or 40 cells across: coarser cells average more photographs and are broader in what they hold; finer ones are more particular. Changing either keeps the same place on the map.\n\n'whiten' (option, on by default) weighs the direction against how the channels usually fire together, as the article did, so it stresses what is particular to the cell rather than what every cell shares. 'current cell' (option) holds the chosen position, so a saved patch comes back to it.\n\nIn neural_synth, the 'direction cossim' option sets how strongly the picture is pushed to match the direction rather than just to respond to it (1 by default, 0 for not at all; higher values give softer pictures).\n\nBUILDING THE ATLASES:\nThe atlases live in dpg_system/neural_synth/atlas, one file per layer (about 5 MB each). Each is built once from Lucid's published activations (100 to 400 MB downloaded, then deleted) in a minute or two:\npython -m dpg_system.neural_synth.atlas all\nor a single layer, such as mixed4c. Building needs the umap-learn package.\n\nSYNTAX:\nneural_atlas [layer]\n\nEXAMPLE:\nneural_atlas mixed4c\n\nINPUTS and PARAMETERS:\n\ncell:\nA position on the grid, x y.\n\nfind:\nA class name to look for; again for the next match.\n\nnext:\nStep to another cell, as set by 'walk'.\n\nlayer:\nThe network block the atlas maps.\n\ngrid:\n10, 20 or 40 cells across.\n\nwalk:\nneighbour, snake, random or matches.\n\nwhiten (option):\nWeigh the direction against how the channels usually fire together.\n\ncurrent cell (option):\nThe chosen position, kept with the patch.\n\nOUTPUTS:\n\ndirection:\nThe cell's direction, for neural_synth.\n\ncell:\nIts position, x y.\n\nclasses:\nThe three classes it leans toward most.\n\nRELATED:\nneural_synth grows the directions."
+        },
+        "3": {
+            "init": "comment find a class",
+            "name": "comment",
+            "id": 348,
+            "position_x": 1078,
+            "position_y": 62,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "find a class",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "find a class"
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 105,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "volcano",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 155,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "wolfhound",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 205,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "snake",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment or a place on the map",
+            "name": "comment",
+            "id": 496,
+            "position_x": 1078,
+            "position_y": 270,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "or a place on the map",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "or a place on the map"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 313,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "10 10",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 1078,
+            "position_y": 102,
+            "width": 200,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "each finished picture steps\nto a neighbouring cell",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "each finished picture steps\nto a neighbouring cell"
+        },
+        "10": {
+            "name": "neural_atlas",
+            "id": 607,
+            "position_x": 230,
+            "position_y": 115,
+            "width": 353,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "layer",
+                    "value": "mixed4c",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "grid",
+                    "value": "20",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "walk",
+                    "value": "neighbour",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "current cell",
+                    "value": "2 16",
+                    "value_type": "str"
+                }
+            },
+            "highlight": true
+        },
+        "11": {
+            "init": "comment what the cell leans toward",
+            "name": "comment",
+            "id": 644,
+            "position_x": 1078,
+            "position_y": 360,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "what the cell leans toward",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "what the cell leans toward"
+        },
+        "12": {
+            "name": "string",
+            "id": 681,
+            "position_x": 230,
+            "position_y": 400,
+            "width": 330,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                }
+            }
+        },
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 1078,
+            "position_y": 152,
+            "width": 200,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "grows the direction; hold,\nso done can choose the next",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "grows the direction; hold,\nso done can choose the next"
+        },
+        "14": {
+            "name": "neural_synth",
+            "id": 755,
+            "position_x": 590,
+            "position_y": 115,
+            "width": 263,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "run",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "apply",
+                    "value": "next image",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "at end",
+                    "value": "hold",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "height",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "octaves",
+                    "value": 9,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "iterations",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "frame every",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "15": {
+            "init": "comment the picture as it grows",
+            "name": "comment",
+            "id": 792,
+            "position_x": 1078,
+            "position_y": 202,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the picture as it grows",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the picture as it grows"
+        },
+        "16": {
+            "name": "mgl_context",
+            "id": 829,
+            "position_x": 960,
+            "position_y": 115,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "display_width",
+                    "value": 480,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "display_height",
+                    "value": 270,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "name": "mgl_image",
+            "id": 866,
+            "position_x": 960,
+            "position_y": 440,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 526,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "find"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "find"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "find"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "cell"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "direction",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "direction"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "classes",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "done",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "next"
+        },
+        "7": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frame",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture"
+        }
+    }
+}

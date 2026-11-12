@@ -1,0 +1,734 @@
+{
+    "name": "np.clip_help",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/clip/np.clip_help.json",
+    "patches": {
+        "0": {
+            "height": 560,
+            "width": 630,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1014,
+            "name": "make_sine",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1051,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends the wave ten times a second",
+                    "id": 1125,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 320,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends the wave ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends the wave ten times a second"
+                },
+                "3": {
+                    "name": "np.linspace",
+                    "init": "np.linspace 0 720 128",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 190,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 720.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "steps",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 128 angles from 0 to 720 degrees",
+                    "id": 1199,
+                    "position_x": 250,
+                    "position_y": 145,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "128 angles from 0 to 720 degrees",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "128 angles from 0 to 720 degrees"
+                },
+                "5": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 300,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment their sines: two cycles, from -1 to 1",
+                    "id": 1273,
+                    "position_x": 180,
+                    "position_y": 315,
+                    "width": 340,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "their sines: two cycles, from -1 to 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "their sines: two cycles, from -1 to 1"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out sine",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 400,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "sine"
+                }
+            }
+        },
+        "1": {
+            "height": 1044,
+            "width": 1582,
+            "position": [
+                100,
+                100
+            ],
+            "id": 977,
+            "name": "np.clip_help",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/clip/np.clip_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.clip - hold values between two limits",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 480,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.clip - hold values between two limits",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.clip - hold values between two limits"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 782,
+                    "position_y": 26,
+                    "width": 768,
+                    "height": 916,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Holds every value of an array inside two limits: anything below min comes out as min, anything above max comes out as max, and everything in between passes untouched.\n\nUse it to keep a signal in range before it drives something that would misbehave outside it - colour components inside 0 to 1, a joint angle inside its safe range, a gain that must never go negative. It works on every element separately, so the output has the same shape as the input.\n\nSYNTAX:\nnp.clip <min: float> <max: float>\nDefaults: min 0.0, max 1.0. With one argument only min is set.\n\nEXAMPLE:\nnp.clip -0.5 0.7\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a one-value array). Every input is clipped and sent - this is the only inlet, and the only thing that makes the node send.\n\nmin / max (drag floats on the node):\nThe lower and upper limits. They are properties, not inlets, so they cannot be driven from the patch, and changing one does NOT send by itself - the next array uses it. In the demo make_sine re-sends the wave ten times a second, so the plot follows your drags. If min is above max, every value comes out as max.\n\nOUTPUTS:\n\nout array:\nThe clipped array, the same shape as the input.\n\nREADING THE DEMO:\nmake_sine sends two cycles of a sine, 128 values from -1 to 1, ten times a second. t array array sends the wave as it is to pack 2 first (its right outlet), then to np.clip, whose clipped copy completes the pack. The plot draws the two over each other. Inside the limits the two lines are one; past them the wave carries on to 1 or -1 while the copy runs flat along the limit - the top cut at 0.7, the bottom at -0.5. Drag max down towards min and the wave is squeezed into a band.\n\nONE-SIDED VERSIONS:\nnp.min caps only the top and np.max floors only the bottom - see their pages, and beware that the names read backwards.\n\nRELATED:\nnp.min and np.max limit one side only. clamp does the same job with min and max on inlets, so they can be driven from the patch. t.clamp is the PyTorch version. np.where replaces out-of-range values with something other than the limit.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 900,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Holds every value of an array inside two limits: anything below min comes out as min, anything above max comes out as max, and everything in between passes untouched.\n\nUse it to keep a signal in range before it drives something that would misbehave outside it - colour components inside 0 to 1, a joint angle inside its safe range, a gain that must never go negative. It works on every element separately, so the output has the same shape as the input.\n\nSYNTAX:\nnp.clip <min: float> <max: float>\nDefaults: min 0.0, max 1.0. With one argument only min is set.\n\nEXAMPLE:\nnp.clip -0.5 0.7\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a one-value array). Every input is clipped and sent - this is the only inlet, and the only thing that makes the node send.\n\nmin / max (drag floats on the node):\nThe lower and upper limits. They are properties, not inlets, so they cannot be driven from the patch, and changing one does NOT send by itself - the next array uses it. In the demo make_sine re-sends the wave ten times a second, so the plot follows your drags. If min is above max, every value comes out as max.\n\nOUTPUTS:\n\nout array:\nThe clipped array, the same shape as the input.\n\nREADING THE DEMO:\nmake_sine sends two cycles of a sine, 128 values from -1 to 1, ten times a second. t array array sends the wave as it is to pack 2 first (its right outlet), then to np.clip, whose clipped copy completes the pack. The plot draws the two over each other. Inside the limits the two lines are one; past them the wave carries on to 1 or -1 while the copy runs flat along the limit - the top cut at 0.7, the bottom at -0.5. Drag max down towards min and the wave is squeezed into a band.\n\nONE-SIDED VERSIONS:\nnp.min caps only the top and np.max floors only the bottom - see their pages, and beware that the names read backwards.\n\nRELATED:\nnp.min and np.max limit one side only. clamp does the same job with min and max on inlets, so they can be driven from the patch. t.clamp is the PyTorch version. np.where replaces out-of-range values with something other than the limit."
+                },
+                "3": {
+                    "init": "comment the wave",
+                    "name": "comment",
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 56,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the wave",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the wave"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 100,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_sine",
+                    "patcher id": 1014
+                },
+                "5": {
+                    "init": "comment the wave first, then",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 170,
+                    "position_y": 53,
+                    "width": 140,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the wave first, then",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the wave first, then"
+                },
+                "6": {
+                    "name": "t",
+                    "id": 459,
+                    "position_x": 170,
+                    "position_y": 92,
+                    "width": 140,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t array array"
+                },
+                "7": {
+                    "init": "comment drag min and max",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 350,
+                    "position_y": 53,
+                    "width": 112,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "drag min and max",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "drag min and max"
+                },
+                "8": {
+                    "name": "np.clip",
+                    "id": 533,
+                    "position_x": 350,
+                    "position_y": 92,
+                    "width": 170,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": -0.5,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 0.7,
+                            "value_type": "float"
+                        }
+                    },
+                    "init": "np.clip -0.5 0.7",
+                    "highlight": true
+                },
+                "9": {
+                    "init": "comment both into one plot",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 560,
+                    "position_y": 53,
+                    "width": 126,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "both into one plot",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "both into one plot"
+                },
+                "10": {
+                    "name": "pack",
+                    "id": 607,
+                    "position_x": 560,
+                    "position_y": 92,
+                    "width": 130,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pack 2"
+                },
+                "11": {
+                    "init": "comment the wave and its clipped copy: where they part, the copy runs flat at the limit",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 28,
+                    "position_y": 225,
+                    "width": 553,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the wave and its clipped copy: where they part, the copy runs flat at the limit",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the wave and its clipped copy: where they part, the copy runs flat at the limit"
+                },
+                "12": {
+                    "name": "plot",
+                    "id": 681,
+                    "position_x": 28,
+                    "position_y": 260,
+                    "width": 700,
+                    "height": 300,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 680,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 240,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 128.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.2,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.2,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 634,
+                    "width": 54,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.min"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 100,
+                    "position_y": 634,
+                    "width": 54,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.max"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 170,
+                    "position_y": 634,
+                    "width": 48,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link clamp"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 234,
+                    "position_y": 634,
+                    "width": 60,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.clamp"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 310,
+                    "position_y": 634,
+                    "width": 66,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.where"
+                },
+                "18": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 600,
+                    "width": 168,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "19": {
+                    "name": "close",
+                    "id": 940,
+                    "position_x": 24,
+                    "position_y": 744,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "sine",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "array",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "3": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out array",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "4": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

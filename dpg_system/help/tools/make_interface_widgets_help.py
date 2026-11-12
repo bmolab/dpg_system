@@ -538,5 +538,5 @@ demo = [
 links = [('tog', '', 'met', 'on'), ('met', '', 'cnt2', 'input'),
          ('cnt2', 'count out', 'i2', ''),
          ('bset', '', 'sr', 'set'), ('bres', '', 'sr', 'reset'), ('sr', '', 'i3', '')]
-print(build('toggle', 'toggle - a state', body, demo, links,
+print(build('toggle', 'toggle - a state', body, demo, links, keep_toggles=True,
             demo_width=300, text_width=790, text_height=640))

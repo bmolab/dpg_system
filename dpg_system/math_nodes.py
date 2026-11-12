@@ -27,6 +27,16 @@ def register_math_nodes():
     Node.app.register_node("acos", OpSingleTrigNode.factory)
     Node.app.register_node("tan", OpSingleTrigNode.factory)
     Node.app.register_node("atan", OpSingleTrigNode.factory)
+    Node.app.register_node("atan2", Atan2Node.factory)
+    Node.app.register_node("hypot", Atan2Node.factory)
+    Node.app.register_node("sign", OpSingleNode.factory)
+    Node.app.register_node("log1p", OpSingleNode.factory)
+    Node.app.register_node("degrees", OpSingleNode.factory)
+    Node.app.register_node("radians", OpSingleNode.factory)
+    Node.app.register_node("tanh", OpSingleNode.factory)
+    Node.app.register_node("sinh", OpSingleNode.factory)
+    Node.app.register_node("cosh", OpSingleNode.factory)
+    Node.app.register_node("log", OpSingleNode.factory)
     Node.app.register_node("log10", OpSingleNode.factory)
     Node.app.register_node("log2", OpSingleNode.factory)
     Node.app.register_node("exp", OpSingleNode.factory)
@@ -59,6 +69,23 @@ def register_math_nodes():
     Node.app.register_node('crossfade', CrossfadeNode.factory)
     Node.app.register_node('lerp', CrossfadeNode.factory)
 
+
+
+def list_to_array(value):
+    """A list as a NumPy array for element-by-element arithmetic; anything else unchanged.
+
+    A list of whole numbers stays integer, so [1, 2] + 1 gives [2, 3], not [2.0, 3.0].
+    """
+    if not isinstance(value, (list, tuple)):
+        return value
+    try:
+        arr = np.array(value)
+        if arr.dtype.kind in 'iu':
+            return arr.astype(np.int64)
+        return arr.astype(float)
+    except (TypeError, ValueError):
+        # ragged, or words mixed in: one number per element
+        return np.array(any_to_float_list(value), dtype=float)
 
 
 class ArithmeticNode(Node):
@@ -117,6 +144,16 @@ class ArithmeticNode(Node):
         if self.operand_input.fresh_input:
             self.operand = any_to_numerical(self.operand_input())
         input_value = any_to_numerical(self.input())
+        if self.op not in (self.permutation, self.combination) and (
+                isinstance(input_value, (list, tuple)) or
+                (isinstance(self.operand, (list, tuple)) and
+                 isinstance(input_value, (bool, int, float, np.number)))):
+            # Lists work element by element, as arrays do. Python's own list
+            # operators would concatenate ([1, 2, 3] + 2 -> [1, 2, 3, 2]) or
+            # raise (* of a list by a float), so go through NumPy and send a
+            # list back. The operand is left as it is for the next input.
+            self.output.send(self.op(list_to_array(input_value), list_to_array(self.operand)).tolist())
+            return
         if type(input_value) != type(self.operand):
             # Conform the operand to the input so arrays and tensors line up --
             # but never NARROW it. An integer arriving at 'in' would otherwise
@@ -148,9 +185,11 @@ class ArithmeticNode(Node):
 
     def mod(self, a, b):
         if type(a) == np.ndarray:
-            if b == 0:
-                return np.zeros_like(a)
-            return np.mod(a, b)
+            # b may be a whole array, not just the one-element array a scalar
+            # operand is conformed to, so test for zero element by element.
+            with np.errstate(divide='ignore', invalid='ignore'):
+                out = np.mod(a, b)
+            return np.where(np.asarray(b) == 0, np.zeros_like(out), out)
         if b == 0:
             return 0
         return a % b
@@ -198,6 +237,10 @@ class ArithmeticNode(Node):
         return a / b
 
     def int_divide(self, a, b):
+        if type(a) == np.ndarray:
+            # as in divide: b may be a whole array, and a zero in it gives inf
+            with np.errstate(divide='ignore', invalid='ignore'):
+                return np.floor_divide(a, b)
         if b == 0:
             return a // 1e-8
         return a // b
@@ -216,6 +259,9 @@ class ArithmeticNode(Node):
 
     def power(self, a, b):
         if type(a) == np.ndarray:
+            if np.issubdtype(a.dtype, np.integer) and np.any(np.asarray(b) < 0):
+                # NumPy refuses integers to negative integer powers
+                a = a.astype(float)
             return np.power(a, b)
         elif self.app.torch_available and type(a) == torch.Tensor:
             return torch.pow(a, b)
@@ -282,7 +328,14 @@ class ComparisonNode(Node):
         input_value = any_to_numerical(self.input())
 
         t = type(input_value)
-        if t == np.ndarray:
+        if t in (list, tuple) or (isinstance(self.operand, (list, tuple)) and
+                                  isinstance(input_value, (bool, int, float, np.number))):
+            # Lists are compared element by element, as arrays are. Python's
+            # own list comparison raised for > and < and gave one answer for
+            # the whole list for == and !=.
+            output_value = self.op(list_to_array(input_value), list_to_array(self.operand))
+            output_value = np.asarray(output_value).astype(self.numpy_output_op).tolist()
+        elif t == np.ndarray:
             output_value = self.op(input_value, self.operand).astype(self.numpy_output_op)
         elif t == torch.Tensor:
             output_value = self.op(input_value, self.operand).to(self.torch_output_op)
@@ -364,9 +417,11 @@ class ComparisonAndPassNode(Node):
             else:
                 self_compare = True
         else:
-            if len(args) > 2:
-                t, self.operand = decode_arg(args, 2)
-                # self.operand = self.arg_as_number(default_value=0.0, index=2)
+            # 'pass >= 0.5': the comparison, then the operand. (This read
+            # args[2], and unpacked decode_arg's (value, type) the wrong way
+            # round, so the operand was always None and every test raised.)
+            if len(args) > 1:
+                self.operand, t = decode_arg(args, 1)
             else:
                 self_compare = True
 
@@ -384,8 +439,8 @@ class ComparisonAndPassNode(Node):
             self.comparison_property.widget.combo_items = list(self.operations)
             self.operand_property = self.add_input('###operand_property', widget_type='drag_float', default_value=self.operand,
                                                 callback=self.operand_changed)
-            self.self_compare_property = self.add_property('self_compare', widget_type='checkbox')
-            self.force_int_property = self.add_property('force_int', widget_type='checkbox')
+            self.self_compare_property = self.add_property('self_compare', widget_type='checkbox', default_value=self_compare)
+            self.force_int_property = self.add_property('force_int', widget_type='checkbox', default_value=force_int)
 
         self.output = self.add_output('result')
 
@@ -404,47 +459,62 @@ class ComparisonAndPassNode(Node):
             self.operand = self.operand_property()
 
         input_value = self.input()
+        # The test may need the input in the operand's type, but what is sent
+        # is always the input as it arrived. (Conforming the input itself
+        # turned 0.4 into 0 once an int had gone by - change, increasing and
+        # pass all sent the rounded value.) Two plain numbers compare fine as
+        # they are.
+        numbers = (int, float, bool, np.number, np.bool_)
+        test_value = input_value
         if self.operand is not None:
-            input_value = conform_type(input_value, self.operand)
+            if not (isinstance(input_value, numbers) and isinstance(self.operand, numbers)):
+                test_value = conform_type(input_value, self.operand)
         else:
-            if not isinstance(input_value, (int, float, bool, np.number, np.bool_)):
+            if not isinstance(input_value, numbers):
                 self.force_int_property.set(False)
-        # input_value = any_to_numerical(self.input())
 
-        if type(input_value) == np.ndarray:
+        if type(test_value) == np.ndarray:
             if type(self.operand) != np.ndarray:
-                self.operand = np.zeros_like(input_value)
-                self.operand_property.set(input_value)
+                self.operand = np.zeros_like(test_value)
+                self.operand_property.set(test_value)
             if self.force_int_property():
-                input_value = input_value.round()
+                test_value = test_value.round()
                 op = self.operand.round()
             else:
                 op = self.operand
-            output_value = self.operations[self.operation](input_value, op)
+            output_value = self.operations[self.operation](test_value, op)
             if output_value.any():
                 self.output.send(input_value)
-        elif self.app.torch_available and type(input_value) == torch.Tensor:
+        elif self.app.torch_available and type(test_value) == torch.Tensor:
             if type(self.operand) != torch.Tensor:
-                self.operand = torch.zeros_like(input_value)
-                self.operand_property.set(input_value)
+                self.operand = torch.zeros_like(test_value)
+                self.operand_property.set(test_value)
             if self.force_int_property():
-                input_value = input_value.round()
+                test_value = test_value.round()
                 op = self.operand.round()
             else:
                 op = self.operand
-            output_value = self.operations[self.operation](input_value, op)
+            output_value = self.operations[self.operation](test_value, op)
             if output_value.any():
                 self.output.send(input_value)
         else:
             if type(self.operand) == np.ndarray:
                 self.operand = 0
-            if self.force_int_property():
-                input_value = any_to_int(input_value)
-                op = any_to_int(self.operand)
+            if self.operand is None:
+                # Nothing to compare against yet (the first value into a
+                # self-comparing node). Comparing with None raised for > and <,
+                # before the value was remembered, so increasing and decreasing
+                # failed on every value forever. A first value counts as a
+                # change, but not as a rise or a fall.
+                passed = self.operation in ('!=', 'always')
             else:
-                op = self.operand
-            output_value = self.operations[self.operation](input_value, op)
-            if output_value:
+                if self.force_int_property():
+                    test_value = any_to_int(test_value)
+                    op = any_to_int(self.operand)
+                else:
+                    op = self.operand
+                passed = self.operations[self.operation](test_value, op)
+            if passed:
                 self.output.send(input_value)
         if self.self_compare_property():
             self.operand = input_value
@@ -482,6 +552,14 @@ class OpSingleNode(Node):
         super().__init__(label, data, args)
 
         self.operations = {
+            'log': self.log,
+            'log1p': self.log1p,
+            'sign': self.sign,
+            'degrees': self.degrees,
+            'radians': self.radians,
+            'tanh': self.tanh,
+            'sinh': self.sinh,
+            'cosh': self.cosh,
             'log10': self.log10,
             'log2': self.log2,
             'exp': self.exp,
@@ -514,6 +592,11 @@ class OpSingleNode(Node):
             pass
         elif self.app.torch_available and t == torch.Tensor:
             pass
+        elif t in (list, tuple):
+            # a list goes through element by element, as an array does
+            # (any_to_float would keep only its first number)
+            self.output.send(self.op(list_to_array(input_value).astype(float)).tolist())
+            return
         else:
             input_value = any_to_float(input_value)
 
@@ -529,6 +612,86 @@ class OpSingleNode(Node):
             result = torch.divide(a, torch.linalg.norm(a))
             return result
         return 1.0
+
+    def log(self, a):
+        if type(a) == np.ndarray:
+            with np.errstate(divide='ignore'):
+                result = np.log(np.abs(a))
+            return result
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            result = torch.log(torch.abs(a))
+            return result
+        if a > 0.0:
+            return math.log(a)
+        return -math.inf
+
+    def log1p(self, a):
+        # log of 1 + a, accurate for small a. Unlike log, log10 and log2 it does
+        # not take the absolute value: inputs between -1 and 0 are valid
+        if type(a) == np.ndarray:
+            with np.errstate(divide='ignore', invalid='ignore'):
+                return np.log1p(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.log1p(a)
+        if a > -1.0:
+            return math.log1p(a)
+        if a == -1.0:
+            return -math.inf
+        return math.nan
+
+    def sign(self, a):
+        if type(a) == np.ndarray:
+            return np.sign(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.sign(a)
+        if a > 0:
+            return 1.0
+        if a < 0:
+            return -1.0
+        return 0.0
+
+    def degrees(self, a):
+        if type(a) == np.ndarray:
+            return np.degrees(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.rad2deg(a)
+        return math.degrees(a)
+
+    def radians(self, a):
+        if type(a) == np.ndarray:
+            return np.radians(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.deg2rad(a)
+        return math.radians(a)
+
+    def tanh(self, a):
+        if type(a) == np.ndarray:
+            return np.tanh(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.tanh(a)
+        return math.tanh(a)
+
+    def sinh(self, a):
+        if type(a) == np.ndarray:
+            with np.errstate(over='ignore'):
+                return np.sinh(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.sinh(a)
+        try:
+            return math.sinh(a)
+        except OverflowError:
+            return math.copysign(math.inf, a)
+
+    def cosh(self, a):
+        if type(a) == np.ndarray:
+            with np.errstate(over='ignore'):
+                return np.cosh(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.cosh(a)
+        try:
+            return math.cosh(a)
+        except OverflowError:
+            return math.inf
 
     def log10(self, a):
         if type(a) == np.ndarray:
@@ -625,6 +788,72 @@ class OpSingleNode(Node):
         return math.trunc(a)
 
 
+class Atan2Node(Node):
+    # atan2: the angle of the point (x, y) from the positive x axis, in all four
+    # quadrants - atan of y / x loses which side of the origin x was on.
+    # hypot: the point's distance from the origin
+    @staticmethod
+    def factory(name, data, args=None):
+        node = Atan2Node(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.is_hypot = label == 'hypot'
+        self.x = 0.0 if self.is_hypot else 1.0
+        if len(args) > 0:
+            self.x = any_to_float(args[0])
+        self.degrees_to_radians = math.pi / 180
+
+        # the second inlet keeps the name x_input for both; hypot's pair is x, y
+        self.input = self.add_input('x' if self.is_hypot else 'y', triggers_execution=True)
+        self.x_input = self.add_input('y' if self.is_hypot else 'x', widget_type='drag_float',
+                                      default_value=self.x, callback=self.x_changed)
+        self.use_degrees_property = None
+        if not self.is_hypot:
+            self.use_degrees_property = self.add_property('degrees', widget_type='checkbox', default_value=True)
+        self.output = self.add_output('length' if self.is_hypot else 'angle')
+
+    def x_changed(self):
+        x = any_to_numerical(self.x_input(), validate=True)
+        if x is not None:
+            self.x = x
+
+    def execute(self):
+        if self.x_input.fresh_input:
+            self.x_changed()
+        y = any_to_numerical(self.input(), validate=True)
+        x = self.x
+        if y is None:
+            return
+        # for hypot, y here is the first inlet's x and x the second's y; the
+        # result is the same either way round
+        scale = 1.0
+        if self.use_degrees_property is not None and self.use_degrees_property():
+            scale = 1.0 / self.degrees_to_radians
+        torch_op, np_op, math_op = (torch.hypot, np.hypot, math.hypot) if self.is_hypot \
+            else (torch.atan2, np.arctan2, math.atan2)
+        if self.app.torch_available and (type(y) == torch.Tensor or type(x) == torch.Tensor):
+            y_t = y if type(y) == torch.Tensor else torch.as_tensor(y, dtype=torch.float32)
+            x_t = x if type(x) == torch.Tensor else torch.as_tensor(x, dtype=torch.float32, device=y_t.device)
+            if type(y) != torch.Tensor:
+                y_t = y_t.to(x_t.device)
+            self.output.send(torch_op(y_t.float(), x_t.float()) * scale)
+            return
+        is_list = isinstance(y, (list, tuple)) or isinstance(x, (list, tuple))
+        if is_list or type(y) == np.ndarray or type(x) == np.ndarray:
+            try:
+                result = np_op(list_to_array(y).astype(float) if isinstance(y, (list, tuple)) else y,
+                               list_to_array(x).astype(float) if isinstance(x, (list, tuple)) else x) * scale
+            except ValueError:
+                if self.app.verbose:
+                    print(self.label, 'the two inputs do not have matching shapes')
+                return
+            self.output.send(result.tolist() if is_list else result)
+            return
+        self.output.send(math_op(float(y), float(x)) * scale)
+
+
 class OpSingleTrigNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -663,6 +892,11 @@ class OpSingleTrigNode(Node):
             t = type(input_value)
             if t in [int, bool, np.int64, np.bool_]:
                 input_value = float(input_value)
+            elif t in (list, tuple):
+                # a list goes through element by element, as an array does
+                # (math.sin of a list raised)
+                self.output.send(self.op(list_to_array(input_value).astype(float)).tolist())
+                return
             output_value = self.op(input_value)
             self.output.send(output_value)
 

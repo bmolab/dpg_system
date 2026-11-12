@@ -1,0 +1,944 @@
+{
+    "name": "t.cosine_similarity_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cosine_similarity_help.json",
+    "patches": {
+        "0": {
+            "height": 590,
+            "width": 700,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1236,
+            "name": "make_direction",
+            "parent_node_uuid": 644,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1273,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "in",
+                    "init": "in angle",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "t",
+                    "init": "t float float",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 150,
+                    "width": 140,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "3": {
+                    "name": "comment",
+                    "init": "comment right first: sin, then cos",
+                    "id": 1384,
+                    "position_x": 200,
+                    "position_y": 155,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "right first: sin, then cos",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "right first: sin, then cos"
+                },
+                "4": {
+                    "name": "cos",
+                    "init": "cos",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1458,
+                    "position_x": 200,
+                    "position_y": 230,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "pack",
+                    "init": "pack 2",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 140,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "comment",
+                    "init": "comment [cos, sin]: length 1, pointing at the angle",
+                    "id": 1532,
+                    "position_x": 200,
+                    "position_y": 345,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "[cos, sin]: length 1, pointing at the angle",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "[cos, sin]: length 1, pointing at the angle"
+                },
+                "8": {
+                    "name": "out",
+                    "init": "out direction",
+                    "id": 1569,
+                    "position_x": 40,
+                    "position_y": 430,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "angle",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "float",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "3": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "4": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "5": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1569,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "direction"
+                }
+            }
+        },
+        "1": {
+            "height": 1079,
+            "width": 1721,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1199,
+            "name": "t.cosine_similarity_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cosine_similarity_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.cosine_similarity - alike in direction, whatever the size",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 733,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.cosine_similarity - alike in direction, whatever the size",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.cosine_similarity - alike in direction, whatever the size"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 913,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 940,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Gives how much two vectors point the same way, with their sizes taken out: the cosine of the angle between them.\n\n1 means the same direction, 0 at right angles, -1 opposite. Size does not matter: [3 4] and [6 8] point the same way and score 1. So two poses that are the same shape at different scales, or two movements that are the same gesture at different strengths, still read as alike. Reach for it to compare directions, poses or feature vectors when magnitude would get in the way.\n\nIt is the dot product of the two vectors divided by both their lengths (np.dot of two unit vectors gives the same number).\n\nSYNTAX:\nt.cosine_similarity\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput 1:\nThe first vector (a list or a NumPy array is turned into a float32 tensor). Receiving it calculates and sends.\n\ninput 2:\nThe second vector, the same length as the first. It is only stored:\nsend it before input 1, and it is then used for every input 1 that follows until a new one arrives. Nothing is sent until it has arrived. In the demo B goes through 't bang list', so that moving B also makes A re-send.\n\nTwo 1-D vectors give one number. Two tables of the same shape are compared column by column (each column is one vector), giving one cosine per column. A vector of all zeros has no direction and gives 0. Lengths that do not match print an error and send nothing.\n\nOUTPUTS:\n\noutput:\nThe cosine, a plain float from -1 to 1 - or, for two tables, a 1-D tensor with one cosine per column.\n\nREADING THE DEMO:\nVector A is two sliders packed into [x y], starting at [3 4]. Vector B is the angle on the slider turned into a direction (make_direction gives [cos, sin]). B is stored in input 2 first, then the bang from 't bang list' makes A re-send, so moving either one updates the answer. With B at 53 degrees it points almost exactly along [3 4] and the answer is near 1. Turn B to 143 degrees (right angles): 0. To 233: -1. Now make A shorter in the same direction - [1.5 2] - and nothing changes: only the direction counts.\n\nRELATED:\nnp.dot is the same calculation without dividing by the lengths. t.normalize makes vectors length 1, after which the dot product is the cosine. t.dist and t.length compare positions and sizes instead.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 924,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Gives how much two vectors point the same way, with their sizes taken out: the cosine of the angle between them.\n\n1 means the same direction, 0 at right angles, -1 opposite. Size does not matter: [3 4] and [6 8] point the same way and score 1. So two poses that are the same shape at different scales, or two movements that are the same gesture at different strengths, still read as alike. Reach for it to compare directions, poses or feature vectors when magnitude would get in the way.\n\nIt is the dot product of the two vectors divided by both their lengths (np.dot of two unit vectors gives the same number).\n\nSYNTAX:\nt.cosine_similarity\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput 1:\nThe first vector (a list or a NumPy array is turned into a float32 tensor). Receiving it calculates and sends.\n\ninput 2:\nThe second vector, the same length as the first. It is only stored:\nsend it before input 1, and it is then used for every input 1 that follows until a new one arrives. Nothing is sent until it has arrived. In the demo B goes through 't bang list', so that moving B also makes A re-send.\n\nTwo 1-D vectors give one number. Two tables of the same shape are compared column by column (each column is one vector), giving one cosine per column. A vector of all zeros has no direction and gives 0. Lengths that do not match print an error and send nothing.\n\nOUTPUTS:\n\noutput:\nThe cosine, a plain float from -1 to 1 - or, for two tables, a 1-D tensor with one cosine per column.\n\nREADING THE DEMO:\nVector A is two sliders packed into [x y], starting at [3 4]. Vector B is the angle on the slider turned into a direction (make_direction gives [cos, sin]). B is stored in input 2 first, then the bang from 't bang list' makes A re-send, so moving either one updates the answer. With B at 53 degrees it points almost exactly along [3 4] and the answer is near 1. Turn B to 143 degrees (right angles): 0. To 233: -1. Now make A shorter in the same direction - [1.5 2] - and nothing changes: only the direction counts.\n\nRELATED:\nnp.dot is the same calculation without dividing by the lengths. t.normalize makes vectors length 1, after which the dot product is the cosine. t.dist and t.length compare positions and sizes instead."
+                },
+                "3": {
+                    "name": "load_bang",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 88,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "slider",
+                    "id": 385,
+                    "position_x": 30,
+                    "position_y": 130,
+                    "width": 210,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": -5.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "",
+                            "value": 3.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "slider",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 200,
+                    "width": 210,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": -5.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "",
+                            "value": 4.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "6": {
+                    "init": "comment vector A: x and y",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 616,
+                    "position_y": 145,
+                    "width": 113,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "vector A: x and y",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "vector A: x and y"
+                },
+                "7": {
+                    "name": "pak",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 280,
+                    "width": 39,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pak f f"
+                },
+                "8": {
+                    "name": "list",
+                    "id": 533,
+                    "position_x": 210,
+                    "position_y": 310,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "slider",
+                    "id": 570,
+                    "position_x": 360,
+                    "position_y": 270,
+                    "width": 230,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 360.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "",
+                            "value": 53.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "10": {
+                    "init": "comment the angle of B, in degrees",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 616,
+                    "position_y": 285,
+                    "width": 168,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the angle of B, in degrees",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the angle of B, in degrees"
+                },
+                "11": {
+                    "name": "p",
+                    "id": 644,
+                    "position_x": 360,
+                    "position_y": 350,
+                    "width": 103,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_direction",
+                    "patcher id": 1236
+                },
+                "12": {
+                    "name": "list",
+                    "id": 681,
+                    "position_x": 360,
+                    "position_y": 440,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "13": {
+                    "init": "comment vector B: length 1, at that angle",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 616,
+                    "position_y": 445,
+                    "width": 211,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "vector B: length 1, at that angle",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "vector B: length 1, at that angle"
+                },
+                "14": {
+                    "name": "t",
+                    "id": 755,
+                    "position_x": 360,
+                    "position_y": 500,
+                    "width": 33,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "t bang list"
+                },
+                "15": {
+                    "init": "comment B stored first, then A re-sent",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 616,
+                    "position_y": 505,
+                    "width": 193,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "B stored first, then A re-sent",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "B stored first, then A re-sent"
+                },
+                "16": {
+                    "name": "t.cosine_similarity",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 580,
+                    "width": 125,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "17": {
+                    "name": "float",
+                    "id": 866,
+                    "position_x": 30,
+                    "position_y": 690,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "18": {
+                    "init": "comment 1 same way, 0 at right angles, -1 opposite",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 616,
+                    "position_y": 695,
+                    "width": 267,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "1 same way, 0 at right angles, -1 opposite",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "1 same way, 0 at right angles, -1 opposite"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 30,
+                    "position_y": 804,
+                    "width": 54,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.dot"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 100,
+                    "position_y": 804,
+                    "width": 85,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.normalize"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 201,
+                    "position_y": 804,
+                    "width": 54,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.dist"
+                },
+                "22": {
+                    "name": "help_link",
+                    "id": 1051,
+                    "position_x": 271,
+                    "position_y": 804,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.length"
+                },
+                "23": {
+                    "name": "help_link",
+                    "id": 1088,
+                    "position_x": 353,
+                    "position_y": 804,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.inner"
+                },
+                "24": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1125,
+                    "position_x": 30,
+                    "position_y": 770,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "25": {
+                    "name": "close",
+                    "id": 1162,
+                    "position_x": 24,
+                    "position_y": 878,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 385,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float out",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 1,
+                    "dest_input_name": "float"
+                },
+                "3": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float out",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "float"
+                },
+                "4": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "6": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "angle"
+                },
+                "7": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "direction",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "8": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "direction",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "9": {
+                    "source_node": 755,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "list",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input 2"
+                },
+                "10": {
+                    "source_node": 755,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 385,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "11": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input 1"
+                },
+                "12": {
+                    "source_node": 829,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 866,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

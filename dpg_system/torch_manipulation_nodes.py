@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 from dpg_system.torch_base_nodes import *
 
@@ -38,6 +39,11 @@ def register_torch_manipulation_nodes():
     Node.app.register_node('t.triu', TorchTriangleNode.factory)
     Node.app.register_node('t.scatter', TorchScatterNode.factory)
     Node.app.register_node('t.scatter_hold', TorchScatterHoldNode.factory)
+    Node.app.register_node('t.pad', TorchPadNode.factory)
+    Node.app.register_node('t.unfold', TorchUnfoldNode.factory)
+    Node.app.register_node('t.max_pool', TorchPoolNode.factory)
+    Node.app.register_node('t.avg_pool', TorchPoolNode.factory)
+    Node.app.register_node('t.one_hot', TorchOneHotNode.factory)
 
 
 class TorchSqueezeNode(TorchWithDimNode):
@@ -80,7 +86,7 @@ class TorchUnsqueezeNode(TorchWithDimNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+            if -1 - len(input_tensor.shape) <= self.dim <= len(input_tensor.shape):
                 self.output.send(torch.unsqueeze(input_tensor, self.dim))
                 return
 
@@ -224,10 +230,15 @@ class TorchFlipNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.flip_list = [0]
+        # the dims to flip come from the arguments ('t.flip 1', 't.flip 0 1');
+        # they used to be ignored, leaving dim 0
+        self.flip_list = [any_to_int(a) for a in args if re.fullmatch(r'[-+]?\d+', any_to_string(a))] if args else []
+        if not self.flip_list:
+            self.flip_list = [0]
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.flip_property = self.add_property('flip dims', widget_type='text_input', default_value='0',
-                                                  callback=self.flip_changed)
+        self.flip_property = self.add_property('flip dims', widget_type='text_input',
+                                               default_value=' '.join(str(d) for d in self.flip_list),
+                                               callback=self.flip_changed)
         self.output = self.add_output('output')
 
     def flip_changed(self):
@@ -292,14 +303,14 @@ class TorchStackNode(TorchStackCatNode):
                             if a_tensor.shape[j] != input_tensor.shape[j]:
                                 ok_shape = False
                                 if self.app.verbose:
-                                    print('t.stack input tensor ' + str(i + 1) + ' has wrong shape')
+                                    print('t.stack input tensor ' + str(i + 2) + ' has wrong shape')
                                 break
                         if ok_shape:
                             stack_list.append(a_tensor)
                     else:
                         if self.app.verbose:
-                            print('t.stack input tensor ' + str(i + 1) + ' has wrong number of dimensions')
-            if -len(input_tensor.shape) <= self.dim <= len(input_tensor.shape):
+                            print('t.stack input tensor ' + str(i + 2) + ' has wrong number of dimensions')
+            if -len(input_tensor.shape) - 1 <= self.dim <= len(input_tensor.shape):
                 output_tensor = torch.stack(stack_list, self.dim)
                 self.output.send(output_tensor)
             else:
@@ -334,13 +345,13 @@ class TorchCatNode(TorchStackCatNode):
                                 if a_tensor.shape[j] != input_tensor.shape[j]:
                                     ok_shape = False
                                     if self.app.verbose:
-                                        print('t.cat input tensor ' + str(i) + ' has wrong shape')
+                                        print('t.cat input tensor ' + str(i + 2) + ' has wrong shape')
                                     break
                         if ok_shape:
                             cat_list.append(a_tensor)
                     else:
                         if self.app.verbose:
-                            print('t.cat input tensor ' + str(i) + ' has wrong number of dimensions')
+                            print('t.cat input tensor ' + str(i + 2) + ' has wrong number of dimensions')
             if -ndim <= self.dim < ndim:
                 output_tensor = torch.cat(cat_list, self.dim)
                 self.output.send(output_tensor)
@@ -368,6 +379,8 @@ class TorchHStackNode(TorchNode):
             self.op = torch.vstack
         elif self.label == 't.dstack':
             self.op = torch.dstack
+        elif self.label == 't.column_stack':
+            self.op = torch.column_stack   # it used to run hstack
 
         self.other_inputs = []
         self.input = self.add_input('tensor 1', triggers_execution=True)
@@ -383,13 +396,18 @@ class TorchHStackNode(TorchNode):
                 an_in = self.other_inputs[i]
                 a_tensor = self.data_to_tensor(an_in(), match_tensor=input_tensor)
                 if a_tensor is not None:
-                    if a_tensor.shape != input_tensor.shape:
+                    # column_stack joins columns of differing widths ([N] beside [N, 2])
+                    if a_tensor.shape != input_tensor.shape and self.label != 't.column_stack':
                         if self.app.verbose:
                             print(self.label + ' input tensors must have the same shape')
                         return
                     else:
                         stack_list.append(a_tensor)
-            output_tensor = self.op(tuple(stack_list))
+            try:
+                output_tensor = self.op(tuple(stack_list))
+            except Exception as e:
+                print(f'{self.label}: {type(e).__name__}: {e}')
+                return
             self.output.send(output_tensor)
 
 
@@ -413,7 +431,8 @@ class TorchChunkNode(TorchNode):
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
-        self.split_count_option = self.add_option('split', widget_type='input_int', default_value=self.splits)
+        self.split_count_option = self.add_option('split', widget_type='input_int', default_value=self.splits,
+                                                  min=1, max=self.splits, callback=self.split_changed)
         self.tensor_outputs = []
 
         for i in range(self.splits):
@@ -421,6 +440,11 @@ class TorchChunkNode(TorchNode):
 
     def dim_changed(self):
         self.dim = self.dim_input()
+
+    def split_changed(self):
+        # the outlets are made from the argument, so the count can drop below
+        # it (the later outlets go quiet) but not rise above it
+        self.splits = max(1, min(any_to_int(self.split_count_option()), len(self.tensor_outputs)))
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -582,8 +606,9 @@ class TorchTileNode(TorchNode):
                 self.output.send(input_tensor)
                 return
 
-            # We use * unpacking to handle torch.Size objects or lists correctly
-            tiled = input_tensor.repeat(*self.current_tile_dims)
+            # torch.tile, not repeat: tile pads short dims lists with 1s at the
+            # front, where repeat raises
+            tiled = torch.tile(input_tensor, tuple(self.current_tile_dims))
             self.output.send(tiled)
 
         except RuntimeError as e:
@@ -671,7 +696,8 @@ class TorchSubtensorNode(TorchNode):
 
         # Determine default string. Coerce args to strings — they may come in as
         # ints from the parsed-arg path; raw ''.join() would raise TypeError.
-        index_string = ''.join(any_to_string(a) for a in args) if args else ':'
+        # joined with spaces: 't[] 0 3' used to become '03'
+        index_string = ' '.join(any_to_string(a) for a in args) if args else ':'
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.indices_input = self.add_input(
@@ -703,7 +729,8 @@ class TorchSubtensorNode(TorchNode):
             self.slice_obj = (slice(None),)
             return
 
-        parts = dim_text.split(',')
+        # commas separate the axes; without any, spaces do ('0 3' is '0, 3')
+        parts = dim_text.split(',') if ',' in dim_text else dim_text.split()
         slices = []
 
         for part in parts:
@@ -880,7 +907,7 @@ class TorchTakeAlongDimNode(TorchWithDimNode):
             if data is not None:
                 index_tensor = self.data_to_tensor(data, device=input_tensor.device, requires_grad=input_tensor.requires_grad, dtype=torch.long)
                 if index_tensor is not None:
-                    if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+                    if -len(input_tensor.shape) <= self.dim < len(input_tensor.shape):
                         try:
                             taken = torch.take_along_dim(input_tensor, indices=index_tensor, dim=self.dim)
                             self.output.send(taken)
@@ -918,7 +945,7 @@ class TorchScatterNode(TorchWithDimNode):
             if data is not None:
                 index_tensor = self.data_to_tensor(data, device=input_tensor.device, requires_grad=input_tensor.requires_grad, dtype=torch.long)
                 if index_tensor is not None:
-                    if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+                    if -len(input_tensor.shape) <= self.dim < len(input_tensor.shape):
                         data_2 = self.source_input()
                         source_tensor = self.data_to_tensor(data_2, device=input_tensor.device, requires_grad=input_tensor.requires_grad)
                         if source_tensor is not None:
@@ -959,7 +986,10 @@ class TorchScatterHoldNode(TorchNode):
         self.accum = torch.zeros(length)
 
     def clear(self):
-        self.accum[:] = 0
+        # a fresh tensor, sent, so displays clear: the old in-place zeroing
+        # sent nothing and wiped tensors already handed downstream
+        self.accum = torch.zeros_like(self.accum)
+        self.output.send(self.accum.clone())
 
     def resize(self):
         self.accum = torch.zeros(self.length_input())
@@ -978,8 +1008,8 @@ class TorchScatterHoldNode(TorchNode):
             indices = indices.clamp(0, self.length_input() - 1)
             values = pairs_tensor[1]
             try:
-                self.accum.scatter_(0, indices, values)
-                self.output.send(self.accum)
+                self.accum.scatter_(0, indices, values.to(self.accum.dtype))
+                self.output.send(self.accum.clone())   # a copy: accum keeps changing
             except Exception as e:
                 print(f'{self.label}: {type(e).__name__}: {e}')
                 traceback.print_exc()
@@ -1052,9 +1082,13 @@ class TorchNarrowNode(TorchWithDimNode):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
 
-        # Initialize state
+        # Initialize state: t.narrow <dim> <start> <length>
         self.start = 0
         self.length = 1
+        if len(args) > 1:
+            self.start = any_to_int(args[1])
+        if len(args) > 2:
+            self.length = any_to_int(args[2])
 
         # Setup specific to parent class logic
         self.dim_specified = True
@@ -1174,3 +1208,218 @@ class TorchTriangleNode(TorchNode):
             self.output.send(output_tensor)
 
 
+
+
+class TorchPadNode(TorchNode):
+    modes = ['constant', 'replicate', 'reflect', 'circular']
+    # np.pad's names for the same modes
+    mode_aliases = {'edge': 'replicate', 'wrap': 'circular'}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchPadNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        before = 1
+        after = 1
+        mode = 'constant'
+        numbers = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                numbers.append(int(v))
+            elif t == str:
+                v = self.mode_aliases.get(v, v)
+                if v in self.modes:
+                    mode = v
+        if len(numbers) > 0:
+            before = after = numbers[0]
+        if len(numbers) > 1:
+            after = numbers[1]
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.before_input = self.add_input('before', widget_type='input_int', default_value=before)
+        self.after_input = self.add_input('after', widget_type='input_int', default_value=after)
+        self.value_input = self.add_input('value', widget_type='drag_float', default_value=0.0)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('padded')
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value=mode)
+        self.mode_option.widget.combo_items = self.modes
+
+    def execute(self):
+        input_tensor = self.input_to_tensor(allow_empty=True)
+        if input_tensor is None or input_tensor.ndim == 0:
+            return
+        dim = self.dim_input()
+        if not -input_tensor.ndim <= dim < input_tensor.ndim:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range for shape', list(input_tensor.shape))
+            return
+        before = max(self.before_input(), 0)
+        after = max(self.after_input(), 0)
+        mode = self.mode_aliases.get(self.mode_option(), self.mode_option())
+        if mode not in self.modes:
+            mode = 'constant'
+        moved = input_tensor.movedim(dim, -1)
+        length = moved.shape[-1]
+        if mode == 'constant':
+            padded = F.pad(moved, (before, after), value=self.value_input())
+        else:
+            if length == 0:
+                return
+            if mode == 'reflect' and max(before, after) >= length:
+                if self.app.verbose:
+                    print(self.label, 'reflect can add at most', length - 1, 'values at each end')
+                return
+            if mode == 'circular' and max(before, after) > length:
+                if self.app.verbose:
+                    print(self.label, 'circular can add at most', length, 'values at each end')
+                return
+            # these modes pad the last dim of a (batch, channel, length) tensor
+            rows = float_like(moved).reshape(-1, 1, length)
+            padded = F.pad(rows, (before, after), mode=mode)
+            padded = padded.reshape(*moved.shape[:-1], padded.shape[-1]).to(input_tensor.dtype)
+        self.output.send(padded.movedim(-1, dim))
+
+
+class TorchUnfoldNode(TorchNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchUnfoldNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        window, step = 4, 1
+        if len(args) > 0:
+            window = max(any_to_int(args[0]), 1)
+        if len(args) > 1:
+            step = max(any_to_int(args[1]), 1)
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.window_input = self.add_input('window', widget_type='input_int', default_value=window)
+        self.step_input = self.add_input('step', widget_type='input_int', default_value=step)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('windows')
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None or input_tensor.ndim == 0:
+            return
+        dim = self.dim_input()
+        if not -input_tensor.ndim <= dim < input_tensor.ndim:
+            if self.app.verbose:
+                print(self.label, 'dim', dim, 'out of range for shape', list(input_tensor.shape))
+            return
+        window = max(self.window_input(), 1)
+        if input_tensor.shape[dim] < window:
+            if self.app.verbose:
+                print(self.label, 'a window of', window, 'is longer than the', input_tensor.shape[dim], 'values')
+            return
+        # a copy: unfold gives a view sharing memory with the input, which a later node may change
+        self.output.send(input_tensor.unfold(dim, window, max(self.step_input(), 1)).clone())
+
+
+class TorchOneHotNode(TorchNode):
+    # class 2 of 4 becomes 0 0 1 0: the form most models take a label in
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchOneHotNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        classes = any_to_int(args[0]) if len(args) > 0 else -1
+        self.input = self.add_input('indices', triggers_execution=True)
+        self.classes_input = self.add_input('classes', widget_type='input_int', default_value=classes)
+        self.output = self.add_output('one hot')
+        self.output_type_option = self.add_option('output_type', widget_type='combo', default_value='float')
+        self.output_type_option.widget.combo_items = ['float', 'int', 'bool']
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None:
+            return
+        if input_tensor.is_floating_point():
+            if not torch.all(input_tensor == input_tensor.round()):
+                if self.app.verbose:
+                    print(self.label, 'needs whole-number class indices')
+                return
+        indices = input_tensor.long()
+        classes = self.classes_input()
+        if torch.any(indices < 0) or (classes is not None and classes > 0 and torch.any(indices >= classes)):
+            if self.app.verbose:
+                print(self.label, 'class indices must run from 0 to', (classes - 1) if classes > 0 else 'the largest')
+            return
+        # -1 classes: as many as the largest index needs
+        result = F.one_hot(indices, num_classes=classes if classes is not None and classes > 0 else -1)
+        output_type = self.output_type_option()
+        if output_type == 'float':
+            result = result.float()
+        elif output_type == 'bool':
+            result = result.bool()
+        self.output.send(result)
+
+
+class TorchPoolNode(TorchNode):
+    # t.max_pool and t.avg_pool: the largest value, or the mean, of each window
+    # along a dim - or of each tile of the last two dims, for an image
+    @staticmethod
+    def factory(name, data, args=None):
+        node = TorchPoolNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.max = label == 't.max_pool'
+        window = max(any_to_int(args[0]), 1) if len(args) > 0 else 2
+        step = max(any_to_int(args[1]), 1) if len(args) > 1 else window
+        self.input = self.add_input('tensor in', triggers_execution=True)
+        self.window_input = self.add_input('window', widget_type='input_int', default_value=window)
+        self.step_input = self.add_input('step', widget_type='input_int', default_value=step)
+        self.dim_input = self.add_input('dim', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('pooled')
+        self.over_option = self.add_option('pool over', widget_type='combo', default_value='one dim')
+        self.over_option.widget.combo_items = ['one dim', 'last two dims']
+        self.partial_option = self.add_option('partial window', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        input_tensor = self.input_to_tensor()
+        if input_tensor is None or input_tensor.ndim == 0:
+            return
+        data = float_like(input_tensor)
+        window = max(self.window_input(), 1)
+        step = max(self.step_input(), 1)
+        ceil_mode = bool(self.partial_option())
+        try:
+            if self.over_option() == 'last two dims':
+                if data.ndim < 2 or data.shape[-1] < window or data.shape[-2] < window:
+                    if self.app.verbose:
+                        print(self.label, 'needs at least', window, 'x', window, 'values, got shape', list(data.shape))
+                    return
+                lead = data.shape[:-2]
+                flat = data.reshape(-1, 1, data.shape[-2], data.shape[-1])
+                pool = F.max_pool2d if self.max else F.avg_pool2d
+                pooled = pool(flat, window, step, ceil_mode=ceil_mode)
+                result = pooled.reshape(*lead, pooled.shape[-2], pooled.shape[-1])
+            else:
+                dim = self.dim_input()
+                if not -data.ndim <= dim < data.ndim:
+                    if self.app.verbose:
+                        print(self.label, 'dim', dim, 'out of range for shape', list(data.shape))
+                    return
+                if data.shape[dim] < window:
+                    if self.app.verbose:
+                        print(self.label, 'a window of', window, 'is longer than the', data.shape[dim], 'values')
+                    return
+                moved = data.movedim(dim, -1)
+                lead = moved.shape[:-1]
+                flat = moved.reshape(-1, 1, moved.shape[-1])
+                pool = F.max_pool1d if self.max else F.avg_pool1d
+                pooled = pool(flat, window, step, ceil_mode=ceil_mode)
+                result = pooled.reshape(*lead, pooled.shape[-1]).movedim(-1, dim)
+        except RuntimeError as e:
+            if self.app.verbose:
+                print(self.label, 'could not pool shape', list(data.shape), e)
+            return
+        self.output.send(result)

@@ -1,0 +1,985 @@
+{
+    "height": 1180,
+    "width": 1682,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1495,
+    "name": "shadow_live_correction",
+    "path": "/Users/drokeby/dpg_system/examples/shadow_live_correction.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment live arm correction: elbow turn and hang bank",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 540,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "live arm correction: elbow turn and hang bank",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "live arm correction: elbow turn and hang bank"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1002,
+            "position_y": 45,
+            "width": 648,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Live correction of two Shadow arm errors that come with the calibration: the elbow turn and the hang bank. Both are measured from the raw pose, then applied by shadow_mag_correct on every frame.\n\nTHE ELBOW TURN: the upper arms read rolled about their own length, so bent elbows seem to bend partly upward and the shoulders twist (the candy-wrapper). It is set at each calibration (likely by how the arms were rolled in the T-pose) and stays until the next one. It moves no joint, so look at the mesh: with the right turn, bent elbows fold forward and the shoulders untwist.\n\nTHE HANG BANK: with both arms lowered, the pair sits shifted to one side together, though the T-pose looks fine. shadow_mag_correct turns both arms back by the 'fixed bank' amount, fading in as they come down from 25 to 55 degrees below level; a T-pose is untouched.\n\nAFTER EACH CALIBRATION:\n1. The dancer stands with the arms down, relaxed and still, for about 8 s, then bends both elbows forward slowly to about a right angle and back, 6 to 10 times, upper arms hanging (about 12 s).\n2. Press 'measure'. elbow_turn and hang_symmetry read the last 20 s. The turn sets the two dials (left, right), the shift sets 'fixed bank'. Check 'frames used': elbow_turn wants at least 100 per arm, hang_symmetry a few hundred.\n3. Fine-tune by eye: drag the dials while the dancer bends the elbows, and 'fixed bank' while the arms hang. Untick 'correct' to compare with the raw pose.\n\nThe measurements always read the RAW pose, so measuring again replaces the values; it never adds to them.\n\nWHEN NOT TO USE IT:\n- The T-pose itself looks wrong, or one arm sits off while the other looks right: that is a one-sided calibration error (Subject 7's right arm). The bank would push the good arm off to match. Recalibrate instead.\n- The arms differ forward and back rather than sideways: a heading error, which the bank does not touch (shadow_heading_adjust).\n- After a recalibration: measure again, the turn changes with every T-pose. The bank can drift during a session; check it between pieces.\n\nThe dancer's own relaxed asymmetry is removed along with the error; nothing in the data tells them apart.\n\nTO REHEARSE WITHOUT THE SUIT: tick the take's on/off. It plays a recorded take (Subject 7 jathiswaram) into the same chain and the same buffer. Untick it when the suit is live, or both drive the body.\n\nThe body is drawn as a female SMPL; set the mesh's gender for the dancer.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Live correction of two Shadow arm errors that come with the calibration: the elbow turn and the hang bank. Both are measured from the raw pose, then applied by shadow_mag_correct on every frame.\n\nTHE ELBOW TURN: the upper arms read rolled about their own length, so bent elbows seem to bend partly upward and the shoulders twist (the candy-wrapper). It is set at each calibration (likely by how the arms were rolled in the T-pose) and stays until the next one. It moves no joint, so look at the mesh: with the right turn, bent elbows fold forward and the shoulders untwist.\n\nTHE HANG BANK: with both arms lowered, the pair sits shifted to one side together, though the T-pose looks fine. shadow_mag_correct turns both arms back by the 'fixed bank' amount, fading in as they come down from 25 to 55 degrees below level; a T-pose is untouched.\n\nAFTER EACH CALIBRATION:\n1. The dancer stands with the arms down, relaxed and still, for about 8 s, then bends both elbows forward slowly to about a right angle and back, 6 to 10 times, upper arms hanging (about 12 s).\n2. Press 'measure'. elbow_turn and hang_symmetry read the last 20 s. The turn sets the two dials (left, right), the shift sets 'fixed bank'. Check 'frames used': elbow_turn wants at least 100 per arm, hang_symmetry a few hundred.\n3. Fine-tune by eye: drag the dials while the dancer bends the elbows, and 'fixed bank' while the arms hang. Untick 'correct' to compare with the raw pose.\n\nThe measurements always read the RAW pose, so measuring again replaces the values; it never adds to them.\n\nWHEN NOT TO USE IT:\n- The T-pose itself looks wrong, or one arm sits off while the other looks right: that is a one-sided calibration error (Subject 7's right arm). The bank would push the good arm off to match. Recalibrate instead.\n- The arms differ forward and back rather than sideways: a heading error, which the bank does not touch (shadow_heading_adjust).\n- After a recalibration: measure again, the turn changes with every T-pose. The bank can drift during a session; check it between pieces.\n\nThe dancer's own relaxed asymmetry is removed along with the error; nothing in the data tells them apart.\n\nTO REHEARSE WITHOUT THE SUIT: tick the take's on/off. It plays a recorded take (Subject 7 jathiswaram) into the same chain and the same buffer. Untick it when the suit is live, or both drive the body.\n\nThe body is drawn as a female SMPL; set the mesh's gender for the dancer."
+        },
+        "3": {
+            "init": "comment live suit",
+            "name": "comment",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 63,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "live suit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "live suit"
+        },
+        "4": {
+            "name": "shadow",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 92,
+            "width": 180,
+            "height": 230,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment or a take, to rehearse",
+            "name": "comment",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 154,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "or a take, to rehearse",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "or a take, to rehearse"
+        },
+        "6": {
+            "name": "take",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 181,
+            "height": 253,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on/off",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "path",
+                    "value": "$HOME/Projects/BMO_Lab/GRANTS/NFRF_2023/Anonomized_shadow/Subject7_Bharathanatyam/beta/Subject7_take_jathiswaram_a_beta.npz",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment turn + fixed bank",
+            "name": "comment",
+            "id": 496,
+            "position_x": 270,
+            "position_y": 62,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "turn + fixed bank",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "turn + fixed bank"
+        },
+        "8": {
+            "name": "shadow_mag_correct",
+            "id": 533,
+            "position_x": 270,
+            "position_y": 92,
+            "width": 180,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "hang from",
+                    "value": "fixed bank",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "turn fade",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "correct",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "amount",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment elbow turn, left / right",
+            "name": "comment",
+            "id": 570,
+            "position_x": 270,
+            "position_y": 270,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "elbow turn, left / right",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "elbow turn, left / right"
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 270,
+            "position_y": 300,
+            "width": 100,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 380,
+            "position_y": 300,
+            "width": 100,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "pak",
+            "id": 681,
+            "position_x": 270,
+            "position_y": 360,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pak 2"
+        },
+        "13": {
+            "init": "comment to SMPL",
+            "name": "comment",
+            "id": 718,
+            "position_x": 510,
+            "position_y": 62,
+            "width": 49,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "to SMPL",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "to SMPL"
+        },
+        "14": {
+            "name": "shadow_to_smpl",
+            "id": 755,
+            "position_x": 510,
+            "position_y": 92,
+            "width": 179,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_format",
+                    "value": "quaternions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "output_up_axis",
+                    "value": "Z-up",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "floor_height",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "15": {
+            "init": "comment the body",
+            "name": "comment",
+            "id": 792,
+            "position_x": 740,
+            "position_y": 62,
+            "width": 56,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the body"
+        },
+        "16": {
+            "name": "mgl_context",
+            "id": 829,
+            "position_x": 740,
+            "position_y": 92,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 960,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 960,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "display_width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "display_height",
+                    "value": 480,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "name": "mgl_orbit_camera",
+            "id": 866,
+            "position_x": 740,
+            "position_y": 200,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "distance",
+                    "value": 3.6,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "yaw",
+                    "value": 7.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "elevation",
+                    "value": 19.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "18": {
+            "name": "mgl_smpl_mesh",
+            "id": 903,
+            "position_x": 740,
+            "position_y": 350,
+            "width": 154,
+            "height": 224,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "gender",
+                    "value": "female",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "up_axis",
+                    "value": "Y",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment the last 20 s of the raw pose",
+            "name": "comment",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 680,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the last 20 s of the raw pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the last 20 s of the raw pose"
+        },
+        "20": {
+            "name": "np.rolling_buffer",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 710,
+            "width": 200,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rolling_buffer 1200 37 4"
+        },
+        "21": {
+            "init": "comment measure after calibrating",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 800,
+            "width": 175,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "measure after calibrating",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "measure after calibrating"
+        },
+        "22": {
+            "name": "button",
+            "id": 1051,
+            "position_x": 30,
+            "position_y": 830,
+            "width": 60,
+            "height": 50,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "23": {
+            "name": "register",
+            "id": 1088,
+            "position_x": 30,
+            "position_y": 900,
+            "width": 88,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "24": {
+            "init": "comment elbow turn: turn, frames used",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 270,
+            "position_y": 680,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "elbow turn: turn, frames used",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "elbow turn: turn, frames used"
+        },
+        "25": {
+            "name": "elbow_turn",
+            "id": 1162,
+            "position_x": 270,
+            "position_y": 710,
+            "width": 100,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "26": {
+            "name": "unpack",
+            "id": 1199,
+            "position_x": 270,
+            "position_y": 820,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "unpack 2"
+        },
+        "27": {
+            "name": "list",
+            "id": 1236,
+            "position_x": 400,
+            "position_y": 710,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "28": {
+            "name": "list",
+            "id": 1273,
+            "position_x": 400,
+            "position_y": 760,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "29": {
+            "init": "comment hang bank: shift, frames used",
+            "name": "comment",
+            "id": 1310,
+            "position_x": 270,
+            "position_y": 900,
+            "width": 203,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "hang bank: shift, frames used",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "hang bank: shift, frames used"
+        },
+        "30": {
+            "name": "hang_symmetry",
+            "id": 1347,
+            "position_x": 270,
+            "position_y": 930,
+            "width": 200,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "31": {
+            "name": "list",
+            "id": 1384,
+            "position_x": 510,
+            "position_y": 930,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "32": {
+            "name": "list",
+            "id": 1421,
+            "position_x": 510,
+            "position_y": 980,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "33": {
+            "name": "close",
+            "id": 1458,
+            "position_x": 24,
+            "position_y": 1090,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternions",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "positions",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "positions"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "5": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "6": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "7": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose"
+        },
+        "9": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "trans",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trans"
+        },
+        "10": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "11": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternions",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "12": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1088,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "13": {
+            "source_node": 1051,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1088,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "trigger"
+        },
+        "14": {
+            "source_node": 1088,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1162,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "15": {
+            "source_node": 1088,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1347,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "take in"
+        },
+        "16": {
+            "source_node": 1162,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "turn",
+            "dest_node": 1199,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "17": {
+            "source_node": 1162,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "turn",
+            "dest_node": 1236,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "18": {
+            "source_node": 1162,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frames used",
+            "dest_node": 1273,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "19": {
+            "source_node": 1199,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out 1",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "20": {
+            "source_node": 1199,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out 2",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "21": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "22": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "23": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "turn"
+        },
+        "24": {
+            "source_node": 1347,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shift",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "fixed bank"
+        },
+        "25": {
+            "source_node": 1347,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shift",
+            "dest_node": 1384,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "26": {
+            "source_node": 1347,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frames used",
+            "dest_node": 1421,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

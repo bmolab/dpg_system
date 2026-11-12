@@ -1,0 +1,444 @@
+{
+    "height": 1081,
+    "width": 1531,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "pc_denoise_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pc_denoise_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment pc_denoise - drop speckle and flicker",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 463,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pc_denoise - drop speckle and flicker",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pc_denoise - drop speckle and flicker"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 673,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pc_denoise drops speckle and flicker: points with too few neighbours, or that do not stay.\n\nTHE CLOUD FRAME, AND WHY pc_crop GOES FIRST:\nA cloud travelling between these nodes is either a plain (N, 3) array of points, or a small dict carrying the points AND the volume they were cropped to.\n\npc_crop is what turns the first into the second. Every grid-based node downstream then uses the volume carried on the frame to build its voxel grid, and their own min/max widgets are only a fallback for when a raw array arrives with nothing attached.\n\nSo pc_crop belongs at the head of the chain, and not only to throw away points. It is how the rest of the chain learns what volume it is working in. Set the box once, at the top, and everything after it agrees.\n\nThe metadata is passed along by every node, and the renderers unwrap it, so either form draws directly - you never have to unpack it by hand.\n\nTWO FILTERS, EITHER OR BOTH:\n'min points' is the spatial one - drop any voxel holding fewer than that many points this frame. Speckle is by definition isolated, so it goes first.\n\n'persistence' is the temporal one - keep a running average of how often each voxel is occupied, from 0 (never) to 1 (every frame), and drop the voxels whose average is below 'persistence'. 0 turns it off. 'decay' sets how long that memory is: closer to 1 is a longer memory. This is the one for a sensor that sparkles in mid-air, which no amount of spatial filtering will fix, because at any single instant the sparkle looks like a real point.\n\nPersistence also holds back something that has just arrived. At decay 0.7 and persistence 0.5, a voxel has to be occupied two frames running before its points come through.\n\nTHE TRAP: min points AND voxel size ARE ONE CONTROL, NOT TWO:\n'min points' means nothing on its own - it is a density, and density depends entirely on how big the voxel is. The same setting can be harmless or catastrophic. In the demo, an object of 3,000 points filling a 40 cm cube sits in 300 points of scattered speckle:\n\n                 min points 1     2      4\nvoxel 4 cm           3300      2850   1730\nvoxel 8 cm           3300      3000   2970\n\nAt 4 cm, min points 2 removes all the speckle and about 150 points of the object with it; min points 4 removes more than 40 percent of the object. At 8 cm the same settings keep it all. If denoising is eating your subject, this is why - raise the voxel size or lower min points, and change them together.\n\nTHE GRID:\n'voxel size (cm)' is 4 by default. If an upstream pc_voxel has put its voxel size on the frame, that is used instead. The volume is the crop carried on the frame, or else the 'min (x,y,z)' and 'max (x,y,z)' options (-5 -5 -1 to 5 5 10). Points outside the volume pass through untouched - the filtering only happens inside it.\n\nSYNTAX:\npc_denoise\n\nEXAMPLE:\npc_denoise\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud. Receiving it does the work.\n\nvoxel size (cm):\nThe grid the density is counted on.\n\nmin points:\nThe spatial filter: fewest points a voxel may hold, 2 by default.\n\npersistence / decay:\nThe temporal filter, 0 to 1 (0 is off), and its memory (0.7).\n\nmin (x,y,z) / max (x,y,z) (options):\nThe volume, used only when the frame carries no crop.\n\nOUTPUTS:\n\ndenoised:\nWhat survived the filters.\n\nRELATED:\npc_crop, which should come before it. pc_background removes the room, and used to share this page. pc_info to see how many points you are actually losing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "pc_denoise drops speckle and flicker: points with too few neighbours, or that do not stay.\n\nTHE CLOUD FRAME, AND WHY pc_crop GOES FIRST:\nA cloud travelling between these nodes is either a plain (N, 3) array of points, or a small dict carrying the points AND the volume they were cropped to.\n\npc_crop is what turns the first into the second. Every grid-based node downstream then uses the volume carried on the frame to build its voxel grid, and their own min/max widgets are only a fallback for when a raw array arrives with nothing attached.\n\nSo pc_crop belongs at the head of the chain, and not only to throw away points. It is how the rest of the chain learns what volume it is working in. Set the box once, at the top, and everything after it agrees.\n\nThe metadata is passed along by every node, and the renderers unwrap it, so either form draws directly - you never have to unpack it by hand.\n\nTWO FILTERS, EITHER OR BOTH:\n'min points' is the spatial one - drop any voxel holding fewer than that many points this frame. Speckle is by definition isolated, so it goes first.\n\n'persistence' is the temporal one - keep a running average of how often each voxel is occupied, from 0 (never) to 1 (every frame), and drop the voxels whose average is below 'persistence'. 0 turns it off. 'decay' sets how long that memory is: closer to 1 is a longer memory. This is the one for a sensor that sparkles in mid-air, which no amount of spatial filtering will fix, because at any single instant the sparkle looks like a real point.\n\nPersistence also holds back something that has just arrived. At decay 0.7 and persistence 0.5, a voxel has to be occupied two frames running before its points come through.\n\nTHE TRAP: min points AND voxel size ARE ONE CONTROL, NOT TWO:\n'min points' means nothing on its own - it is a density, and density depends entirely on how big the voxel is. The same setting can be harmless or catastrophic. In the demo, an object of 3,000 points filling a 40 cm cube sits in 300 points of scattered speckle:\n\n                 min points 1     2      4\nvoxel 4 cm           3300      2850   1730\nvoxel 8 cm           3300      3000   2970\n\nAt 4 cm, min points 2 removes all the speckle and about 150 points of the object with it; min points 4 removes more than 40 percent of the object. At 8 cm the same settings keep it all. If denoising is eating your subject, this is why - raise the voxel size or lower min points, and change them together.\n\nTHE GRID:\n'voxel size (cm)' is 4 by default. If an upstream pc_voxel has put its voxel size on the frame, that is used instead. The volume is the crop carried on the frame, or else the 'min (x,y,z)' and 'max (x,y,z)' options (-5 -5 -1 to 5 5 10). Points outside the volume pass through untouched - the filtering only happens inside it.\n\nSYNTAX:\npc_denoise\n\nEXAMPLE:\npc_denoise\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud. Receiving it does the work.\n\nvoxel size (cm):\nThe grid the density is counted on.\n\nmin points:\nThe spatial filter: fewest points a voxel may hold, 2 by default.\n\npersistence / decay:\nThe temporal filter, 0 to 1 (0 is off), and its memory (0.7).\n\nmin (x,y,z) / max (x,y,z) (options):\nThe volume, used only when the frame carries no crop.\n\nOUTPUTS:\n\ndenoised:\nWhat survived the filters.\n\nRELATED:\npc_crop, which should come before it. pc_background removes the room, and used to share this page. pc_info to see how many points you are actually losing."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.4,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 3000 3"
+        },
+        "5": {
+            "name": "np.rand",
+            "id": 422,
+            "position_x": 220,
+            "position_y": 150,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 300 3"
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 369,
+            "position_y": 295,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "an object: 3000 points in a 40 cm cube,\nand 300 specks scattered over 4 metres",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "an object: 3000 points in a 40 cm cube,\nand 300 specks scattered over 4 metres"
+        },
+        "7": {
+            "name": "np.concatenate",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 345,
+            "width": 117,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.concatenate 0"
+        },
+        "8": {
+            "name": "pc_denoise",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 445,
+            "width": 185,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 369,
+            "position_y": 660,
+            "width": 255,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "try min points 4, then voxel size 8\nor min points 1 and persistence 0.5:\nthe specks never stay, so they go",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "try min points 4, then voxel size 8\nor min points 1 and persistence 0.5:\nthe specks never stay, so they go"
+        },
+        "10": {
+            "name": "pc_info",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 730,
+            "width": 76,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "int",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 905,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment about 2850 of 3300 survive",
+            "name": "comment",
+            "id": 681,
+            "position_x": 369,
+            "position_y": 955,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "about 2850 of 3300 survive",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "about 2850 of 3300 survive"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 977,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "concatenate",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "denoised",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

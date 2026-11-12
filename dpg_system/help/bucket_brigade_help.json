@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The bucket brigade node acts as a shift register or a history buffer.\n\nIt creates a series of output pins that represent the last N values received. \nWhen a new value arrives at the input, it is sent to the first output. \nThe value that was previously at the first output shifts to the second, \nthe second shifts to the third, and so on. The oldest value falls off the end.\n\nSYNTAX:\n\nbucket_brigade <count: int>\n\nEXAMPLE:\n\nbucket_brigade 4\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nEvery time data is received here, it pushes the current values down the line \nand fills the first output slot with this new data.\n\ncount (argument): \nDefines how many \"buckets\" or outputs to create. Default is 8.\n\nOUTPUTS: \n\nout (series):\nA sequence of outputs corresponding to the history of inputs. \nOut 0 contains the most recently received value.\nOut 1 contains the value received one step ago.\nOut 2 contains the value received two steps ago, etc.\n...",
+                    "value": "The bucket brigade node acts as a shift register or a history buffer.\n\nIt creates a series of output pins that represent the last N values received.  When a new value arrives at the input, it is sent to the first output.  The value that was previously at the first output shifts to the second,  the second shifts to the third, and so on. The oldest value falls off the end.\n\nSYNTAX:\n\nbucket_brigade <count: int>\n\nEXAMPLE:\n\nbucket_brigade 4\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nEvery time data is received here, it pushes the current values down the line  and fills the first output slot with this new data.\n\ncount (argument): \nDefines how many \"buckets\" or outputs to create. Default is 8.\n\nOUTPUTS: \n\nout (series):\nA sequence of outputs corresponding to the history of inputs.  Out 0 contains the most recently received value.\nOut 1 contains the value received one step ago.\nOut 2 contains the value received two steps ago, etc. ...",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The bucket brigade node acts as a shift register or a history buffer.\n\nIt creates a series of output pins that represent the last N values received. \nWhen a new value arrives at the input, it is sent to the first output. \nThe value that was previously at the first output shifts to the second, \nthe second shifts to the third, and so on. The oldest value falls off the end.\n\nSYNTAX:\n\nbucket_brigade <count: int>\n\nEXAMPLE:\n\nbucket_brigade 4\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nEvery time data is received here, it pushes the current values down the line \nand fills the first output slot with this new data.\n\ncount (argument): \nDefines how many \"buckets\" or outputs to create. Default is 8.\n\nOUTPUTS: \n\nout (series):\nA sequence of outputs corresponding to the history of inputs. \nOut 0 contains the most recently received value.\nOut 1 contains the value received one step ago.\nOut 2 contains the value received two steps ago, etc.\n..."
+            "text": "The bucket brigade node acts as a shift register or a history buffer.\n\nIt creates a series of output pins that represent the last N values received.  When a new value arrives at the input, it is sent to the first output.  The value that was previously at the first output shifts to the second,  the second shifts to the third, and so on. The oldest value falls off the end.\n\nSYNTAX:\n\nbucket_brigade <count: int>\n\nEXAMPLE:\n\nbucket_brigade 4\n\nINPUTS AND PARAMETERS:\n\nin: \nThe entry point for data. \nEvery time data is received here, it pushes the current values down the line  and fills the first output slot with this new data.\n\ncount (argument): \nDefines how many \"buckets\" or outputs to create. Default is 8.\n\nOUTPUTS: \n\nout (series):\nA sequence of outputs corresponding to the history of inputs.  Out 0 contains the most recently received value.\nOut 1 contains the value received one step ago.\nOut 2 contains the value received two steps ago, etc. ..."
         },
         "4": {
             "init": "bucket_brigade 8",
@@ -120,7 +120,8 @@
             "height": 140,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "highlight": true
         },
         "5": {
             "name": "counter",

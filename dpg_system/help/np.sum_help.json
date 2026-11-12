@@ -1,0 +1,856 @@
+{
+    "height": 1105,
+    "width": 1942,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1704,
+    "name": "np.sum_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1732,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.sum - add up an array",
+            "name": "comment",
+            "id": 1750,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 303,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.sum - add up an array",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "np.sum - add up an array"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1761,
+            "sid": 3,
+            "position_x": 805,
+            "position_y": 17,
+            "width": 768,
+            "height": 966,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Adds up the values in an array - all of them, or each row or each column separately.\n\nUse it for a total (the energy in a frame, the number of active cells in a mask - True counts as 1), a row or column total (the activity of each joint over a window, the profile of an image projected onto one axis), or as the first step of an average you want to weight yourself.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.sum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.sum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into an array; a single number is sent back as itself while axis is None. An empty array sums to 0. If the array holds a NaN (not-a-number), the total it is part of is NaN - use np.nansum to skip them.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.sum 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nsum:\nWith axis None, one number; with an axis, an array of totals, one per row or column. Whole numbers sum to whole numbers (int64), floats to floats of the same type; True and False sum to a count.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in the cells; click its button for new ones and every total follows. np.sum 1 adds along each ROW: the 6 totals stand beside the picture (the expand_dims node only turns them into a column so each sits next to its row). np.sum 0 adds down each COLUMN: 8 totals in the strip underneath, one under each column. np.sum with axis None adds all 48 cells - the same number as adding up either set of totals.\n\nRELATED:\nnp.nansum skips NaN values. np.mean is the sum divided by the count. np.cumsum keeps the running total at every step instead of only the end. np.any tells you whether anything is non-zero at all. t.sum (on the t.mean page) is the PyTorch version.",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 950,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "Adds up the values in an array - all of them, or each row or each column separately.\n\nUse it for a total (the energy in a frame, the number of active cells in a mask - True counts as 1), a row or column total (the activity of each joint over a window, the profile of an image projected onto one axis), or as the first step of an average you want to weight yourself.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.sum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.sum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into an array; a single number is sent back as itself while axis is None. An empty array sums to 0. If the array holds a NaN (not-a-number), the total it is part of is NaN - use np.nansum to skip them.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.sum 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nsum:\nWith axis None, one number; with an axis, an array of totals, one per row or column. Whole numbers sum to whole numbers (int64), floats to floats of the same type; True and False sum to a count.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in the cells; click its button for new ones and every total follows. np.sum 1 adds along each ROW: the 6 totals stand beside the picture (the expand_dims node only turns them into a column so each sits next to its row). np.sum 0 adds down each COLUMN: 8 totals in the strip underneath, one under each column. np.sum with axis None adds all 48 cells - the same number as adding up either set of totals.\n\nRELATED:\nnp.nansum skips NaN values. np.mean is the sum divided by the count. np.cumsum keeps the running total at every step instead of only the end. np.any tells you whether anything is non-zero at all. t.sum (on the t.mean page) is the PyTorch version."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 1778,
+            "sid": 4,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "4": {
+            "init": "np.rand 6 8",
+            "name": "np.rand",
+            "id": 1785,
+            "sid": 5,
+            "position_x": 138,
+            "position_y": 91,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "int64",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "init": "comment whole numbers 0 to 3 - click its button for new ones",
+            "name": "comment",
+            "id": 1807,
+            "sid": 6,
+            "position_x": 24,
+            "position_y": 53,
+            "width": 322,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "an array of whole numbers 0 to 3 - click to refresh",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "an array of whole numbers 0 to 3 - click to refresh"
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 1818,
+            "sid": 7,
+            "position_x": 29,
+            "position_y": 270,
+            "width": 360,
+            "height": 230,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 352,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "init": "np.sum 1",
+            "name": "np.sum",
+            "id": 1860,
+            "sid": 9,
+            "position_x": 413,
+            "position_y": 201,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": "1",
+                    "value_type": "string"
+                }
+            },
+            "highlight": true
+        },
+        "8": {
+            "init": "comment axis 1: one total per row",
+            "name": "comment",
+            "id": 1870,
+            "sid": 10,
+            "position_x": 409,
+            "position_y": 167,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis 1: the sums across the array",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "axis 1: the sums across the array"
+        },
+        "9": {
+            "init": "np.expand_dims 1",
+            "name": "np.expand_dims",
+            "id": 1881,
+            "sid": 11,
+            "position_x": 549,
+            "position_y": 202,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 1891,
+            "sid": 13,
+            "position_x": 414,
+            "position_y": 271,
+            "width": 189,
+            "height": 230,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 181,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 24.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "np.sum",
+            "id": 1928,
+            "sid": 14,
+            "position_x": 411,
+            "position_y": 90,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": "None",
+                    "value_type": "string"
+                }
+            },
+            "highlight": true
+        },
+        "12": {
+            "init": "comment axis None: all 48 cells",
+            "name": "comment",
+            "id": 1938,
+            "sid": 15,
+            "position_x": 408,
+            "position_y": 52,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis None: sum all 48 cells",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "axis None: sum all 48 cells"
+        },
+        "13": {
+            "name": "int",
+            "id": 1949,
+            "sid": 16,
+            "position_x": 550,
+            "position_y": 94,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 63,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "14": {
+            "init": "np.sum 0",
+            "name": "np.sum",
+            "id": 1985,
+            "sid": 17,
+            "position_x": 32,
+            "position_y": 551,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": "0",
+                    "value_type": "string"
+                }
+            },
+            "highlight": true
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 1995,
+            "sid": 19,
+            "position_x": 32,
+            "position_y": 623,
+            "width": 356,
+            "height": 127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 348,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 77,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 18.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "init": "help_link np.nansum",
+            "name": "help_link",
+            "id": 2032,
+            "sid": 20,
+            "position_x": 33,
+            "position_y": 812,
+            "width": 73,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.nansum",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "help_link np.mean",
+            "name": "help_link",
+            "id": 2043,
+            "sid": 21,
+            "position_x": 122,
+            "position_y": 812,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.mean",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "init": "help_link np.cumsum",
+            "name": "help_link",
+            "id": 2054,
+            "sid": 22,
+            "position_x": 198,
+            "position_y": 812,
+            "width": 73,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.cumsum",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "init": "help_link np.any",
+            "name": "help_link",
+            "id": 2065,
+            "sid": 23,
+            "position_x": 287,
+            "position_y": 812,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.any",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "20": {
+            "init": "help_link t.mean t.sum",
+            "name": "help_link",
+            "id": 2076,
+            "sid": 24,
+            "position_x": 357,
+            "position_y": 812,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "t.sum",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "21": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 2087,
+            "sid": 25,
+            "position_x": 33,
+            "position_y": 778,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "22": {
+            "name": "close",
+            "id": 2098,
+            "sid": 26,
+            "position_x": 29,
+            "position_y": 856,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "23": {
+            "init": "comment axis 0the sums across",
+            "name": "comment",
+            "id": 2103,
+            "sid": 28,
+            "position_x": 31,
+            "position_y": 512,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis 0: the sums down the array",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "axis 0: the sums down the array"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1778,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1785,
+            "dest_node_name": "np.rand",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 1785,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1818,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 1785,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1860,
+            "dest_node_name": "np.sum",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 1785,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1928,
+            "dest_node_name": "np.sum",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 1785,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1985,
+            "dest_node_name": "np.sum",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 1860,
+            "source_node_name": "np.sum",
+            "source_output_index": 0,
+            "source_output_name": "sum",
+            "dest_node": 1881,
+            "dest_node_name": "np.expand_dims",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 1881,
+            "source_node_name": "np.expand_dims",
+            "source_output_index": 0,
+            "source_output_name": "array out",
+            "dest_node": 1891,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 1928,
+            "source_node_name": "np.sum",
+            "source_output_index": 0,
+            "source_output_name": "sum",
+            "dest_node": 1949,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 1985,
+            "source_node_name": "np.sum",
+            "source_output_index": 0,
+            "source_output_name": "sum",
+            "dest_node": 1995,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

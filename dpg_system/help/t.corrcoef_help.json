@@ -1,0 +1,984 @@
+{
+    "name": "t.corrcoef_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.corrcoef_help.json",
+    "patches": {
+        "0": {
+            "height": 900,
+            "width": 860,
+            "position": [
+                160,
+                160
+            ],
+            "id": 940,
+            "name": "make_channels",
+            "parent_node_uuid": 422,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 977,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 200",
+                    "id": 1014,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment new channels five times a second",
+                    "id": 1051,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 320,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "new channels five times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "new channels five times a second"
+                },
+                "3": {
+                    "name": "t.rand",
+                    "init": "t.rand 64",
+                    "id": 1088,
+                    "position_x": 380,
+                    "position_y": 130,
+                    "width": 190,
+                    "height": 160,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "[64]",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 1.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment channel 3: its own random values",
+                    "id": 1125,
+                    "position_x": 380,
+                    "position_y": 300,
+                    "width": 320,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "channel 3: its own random values",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "channel 3: its own random values"
+                },
+                "5": {
+                    "name": "t.rand",
+                    "init": "t.rand 64",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 190,
+                    "height": 160,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shape",
+                            "value": "[64]",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 1.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment channel 0: random values",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 300,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "channel 0: random values",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "channel 0: random values"
+                },
+                "7": {
+                    "name": "in",
+                    "init": "in noise",
+                    "id": 1236,
+                    "position_x": 600,
+                    "position_y": 130,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "8": {
+                    "name": "*",
+                    "init": "* 0.5",
+                    "id": 1273,
+                    "position_x": 380,
+                    "position_y": 360,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "9": {
+                    "name": "comment",
+                    "init": "comment times the noise amount",
+                    "id": 1310,
+                    "position_x": 520,
+                    "position_y": 365,
+                    "width": 260,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "times the noise amount",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "times the noise amount"
+                },
+                "10": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1347,
+                    "position_x": 200,
+                    "position_y": 440,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "comment",
+                    "init": "comment channel 1: channel 0 plus some of channel 3",
+                    "id": 1384,
+                    "position_x": 340,
+                    "position_y": 445,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "channel 1: channel 0 plus some of channel 3",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "channel 1: channel 0 plus some of channel 3"
+                },
+                "12": {
+                    "name": "*",
+                    "init": "* -1",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 440,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "13": {
+                    "name": "comment",
+                    "init": "comment channel 2: channel 0 upside down",
+                    "id": 1458,
+                    "position_x": 40,
+                    "position_y": 495,
+                    "width": 340,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "channel 2: channel 0 upside down",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "channel 2: channel 0 upside down"
+                },
+                "14": {
+                    "name": "t.stack",
+                    "init": "t.stack 4",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 560,
+                    "width": 160,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "15": {
+                    "name": "comment",
+                    "init": "comment the four rows as one 4 x 64 tensor",
+                    "id": 1532,
+                    "position_x": 220,
+                    "position_y": 600,
+                    "width": 360,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the four rows as one 4 x 64 tensor",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the four rows as one 4 x 64 tensor"
+                },
+                "16": {
+                    "name": "out",
+                    "init": "out channels",
+                    "id": 1569,
+                    "position_x": 40,
+                    "position_y": 740,
+                    "width": 160,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1088,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "2": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "noise",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "3": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random tensor",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random tensor",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor 4"
+                },
+                "5": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "6": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random tensor",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "7": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random tensor",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random tensor",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor 1"
+                },
+                "9": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor 3"
+                },
+                "10": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor 2"
+                },
+                "11": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1569,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "channels"
+                }
+            }
+        },
+        "1": {
+            "height": 1220,
+            "width": 1744,
+            "position": [
+                100,
+                100
+            ],
+            "id": 903,
+            "name": "t.corrcoef_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.corrcoef_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.corrcoef - how the rows move together",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 488,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.corrcoef - how the rows move together",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.corrcoef - how the rows move together"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 936,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1081,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Measures how much the rows of a tensor move TOGETHER: feed it rows of samples (one row per channel) and it returns a square table with the correlation of every pair of rows.\n\n   1   the two rise and fall together\n   0   no straight-line relation\n  -1   one rises exactly as the other falls\n\nThe diagonal is always 1 - every row moves exactly with itself - and the table is symmetric, since A with B is B with A. Correlation removes each row's average and its scale before comparing, so two channels that wobble in step correlate fully even if one is far bigger than the other or sits far from zero (unlike t.cosine_similarity). Over a long recording of several joints or sensors, the table is a measured picture of which things habitually happen at once.\n\nSYNTAX:\nt.corrcoef\nNo arguments.\n\nEXAMPLE:\nt.corrcoef\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA 2-D tensor: rows are channels, columns are samples (a list or NumPy array is turned into a float32 tensor). If your data has one channel per COLUMN, as a rolling buffer of vectors does, turn it round with t.t first. Every input is measured and sent - the only inlet.\n\nA 1-D tensor counts as a single row and gives 1. A row that never changes has no correlation with anything: its row and column come out as nan (not a number).\n\nFEW SAMPLES, LOUD CORRELATIONS:\nWith only a handful of columns, chance alone produces sizeable correlations between unrelated rows. Give it many samples before trusting a number.\n\nOUTPUTS:\n\ntensor out:\nThe table of correlations, one row and one column per input row, each between -1 and 1.\n\nREADING THE DEMO:\nmake_channels sends four channels of 64 samples five times a second, as a 4 x 64 tensor (upper picture, one row per channel):\n  row 0: random values\n  row 1: row 0 plus some of row 3 - the slider sets how much\n  row 2: row 0 upside down\n  row 3: other random values\nThe lower picture is the 4 x 4 table (dark blue is +1, dark red -1, pale is 0). Row 0 with row 2 is -1: one exactly mirrors the other. Row 0 with row 1 is high but below 1 (about 0.9 with the slider at 0.5), and row 1 also correlates with row 3, whose noise it carries (about 0.45). Row 3 with rows 0 and 2 is near 0 - but it flickers around 0 by 0.1 or more, which is chance with only 64 samples.\n\nDrag the slider to 0 and row 1 becomes an exact copy: 1 with row 0, -1 with row 2. Drag it to 2 and row 1 is mostly noise: its correlation with row 0 falls to about 0.45, with row 3 rises to about 0.9.\n\nRELATED:\nt.cosine_similarity compares direction without removing the average. t.mean and t.sum summarise one channel. t.linalg.pca_low_rank finds the directions the channels vary along together. t.stack builds rows into one tensor.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1065,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Measures how much the rows of a tensor move TOGETHER: feed it rows of samples (one row per channel) and it returns a square table with the correlation of every pair of rows.\n\n   1   the two rise and fall together\n   0   no straight-line relation\n  -1   one rises exactly as the other falls\n\nThe diagonal is always 1 - every row moves exactly with itself - and the table is symmetric, since A with B is B with A. Correlation removes each row's average and its scale before comparing, so two channels that wobble in step correlate fully even if one is far bigger than the other or sits far from zero (unlike t.cosine_similarity). Over a long recording of several joints or sensors, the table is a measured picture of which things habitually happen at once.\n\nSYNTAX:\nt.corrcoef\nNo arguments.\n\nEXAMPLE:\nt.corrcoef\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA 2-D tensor: rows are channels, columns are samples (a list or NumPy array is turned into a float32 tensor). If your data has one channel per COLUMN, as a rolling buffer of vectors does, turn it round with t.t first. Every input is measured and sent - the only inlet.\n\nA 1-D tensor counts as a single row and gives 1. A row that never changes has no correlation with anything: its row and column come out as nan (not a number).\n\nFEW SAMPLES, LOUD CORRELATIONS:\nWith only a handful of columns, chance alone produces sizeable correlations between unrelated rows. Give it many samples before trusting a number.\n\nOUTPUTS:\n\ntensor out:\nThe table of correlations, one row and one column per input row, each between -1 and 1.\n\nREADING THE DEMO:\nmake_channels sends four channels of 64 samples five times a second, as a 4 x 64 tensor (upper picture, one row per channel):\n  row 0: random values\n  row 1: row 0 plus some of row 3 - the slider sets how much\n  row 2: row 0 upside down\n  row 3: other random values\nThe lower picture is the 4 x 4 table (dark blue is +1, dark red -1, pale is 0). Row 0 with row 2 is -1: one exactly mirrors the other. Row 0 with row 1 is high but below 1 (about 0.9 with the slider at 0.5), and row 1 also correlates with row 3, whose noise it carries (about 0.45). Row 3 with rows 0 and 2 is near 0 - but it flickers around 0 by 0.1 or more, which is chance with only 64 samples.\n\nDrag the slider to 0 and row 1 becomes an exact copy: 1 with row 0, -1 with row 2. Drag it to 2 and row 1 is mostly noise: its correlation with row 0 falls to about 0.45, with row 3 rises to about 0.9.\n\nRELATED:\nt.cosine_similarity compares direction without removing the average. t.mean and t.sum summarise one channel. t.linalg.pca_low_rank finds the directions the channels vary along together. t.stack builds rows into one tensor."
+                },
+                "3": {
+                    "name": "slider",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 270,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": 0.5,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 2.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "width",
+                            "value": 240,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "init": "comment how much noise is mixed into row 1",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 584,
+                    "position_y": 70,
+                    "width": 217,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "how much noise is mixed into row 1",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "how much noise is mixed into row 1"
+                },
+                "5": {
+                    "name": "p",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 150,
+                    "width": 96,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_channels",
+                    "patcher id": 940
+                },
+                "6": {
+                    "init": "comment four channels, 64 samples each - open it to see how",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 584,
+                    "position_y": 155,
+                    "width": 322,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "four channels, 64 samples each - open it to see how",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "four channels, 64 samples each - open it to see how"
+                },
+                "7": {
+                    "name": "heat_map",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 250,
+                    "width": 528,
+                    "height": 170,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 520,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 120,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 4,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "8": {
+                    "init": "comment in: rows 0 to 3, top to bottom",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 584,
+                    "position_y": 255,
+                    "width": 193,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "in: rows 0 to 3, top to bottom",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "in: rows 0 to 3, top to bottom"
+                },
+                "9": {
+                    "name": "t.corrcoef",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 440,
+                    "width": 70,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "10": {
+                    "name": "heat_map",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 530,
+                    "width": 328,
+                    "height": 210,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 160,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 4,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "11": {
+                    "name": "text_block",
+                    "id": 644,
+                    "annotation": true,
+                    "position_x": 584,
+                    "position_y": 535,
+                    "width": 311,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "out: row i, column j is how rows i and j move\ntogether - blue +1, pale 0, red -1",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 303,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "out: row i, column j is how rows i and j move\ntogether - blue +1, pale 0, red -1"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 30,
+                    "position_y": 814,
+                    "width": 136,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.cosine_similarity"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 182,
+                    "position_y": 814,
+                    "width": 54,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.mean"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 252,
+                    "position_y": 814,
+                    "width": 148,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.linalg.pca_low_rank"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 858,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.stack"
+                },
+                "16": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 780,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "17": {
+                    "name": "close",
+                    "id": 866,
+                    "position_x": 24,
+                    "position_y": 932,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "noise"
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "channels",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "channels",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "3": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor out",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

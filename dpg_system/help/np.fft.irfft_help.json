@@ -1,0 +1,683 @@
+{
+    "height": 1371,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1162,
+    "name": "np.fft.irfft_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.fft.irfft_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.fft.irfft - a signal from its frequencies",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.fft.irfft - a signal from its frequencies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.fft.irfft - a signal from its frequencies"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1266,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Turns a spectrum back into a signal: the inverse of np.fft.rfft. Each frequency's sine wave is rebuilt at its magnitude and phase, and all of them are added up.\n\nRound trip, it gives back the original signal exactly. The point is to change the spectrum in between: remove frequencies (a filter as sharp as you like), keep only the strongest ones (compression, denoising), smear or shift them, or put one signal's magnitudes with another's phases.\n\nSYNTAX:\nnp.fft.irfft <length: int>\nDefault: length 0 (2 x (frequencies - 1): an even-length signal).\n\nEXAMPLE:\nnp.fft.irfft 64\n\nINPUTS and PARAMETERS:\n\nspectrum:\nThe complex spectrum from np.fft.rfft's spectrum outlet. Every input is transformed and sent. Real values are taken as magnitudes instead, combined with the phases in the phase inlet.\n\nphase:\nPhases in radians, held, to go with magnitudes arriving at spectrum (from rfft's magnitude and phase outlets). Without them, or if their shape does not match, every phase is 0. Not used when the spectrum is complex.\n\nlength (int box, also an inlet):\nHow many samples to make. Set it to the original window length: an odd length cannot be told from the spectrum alone, and 0 always gives an even one.\n\naxis (int box, also an inlet):\nFor a 2-D spectrum, which way the frequencies run: -1 along each row, 0 down each column.\n\nnorm:\nAn option, under the node: must match the norm used for np.fft.rfft (backward, the default, for both).\n\nOUTPUTS:\n\nsignal:\nThe rebuilt signal.\n\nREADING THE DEMO:\n64 random values (left) go to frequencies. np.take keeps only the first 6 of the 33 - the steady average and the 5 slowest waves - and np.pad puts 27 zeros back in place of the rest. Rebuilt, the jagged noise becomes a smooth curve that follows its slow drift (right): a low-pass filter with a perfectly sharp cut. Change the 27 and the 6 of np.take together to keep more or fewer.\n\nRELATED:\nnp.fft.rfft makes the spectrum. t.irfft is the PyTorch version. np.convolve filters without going through frequencies.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1250,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Turns a spectrum back into a signal: the inverse of np.fft.rfft. Each frequency's sine wave is rebuilt at its magnitude and phase, and all of them are added up.\n\nRound trip, it gives back the original signal exactly. The point is to change the spectrum in between: remove frequencies (a filter as sharp as you like), keep only the strongest ones (compression, denoising), smear or shift them, or put one signal's magnitudes with another's phases.\n\nSYNTAX:\nnp.fft.irfft <length: int>\nDefault: length 0 (2 x (frequencies - 1): an even-length signal).\n\nEXAMPLE:\nnp.fft.irfft 64\n\nINPUTS and PARAMETERS:\n\nspectrum:\nThe complex spectrum from np.fft.rfft's spectrum outlet. Every input is transformed and sent. Real values are taken as magnitudes instead, combined with the phases in the phase inlet.\n\nphase:\nPhases in radians, held, to go with magnitudes arriving at spectrum (from rfft's magnitude and phase outlets). Without them, or if their shape does not match, every phase is 0. Not used when the spectrum is complex.\n\nlength (int box, also an inlet):\nHow many samples to make. Set it to the original window length: an odd length cannot be told from the spectrum alone, and 0 always gives an even one.\n\naxis (int box, also an inlet):\nFor a 2-D spectrum, which way the frequencies run: -1 along each row, 0 down each column.\n\nnorm:\nAn option, under the node: must match the norm used for np.fft.rfft (backward, the default, for both).\n\nOUTPUTS:\n\nsignal:\nThe rebuilt signal.\n\nREADING THE DEMO:\n64 random values (left) go to frequencies. np.take keeps only the first 6 of the 33 - the steady average and the 5 slowest waves - and np.pad puts 27 zeros back in place of the rest. Rebuilt, the jagged noise becomes a smooth curve that follows its slow drift (right): a low-pass filter with a perfectly sharp cut. Change the 27 and the 6 of np.take together to keep more or fewer.\n\nRELATED:\nnp.fft.rfft makes the spectrum. t.irfft is the PyTorch version. np.convolve filters without going through frequencies."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment 64 random values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "64 random values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "64 random values"
+        },
+        "6": {
+            "name": "np.rand",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 64"
+        },
+        "7": {
+            "init": "comment to frequencies",
+            "name": "comment",
+            "id": 496,
+            "position_x": 360,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "to frequencies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "to frequencies"
+        },
+        "8": {
+            "name": "np.fft.rfft",
+            "id": 533,
+            "position_x": 360,
+            "position_y": 92,
+            "width": 160,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment keep the 6 slowest",
+            "name": "comment",
+            "id": 570,
+            "position_x": 580,
+            "position_y": 53,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "keep the 6 slowest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "keep the 6 slowest"
+        },
+        "10": {
+            "name": "np.take",
+            "id": 607,
+            "position_x": 580,
+            "position_y": 92,
+            "width": 117,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.take 0 1 2 3 4 5"
+        },
+        "11": {
+            "init": "comment zeros for the other 27",
+            "name": "comment",
+            "id": 644,
+            "position_x": 580,
+            "position_y": 230,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "zeros for the other 27",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "zeros for the other 27"
+        },
+        "12": {
+            "name": "np.pad",
+            "id": 681,
+            "position_x": 580,
+            "position_y": 265,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.pad 0 27"
+        },
+        "13": {
+            "init": "comment back to a signal",
+            "name": "comment",
+            "id": 718,
+            "position_x": 580,
+            "position_y": 470,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "back to a signal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "back to a signal"
+        },
+        "14": {
+            "name": "np.fft.irfft",
+            "id": 755,
+            "position_x": 580,
+            "position_y": 505,
+            "width": 129,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.fft.irfft 64",
+            "highlight": true
+        },
+        "15": {
+            "init": "comment in: noise",
+            "name": "comment",
+            "id": 792,
+            "position_x": 28,
+            "position_y": 290,
+            "width": 64,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: noise"
+        },
+        "16": {
+            "name": "plot",
+            "id": 829,
+            "position_x": 28,
+            "position_y": 325,
+            "width": 248,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 64.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "init": "comment out: its slow drift",
+            "name": "comment",
+            "id": 866,
+            "position_x": 300,
+            "position_y": 470,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "out: its slow drift",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "out: its slow drift"
+        },
+        "18": {
+            "name": "plot",
+            "id": 903,
+            "position_x": 300,
+            "position_y": 505,
+            "width": 248,
+            "height": 160,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 64.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "19": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 754,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.fft.rfft"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 158,
+            "position_y": 754,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.irfft"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 255,
+            "position_y": 754,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.convolve"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 383,
+            "position_y": 754,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.take"
+        },
+        "24": {
+            "name": "close",
+            "id": 1125,
+            "position_x": 24,
+            "position_y": 864,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "spectrum",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "taken",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "padded",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "spectrum"
+        },
+        "6": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

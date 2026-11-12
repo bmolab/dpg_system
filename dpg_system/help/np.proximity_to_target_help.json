@@ -1,0 +1,1162 @@
+{
+    "name": "np.proximity_to_target_help",
+    "patches": {
+        "0": {
+            "height": 1262,
+            "width": 1673,
+            "position": [
+                100,
+                67
+            ],
+            "id": 1472,
+            "parent_node_uuid": 1647,
+            "name": "make_point",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1500,
+                    "sid": 1,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "hidden",
+                    "draggable": false,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "signal 3.0 sin",
+                    "name": "signal",
+                    "id": 1518,
+                    "sid": 2,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 3.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "2": {
+                    "init": "signal 4.0 cos",
+                    "name": "signal",
+                    "id": 1540,
+                    "sid": 3,
+                    "position_x": 200,
+                    "position_y": 40,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "cos",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "3": {
+                    "init": "comment x: once every 3 s, y: once every 4 s, both -1 to 1",
+                    "name": "comment",
+                    "id": 1562,
+                    "sid": 4,
+                    "position_x": 40,
+                    "position_y": 135,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "x: once every 3 s, y: once every 4 s, both -1 to 1",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "x: once every 3 s, y: once every 4 s, both -1 to 1"
+                },
+                "4": {
+                    "init": "pack 2",
+                    "name": "pack",
+                    "id": 1573,
+                    "sid": 5,
+                    "position_x": 40,
+                    "position_y": 180,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "output pref",
+                            "value": "list",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "5": {
+                    "init": "comment the point as a list: x y",
+                    "name": "comment",
+                    "id": 1586,
+                    "sid": 6,
+                    "position_x": 200,
+                    "position_y": 200,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the point as a list: x y",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "the point as a list: x y"
+                },
+                "6": {
+                    "init": "out point",
+                    "name": "out",
+                    "id": 1597,
+                    "sid": 7,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "dest",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "output name",
+                            "value": "point",
+                            "value_type": "string"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1518,
+                    "source_node_name": "signal",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1573,
+                    "dest_node_name": "pack",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "1": {
+                    "source_node": 1540,
+                    "source_node_name": "signal",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1573,
+                    "dest_node_name": "pack",
+                    "dest_input_index": 1,
+                    "dest_input_name": "in 2"
+                },
+                "2": {
+                    "source_node": 1573,
+                    "source_node_name": "pack",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1597,
+                    "dest_node_name": "out",
+                    "dest_input_index": 0,
+                    "dest_input_name": "point"
+                }
+            }
+        },
+        "1": {
+            "height": 1262,
+            "width": 1673,
+            "position": [
+                100,
+                67
+            ],
+            "id": 1424,
+            "name": "np.proximity_to_target_help",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1452,
+                    "sid": 1,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 29,
+                    "visibility": "hidden",
+                    "draggable": false,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.proximity_to_target - closeness to several targets, 1 to 0",
+                    "name": "comment",
+                    "id": 1608,
+                    "sid": 2,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 758,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.proximity_to_target - closeness to several targets, 1 to 0",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "np.proximity_to_target - closeness to several targets, 1 to 0"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 1619,
+                    "sid": 3,
+                    "position_x": 875,
+                    "position_y": 14,
+                    "width": 767,
+                    "height": 1515,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Measures how close its input is to each of a set of targets, as a level from 1 (at the target) falling to 0 at the edge of the target's zone - the shape you want for fading sounds in and out as a tracked point moves about.\n\nEach target is a spot with a round zone around it, radius wide. Inside the zone the level rises as you approach; outside it the level is 0. The output is made to plug straight into the fade inlet of polyphonic_sampler~: target 0 drives one sound, target 1 the next, and so on, so walking from spot to spot crossfades between sounds.\n\nSETTING THE TARGETS:\nChoose a slot with target index, put the tracker where that target should be, and click capture. Choose another index and capture again. Skipping ahead (index 5 when there are 2) leaves the slots in between unset; they report 0. The targets are saved with the patch - this page opens with three: 0.5 0.7, -0.5 -0.7 and 0 0. Capturing a point of a different length (x y z into a set of x y targets) throws the whole set away and starts a new one.\n\nSYNTAX:\nnp.proximity_to_target\n\nINPUTS and PARAMETERS:\n\ninput:\nThe tracker position, as a list or array (x y, x y z...), or several trackers, one per row. Every input is measured and sent. Nothing is sent until there are targets, or when the input's length does not match theirs.\n\ntarget index (int box) / capture (button):\nThe slot to capture into, and the button that copies the last input into it. capture sends the new set from targets and measures at once.\n\ntargets:\nReplaces the whole set: a list of positions, one per row ([[x, y], ...]). A flat list is taken as ONE target.\n\nclear (button):\nForgets every target, fades out whatever is sounding (one last 0 for each), and sends an empty list from targets.\n\nradius (drag float, default 0.5):\nThe size of each zone, in the input's units. The level is 1 minus (distance / radius), so it falls in a straight line from 1 to 0.\n\nexponent (drag float, default 1.0):\nShapes that fall. Above 1 the level stays low until you are close and then rises sharply - a tighter spot. Below 1 it rises quickly at the edge and stays high across the zone - a broad plateau.\n\nfirst sound (int box, default 0):\nThe sound number target 0 drives; target i drives first sound + i. Changing it fades out the sounds that were on.\n\nOUTPUTS:\n\nfade:\n[[sound, level], ...] for every target whose zone you are in. It is sparse: a sound is listed while its level is above 0, gets a single 0 the moment you leave its zone (so the sampler stops it), and is then left out. With nothing in range and nothing just left, nothing is sent. With several trackers the closest one sets each target's level. Levels are rounded to 4 decimals.\n\nnearest:\nThe index of the target with the highest level, or -1 when the tracker is in no zone (one per tracker with several).\n\ntargets:\nThe whole set of targets, sent when it changes (capture, the targets inlet, clear). Unset slots are nan.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1. As it passes through a zone, fade lists that target's sound with a level that rises to near 1 at the centre and falls away, then sends one last 0. unpack takes the first [sound, level] pair out of fade, and the plot draws its level: it rises towards 1 as the point nears a target's centre and falls back to 0 as it leaves (where two zones overlap, it follows the first one listed). nearest, in the number and the radio, switches between 0, 1 and 2, and is -1 between zones. Where two zones overlap (0.5 0.7 and 0 0 just do), fade lists two sounds at once; drag radius up and the zones grow until they overlap widely. Raise exponent and the levels stay lower except near the centres.\n\nRELATED:\nnp.distance_from_target gives the plain distance to one target. proximity_trigger fires an event on arrival instead of a level. polyphonic_sampler~ plays the sounds this fades. effort_fader sends fades in the same sparse format.",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1500,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "string"
+                        }
+                    },
+                    "text": "Measures how close its input is to each of a set of targets, as a level from 1 (at the target) falling to 0 at the edge of the target's zone - the shape you want for fading sounds in and out as a tracked point moves about.\n\nEach target is a spot with a round zone around it, radius wide. Inside the zone the level rises as you approach; outside it the level is 0. The output is made to plug straight into the fade inlet of polyphonic_sampler~: target 0 drives one sound, target 1 the next, and so on, so walking from spot to spot crossfades between sounds.\n\nSETTING THE TARGETS:\nChoose a slot with target index, put the tracker where that target should be, and click capture. Choose another index and capture again. Skipping ahead (index 5 when there are 2) leaves the slots in between unset; they report 0. The targets are saved with the patch - this page opens with three: 0.5 0.7, -0.5 -0.7 and 0 0. Capturing a point of a different length (x y z into a set of x y targets) throws the whole set away and starts a new one.\n\nSYNTAX:\nnp.proximity_to_target\n\nINPUTS and PARAMETERS:\n\ninput:\nThe tracker position, as a list or array (x y, x y z...), or several trackers, one per row. Every input is measured and sent. Nothing is sent until there are targets, or when the input's length does not match theirs.\n\ntarget index (int box) / capture (button):\nThe slot to capture into, and the button that copies the last input into it. capture sends the new set from targets and measures at once.\n\ntargets:\nReplaces the whole set: a list of positions, one per row ([[x, y], ...]). A flat list is taken as ONE target.\n\nclear (button):\nForgets every target, fades out whatever is sounding (one last 0 for each), and sends an empty list from targets.\n\nradius (drag float, default 0.5):\nThe size of each zone, in the input's units. The level is 1 minus (distance / radius), so it falls in a straight line from 1 to 0.\n\nexponent (drag float, default 1.0):\nShapes that fall. Above 1 the level stays low until you are close and then rises sharply - a tighter spot. Below 1 it rises quickly at the edge and stays high across the zone - a broad plateau.\n\nfirst sound (int box, default 0):\nThe sound number target 0 drives; target i drives first sound + i. Changing it fades out the sounds that were on.\n\nOUTPUTS:\n\nfade:\n[[sound, level], ...] for every target whose zone you are in. It is sparse: a sound is listed while its level is above 0, gets a single 0 the moment you leave its zone (so the sampler stops it), and is then left out. With nothing in range and nothing just left, nothing is sent. With several trackers the closest one sets each target's level. Levels are rounded to 4 decimals.\n\nnearest:\nThe index of the target with the highest level, or -1 when the tracker is in no zone (one per tracker with several).\n\ntargets:\nThe whole set of targets, sent when it changes (capture, the targets inlet, clear). Unset slots are nan.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1. As it passes through a zone, fade lists that target's sound with a level that rises to near 1 at the centre and falls away, then sends one last 0. unpack takes the first [sound, level] pair out of fade, and the plot draws its level: it rises towards 1 as the point nears a target's centre and falls back to 0 as it leaves (where two zones overlap, it follows the first one listed). nearest, in the number and the radio, switches between 0, 1 and 2, and is -1 between zones. Where two zones overlap (0.5 0.7 and 0 0 just do), fade lists two sounds at once; drag radius up and the zones grow until they overlap widely. Raise exponent and the levels stay lower except near the centres.\n\nRELATED:\nnp.distance_from_target gives the plain distance to one target. proximity_trigger fires an event on arrival instead of a level. polyphonic_sampler~ plays the sounds this fades. effort_fader sends fades in the same sparse format."
+                },
+                "3": {
+                    "init": "comment an x y point, wandering",
+                    "name": "comment",
+                    "id": 1636,
+                    "sid": 4,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 150,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "an x y point, wandering",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "an x y point, wandering"
+                },
+                "4": {
+                    "init": "p make_point",
+                    "name": "p",
+                    "id": 1647,
+                    "sid": 5,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 78,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "make_point",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "patcher name",
+                            "value": "make_point",
+                            "value_type": "string"
+                        }
+                    },
+                    "show inputs": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "show outputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "patcher id": 1472
+                },
+                "5": {
+                    "init": "comment three targets saved; drag radius, exponent",
+                    "name": "comment",
+                    "id": 1755,
+                    "sid": 6,
+                    "position_x": 200,
+                    "position_y": 53,
+                    "width": 267,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "three targets saved; drag radius, exponent",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "three targets saved; drag radius, exponent"
+                },
+                "6": {
+                    "name": "np.proximity_to_target",
+                    "id": 1766,
+                    "sid": 7,
+                    "position_x": 200,
+                    "position_y": 92,
+                    "width": 165,
+                    "height": 167,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "target index",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "capture",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "2": {
+                            "name": "clear",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "3": {
+                            "name": "radius",
+                            "value": 0.5,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "exponent",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "first sound",
+                            "value": 0,
+                            "value_type": "int"
+                        }
+                    },
+                    "targets": [
+                        [
+                            0.5,
+                            0.7
+                        ],
+                        [
+                            -0.5,
+                            -0.7
+                        ],
+                        [
+                            0.0,
+                            0.0
+                        ]
+                    ],
+                    "highlight": true
+                },
+                "7": {
+                    "init": "comment fade: [[sound, level], ...]",
+                    "name": "comment",
+                    "id": 1798,
+                    "sid": 8,
+                    "position_x": 520,
+                    "position_y": 120,
+                    "width": 174,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "fade: [[sound, level], ...]",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "fade: [[sound, level], ...]"
+                },
+                "8": {
+                    "name": "list",
+                    "id": 1809,
+                    "sid": 9,
+                    "position_x": 520,
+                    "position_y": 155,
+                    "width": 196,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "[0, 0.3179]",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "adapt_width",
+                            "value": "grow_to_fit",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 166,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        },
+                        "5": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment nearest target, -1 for none",
+                    "name": "comment",
+                    "id": 1841,
+                    "sid": 10,
+                    "position_x": 520,
+                    "position_y": 220,
+                    "width": 174,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "nearest target, -1 for none",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "nearest target, -1 for none"
+                },
+                "10": {
+                    "name": "int",
+                    "id": 1852,
+                    "sid": 11,
+                    "position_x": 520,
+                    "position_y": 255,
+                    "width": 130,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "speed_property",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "format",
+                            "value": "%d",
+                            "value_type": "string"
+                        },
+                        "5": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "6": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "7": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        },
+                        "8": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "11": {
+                    "init": "comment targets: sent when the set changes (capture)",
+                    "name": "comment",
+                    "id": 1885,
+                    "sid": 12,
+                    "position_x": 520,
+                    "position_y": 320,
+                    "width": 279,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "targets: sent when the set changes (capture)",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "targets: sent when the set changes (capture)"
+                },
+                "12": {
+                    "name": "list",
+                    "id": 1896,
+                    "sid": 13,
+                    "position_x": 520,
+                    "position_y": 355,
+                    "width": 130,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "adapt_width",
+                            "value": "grow_to_fit",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        },
+                        "5": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "13": {
+                    "init": "help_link np.distance_from_target",
+                    "name": "help_link",
+                    "id": 1977,
+                    "sid": 16,
+                    "position_x": 11,
+                    "position_y": 814,
+                    "width": 158,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "np.distance_from_target",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "14": {
+                    "init": "help_link proximity_trigger",
+                    "name": "help_link",
+                    "id": 1988,
+                    "sid": 17,
+                    "position_x": 188,
+                    "position_y": 814,
+                    "width": 121,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "proximity_trigger",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "help_link polyphonic_sampler~",
+                    "name": "help_link",
+                    "id": 1999,
+                    "sid": 18,
+                    "position_x": 327,
+                    "position_y": 814,
+                    "width": 133,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "polyphonic_sampler~",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "16": {
+                    "init": "help_link effort_fader",
+                    "name": "help_link",
+                    "id": 2010,
+                    "sid": 19,
+                    "position_x": 479,
+                    "position_y": 814,
+                    "width": 90,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "effort_fader",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 2021,
+                    "sid": 20,
+                    "position_x": 11,
+                    "position_y": 780,
+                    "width": 156,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "18": {
+                    "name": "close",
+                    "id": 2032,
+                    "sid": 21,
+                    "position_x": 18,
+                    "position_y": 889,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "19": {
+                    "init": "comment nearest over time: 0, 1, 2, or -1 between zones",
+                    "name": "comment",
+                    "id": 2051,
+                    "sid": 22,
+                    "position_x": 24,
+                    "position_y": 431,
+                    "width": 451,
+                    "height": 29,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "proximity measure in relation to nearest target when a target is engaged",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "proximity measure in relation to nearest target when a target is engaged"
+                },
+                "20": {
+                    "name": "plot",
+                    "id": 2062,
+                    "sid": 23,
+                    "position_x": 24,
+                    "position_y": 471,
+                    "width": 827,
+                    "height": 289,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 820,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 240,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "stair",
+                            "value_type": "string"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is stream of samples",
+                            "value_type": "string"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -0.1,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.1,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "21": {
+                    "name": "unpack",
+                    "id": 2116,
+                    "sid": 25,
+                    "position_x": 192,
+                    "position_y": 312,
+                    "width": 45,
+                    "height": 41,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all"
+                },
+                "22": {
+                    "name": "unpack",
+                    "id": 2194,
+                    "sid": 27,
+                    "position_x": 264,
+                    "position_y": 313,
+                    "width": 45,
+                    "height": 55,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all"
+                },
+                "23": {
+                    "init": "radio -1 0 1 2 3",
+                    "name": "radio",
+                    "id": 2337,
+                    "sid": 33,
+                    "position_x": 719,
+                    "position_y": 227,
+                    "width": 39,
+                    "height": 97,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": "0",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "prefix",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "prefix_as_label",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "3": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        },
+                        "4": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1647,
+                    "source_node_name": "p",
+                    "source_output_index": 0,
+                    "source_output_name": "point",
+                    "dest_node": 1766,
+                    "dest_node_name": "np.proximity_to_target",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "1": {
+                    "source_node": 1766,
+                    "source_node_name": "np.proximity_to_target",
+                    "source_output_index": 0,
+                    "source_output_name": "fade",
+                    "dest_node": 1809,
+                    "dest_node_name": "list",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###text in"
+                },
+                "2": {
+                    "source_node": 1766,
+                    "source_node_name": "np.proximity_to_target",
+                    "source_output_index": 0,
+                    "source_output_name": "fade",
+                    "dest_node": 2116,
+                    "dest_node_name": "unpack",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "3": {
+                    "source_node": 1766,
+                    "source_node_name": "np.proximity_to_target",
+                    "source_output_index": 1,
+                    "source_output_name": "nearest",
+                    "dest_node": 1852,
+                    "dest_node_name": "int",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 1766,
+                    "source_node_name": "np.proximity_to_target",
+                    "source_output_index": 2,
+                    "source_output_name": "targets",
+                    "dest_node": 1896,
+                    "dest_node_name": "list",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###text in"
+                },
+                "5": {
+                    "source_node": 1852,
+                    "source_node_name": "int",
+                    "source_output_index": 0,
+                    "source_output_name": "int out",
+                    "dest_node": 2337,
+                    "dest_node_name": "radio",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "6": {
+                    "source_node": 2116,
+                    "source_node_name": "unpack",
+                    "source_output_index": 0,
+                    "source_output_name": "out 1",
+                    "dest_node": 2194,
+                    "dest_node_name": "unpack",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "7": {
+                    "source_node": 2194,
+                    "source_node_name": "unpack",
+                    "source_output_index": 1,
+                    "source_output_name": "out 2",
+                    "dest_node": 2062,
+                    "dest_node_name": "plot",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

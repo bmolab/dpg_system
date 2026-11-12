@@ -1,0 +1,322 @@
+{
+    "height": 776,
+    "width": 1192,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "dict_keys_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/dict_keys_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment dict_keys - the names in a dictionary",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 463,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "dict_keys - the names in a dictionary",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "dict_keys - the names in a dictionary"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 384,
+            "position_y": 45,
+            "width": 768,
+            "height": 536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The dict_keys node reports the keys of a dictionary, as a list.\n\nUse it to see what is in a dictionary you did not build yourself - the output of an OSC query, a JSON file, a language model - before deciding what to take out.\n\nSYNTAX:\ndict_keys\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe dictionary. Anything that is not a dictionary is ignored.\n\nOUTPUTS:\n\nkeys out:\nThe keys, in the order they were added. Only the top level is listed; keys of dictionaries inside it are not.\n\nRELATED:\ndict_stream sends the keys together with their values, one entry at a time. dict_search lets a person browse a nested dictionary by typing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The dict_keys node reports the keys of a dictionary, as a list.\n\nUse it to see what is in a dictionary you did not build yourself - the output of an OSC query, a JSON file, a language model - before deciding what to take out.\n\nSYNTAX:\ndict_keys\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe dictionary. Anything that is not a dictionary is ignored.\n\nOUTPUTS:\n\nkeys out:\nThe keys, in the order they were added. Only the top level is listed; keys of dictionaries inside it are not.\n\nRELATED:\ndict_stream sends the keys together with their values, one entry at a time. dict_search lets a person browse a nested dictionary by typing."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click to send a dictionary",
+            "name": "comment",
+            "id": 385,
+            "position_x": 186,
+            "position_y": 115,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send a dictionary",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send a dictionary"
+        },
+        "5": {
+            "name": "repeat_in_order",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 101,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "repeat_in_order 2"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 235,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "{\"x\": 0.25, \"y\": 0.75, \"name\": \"left hand\"}",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "dict",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 295,
+            "width": 101,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "dict_keys",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment the keys it contains",
+            "name": "comment",
+            "id": 607,
+            "position_x": 186,
+            "position_y": 650,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the keys it contains",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the keys it contains"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 672,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "first",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "second",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "send dict"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "store"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dict out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "keys out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

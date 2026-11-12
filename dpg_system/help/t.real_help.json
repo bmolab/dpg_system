@@ -1,0 +1,765 @@
+{
+    "name": "t.real_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.real_help.json",
+    "patches": {
+        "0": {
+            "height": 580,
+            "width": 740,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1014,
+            "name": "make_turning",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1051,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "signal",
+                    "init": "signal 4.0 saw",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "saw",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 360.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment an angle, 0 to 360 degrees every 4 s",
+                    "id": 1125,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 360,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "an angle, 0 to 360 degrees every 4 s",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "an angle, 0 to 360 degrees every 4 s"
+                },
+                "3": {
+                    "name": "t",
+                    "init": "t float float",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 140,
+                    "width": 150,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "cos",
+                    "init": "cos",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 210,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1236,
+                    "position_x": 220,
+                    "position_y": 210,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "t.complex",
+                    "init": "t.complex",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 300,
+                    "width": 200,
+                    "height": 90,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "comment",
+                    "init": "comment one complex number of size 1, going round",
+                    "id": 1310,
+                    "position_x": 260,
+                    "position_y": 315,
+                    "width": 400,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one complex number of size 1, going round",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one complex number of size 1, going round"
+                },
+                "8": {
+                    "name": "out",
+                    "init": "out complex",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 420,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "float",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "3": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "imag tensor in"
+                },
+                "4": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "real tensor in"
+                },
+                "5": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "complex tensor out",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "complex"
+                }
+            }
+        },
+        "1": {
+            "height": 972,
+            "width": 1670,
+            "position": [
+                100,
+                100
+            ],
+            "id": 977,
+            "name": "t.real_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.real_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.real - the real part of a complex tensor",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 525,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.real - the real part of a complex tensor",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.real - the real part of a complex tensor"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 862,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 676,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Takes the real part out of a complex tensor, as an ordinary real tensor of the same shape.\n\nComplex tensors come out of t.fft and t.rfft, and most of what you want to do next needs real numbers: plotting, thresholding, feeding anything that is not complex-aware. t.real and t.imag split the two halves;\nt.complex puts them back together.\n\nTHE REAL PART IS NOT THE SIZE:\nA complex value's size (its magnitude, what abs gives) is the length of the two parts taken together. The real part alone depends on the phase: a component can be large and still have a real part near zero, if its angle happens to sit near a quarter turn. For \"how much of this frequency is there\", use abs on the complex tensor, not t.real. The demo shows the difference: a value of constant size whose real part swings.\n\nSYNTAX:\nt.real\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe complex tensor. A tensor that is not complex - including an ordinary float tensor, a list or a number - sends NOTHING, silently, rather than an answer of the value itself.\n\nOUTPUTS:\n\nreal tensor:\nThe real parts, as float32 from complex64 (float64 from complex128), the same shape as the input.\n\nREADING THE DEMO:\nmake_turning sends one complex number of size 1, going round a circle once every 4 seconds (the list shows it). The plot draws two lines: abs, flat at 1, and the real part from t.real, swinging as a cosine between -1 and 1. The size never changed; only the angle did.\n\nRELATED:\nt.imag takes the other half. t.complex builds a complex tensor from the two parts. abs gives the size. t.fft and t.rfft send complex tensors.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 660,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Takes the real part out of a complex tensor, as an ordinary real tensor of the same shape.\n\nComplex tensors come out of t.fft and t.rfft, and most of what you want to do next needs real numbers: plotting, thresholding, feeding anything that is not complex-aware. t.real and t.imag split the two halves;\nt.complex puts them back together.\n\nTHE REAL PART IS NOT THE SIZE:\nA complex value's size (its magnitude, what abs gives) is the length of the two parts taken together. The real part alone depends on the phase: a component can be large and still have a real part near zero, if its angle happens to sit near a quarter turn. For \"how much of this frequency is there\", use abs on the complex tensor, not t.real. The demo shows the difference: a value of constant size whose real part swings.\n\nSYNTAX:\nt.real\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe complex tensor. A tensor that is not complex - including an ordinary float tensor, a list or a number - sends NOTHING, silently, rather than an answer of the value itself.\n\nOUTPUTS:\n\nreal tensor:\nThe real parts, as float32 from complex64 (float64 from complex128), the same shape as the input.\n\nREADING THE DEMO:\nmake_turning sends one complex number of size 1, going round a circle once every 4 seconds (the list shows it). The plot draws two lines: abs, flat at 1, and the real part from t.real, swinging as a cosine between -1 and 1. The size never changed; only the angle did.\n\nRELATED:\nt.imag takes the other half. t.complex builds a complex tensor from the two parts. abs gives the size. t.fft and t.rfft send complex tensors."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 90,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_turning",
+                    "patcher id": 1014
+                },
+                "4": {
+                    "init": "comment a complex number of size 1 going round once every 4 s",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 461,
+                    "position_y": 150,
+                    "width": 334,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a complex number of size 1 going round once every 4 s",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a complex number of size 1 going round once every 4 s"
+                },
+                "5": {
+                    "name": "list",
+                    "id": 422,
+                    "position_x": 300,
+                    "position_y": 190,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "abs",
+                    "id": 459,
+                    "position_x": 300,
+                    "position_y": 260,
+                    "width": 45,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "init": "comment its size",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 461,
+                    "position_y": 275,
+                    "width": 58,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "its size",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "its size"
+                },
+                "8": {
+                    "name": "t.real",
+                    "id": 533,
+                    "position_x": 30,
+                    "position_y": 260,
+                    "width": 76,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true
+                },
+                "9": {
+                    "name": "pack",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 360,
+                    "width": 33,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pack 2"
+                },
+                "10": {
+                    "init": "comment real (in 1) and the size (in 2)",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 461,
+                    "position_y": 380,
+                    "width": 199,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "real (in 1) and the size (in 2)",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "real (in 1) and the size (in 2)"
+                },
+                "11": {
+                    "name": "plot",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 480,
+                    "width": 308,
+                    "height": 178,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.2,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.2,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment the size stays at 1 while the real part swings from -1 to 1",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 461,
+                    "position_y": 670,
+                    "width": 371,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the size stays at 1 while the real part swings from -1 to 1",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the size stays at 1 while the real part swings from -1 to 1"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 794,
+                    "width": 54,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.imag"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 100,
+                    "position_y": 794,
+                    "width": 73,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.complex"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 189,
+                    "position_y": 794,
+                    "width": 35,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link abs"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 240,
+                    "position_y": 794,
+                    "width": 48,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.fft"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 304,
+                    "position_y": 794,
+                    "width": 54,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.rfft"
+                },
+                "18": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 760,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "19": {
+                    "name": "close",
+                    "id": 940,
+                    "position_x": 24,
+                    "position_y": 868,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "complex",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "complex",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "3": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "complex",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "4": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "real tensor",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "5": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

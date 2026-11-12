@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The unpack node breaks down composite data structures into individual elements. \n\nIt takes a list, string, numpy array, or tensor and distributes its contents across \nmultiple output pins. \n\nYou use this node when you have a packet of data (such as a coordinate list `[x, y, z]`) \nand need to route the individual values to different parts of your patch.\n\nSYNTAX:\n\nunpack <count> <optional_type>\nOR\nunpack <type_flag_1> <type_flag_2> ...\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\nunpack 3      (Creates 3 generic outputs)\nunpack 3 f    (Creates 3 float outputs)\nunpack i f s  (Creates an Integer, Float, and String output)\n\nINPUTS AND PARAMETERS:\n\ninput: \nThe composite data to be unpacked. \nAccepts lists, strings, numpy arrays, or torch tensors.\nIf the input contains more elements than there are output pins, the extra elements are ignored.\nIf the input is a single number (int/float), it is sent out of the first output.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the index of the input list. \nOutput 1 sends index 0, Output 2 sends index 1, and so on.\n\nThe data type of the output is determined by the creation arguments \n(e.g., `unpack i f` will force the first output to an integer and the second to a float).",
+                    "value": "The unpack node breaks down composite data structures into individual elements. \n\nIt takes a list, string, numpy array, or tensor and distributes its contents across  multiple output pins. \n\nYou use this node when you have a packet of data (such as a coordinate list `[x, y, z]`)  and need to route the individual values to different parts of your patch.\n\nSYNTAX:\n\nunpack <count> <optional_type>\nOR\nunpack <type_flag_1> <type_flag_2> ...\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\nunpack 3      (Creates 3 generic outputs)\nunpack 3 f    (Creates 3 float outputs)\nunpack i f s  (Creates an Integer, Float, and String output)\n\nINPUTS AND PARAMETERS:\n\ninput: \nThe composite data to be unpacked. \nAccepts lists, strings, numpy arrays, or torch tensors. If the input contains more elements than there are output pins, the extra elements are ignored. If the input is a single number (int/float), it is sent out of the first output.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the index of the input list.  Output 1 sends index 0, Output 2 sends index 1, and so on.\n\nThe data type of the output is determined by the creation arguments  (e.g., `unpack i f` will force the first output to an integer and the second to a float).",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The unpack node breaks down composite data structures into individual elements. \n\nIt takes a list, string, numpy array, or tensor and distributes its contents across \nmultiple output pins. \n\nYou use this node when you have a packet of data (such as a coordinate list `[x, y, z]`) \nand need to route the individual values to different parts of your patch.\n\nSYNTAX:\n\nunpack <count> <optional_type>\nOR\nunpack <type_flag_1> <type_flag_2> ...\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\nunpack 3      (Creates 3 generic outputs)\nunpack 3 f    (Creates 3 float outputs)\nunpack i f s  (Creates an Integer, Float, and String output)\n\nINPUTS AND PARAMETERS:\n\ninput: \nThe composite data to be unpacked. \nAccepts lists, strings, numpy arrays, or torch tensors.\nIf the input contains more elements than there are output pins, the extra elements are ignored.\nIf the input is a single number (int/float), it is sent out of the first output.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the index of the input list. \nOutput 1 sends index 0, Output 2 sends index 1, and so on.\n\nThe data type of the output is determined by the creation arguments \n(e.g., `unpack i f` will force the first output to an integer and the second to a float)."
+            "text": "The unpack node breaks down composite data structures into individual elements. \n\nIt takes a list, string, numpy array, or tensor and distributes its contents across  multiple output pins. \n\nYou use this node when you have a packet of data (such as a coordinate list `[x, y, z]`)  and need to route the individual values to different parts of your patch.\n\nSYNTAX:\n\nunpack <count> <optional_type>\nOR\nunpack <type_flag_1> <type_flag_2> ...\n\nType Flags:\ni (int), f (float), s (string), b (bool), l (list), a (numpy array), t (torch tensor)\n\nEXAMPLE:\n\nunpack 3      (Creates 3 generic outputs)\nunpack 3 f    (Creates 3 float outputs)\nunpack i f s  (Creates an Integer, Float, and String output)\n\nINPUTS AND PARAMETERS:\n\ninput: \nThe composite data to be unpacked. \nAccepts lists, strings, numpy arrays, or torch tensors. If the input contains more elements than there are output pins, the extra elements are ignored. If the input is a single number (int/float), it is sent out of the first output.\n\nOUTPUTS: \n\nout (variable):\nA series of output pins corresponding to the index of the input list.  Output 1 sends index 0, Output 2 sends index 1, and so on.\n\nThe data type of the output is determined by the creation arguments  (e.g., `unpack i f` will force the first output to an integer and the second to a float)."
         },
         "4": {
             "name": "message",
@@ -158,7 +158,8 @@
             "height": 112,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "highlight": true
         },
         "6": {
             "init": "comment unpack 6",
@@ -342,7 +343,8 @@
             "height": 112,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "highlight": true
         },
         "15": {
             "name": "info",

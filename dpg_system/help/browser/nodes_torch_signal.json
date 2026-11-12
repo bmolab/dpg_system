@@ -1,11 +1,11 @@
 {
-    "height": 738,
-    "width": 891,
+    "height": 540,
+    "width": 657,
     "position": [
         100,
         100
     ],
-    "id": 1388,
+    "id": 1166,
     "name": "nodes_torch_signal",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_signal.json",
     "nodes": {
@@ -136,70 +136,40 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "comment Spectra and wavelets",
-            "name": "comment",
+            "init": "help_link nodes_torch_signal_spectra Spectra",
+            "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 169,
-            "height": 30,
+            "width": 157,
+            "height": 44,
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "Spectra and wavelets",
-                    "value_type": "str"
+                    "name": "Spectra",
+                    "value": null,
+                    "value_type": "NoneType"
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "30",
-                    "value_type": "str"
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
                 }
             },
-            "comment": "Spectra and wavelets",
             "id": 722,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "6": {
-            "init": "help_link t.fft t.fft spectra",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 184,
-            "width": 194,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "t.fft spectra",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 178,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
-            "id": 759,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "7": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 232,
-            "position_y": 188,
-            "width": 268,
-            "height": 40,
+            "position_x": 195,
+            "position_y": 154,
+            "width": 391,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "spectrum - the frequencies in a tensor\n(t.fft, t.ifft, t.irfft, t.rfft)",
+                    "value": "t.fft, t.ifft, t.rfft, t.irfft, t.stft, t.istft, t.hilbert",
                     "value_type": "str"
                 },
                 "1": {
@@ -209,12 +179,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 260,
+                    "value": 383,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -223,52 +193,47 @@
                     "value_type": "str"
                 }
             },
-            "text": "spectrum - the frequencies in a tensor\n(t.fft, t.ifft, t.irfft, t.rfft)",
+            "text": "t.fft, t.ifft, t.rfft, t.irfft, t.stft, t.istft, t.hilbert",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link nodes_torch_signal_convolution Convolution",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 157,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Convolution",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
+                }
+            },
             "id": 796,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "8": {
-            "init": "help_link t.window t.window functions",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 236,
-            "width": 194,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "t.window functions",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 178,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
-            "id": 833,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "9": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 232,
-            "position_y": 240,
-            "width": 619,
-            "height": 64,
+            "position_x": 195,
+            "position_y": 206,
+            "width": 175,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "window functions for spectra and smoothing\n(t.window.bartlett, t.window.blackman, t.window.cosine, t.window.exponential,\n t.window.gaussian, t.window.general_hamming, t.window.hamming, t.window.hann, t.window.kaiser,\n t.window.nuttall)",
+                    "value": "t.convolve, t.correlate",
                     "value_type": "str"
                 },
                 "1": {
@@ -278,7 +243,71 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 611,
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.convolve, t.correlate",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link nodes_torch_signal_windows Windows",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 157,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Windows",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 195,
+            "position_y": 258,
+            "width": 391,
+            "height": 64,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.window.hann, t.window.hamming, t.window.general_hamming,\nt.window.blackman, t.window.nuttall, t.window.bartlett,\nt.window.cosine, t.window.gaussian, t.window.kaiser,\nt.window.exponential",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 383,
                     "value_type": "int"
                 },
                 "3": {
@@ -292,52 +321,47 @@
                     "value_type": "str"
                 }
             },
-            "text": "window functions for spectra and smoothing\n(t.window.bartlett, t.window.blackman, t.window.cosine, t.window.exponential,\n t.window.gaussian, t.window.general_hamming, t.window.hamming, t.window.hann, t.window.kaiser,\n t.window.nuttall)",
-            "id": 870,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "10": {
-            "init": "help_link t.cwt t.cwt",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 308,
-            "width": 194,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "t.cwt",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 178,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
+            "text": "t.window.hann, t.window.hamming, t.window.general_hamming,\nt.window.blackman, t.window.nuttall, t.window.bartlett,\nt.window.cosine, t.window.gaussian, t.window.kaiser,\nt.window.exponential",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
+            "init": "help_link nodes_torch_signal_wavelets Wavelets",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 326,
+            "width": 157,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Wavelets",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 232,
-            "position_y": 312,
-            "width": 231,
+            "position_x": 195,
+            "position_y": 330,
+            "width": 206,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "wavelets, properly parameterised",
+                    "value": "t.cwt, t.ultracwt / ultracwt",
                     "value_type": "str"
                 },
                 "1": {
@@ -347,7 +371,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 223,
+                    "value": 198,
                     "value_type": "int"
                 },
                 "3": {
@@ -361,52 +385,47 @@
                     "value_type": "str"
                 }
             },
-            "text": "wavelets, properly parameterised",
-            "id": 944,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "12": {
-            "init": "help_link t.ultracwt t.ultracwt / ultracwt",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 360,
-            "width": 194,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "t.ultracwt / ultracwt",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 178,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
+            "text": "t.cwt, t.ultracwt / ultracwt",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "13": {
+            "init": "help_link nodes_torch_signal_kalman_filters Kalman filters",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 378,
+            "width": 157,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Kalman filters",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 232,
-            "position_y": 364,
-            "width": 169,
+            "position_x": 195,
+            "position_y": 382,
+            "width": 422,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "wavelets that keep up\n(t.ultracwt, ultracwt)",
+                    "value": "t.ESEKF, t.quat_ESEKF, t.smart_clamp_kf, t.smart_clamp_quat_kf,\nt.persistence_quat_kf, t.hybrid_quat_kf",
                     "value_type": "str"
                 },
                 "1": {
@@ -416,7 +435,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 161,
+                    "value": 414,
                     "value_type": "int"
                 },
                 "3": {
@@ -430,59 +449,29 @@
                     "value_type": "str"
                 }
             },
-            "text": "wavelets that keep up\n(t.ultracwt, ultracwt)",
-            "id": 1018,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "14": {
-            "init": "comment Filters",
-            "name": "comment",
-            "position_x": 24,
-            "position_y": 430,
-            "width": 69,
-            "height": 30,
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "Filters",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "comment": "Filters",
+            "text": "t.ESEKF, t.quat_ESEKF, t.smart_clamp_kf, t.smart_clamp_quat_kf,\nt.persistence_quat_kf, t.hybrid_quat_kf",
             "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "15": {
-            "init": "help_link t.filter_bank t.filter_bank / band diff",
+            "init": "help_link nodes_torch_signal_smoothing_and_bands Smoothing and bands",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 464,
-            "width": 194,
+            "position_y": 430,
+            "width": 157,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.filter_bank / band diff",
+                    "name": "Smoothing and bands",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 178,
+                    "value": 141,
                     "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
                 }
             },
             "id": 1092,
@@ -493,83 +482,14 @@
         "16": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 232,
-            "position_y": 468,
-            "width": 261,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "movement split by timescale\n(t.filter_bank, t.rotation_band_diff)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "movement split by timescale\n(t.filter_bank, t.rotation_band_diff)",
-            "id": 1129,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "17": {
-            "init": "help_link t.sav_gol_filter t.sav_gol_filter",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 516,
-            "width": 194,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "t.sav_gol_filter",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 178,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
-                }
-            },
-            "id": 1166,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "18": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 232,
-            "position_y": 520,
-            "width": 218,
+            "position_x": 195,
+            "position_y": 434,
+            "width": 360,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "smoothing that keeps the shape",
+                    "value": "t.sav_gol_filter, t.filter_bank, t.rotation_band_diff",
                     "value_type": "str"
                 },
                 "1": {
@@ -579,7 +499,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 210,
+                    "value": 352,
                     "value_type": "int"
                 },
                 "3": {
@@ -593,146 +513,8 @@
                     "value_type": "str"
                 }
             },
-            "text": "smoothing that keeps the shape",
-            "id": 1203,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "19": {
-            "init": "help_link t.smart_clamp_kf t Kalman filters",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 568,
-            "width": 194,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "t Kalman filters",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 178,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
-                }
-            },
-            "id": 1240,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "20": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 232,
-            "position_y": 572,
-            "width": 532,
-            "height": 52,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "glitch or fast movement?\n(t.hybrid_quat_kf, t.jerk_aware_quat_kf, t.persistence_quat_kf, t.smart_clamp_kf,\n t.smart_clamp_quat_kf)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 524,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "glitch or fast movement?\n(t.hybrid_quat_kf, t.jerk_aware_quat_kf, t.persistence_quat_kf, t.smart_clamp_kf,\n t.smart_clamp_quat_kf)",
-            "id": 1277,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "21": {
-            "init": "help_link t.ESEKF t.ESEKF / t.quat_ESEKF",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 628,
-            "width": 194,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "t.ESEKF / t.quat_ESEKF",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 178,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
-                }
-            },
-            "id": 1314,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "22": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 232,
-            "position_y": 632,
-            "width": 249,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "error-state, rotationally invariant\n(t.ESEKF, t.quat_ESEKF)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 241,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "error-state, rotationally invariant\n(t.ESEKF, t.quat_ESEKF)",
-            "id": 1351,
+            "text": "t.sav_gol_filter, t.filter_bank, t.rotation_band_diff",
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

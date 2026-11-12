@@ -1,11 +1,11 @@
 {
-    "height": 801,
-    "width": 1565,
+    "height": 1235,
+    "width": 1851,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 1088,
     "name": "t.scatter_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.scatter_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.scatter_hold - assemble a tensor from pieces",
+            "init": "comment t.scatter - write values in at chosen positions",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 574,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.scatter_hold - assemble a tensor from pieces",
+                    "value": "t.scatter - write values in at chosen positions",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.scatter_hold - assemble a tensor from pieces"
+            "comment": "t.scatter - write values in at chosen positions"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 727,
+            "position_x": 1043,
             "position_y": 45,
-            "width": 798,
-            "height": 696,
+            "width": 768,
+            "height": 1096,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These write values INTO a tensor at positions you choose - the reverse of selecting.\n\nTHE NODES:\n\nt.scatter       write a source tensor's values into a target at given indices\nt.scatter_hold  keep a tensor and update parts of it as pairs arrive\n\nt.scatter_hold IS THE USEFUL ONE IN A PATCH:\nIt holds a tensor of a length you set and remembers it between messages. \nSend it a list of index and value pairs - \"3 0.8 7 0.2\" - and it writes those \nvalues at those positions, leaving everything else exactly as it was.\n\nThat is how you assemble one tensor from many separate sources. Values arriving \none at a time, from different nodes, at different rates, accumulate into a \nsingle tensor that always holds the latest of each - which is what you want \nwhen per-joint readings arrive separately and something downstream wants them \nall together.\n\nIndices are clamped into range rather than raising, so a stray index writes to \nthe nearest valid slot instead of stopping the patch. An odd number of values \nis ignored, since it cannot be read as pairs.\n\nSYNTAX:\nt.scatter_hold <length: int>\nt.scatter\n\nEXAMPLE:\nt.scatter_hold 16\n\nINPUTS and PARAMETERS:\n\nlist of index value pairs (t.scatter_hold):\nAlternating positions and values. Receiving them triggers the node.\n\nlength of target tensor (t.scatter_hold):\nHow long the held tensor is. Changing it clears the contents.\n\nclear (t.scatter_hold):\nSets everything back to zero.\n\ntensor to scatter into / indices in / source in (t.scatter):\nThe target, where to write, and what to write.\n\ndim:\nWhich axis the indices refer to.\n\nOUTPUTS: \n\noutput:\nThe whole tensor after the write - not just the parts that changed. \nSo every update produces a complete current picture, which is what makes this \nusable as a source for anything that wants the full state.\n\nRELATED:\nThe selecting nodes go the other way, pulling values out at given positions.",
+                    "value": "Writes the values of a source tensor INTO a copy of a target tensor, at positions you give.\n\nIt is the reverse of selecting: t.index_select reads values out at positions, t.scatter puts values in at positions. Everything the positions do not name keeps the target's value. Use it to place readings into a larger frame, to build a one-hot vector, or to undo a t.argsort.\n\nHOW THE POSITIONS ARE READ:\nFor a 1-D target, source value number i goes to position indices[i]. Only as many source values are used as there are indices, so the source may be longer than the index list but not shorter. For 2-D and more, indices must have as many dimensions as the target, and along dim each index says where in that row (dim 1) or column (dim 0) its source value goes - the same layout t.take_along_dim reads, written the other way. If two indices name the same position, only one of the values ends up there, and PyTorch does not promise which.\n\nSYNTAX:\nt.scatter <dim: int>\nDefault dim 0. The dim box is always shown.\n\nEXAMPLE:\nt.scatter 0\n\nINPUTS and PARAMETERS:\n\ntensor to scatter into:\nThe target (a list or numpy array is converted to a float32 tensor). It is not changed: the result is a new tensor. Sends on arrival - this is the only inlet that sends.\n\nindices in:\nWhere to write, as whole numbers (a list, an array or a tensor). A position past the end prints an error in the console and nothing is sent. Cold: stored for the next target.\n\nsource in:\nThe values to write, converted to a float32 tensor. Cold. Its dtype must match the target's: a float32 target is the normal case; an integer target (from t.arange with int64, say) is refused with an error.\n\ndim (int box, also an inlet):\nWhich dimension the indices run along. Negative counts from the end (-1 is the last dimension). A dimension the target does not have sends nothing.\n\nNothing is sent until both indices and source have arrived.\n\nOUTPUTS:\n\noutput:\nThe target with the source values written in.\n\nREADING THE DEMO:\nThe source is four values, 0.25 0.5 0.75 1 (top strip). A metro sends t.zeros 10 - ten zeros - as the target ten times a second. Click a list of positions: 0 1 2 3 puts the four values at the start; 9 6 3 0 spreads them backwards from the end; 2 2 5 5 writes two values to each of two places, and only one of each pair survives.\n\nRELATED:\nt.scatter_hold keeps its tensor between messages and takes index, value pairs - the easier node for building a tensor up piece by piece. t.index_select and t.take_along_dim read values out the same way. np.edit writes into a region of a numpy array.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 790,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 680,
+                    "value": 1080,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,14 +90,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "These write values INTO a tensor at positions you choose - the reverse of selecting.\n\nTHE NODES:\n\nt.scatter       write a source tensor's values into a target at given indices\nt.scatter_hold  keep a tensor and update parts of it as pairs arrive\n\nt.scatter_hold IS THE USEFUL ONE IN A PATCH:\nIt holds a tensor of a length you set and remembers it between messages. \nSend it a list of index and value pairs - \"3 0.8 7 0.2\" - and it writes those \nvalues at those positions, leaving everything else exactly as it was.\n\nThat is how you assemble one tensor from many separate sources. Values arriving \none at a time, from different nodes, at different rates, accumulate into a \nsingle tensor that always holds the latest of each - which is what you want \nwhen per-joint readings arrive separately and something downstream wants them \nall together.\n\nIndices are clamped into range rather than raising, so a stray index writes to \nthe nearest valid slot instead of stopping the patch. An odd number of values \nis ignored, since it cannot be read as pairs.\n\nSYNTAX:\nt.scatter_hold <length: int>\nt.scatter\n\nEXAMPLE:\nt.scatter_hold 16\n\nINPUTS and PARAMETERS:\n\nlist of index value pairs (t.scatter_hold):\nAlternating positions and values. Receiving them triggers the node.\n\nlength of target tensor (t.scatter_hold):\nHow long the held tensor is. Changing it clears the contents.\n\nclear (t.scatter_hold):\nSets everything back to zero.\n\ntensor to scatter into / indices in / source in (t.scatter):\nThe target, where to write, and what to write.\n\ndim:\nWhich axis the indices refer to.\n\nOUTPUTS: \n\noutput:\nThe whole tensor after the write - not just the parts that changed. \nSo every update produces a complete current picture, which is what makes this \nusable as a source for anything that wants the full state.\n\nRELATED:\nThe selecting nodes go the other way, pulling values out at given positions."
+            "text": "Writes the values of a source tensor INTO a copy of a target tensor, at positions you give.\n\nIt is the reverse of selecting: t.index_select reads values out at positions, t.scatter puts values in at positions. Everything the positions do not name keeps the target's value. Use it to place readings into a larger frame, to build a one-hot vector, or to undo a t.argsort.\n\nHOW THE POSITIONS ARE READ:\nFor a 1-D target, source value number i goes to position indices[i]. Only as many source values are used as there are indices, so the source may be longer than the index list but not shorter. For 2-D and more, indices must have as many dimensions as the target, and along dim each index says where in that row (dim 1) or column (dim 0) its source value goes - the same layout t.take_along_dim reads, written the other way. If two indices name the same position, only one of the values ends up there, and PyTorch does not promise which.\n\nSYNTAX:\nt.scatter <dim: int>\nDefault dim 0. The dim box is always shown.\n\nEXAMPLE:\nt.scatter 0\n\nINPUTS and PARAMETERS:\n\ntensor to scatter into:\nThe target (a list or numpy array is converted to a float32 tensor). It is not changed: the result is a new tensor. Sends on arrival - this is the only inlet that sends.\n\nindices in:\nWhere to write, as whole numbers (a list, an array or a tensor). A position past the end prints an error in the console and nothing is sent. Cold: stored for the next target.\n\nsource in:\nThe values to write, converted to a float32 tensor. Cold. Its dtype must match the target's: a float32 target is the normal case; an integer target (from t.arange with int64, say) is refused with an error.\n\ndim (int box, also an inlet):\nWhich dimension the indices run along. Negative counts from the end (-1 is the last dimension). A dimension the target does not have sends nothing.\n\nNothing is sent until both indices and source have arrived.\n\nOUTPUTS:\n\noutput:\nThe target with the source values written in.\n\nREADING THE DEMO:\nThe source is four values, 0.25 0.5 0.75 1 (top strip). A metro sends t.zeros 10 - ten zeros - as the target ten times a second. Click a list of positions: 0 1 2 3 puts the four values at the start; 9 6 3 0 spreads them backwards from the end; 2 2 5 5 writes two values to each of two places, and only one of each pair survives.\n\nRELATED:\nt.scatter_hold keeps its tensor between messages and takes index, value pairs - the easier node for building a tensor up piece by piece. t.index_select and t.take_along_dim read values out the same way. np.edit writes into a region of a numpy array."
         },
         "3": {
-            "name": "button",
+            "name": "load_bang",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
+            "width": 88,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -105,108 +105,41 @@
             "properties": {}
         },
         "4": {
-            "name": "message",
+            "name": "t.linspace",
             "id": 385,
             "position_x": 30,
-            "position_y": 118,
-            "width": 130,
-            "height": 42,
+            "position_y": 130,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text in",
-                    "value": "2 0.9 5 0.4",
-                    "value_type": "str"
+                    "name": "start",
+                    "value": 0.25,
+                    "value_type": "float"
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "5": {
-            "name": "button",
-            "id": 422,
-            "position_x": 280,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "name": "message",
-            "id": 459,
-            "position_x": 280,
-            "position_y": 118,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "0 0.7 7 0.2",
-                    "value_type": "str"
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
                 },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "7": {
-            "init": "comment click either: index, value, index, value",
-            "name": "comment",
-            "id": 496,
-            "position_x": 436,
-            "position_y": 170,
-            "width": 254,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "click either: index, value, index, value",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
+                "2": {
+                    "name": "steps",
+                    "value": 4,
+                    "value_type": "int"
                 }
             },
-            "comment": "click either: index, value, index, value"
+            "init": "t.linspace 0.25 1 4"
         },
-        "8": {
-            "name": "t.scatter_hold",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 210,
-            "width": 234,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.scatter_hold 8"
-        },
-        "9": {
+        "5": {
             "name": "heat_map",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 370,
+            "id": 422,
+            "position_x": 260,
+            "position_y": 130,
             "width": 208,
-            "height": 150,
+            "height": 100,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -223,12 +156,12 @@
                 },
                 "2": {
                     "name": "height",
-                    "value": 100,
+                    "value": 50,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "sample count",
-                    "value": 8,
+                    "value": 1,
                     "value_type": "int"
                 },
                 "4": {
@@ -253,51 +186,378 @@
                 }
             }
         },
-        "10": {
-            "name": "text_block",
-            "id": 607,
-            "annotation": true,
-            "position_x": 436,
-            "position_y": 530,
-            "width": 261,
-            "height": 52,
+        "6": {
+            "init": "comment the source: four values",
+            "name": "comment",
+            "id": 459,
+            "position_x": 746,
+            "position_y": 240,
+            "width": 150,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "each click updates only its own slots\nthe rest keeps what it had\nclick clear on the node to zero it",
+                    "name": "text",
+                    "value": "the source: four values",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "each click updates only its own slots\nthe rest keeps what it had\nclick clear on the node to zero it"
+            "comment": "the source: four values"
+        },
+        "7": {
+            "name": "metro",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 300,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "8": {
+            "name": "t.zeros",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 163,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "shape",
+                    "value": "[10]",
+                    "value_type": "str"
+                }
+            },
+            "init": "t.zeros 10"
+        },
+        "9": {
+            "init": "comment the target: ten zeros, ten times a second",
+            "name": "comment",
+            "id": 570,
+            "position_x": 746,
+            "position_y": 395,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the target: ten zeros, ten times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the target: ten zeros, ten times a second"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 330,
+            "position_y": 300,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 2 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
         },
         "11": {
-            "name": "close",
+            "name": "message",
             "id": 644,
+            "position_x": 460,
+            "position_y": 300,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "9 6 3 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "message",
+            "id": 681,
+            "position_x": 590,
+            "position_y": 300,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2 2 5 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment click a list of positions",
+            "name": "comment",
+            "id": 718,
+            "position_x": 746,
+            "position_y": 350,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click a list of positions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click a list of positions"
+        },
+        "14": {
+            "name": "t.scatter",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 570,
+            "width": 144,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.scatter 0",
+            "highlight": true
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 508,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 500,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment the ten values, with the source written in",
+            "name": "comment",
+            "id": 829,
+            "position_x": 746,
+            "position_y": 830,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the ten values, with the source written in",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the ten values, with the source written in"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 914,
+            "width": 104,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.scatter_hold"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 150,
+            "position_y": 914,
+            "width": 104,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.index_select"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 270,
+            "position_y": 914,
+            "width": 117,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.take_along_dim"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 403,
+            "position_y": 914,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.edit"
+        },
+        "21": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 880,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
             "position_x": 24,
-            "position_y": 550,
+            "position_y": 988,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -317,18 +577,18 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "out",
             "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "###input"
         },
         "1": {
-            "source_node": 422,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 459,
+            "source_output_name": "out",
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
@@ -337,28 +597,78 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 533,
+            "source_output_name": "linspace out",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "list of index value pairs"
+            "dest_input_name": "y"
         },
         "3": {
-            "source_node": 459,
+            "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
+            "source_output_name": "linspace out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "source in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
             "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "list of index value pairs"
+            "dest_input_name": "###input"
         },
-        "4": {
+        "5": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
+            "source_output_name": "tensor of zeros",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor to scatter into"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "indices in"
+        },
+        "7": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "indices in"
+        },
+        "8": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "indices in"
+        },
+        "9": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 570,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

@@ -26,7 +26,6 @@ def register_moderngl_nodes():
     Node.app.register_node('mgl_scale', MGLScaleNode.factory)
     Node.app.register_node('mgl_camera', MGLCameraNode.factory)
     Node.app.register_node('mgl_orbit_camera', MGLOrbitCameraNode.factory)
-    Node.app.register_node('mgl_display', MGLDisplayNode.factory)
     Node.app.register_node('mgl_sphere', MGLSphereNode.factory)
     Node.app.register_node('mgl_geo_sphere', MGLGeodesicSphereNode.factory)
     Node.app.register_node('mgl_point_cloud', MGLPointCloudNode.factory)
@@ -131,10 +130,15 @@ class MGLImageNode(MGLNode):
     _image_frag_src = '''
         #version 330
         uniform sampler2D image;
+        uniform bool premultiply;
         in vec2 v_texcoord;
         out vec4 fragColor;
         void main() {
-            fragColor = texture(image, v_texcoord);
+            vec4 c = texture(image, v_texcoord);
+            // the context blends (ONE, ONE_MINUS_SRC_ALPHA): colour must
+            // already be scaled by alpha, or a see-through pixel adds its
+            // full colour on top of what shows through it
+            fragColor = premultiply ? vec4(c.rgb * c.a, c.a) : c;
         }
     '''
 
@@ -219,7 +223,11 @@ class MGLImageNode(MGLNode):
         tex = self.texture_input()
         if tex is None:
             return
-        if not isinstance(tex, moderngl.Texture):
+        # An array's alpha is straight (colour not scaled by it). A texture
+        # from another mgl node was rendered with this context's blending,
+        # so it is premultiplied already and must not be scaled twice.
+        premultiply = not isinstance(tex, moderngl.Texture)
+        if premultiply:
             tex = self._update_internal_texture(tex)
         if tex is None:
             return
@@ -233,6 +241,8 @@ class MGLImageNode(MGLNode):
         tex.use(location=0)
         if 'image' in self._prog:
             self._prog['image'].value = 0
+        if 'premultiply' in self._prog:
+            self._prog['premultiply'].value = premultiply
         self._vao.render(moderngl.TRIANGLE_STRIP)
         # Re-enable depth test for subsequent 3D nodes
         inner_ctx.enable(moderngl.DEPTH_TEST)
@@ -309,6 +319,68 @@ def _get_node_image_button_theme():
     return _NODE_IMAGE_BUTTON_THEME
 
 
+# Lit by these until an mgl_light appears in the chain
+DEFAULT_LIGHT_POSITIONS = ((5.0, 5.0, -5.0), (-5.0, 5.0, 5.0))
+DEFAULT_LIGHT_INTENSITY = 0.5
+
+ORBIT_VIEW_DEFAULTS = {'target': [0.0, 0.0, 0.0], 'distance': 3.0, 'yaw': 0.0, 'elevation': 20.0,
+                       'fov': 60.0, 'near': 0.1, 'far': 100.0}
+ORBIT_DRAG_SPEED = 0.3
+ORBIT_ZOOM_SPEED = 1.0
+
+
+def orbit_eye_and_up(target, distance, yaw_deg, elevation_deg):
+    """The eye position and up vector for a view orbiting target."""
+    yaw_rad = math.radians(yaw_deg)
+    elev_rad = math.radians(elevation_deg)
+    cos_elev = math.cos(elev_rad)
+    sin_elev = math.sin(elev_rad)
+    eye = [target[0] + distance * cos_elev * math.sin(yaw_rad),
+           target[1] + distance * sin_elev,
+           target[2] + distance * cos_elev * math.cos(yaw_rad)]
+    # The orthonormalized up for a [0,1,0] hint, in closed form. Identical
+    # view to the plain hint away from the poles, but stays defined at
+    # elevation +/-90 so the 'top' view message can be an exact 90.
+    up = [-sin_elev * math.sin(yaw_rad), cos_elev, -sin_elev * math.cos(yaw_rad)]
+    return eye, up
+
+
+def orbit_ui_event(event, yaw, elevation, distance, drag_last, drag_speed, zoom_speed):
+    """Apply one ui event (mouse_down/drag/up/move, scroll) to an orbit view.
+
+    Left-drag orbits (yaw/elevation follow the mouse), scroll wheel zooms the
+    distance. Deltas are computed between consecutive events, so a missed
+    mouse_up (possible on the DPG readback path) can't cause a jump. Returns
+    the new (yaw, elevation, distance, drag_last).
+    """
+    if not isinstance(event, (list, tuple)) or len(event) == 0:
+        return yaw, elevation, distance, drag_last
+    kind = event[0]
+    if kind == 'mouse_drag' and len(event) >= 4:
+        if int(event[3]) != 0:  # left button only
+            return yaw, elevation, distance, None
+        x, y = float(event[1]), float(event[2])
+        if drag_last is not None:
+            # turntable grab: the scene follows the cursor, so the eye
+            # orbits against it. Dragging right swings the subject right
+            # (camera left, yaw down); dragging down tips its top toward
+            # the viewer (camera up, elevation up).
+            yaw = yaw - (x - drag_last[0]) * drag_speed
+            elevation = max(-89.0, min(89.0, elevation + (y - drag_last[1]) * drag_speed))
+        drag_last = (x, y)
+    elif kind == 'mouse_down' and len(event) >= 4:
+        drag_last = (float(event[1]), float(event[2])) if int(event[3]) == 0 else None
+    elif kind in ('mouse_up', 'mouse_move'):
+        drag_last = None
+    elif kind == 'scroll' and len(event) >= 3:
+        distance = max(0.01, distance * (0.9 ** (float(event[2]) * zoom_speed)))
+    return yaw, elevation, distance, drag_last
+
+
+def _new_orbit_view():
+    return {**ORBIT_VIEW_DEFAULTS, 'target': list(ORBIT_VIEW_DEFAULTS['target'])}
+
+
 class MGLContextNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -318,12 +390,13 @@ class MGLContextNode(Node):
     
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.width = 640
-        self.height = 480
+        self.width = 960
+        self.height = 960
         self.context = MGLContext.get_instance()
         self.texture_tag = None
         self.image_item = None
         self.external_window = None
+        self._dpg_window_size = None
         self.fullscreen_window = None
         self.render_target = None
 
@@ -350,22 +423,31 @@ class MGLContextNode(Node):
         # the actual render on the main thread on the next tick.
         self._render_requested = False
 
+        # The built-in camera: what is seen until a camera node in the chain
+        # says otherwise. Dragging and scrolling the display move it.
+        self._orbit_view = _new_orbit_view()
+        self._orbit_drag_last = None
+        self.message_handlers['reset_view'] = self._reset_view_message
+
         self.auto_render_input = self.add_input('auto_render', widget_type='checkbox', default_value=False, callback=self.toggle_auto_render)
         self.render_trigger = self.add_input('render', triggers_execution=True)
+        self.reset_view_button = self.add_input('reset view', widget_type='button', callback=self._reset_view_message)
         self.mgl_chain_output = self.add_output('mgl_chain')
-        self.texture_output = self.add_output('texture_tag')
         self.ui_output = self.add_output('ui')
 
         self.width_option = self.add_option('width', widget_type='drag_int', default_value=self.width, callback=self.resize)
         self.height_option = self.add_option('height', widget_type='drag_int', default_value=self.height, callback=self.resize)
-        self.node_display_width_option = self.add_option('node_display_width', widget_type='drag_int',
-                                                         default_value=self.width, callback=self._on_node_display_size_changed)
-        self.node_display_height_option = self.add_option('node_display_height', widget_type='drag_int',
-                                                          default_value=self.height, callback=self._on_node_display_size_changed)
+        # The size the picture is shown at, in the node or as a window. The
+        # render size above is separate: a picture can be drawn at one size and
+        # shown at another.
+        self.display_width_option = self.add_option('display_width', widget_type='drag_int',
+                                                    default_value=self.width, callback=self._on_display_size_changed)
+        self.display_height_option = self.add_option('display_height', widget_type='drag_int',
+                                                     default_value=self.height, callback=self._on_display_size_changed)
         self.match_texture_to_window_option = self.add_option('match_texture_to_window', widget_type='checkbox',
                                                               default_value=False)
         self.node_resize_handle = None
-        self.display_mode_option = self.add_option('display_mode', widget_type='combo', default_value='node')
+        self.display_mode_option = self.add_option('display_mode', widget_type='combo', default_value='window')
         self.display_mode_option.widget.combo_items = ['off', 'node', 'window', 'fullscreen']
         # When on, the in-node display captures mouse events (down/drag/up/scroll)
         # and sends them out the ui output — e.g. to drive mgl_orbit_camera. The
@@ -375,22 +457,80 @@ class MGLContextNode(Node):
         self.samples_option = self.add_option('samples', widget_type='combo', default_value='4')
         self.samples_option.widget.combo_items = ['0', '2', '4', '6', '8', '16']
 
-        self.default_light_option = self.add_option('default_light', widget_type='checkbox', default_value=True)
-        self.light_pos_option = self.add_option('light_pos', widget_type='drag_float_n', default_value=[2.0, 5.0, 5.0], columns=3)
-        self.light_intensity_option = self.add_option('light_intensity', widget_type='drag_float', default_value=0.8)
-
-        self.default_camera_option = self.add_option('default_camera', widget_type='checkbox', default_value=True)
-        self.camera_fov_option = self.add_option('camera_fov', widget_type='drag_float', default_value=60.0)
-        self.camera_pos_option = self.add_option('camera_pos', widget_type='drag_float_n', default_value=[0.0, 0.0, 3.0], columns=3)
-        self.camera_target_option = self.add_option('camera_target', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0], columns=3)
-        self.camera_near_option = self.add_option('camera_near', widget_type='drag_float', default_value=0.1)
-        self.camera_far_option = self.add_option('camera_far', widget_type='drag_float', default_value=100.0)
-
         self.clear_color_option = self.add_option('clear_color', widget_type='drag_float_n', default_value=[0.0, 0.0, 0.0, 1.0], columns=4)
 
-        self.win_size_option = self.add_option('win_size', widget_type='drag_float_n', default_value=[self.width, self.height], columns=2)
         self.win_pos_option = self.add_option('win_pos', widget_type='drag_float_n', default_value=[100, 100], columns=2)
 
+
+    def restore_properties(self, node_container):
+        node_container = self._with_merged_display_size(node_container)
+        super().restore_properties(self._with_orbit_view_from_camera_options(node_container))
+
+    def save_custom(self, container):
+        container['orbit_view'] = {**self._orbit_view, 'target': list(self._orbit_view['target'])}
+
+    def load_custom(self, container):
+        saved = container.get('orbit_view')
+        if isinstance(saved, dict):
+            self._orbit_view = {**_new_orbit_view(), **saved}
+
+    def _reset_view_message(self, message='', args=None):
+        self._orbit_view = _new_orbit_view()
+        self._orbit_drag_last = None
+        self._render_requested = True  # show it even with auto_render off
+
+    @staticmethod
+    def _with_orbit_view_from_camera_options(node_container):
+        # Patches saved before the built-in orbit camera had camera_* options.
+        # Any eye and target is expressible as an orbit, so they keep their view.
+        properties = node_container.get('properties')
+        if not properties or 'orbit_view' in node_container:
+            return node_container
+        saved = {p.get('name'): p.get('value') for p in properties.values()}
+        if not any(k.startswith('camera_') for k in saved if k):
+            return node_container
+        def vec3(name, default):
+            value = saved.get(name, default)
+            return [float(v) for v in value[:3]] if isinstance(value, (list, tuple)) and len(value) >= 3 else list(default)
+        eye = vec3('camera_pos', [0.0, 0.0, 3.0])
+        target = vec3('camera_target', [0.0, 0.0, 0.0])
+        offset = [e - t for e, t in zip(eye, target)]
+        distance = max(1e-6, math.sqrt(sum(o * o for o in offset)))
+        view = {'target': target, 'distance': distance,
+                'yaw': math.degrees(math.atan2(offset[0], offset[2])),
+                'elevation': math.degrees(math.asin(max(-1.0, min(1.0, offset[1] / distance)))),
+                'fov': float(saved.get('camera_fov', ORBIT_VIEW_DEFAULTS['fov'])),
+                'near': float(saved.get('camera_near', ORBIT_VIEW_DEFAULTS['near'])),
+                'far': float(saved.get('camera_far', ORBIT_VIEW_DEFAULTS['far']))}
+        return {**node_container, 'orbit_view': view}
+
+    @staticmethod
+    def _with_merged_display_size(node_container):
+        # Patches saved before display_width/height kept one size for the node
+        # (node_display_width/height) and another for the window (win_size).
+        # Take the one the saved mode was showing. A patch older than both
+        # showed 640 x 480, whatever its render size.
+        properties = node_container.get('properties')
+        if not properties:
+            return node_container
+        saved = {p.get('name'): p.get('value') for p in properties.values()}
+        if 'display_width' in saved:
+            return node_container
+        node_size = None
+        if 'node_display_width' in saved and 'node_display_height' in saved:
+            node_size = (saved['node_display_width'], saved['node_display_height'])
+        win_size = saved.get('win_size')
+        win_size = tuple(win_size[:2]) if isinstance(win_size, (list, tuple)) and len(win_size) >= 2 else None
+        if node_size is None and win_size is None and 'display_mode' not in saved:
+            return node_container  # only ever saved other settings: new defaults apply
+        if saved.get('display_mode', 'window') == 'node':
+            size = node_size or (640, 480)
+        else:
+            size = win_size or node_size or (640, 480)
+        merged = dict(properties)
+        for i, (name, value) in enumerate(zip(('display_width', 'display_height'), size)):
+            merged[f'merged_display_size_{i}'] = {'name': name, 'value': int(value), 'value_type': 'int'}
+        return {**node_container, 'properties': merged}
 
     def toggle_auto_render(self):
         # The frame task is always registered (it also services renders
@@ -550,7 +690,6 @@ class MGLContextNode(Node):
         # Always registered: renders auto_render frames and replays renders
         # requested from off-main threads (GL work must stay on this thread).
         self.add_frame_task()
-        self.camera_fov_option.widget.set_speed(1.0)
         self._ensure_texture()
 
     def frame_task(self):
@@ -584,10 +723,11 @@ class MGLContextNode(Node):
         self.width = max(1, self.width_option())
         self.height = max(1, self.height_option())
 
-    def _on_node_display_size_changed(self):
-        # The options are the size at 100%; what is drawn follows the zoom.
-        w = max(1, self.node_display_width_option())
-        h = max(1, self.node_display_height_option())
+    def _on_display_size_changed(self):
+        # The options are the size at 100%; what is drawn in the node follows
+        # the zoom. A window picks its size up from the options every frame.
+        w = max(1, self.display_width_option())
+        h = max(1, self.display_height_option())
         if self.image_item and dpg.does_item_exist(self.image_item):
             dpg.set_item_width(self.image_item, self.zoomed(w))
             dpg.set_item_height(self.image_item, self.zoomed(h))
@@ -597,10 +737,10 @@ class MGLContextNode(Node):
 
     def custom_zoom(self, ratio, exact):
         # Sized from the options rather than scaled, so every zoom is exact.
-        self._on_node_display_size_changed()
+        self._on_display_size_changed()
 
     def _on_node_resize_drag(self, new_w, new_h):
-        # Default drag updates display size only (via width_option=node_display_*).
+        # Default drag updates display size only (via width_option=display_*).
         # Shift held also resizes the render texture for crisp high-res output.
         if Node.app.shift_down():
             self.width_option.set(int(new_w))
@@ -631,8 +771,8 @@ class MGLContextNode(Node):
                              width=self.zoomed(int(bar_width)), height=self.zoomed(4))
         handle = ResizeHandle(
             btn, self.image_item, axis='xy',
-            width_option=self.node_display_width_option,
-            height_option=self.node_display_height_option,
+            width_option=self.display_width_option,
+            height_option=self.display_height_option,
             sync_width=True, sync_height=False,
             on_resize=self._on_node_resize_drag, zoom_aware=True,
         )
@@ -705,8 +845,8 @@ class MGLContextNode(Node):
                 if not dpg.does_item_exist(self.image_attribute):
                     self.image_attribute = dpg.add_node_attribute(attribute_type=dpg.mvNode_Attr_Static, parent=self.uuid)
 
-                disp_w = max(1, self.node_display_width_option())
-                disp_h = max(1, self.node_display_height_option())
+                disp_w = max(1, self.display_width_option())
+                disp_h = max(1, self.display_height_option())
 
                 # Preserve the resize bar across texture swaps: insert the
                 # new image before it and re-point its ResizeHandle target.
@@ -735,12 +875,27 @@ class MGLContextNode(Node):
         # Handle Window Display
         if mode == 'window':
             if self.external_window is None or not dpg.does_item_exist(self.external_window):
-                with dpg.window(label="MGL Output", width=self.width, height=self.height) as win:
+                disp_w = max(1, self.display_width_option())
+                disp_h = max(1, self.display_height_option())
+                self._dpg_window_size = (disp_w, disp_h)
+                with dpg.window(label="MGL Output", width=disp_w, height=disp_h) as win:
                     self.external_window = win
                     dpg.add_image(self.texture_tag, parent=win)
             else:
                 # Sync Window Size
-                dpg.configure_item(self.external_window, show=True, width=self.width, height=self.height)
+                disp_w = max(1, self.display_width_option())
+                disp_h = max(1, self.display_height_option())
+                # As with the native window: a changed setting resizes the
+                # window, and otherwise a window dragged to a new size keeps it.
+                current = (dpg.get_item_width(self.external_window), dpg.get_item_height(self.external_window))
+                if (disp_w, disp_h) != self._dpg_window_size:
+                    dpg.configure_item(self.external_window, width=disp_w, height=disp_h)
+                elif current != self._dpg_window_size:
+                    disp_w, disp_h = current
+                    self.display_width_option.set(disp_w)
+                    self.display_height_option.set(disp_h)
+                self._dpg_window_size = (disp_w, disp_h)
+                dpg.configure_item(self.external_window, show=True)
                 
                 # Check image inside window
                 children = dpg.get_item_children(self.external_window, slot=1)
@@ -755,10 +910,10 @@ class MGLContextNode(Node):
                                  # Image should fill window?
                                  # If we just let it be, it stays texture size.
                                  # We want it to match render size, which matches window size.
-                                 dpg.configure_item(child, width=self.width, height=self.height)
+                                 dpg.configure_item(child, width=disp_w, height=disp_h)
                 
                 if not image_found:
-                    dpg.add_image(self.texture_tag, parent=self.external_window, width=self.width, height=self.height)
+                    dpg.add_image(self.texture_tag, parent=self.external_window, width=disp_w, height=disp_h)
         else:
             if self.external_window:
                 dpg.delete_item(self.external_window)
@@ -799,6 +954,44 @@ class MGLContextNode(Node):
                 dpg.delete_item(self.fullscreen_window)
                 self.fullscreen_window = None
 
+    def _read_back_render_target(self):
+        # Resolve MSAA if needed
+        rt = self.render_target
+        if rt.samples > 0 and rt.msaa_fbo:
+            self.context.ctx.copy_framebuffer(rt.fbo, rt.msaa_fbo)
+
+        buf_size = self.width * self.height * 4  # RGBA uint8
+
+        # Recreate PBOs if resolution changed
+        if self._pbo_width != self.width or self._pbo_height != self.height:
+            for i in range(2):
+                if self._pbo[i] is not None:
+                    self._pbo[i].release()
+                self._pbo[i] = self.context.ctx.buffer(reserve=buf_size)
+            self._pbo_width = self.width
+            self._pbo_height = self.height
+            self._pbo_ready = False
+            self._pbo_index = 0
+
+        # Determine which PBO to write into (current) and which to read from (previous)
+        write_pbo = self._pbo[self._pbo_index]
+        read_pbo = self._pbo[1 - self._pbo_index]
+
+        # Initiate async DMA transfer: FBO -> write_pbo
+        rt.fbo.read_into(write_pbo, components=4)
+
+        # Read from the OTHER PBO (filled last frame)
+        if self._pbo_ready:
+            data = read_pbo.read()
+        else:
+            # First frame: fall back to synchronous read
+            data = write_pbo.read()
+            self._pbo_ready = True
+
+        # Swap PBO index for next frame
+        self._pbo_index = 1 - self._pbo_index
+        return data
+
     def execute(self):
         # GL calls are only valid on the main thread (the GL context is
         # current there; moderngl is not thread-safe). A trigger arriving on
@@ -832,7 +1025,11 @@ class MGLContextNode(Node):
             ui_events = (ui_events or []) + self._dpg_ui_events
             self._dpg_ui_events = []
         if ui_events:
+            view = self._orbit_view
             for event in ui_events:
+                view['yaw'], view['elevation'], view['distance'], self._orbit_drag_last = orbit_ui_event(
+                    event, view['yaw'], view['elevation'], view['distance'], self._orbit_drag_last,
+                    ORBIT_DRAG_SPEED, ORBIT_ZOOM_SPEED)
                 self.ui_output.send(event)
 
         # Escape Exits Fullscreen. When the native window has focus, DPG never
@@ -919,40 +1116,26 @@ class MGLContextNode(Node):
                 'shininess': 32.0
             }
 
-            # Helper to safely coerce option values to 3-element lists
-            def _as_vec3(val, default):
-                if np.isscalar(val):
-                    return [float(val), default[1], default[2]]
-                val = list(val)
-                while len(val) < 3:
-                    val.append(default[len(val)])
-                return val[:3]
-
-            # Inject default light (overridden if mgl_light nodes are present)
-            if self.default_light_option():
-                pos = _as_vec3(self.light_pos_option(), [2.0, 5.0, 5.0])
-                intensity = self.light_intensity_option()
+            # The default lights (the first mgl_light in the chain removes them)
+            for pos in DEFAULT_LIGHT_POSITIONS:
                 self.context.lights.append({
-                    'pos': pos,
-                    'ambient': [0.15, 0.15, 0.15],
+                    'pos': list(pos),
+                    'ambient': [0.5, 0.5, 0.5],
                     'diffuse': [1.0, 1.0, 1.0],
                     'specular': [0.6, 0.6, 0.6],
-                    'intensity': intensity
+                    'intensity': DEFAULT_LIGHT_INTENSITY
                 })
-                self.context.default_light_count = 1
+            self.context.default_light_count = len(DEFAULT_LIGHT_POSITIONS)
 
-            # Inject default camera (overridden if mgl_camera nodes are present)
-            if self.default_camera_option():
-                cam_pos = _as_vec3(self.camera_pos_option(), [0.0, 0.0, 3.0])
-                cam_target = _as_vec3(self.camera_target_option(), [0.0, 0.0, 0.0])
-                cam_fov = self.camera_fov_option()
-                aspect = self.width / self.height if self.height > 0 else 1.0
-                cam_near = self.camera_near_option()
-                cam_far = self.camera_far_option()
-                self.context.set_projection_matrix(perspective(cam_fov, aspect, cam_near, cam_far))
-                self.context.set_view_matrix(look_at(cam_pos, cam_target, [0.0, 1.0, 0.0]))
-                if 'view_pos' in self.context.default_shader:
-                    self.context.default_shader['view_pos'].value = tuple(cam_pos)
+            # The built-in camera (a camera node in the chain replaces it for
+            # whatever is drawn after that node)
+            view = self._orbit_view
+            eye, up = orbit_eye_and_up(view['target'], view['distance'], view['yaw'], view['elevation'])
+            aspect = self.width / self.height if self.height > 0 else 1.0
+            self.context.set_projection_matrix(perspective(view['fov'], aspect, view['near'], view['far']))
+            self.context.set_view_matrix(look_at(eye, view['target'], up))
+            if 'view_pos' in self.context.default_shader:
+                self.context.default_shader['view_pos'].value = tuple(eye)
 
             # Sync back actual samples if fallback occurred
             if self.render_target.samples != samples:
@@ -995,13 +1178,19 @@ class MGLContextNode(Node):
                             print('[MGLContextNode] per-node display window unavailable')
 
                 if self._native_win and self._native_win.available:
-                    win_size = self.win_size_option()
-                    if np.isscalar(win_size):
-                        win_size = [win_size, win_size]
-                    win_w = int(win_size[0]) if len(win_size) > 0 else self.width
-                    win_h = int(win_size[1]) if len(win_size) > 1 else self.height
+                    win_w = int(self.display_width_option())
+                    win_h = int(self.display_height_option())
                     if win_w <= 0: win_w = self.width
                     if win_h <= 0: win_h = self.height
+
+                    # A window dragged to a new size keeps it. A changed setting
+                    # wins over a drag: it is what show() is about to apply.
+                    if mode != 'fullscreen' and self._native_win.applied_size == (win_w, win_h):
+                        dragged = self._native_win.poll_user_resize()
+                        if dragged is not None:
+                            win_w, win_h = dragged
+                            self.display_width_option.set(win_w)
+                            self.display_height_option.set(win_h)
 
                     self._native_win.show(win_w, win_h,
                                           title=f'MGL Output ({self.label})',
@@ -1051,9 +1240,6 @@ class MGLContextNode(Node):
                     dpg.delete_item(self.fullscreen_window)
                     self.fullscreen_window = None
 
-                # Send texture_tag for downstream consumers that may exist
-                self.texture_output.send(self.texture_tag)
-
             else:
                 # === READBACK PATH: PBO → CPU → DPG texture ===
 
@@ -1068,44 +1254,14 @@ class MGLContextNode(Node):
                         self.context.hide_window()
                 self._was_use_direct = False
 
-                # Resolve MSAA if needed
-                rt = self.render_target
-                if rt.samples > 0 and rt.msaa_fbo:
-                    self.context.ctx.copy_framebuffer(rt.fbo, rt.msaa_fbo)
-
-                buf_size = self.width * self.height * 4  # RGBA uint8
-
-                # Recreate PBOs if resolution changed
-                if self._pbo_width != self.width or self._pbo_height != self.height:
-                    for i in range(2):
-                        if self._pbo[i] is not None:
-                            self._pbo[i].release()
-                        self._pbo[i] = self.context.ctx.buffer(reserve=buf_size)
-                    self._pbo_width = self.width
-                    self._pbo_height = self.height
+                # Off shows nothing, so there is nothing to read back
+                if mode == 'off':
                     self._pbo_ready = False
-                    self._pbo_index = 0
-
-                # Determine which PBO to write into (current) and which to read from (previous)
-                write_pbo = self._pbo[self._pbo_index]
-                read_pbo = self._pbo[1 - self._pbo_index]
-
-                # Initiate async DMA transfer: FBO -> write_pbo
-                rt.fbo.read_into(write_pbo, components=4)
-
-                # Read from the OTHER PBO (filled last frame)
-                if self._pbo_ready:
-                    data = read_pbo.read()
                 else:
-                    # First frame: fall back to synchronous read
-                    data = write_pbo.read()
-                    self._pbo_ready = True
-
-                # Swap PBO index for next frame
-                self._pbo_index = 1 - self._pbo_index
+                    data = self._read_back_render_target()
 
         # --- CPU-side pixel processing (outside GL context scope) ---
-        if not use_direct:
+        if not use_direct and mode != 'off':
             raw = np.frombuffer(data, dtype=np.uint8).reshape(self.height, self.width, 4)[::-1]
 
             n_pixels = self.height * self.width * 4
@@ -1121,7 +1277,6 @@ class MGLContextNode(Node):
                  with dpg.texture_registry(show=False):
                     self.texture_tag = dpg.add_raw_texture(self.width, self.height, pixels,
                                                            format=dpg.mvFormat_Float_rgba)
-                 self.texture_output.send(self.texture_tag)
             else:
                 tex_w = dpg.get_item_width(self.texture_tag)
                 tex_h = dpg.get_item_height(self.texture_tag)
@@ -1138,112 +1293,10 @@ class MGLContextNode(Node):
                 else:
                     dpg.set_value(self.texture_tag, pixels)
 
-                self.texture_output.send(self.texture_tag)
-
-            # Update DPG display widgets
+        # Update DPG display widgets
+        if not use_direct:
             self.update_display(mode)
 
-
-class MGLDisplayNode(Node):
-    @staticmethod
-    def factory(name, data, args=None):
-        return MGLDisplayNode(name, data, args)
-
-    def __init__(self, label: str, data, args):
-        super().__init__(label, data, args)
-        self.texture_input = self.add_input('texture_tag', triggers_execution=True)
-        self.width_input = self.add_input('width', widget_type='drag_int', default_value=0)
-        self.height_input = self.add_input('height', widget_type='drag_int', default_value=0)
-        self.fullscreen_input = self.add_input('fullscreen', widget_type='checkbox', default_value=False, callback=self.toggle_fullscreen)
-        self.image_attribute = None
-        self.image_item = None
-        self._display_size = None   # the picture's size at 100%
-        self.fullscreen = False
-        self.fullscreen_window = None
-        self.texture_tag = None
-        
-        # Permanent Handler for ESC
-        with dpg.handler_registry():
-            dpg.add_key_press_handler(dpg.mvKey_Escape, callback=self.on_esc)
-
-    def custom_create(self, from_file):
-        self.image_attribute = dpg.add_node_attribute(attribute_type=dpg.mvNode_Attr_Static)
-
-    def custom_zoom(self, ratio, exact):
-        if self._display_size is None or not self.image_item:
-            return
-        if dpg.does_item_exist(self.image_item):
-            width, height = self._display_size
-            dpg.configure_item(self.image_item,
-                               width=self.zoomed(width), height=self.zoomed(height))
-
-    def custom_cleanup(self):
-        if self.fullscreen_window:
-            dpg.delete_item(self.fullscreen_window)
-        if self.image_item:
-            dpg.delete_item(self.image_item)
-
-    def on_esc(self, sender=None, app_data=None):
-        if self.fullscreen:
-            print("MGLDisplayNode: ESC detected, exiting fullscreen")
-            # Explicitly update wrapper AND widget to ensure next read is False
-            if hasattr(self.fullscreen_input, 'set'):
-                self.fullscreen_input.set(False)
-            dpg.set_value(self.fullscreen_input.widget.uuid, False)
-            self.toggle_fullscreen()
-
-    def toggle_fullscreen(self):
-        self.fullscreen = self.fullscreen_input()
-        if self.fullscreen:
-            if not self.fullscreen_window:
-                with dpg.window(label="MGL Fullscreen", no_title_bar=True, no_resize=True, no_move=True, no_scrollbar=True, no_collapse=True, no_background=True, show=True) as win:
-                    self.fullscreen_window = win
-            else:
-                 dpg.configure_item(self.fullscreen_window, show=True)
-            self.update_fullscreen_image()
-        else:
-            if self.fullscreen_window:
-                dpg.configure_item(self.fullscreen_window, show=False)
-
-    def update_fullscreen_image(self):
-        if self.fullscreen and self.fullscreen_window and self.texture_tag:
-            vp_width = dpg.get_viewport_width()
-            vp_height = dpg.get_viewport_height()
-            
-            dpg.set_item_width(self.fullscreen_window, vp_width)
-            dpg.set_item_height(self.fullscreen_window, vp_height)
-            dpg.set_item_pos(self.fullscreen_window, [0, 0])
-            
-            dpg.delete_item(self.fullscreen_window, children_only=True)
-            dpg.add_image(self.texture_tag, parent=self.fullscreen_window, width=vp_width, height=vp_height)
-
-    def execute(self):
-        self.texture_tag = self.texture_input()
-        if self.texture_tag:
-            if self.image_item:
-                current_texture = dpg.get_item_configuration(self.image_item)['texture_tag']
-                if current_texture != self.texture_tag:
-                    dpg.delete_item(self.image_item)
-                    self.image_item = None
-            
-            # Determine Size
-            w = self.width_input()
-            h = self.height_input()
-            
-            if w <= 0: w = dpg.get_item_width(self.texture_tag)
-            if h <= 0: h = dpg.get_item_height(self.texture_tag)
-
-            # What was asked for is the size at 100%; the picture in the patch
-            # is drawn at the zoom, and custom_zoom comes back through here.
-            self._display_size = (w, h)
-            if self.image_item is None and self.image_attribute:
-                self.image_item = dpg.add_image(self.texture_tag, parent=self.image_attribute,
-                                                width=self.zoomed(w), height=self.zoomed(h))
-            elif self.image_item:
-                 dpg.configure_item(self.image_item, width=self.zoomed(w), height=self.zoomed(h))
-            
-            if self.fullscreen:
-                self.update_fullscreen_image()
 
 class MGLTransformNode(MGLNode):
     @staticmethod
@@ -1451,17 +1504,29 @@ class MGLColorNode(MGLNode):
     def restore_state(self):
         self.ctx.current_color = self.prev_color
 
-    def draw(self):
-        c = self.color_input()
-        # Normalize if needed
-        if len(c) > 4: c = c[:4]
-        elif len(c) == 3: c = [*c, 255 if max(c) > 1.0 else 1.0]
+    @staticmethod
+    def normalize_rgba(c):
+        """A colour as 0-1 [r, g, b, a].
 
-        # 0-255 colours are scaled to 0-1; either way the colour is applied
-        # (it used to be set only inside this check, so 0-1 colours were lost)
-        if max(c) > 1.0:
-            c = [val / 255.0 for val in c]
-        self.ctx.current_color = tuple(c)
+        The scale is decided by r, g, b alone: the colour picker pads a
+        3-number colour with alpha 255 even when the colour is 0-1, so an
+        alpha above 1 says nothing about the colour's scale. A 0-255 colour is
+        scaled to 0-1 (alpha too); an alpha above 1 on a 0-1 colour is read
+        as 0-255. A missing alpha is opaque.
+        """
+        c = [float(v) for v in list(c)[:4]]
+        if len(c) < 3:
+            return c
+        is_255 = max(c[:3]) > 1.0
+        rgb = [v / 255.0 for v in c[:3]] if is_255 else c[:3]
+        if len(c) == 4:
+            a = c[3] / 255.0 if (is_255 or c[3] > 1.0) else c[3]
+        else:
+            a = 1.0
+        return [*rgb, a]
+
+    def draw(self):
+        self.ctx.current_color = tuple(self.normalize_rgba(self.color_input()))
 
 
 class MGLLightNode(MGLNode):
@@ -1551,15 +1616,8 @@ class MGLMaterialNode(MGLNode):
     def draw(self):
         if self.ctx is not None:
 
-            # Normalize colors
-            def norm(c):
-                # if len(c) > 3: c = c[:3] # Allow alpha
-                if max(c) > 1.0:
-                    return [val / 255.0 for val in c]
-                # Ensure 4 components (defaults to alpha 1.0 if missing)
-                if len(c) == 3:
-                    return list(c) + [1.0]
-                return c
+            # 0-1 rgba; the scale comes from r, g, b only (see mgl_color)
+            norm = MGLColorNode.normalize_rgba
 
             self.ctx.current_material = {
                 'ambient': norm(self.ambient_input()),
@@ -4449,6 +4507,9 @@ class MGLModelNode(MGLShapeNode):
         self.vao = None # Force recreation
         self.vbo = None
         self.ibo = None
+        # render_geometry sets the program again once a model loads; until then
+        # draw() sees no program and draws nothing (the chain still passes on)
+        self.prog = None
 
     def create_geometry(self):
         # draw() retries whenever there is no geometry; a load that failed is
@@ -4750,40 +4811,17 @@ class MGLOrbitCameraNode(MGLNode):
         dpg.configure_item(self.target.widget.uuids[2], width=45)
 
     def ui_event_in(self):
-        """Consume ui events from mgl_context (mouse_down/drag/up/move, scroll).
-
-        Left-drag orbits (yaw/elevation follow the mouse), scroll wheel zooms
-        the distance. Deltas are computed between consecutive events, so a
-        missed mouse_up (possible on the DPG readback path) can't cause a jump.
-        """
-        event = self.ui_input()
-        if not isinstance(event, (list, tuple)) or len(event) == 0:
-            return
-        kind = event[0]
-        if kind == 'mouse_drag' and len(event) >= 4:
-            if int(event[3]) != 0:  # left button only
-                self._drag_last = None
-                return
-            x, y = float(event[1]), float(event[2])
-            if self._drag_last is not None:
-                speed = self.drag_speed()
-                dx = x - self._drag_last[0]
-                dy = y - self._drag_last[1]
-                # turntable grab: the scene follows the cursor, so the eye
-                # orbits against it. Dragging right swings the subject right
-                # (camera left, yaw down); dragging down tips its top toward
-                # the viewer (camera up, elevation up).
-                self.yaw.set(self.yaw() - dx * speed)
-                elev = self.elevation() + dy * speed
-                self.elevation.set(max(-89.0, min(89.0, elev)))
-            self._drag_last = (x, y)
-        elif kind == 'mouse_down' and len(event) >= 4:
-            self._drag_last = (float(event[1]), float(event[2])) if int(event[3]) == 0 else None
-        elif kind in ('mouse_up', 'mouse_move'):
-            self._drag_last = None
-        elif kind == 'scroll' and len(event) >= 3:
-            dist = self.distance() * (0.9 ** (float(event[2]) * self.zoom_speed()))
-            self.distance.set(max(0.01, dist))
+        """Consume ui events from mgl_context (see orbit_ui_event)."""
+        yaw, elevation, distance = self.yaw(), self.elevation(), self.distance()
+        new_yaw, new_elevation, new_distance, self._drag_last = orbit_ui_event(
+            self.ui_input(), yaw, elevation, distance, self._drag_last,
+            self.drag_speed(), self.zoom_speed())
+        if new_yaw != yaw:
+            self.yaw.set(new_yaw)
+        if new_elevation != elevation:
+            self.elevation.set(new_elevation)
+        if new_distance != distance:
+            self.distance.set(new_distance)
 
     def draw(self):
         if self.ctx is None:
@@ -4797,22 +4835,7 @@ class MGLOrbitCameraNode(MGLNode):
         elev_deg = self.elevation()
         fov_val = self.fov()
 
-        # Spherical to Cartesian offset from target
-        yaw_rad = math.radians(yaw_deg)
-        elev_rad = math.radians(elev_deg)
-        cos_elev = math.cos(elev_rad)
-
-        sin_elev = math.sin(elev_rad)
-
-        eye_x = tgt[0] + dist * cos_elev * math.sin(yaw_rad)
-        eye_y = tgt[1] + dist * sin_elev
-        eye_z = tgt[2] + dist * cos_elev * math.cos(yaw_rad)
-
-        eye = [eye_x, eye_y, eye_z]
-        # The orthonormalized up for a [0,1,0] hint, in closed form. Identical
-        # view to the plain hint away from the poles, but stays defined at
-        # elevation +/-90 so the 'top' view message can be an exact 90.
-        up = [-sin_elev * math.sin(yaw_rad), cos_elev, -sin_elev * math.cos(yaw_rad)]
+        eye, up = orbit_eye_and_up(tgt.tolist(), dist, yaw_deg, elev_deg)
 
         # Projection
         aspect = self.ctx.width / self.ctx.height
@@ -5069,7 +5092,13 @@ class MGLOrientationDisksNode(MGLNode):
         # Read axis-angle data
         aa_data = self.axis_angle_input()
         if aa_data is not None:
-            self.axis_angles = any_to_array(aa_data).astype(np.float32)
+            arr = any_to_array(aa_data)
+            if arr is not None:
+                arr = np.atleast_1d(arr).astype(np.float32)
+                if arr.ndim == 1:
+                    # a single row [x y z] or [x y z angle] is one disk
+                    arr = arr.reshape(1, -1)
+                self.axis_angles = arr
 
         scale = self.scale_input()
         slices = max(6, self.slices_input())

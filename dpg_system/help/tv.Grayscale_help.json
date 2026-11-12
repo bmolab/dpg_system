@@ -1,11 +1,11 @@
 {
-    "height": 924,
-    "width": 1885,
+    "height": 859,
+    "width": 1508,
     "position": [
         100,
         100
     ],
-    "id": 940,
+    "id": 792,
     "name": "tv.Grayscale_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/tv.Grayscale_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment tv.Grayscale and tv.gaussian_blur - the k. twins",
+            "init": "comment tv.Grayscale - colour to one brightness channel",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 598,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "tv.Grayscale and tv.gaussian_blur - the k. twins",
+                    "value": "tv.Grayscale - colour to one brightness channel",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "tv.Grayscale and tv.gaussian_blur - the k. twins"
+            "comment": "tv.Grayscale - colour to one brightness channel"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1037,
+            "position_x": 660,
             "position_y": 45,
             "width": 808,
-            "height": 776,
+            "height": 656,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two transforms that torchvision and kornia both offer.\n\nTHE NODES:\n\ntv.Grayscale       colour to a single brightness channel\ntv.gaussian_blur   smooth the image\n\nTHESE HAVE k. TWINS - WHICH SHOULD YOU USE:\nk.rgb_to_grayscale and k.gaussian_blur do the same jobs. For ordinary work the\nresults are equivalent and the choice hardly matters, but three differences are\nworth knowing:\n\nWhole-number images. The tv nodes take 0..255 integers and give them back;\nthe k. nodes convert everything to floats. If an image is arriving from a camera\nor a file as integers and you want it to stay that way, use these.\n\nAlready-grayscale input. tv.Grayscale accepts a one-channel image and passes it\nthrough unchanged. k.rgb_to_grayscale refuses it - it wants three channels and\nsays so. If a chain might be handed either kind, tv.Grayscale is the forgiving\none.\n\nWhat comes next. If the next step is an edge or blob filter, you are in kornia's\nterritory anyway, and staying in one family keeps the assumptions consistent.\n\nBLUR IS A CHOICE ABOUT SCALE:\n'sigma' is how far the smoothing reaches, and that is really a decision about\nwhat counts as detail and what counts as noise. 'kernel size' is just the window\nthe arithmetic happens in; it needs to be comfortably wider than sigma or the\nblur is cut off at the edge of its own window. Sigma is the dial you want.\n\nSigma is clamped above zero, and the widget is corrected to whatever value was\nactually used - a blur of nothing is not a blur, and it will not pretend\notherwise.\n\nGRAYSCALE IS NOT THE AVERAGE OF THE CHANNELS:\nIt is a weighted sum, and green counts for far more than blue, because that is\nhow human vision works rather than because of anything about the numbers. Two\ncolours that look equally bright to you end up equally bright; averaging the\nthree channels instead would make blues too light and greens too dark.\n\nWhich matters whenever brightness is standing in for something perceptual. If\nyou want a plain average, that is a mean over the channel axis, not this.\n\nSYNTAX:\ntv.Grayscale\ntv.gaussian_blur\n\nEXAMPLE:\ntv.gaussian_blur\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it does the work.\n\nkernel size / sigma (tv.gaussian_blur):\nHow far the smoothing reaches, and the window it is computed in.\n\nOUTPUTS: \n\noutput:\nThe transformed image, channels first, in the dtype you sent.\n\nCHANNELS FIRST, AND 0 TO 1:\nThese want images as (channels, height, width) - (3, H, W) for colour, (1, H, W)\nfor grayscale. Images from cameras and files usually arrive the other way round,\n(H, W, 3), so the nodes guess: a small last dimension and a large third-from-last\nmeans height-width-channels, and they transpose it for you. The guess is right\nexcept on very small images, where those two tests stop telling you anything.\n\nUnlike the k. nodes, these are happy with whole-number images: hand them 0..255\nintegers and you get 0..255 integers back, correctly scaled. Floats are taken to\nrun 0 to 1.\n\nRELATED:\ntv.adjust_saturation at 0 gives a grey image that still has three channels;\ntv.Grayscale gives one channel. Which you want depends on what comes next.",
+                    "value": "Turns a colour image into a single brightness channel.\n\nGRAYSCALE IS NOT THE AVERAGE OF THE CHANNELS:\nIt is a weighted sum - about 0.30 of red, 0.59 of green and 0.11 of blue - because that is how human vision works rather than because of anything about the numbers. Two colours that look equally bright to you end up equally bright;\naveraging the three channels instead would make blues too light and greens too dark.\n\nWhich matters whenever brightness is standing in for something perceptual. If you want a plain average, that is a mean over the channel axis, not this.\n\nALREADY-GRAYSCALE INPUT IS FINE:\nA one-channel image passes through unchanged. Anything else that is not three channels - a four-channel image with alpha, for instance - is refused with a message in the console.\n\nIT HAS A k. TWIN:\nk.rgb_to_grayscale does the same job with the same weights. Two differences are worth knowing. tv.Grayscale keeps whole-number images as whole numbers (0..255 in, 0..255 out); k.rgb_to_grayscale converts to floats first. And k.rgb_to_grayscale refuses a one-channel image, where tv.Grayscale passes it through - so if a chain might be handed either kind, this is the forgiving one.\n\nSYNTAX:\ntv.Grayscale\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it does the work.\n\nOUTPUTS:\n\noutput:\nThe grayscale image, (1, H, W) - one channel, channels first, in the dtype you sent.\n\nCHANNELS FIRST, AND 0 TO 1:\nThese want images as (channels, height, width) - (3, H, W) for colour, (1, H, W) for grayscale. Images from cameras and files usually arrive the other way round, (H, W, 3), so the nodes guess: a small last dimension and a large third-from-last means height-width-channels, and they transpose it for you. The guess is right except on very small images, where those two tests stop telling you anything.\n\nUnlike the k. nodes, these are happy with whole-number images: hand them 0..255 integers and you get 0..255 integers back, correctly scaled. Floats are taken to run 0 to 1.\n\nRELATED:\ntv.adjust_saturation at 0 gives a grey image that still has three channels;\ntv.Grayscale gives one channel. Which you want depends on what comes next.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 640,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two transforms that torchvision and kornia both offer.\n\nTHE NODES:\n\ntv.Grayscale       colour to a single brightness channel\ntv.gaussian_blur   smooth the image\n\nTHESE HAVE k. TWINS - WHICH SHOULD YOU USE:\nk.rgb_to_grayscale and k.gaussian_blur do the same jobs. For ordinary work the\nresults are equivalent and the choice hardly matters, but three differences are\nworth knowing:\n\nWhole-number images. The tv nodes take 0..255 integers and give them back;\nthe k. nodes convert everything to floats. If an image is arriving from a camera\nor a file as integers and you want it to stay that way, use these.\n\nAlready-grayscale input. tv.Grayscale accepts a one-channel image and passes it\nthrough unchanged. k.rgb_to_grayscale refuses it - it wants three channels and\nsays so. If a chain might be handed either kind, tv.Grayscale is the forgiving\none.\n\nWhat comes next. If the next step is an edge or blob filter, you are in kornia's\nterritory anyway, and staying in one family keeps the assumptions consistent.\n\nBLUR IS A CHOICE ABOUT SCALE:\n'sigma' is how far the smoothing reaches, and that is really a decision about\nwhat counts as detail and what counts as noise. 'kernel size' is just the window\nthe arithmetic happens in; it needs to be comfortably wider than sigma or the\nblur is cut off at the edge of its own window. Sigma is the dial you want.\n\nSigma is clamped above zero, and the widget is corrected to whatever value was\nactually used - a blur of nothing is not a blur, and it will not pretend\notherwise.\n\nGRAYSCALE IS NOT THE AVERAGE OF THE CHANNELS:\nIt is a weighted sum, and green counts for far more than blue, because that is\nhow human vision works rather than because of anything about the numbers. Two\ncolours that look equally bright to you end up equally bright; averaging the\nthree channels instead would make blues too light and greens too dark.\n\nWhich matters whenever brightness is standing in for something perceptual. If\nyou want a plain average, that is a mean over the channel axis, not this.\n\nSYNTAX:\ntv.Grayscale\ntv.gaussian_blur\n\nEXAMPLE:\ntv.gaussian_blur\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it does the work.\n\nkernel size / sigma (tv.gaussian_blur):\nHow far the smoothing reaches, and the window it is computed in.\n\nOUTPUTS: \n\noutput:\nThe transformed image, channels first, in the dtype you sent.\n\nCHANNELS FIRST, AND 0 TO 1:\nThese want images as (channels, height, width) - (3, H, W) for colour, (1, H, W)\nfor grayscale. Images from cameras and files usually arrive the other way round,\n(H, W, 3), so the nodes guess: a small last dimension and a large third-from-last\nmeans height-width-channels, and they transpose it for you. The guess is right\nexcept on very small images, where those two tests stop telling you anything.\n\nUnlike the k. nodes, these are happy with whole-number images: hand them 0..255\nintegers and you get 0..255 integers back, correctly scaled. Floats are taken to\nrun 0 to 1.\n\nRELATED:\ntv.adjust_saturation at 0 gives a grey image that still has three channels;\ntv.Grayscale gives one channel. Which you want depends on what comes next."
+            "text": "Turns a colour image into a single brightness channel.\n\nGRAYSCALE IS NOT THE AVERAGE OF THE CHANNELS:\nIt is a weighted sum - about 0.30 of red, 0.59 of green and 0.11 of blue - because that is how human vision works rather than because of anything about the numbers. Two colours that look equally bright to you end up equally bright;\naveraging the three channels instead would make blues too light and greens too dark.\n\nWhich matters whenever brightness is standing in for something perceptual. If you want a plain average, that is a mean over the channel axis, not this.\n\nALREADY-GRAYSCALE INPUT IS FINE:\nA one-channel image passes through unchanged. Anything else that is not three channels - a four-channel image with alpha, for instance - is refused with a message in the console.\n\nIT HAS A k. TWIN:\nk.rgb_to_grayscale does the same job with the same weights. Two differences are worth knowing. tv.Grayscale keeps whole-number images as whole numbers (0..255 in, 0..255 out); k.rgb_to_grayscale converts to floats first. And k.rgb_to_grayscale refuses a one-channel image, where tv.Grayscale passes it through - so if a chain might be handed either kind, this is the forgiving one.\n\nSYNTAX:\ntv.Grayscale\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe image. Receiving it does the work.\n\nOUTPUTS:\n\noutput:\nThe grayscale image, (1, H, W) - one channel, channels first, in the dtype you sent.\n\nCHANNELS FIRST, AND 0 TO 1:\nThese want images as (channels, height, width) - (3, H, W) for colour, (1, H, W) for grayscale. Images from cameras and files usually arrive the other way round, (H, W, 3), so the nodes guess: a small last dimension and a large third-from-last means height-width-channels, and they transpose it for you. The guess is right except on very small images, where those two tests stop telling you anything.\n\nUnlike the k. nodes, these are happy with whole-number images: hand them 0..255 integers and you get 0..255 integers back, correctly scaled. Floats are taken to run 0 to 1.\n\nRELATED:\ntv.adjust_saturation at 0 gives a grey image that still has three channels;\ntv.Grayscale gives one channel. Which you want depends on what comes next."
         },
         "3": {
             "name": "button",
@@ -156,7 +156,7 @@
             "init": "comment 3 channels in",
             "name": "comment",
             "id": 496,
-            "position_x": 764,
+            "position_x": 406,
             "position_y": 335,
             "width": 88,
             "height": 30,
@@ -187,7 +187,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "9": {
             "name": "t.info",
@@ -228,7 +229,7 @@
             "name": "text_block",
             "id": 644,
             "annotation": true,
-            "position_x": 764,
+            "position_x": 406,
             "position_y": 595,
             "width": 224,
             "height": 40,
@@ -330,138 +331,10 @@
             }
         },
         "14": {
-            "name": "tv.gaussian_blur",
-            "id": 755,
-            "position_x": 530,
-            "position_y": 380,
-            "width": 160,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "sigma",
-                    "value": 2.0,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "kernel size",
-                    "value": "9",
-                    "value_type": "str"
-                }
-            }
-        },
-        "15": {
-            "name": "t.squeeze",
-            "id": 792,
-            "position_x": 530,
-            "position_y": 545,
-            "width": 64,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "16": {
-            "name": "heat_map",
-            "id": 829,
-            "position_x": 530,
-            "position_y": 640,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 32,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.2,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 0.8,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "17": {
-            "name": "text_block",
-            "id": 866,
-            "annotation": true,
-            "position_x": 764,
-            "position_y": 800,
-            "width": 243,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "the same picture, smoothed - sigma\ndecides what counts as detail",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 235,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "the same picture, smoothed - sigma\ndecides what counts as detail"
-        },
-        "18": {
             "name": "close",
-            "id": 903,
+            "id": 755,
             "position_x": 24,
-            "position_y": 820,
+            "position_y": 755,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -553,36 +426,6 @@
             "source_output_index": 0,
             "source_output_name": "output",
             "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "8": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 755,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "9": {
-            "source_node": 755,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 792,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "10": {
-            "source_node": 792,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

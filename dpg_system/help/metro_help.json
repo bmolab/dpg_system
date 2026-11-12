@@ -41,7 +41,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generaotes a repeating pulse signal (sending out the word \"bang\") at a specific speed. \nYou use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSYNTAX:\nmetro <period: int or float)>\n\nEXAMPLE:\nmetro 30\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the metronome starts running and sending signals. \nWhen unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nFor example, if you set this to 1000 and your units are milliseconds, it ticks once every second. \nLower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. ",
+                    "value": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generaotes a repeating pulse signal (sending out the word \"bang\") at a specific speed.  You use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSYNTAX:\nmetro <period: int or float)>\n\nEXAMPLE:\nmetro 30\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the metronome starts running and sending signals.  When unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\"  For example, if you set this to 1000 and your units are milliseconds, it ticks once every second.  Lower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents.  You can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. ",
                     "value_type": "string"
                 },
                 "1": {
@@ -65,7 +65,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generaotes a repeating pulse signal (sending out the word \"bang\") at a specific speed. \nYou use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSYNTAX:\nmetro <period: int or float)>\n\nEXAMPLE:\nmetro 30\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the metronome starts running and sending signals. \nWhen unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\" \nFor example, if you set this to 1000 and your units are milliseconds, it ticks once every second. \nLower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents. \nYou can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. "
+            "text": "The metro node acts like a ticking clock or a heartbeat for your project. \n\nIt generaotes a repeating pulse signal (sending out the word \"bang\") at a specific speed.  You use this node to trigger events, animate objects, or keep rhythm in your patch.\n\nSYNTAX:\nmetro <period: int or float)>\n\nEXAMPLE:\nmetro 30\n\nINPUTS and PARAMETERS:\n\non: \nWhen checked, the metronome starts running and sending signals.  When unchecked, the metronome stops.\n\nperiod:\nThis sets the speed. It represents the amount of time between each \"tick.\"  For example, if you set this to 1000 and your units are milliseconds, it ticks once every second.  Lower numbers mean faster ticks.\n\nunits: \nThis lets you decide what time scale the period number represents.  You can choose between milliseconds (default), seconds, minutes, or hours.\n\nOUTPUTS: \n\noutput:\nEvery time the timer completes a cycle, the node sends a \"bang\" trigger out of its output pin. "
         },
         "2": {
             "init": "metro 30",
@@ -94,7 +94,8 @@
                     "value": "milliseconds",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "3": {
             "name": "counter",

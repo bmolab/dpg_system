@@ -12,6 +12,7 @@ import dearpygui.dearpygui as dpg
 def register_movie_nodes():
     Node.app.register_node('movie_player', MoviePlayerNode.factory)
     Node.app.register_node('movie_clip_dict', MovieClipDictNode.factory)
+    Node.app.register_node('movie_writer', MovieWriterNode.factory)
 
 
 class MoviePlayerNode(Node):
@@ -64,7 +65,9 @@ class MoviePlayerNode(Node):
         self.input = self.add_input('input', triggers_execution=True)
         self.frame_input = self.add_input('frame', widget_type='drag_int', default_value=0,
                                             triggers_execution=True, callback=self.frame_widget_changed)
-        self.path_input = self.add_input('path', widget_type='text_input', default_value=initial_path)
+        self.path_input = self.add_input('path', widget_type='text_input', default_value=initial_path,
+                                         callback=self.path_changed)
+        self.open_button = self.add_input('open', widget_type='button', callback=self.open_button_clicked)
 
         # --- Buttons ---
         self.play_pause_button = self.add_input('play', widget_type='button', callback=self.play_button_clicked)
@@ -88,7 +91,8 @@ class MoviePlayerNode(Node):
         self.info_label = self.add_label('no movie loaded')
 
         # --- Outputs ---
-        self.frame_output = self.add_output('frame')
+        self.frame_output = self.add_output('video out')
+        self.frame_output.name_archive.append('frame')
         self.frame_num_output = self.add_output('frame_num')
         self.done_output = self.add_output('done')
         self.clip_spec_output = self.add_output('clip_spec')
@@ -195,6 +199,21 @@ class MoviePlayerNode(Node):
         mb = self.cached_frames.nbytes / (1024 * 1024)
         self.info_label.set(f"cached  {self.total_frames} frames  {mb:.0f} MB")
         print(f"MoviePlayerNode: cached {self.total_frames} frames ({mb:.0f} MB)")
+
+    def path_changed(self):
+        """A path typed into the box or sent to the inlet opens that movie."""
+        # A saved patch restores this box and then reopens its movie in
+        # load_custom, the way it was opened (streaming or imported).
+        if getattr(self, 'in_loading_process', False):
+            return
+        path = any_to_string(self.path_input()).strip()
+        if path == '' or (path == self.movie_path and self.total_frames > 0):
+            return
+        self.open_movie(path)
+
+    def open_button_clicked(self):
+        LoadDialog(self, self.open_movie, extensions=['.mov', '.mp4', '.m4v', '.avi', '.mkv', '.webm'],
+                   default_path=os.path.dirname(self.movie_path))
 
     def _release(self):
         """Release capture and clear cache."""
@@ -934,3 +953,134 @@ class MovieClipDictNode(Node):
         if isinstance(loaded, dict):
             self.clips = loaded
             self._update_listbox()
+
+
+class MovieWriterNode(Node):
+    """
+    Records a stream of frames to a movie file.
+
+    'record' on starts a movie with the next frame; off finishes it, and the
+    finished file's path goes out of 'file' (ready for movie_player). A folder
+    or empty 'path' gets a timestamped name; an existing file is never
+    overwritten (_2, _3 ... is appended).
+
+    Frames: numpy or torch, HxW / HxWx3 / HxWx4, uint8 or float 0..1. The
+    first frame fixes the movie size; later frames of another size are scaled
+    to it.
+
+    Encoding runs on its own thread (dpg_system.movie_encoder) behind a short
+    queue. When the encoder falls behind, the next frame waits rather than
+    being lost, unless 'drop when behind' is on. ProRes uses the hardware
+    encoder where there is one (about 90-170 fps at 1920x1080 on an M1 Max;
+    the software fallback manages about 30).
+    """
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return MovieWriterNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        from dpg_system.movie_encoder import CODECS
+        initial_path = ''
+        if args:
+            initial_path = any_to_string(args[0])
+        self.encoder = None
+        self.finishing = []          # encoders closing in the background
+        self._was_recording = False
+
+        self.frame_input = self.add_input('frame', triggers_execution=True)
+        self.record_input = self.add_input('record', widget_type='checkbox', default_value=False,
+                                           callback=self.record_changed)
+        self.path_input = self.add_input('path', widget_type='text_input', widget_width=240,
+                                         default_value=initial_path)
+        self.status_label = self.add_label('')
+        self.count_output = self.add_output('frames')
+        self.file_output = self.add_output('file')
+
+        self.codec_option = self.add_option('codec', widget_type='combo', width=100, default_value='prores')
+        self.codec_option.widget.combo_items = list(CODECS)
+        self.fps_option = self.add_option('fps', widget_type='drag_float', default_value=29.97, min=1.0)
+        self.bitrate_option = self.add_option('h264/hevc Mbps', widget_type='drag_float', default_value=40.0, min=1.0)
+        self.drop_option = self.add_option('drop when behind', widget_type='checkbox', default_value=False)
+
+    def custom_create(self, from_file):
+        self.add_frame_task()
+
+    def record_changed(self):
+        on = any_to_bool(self.record_input())
+        if getattr(self, 'in_loading_process', False):
+            # a patch saved while recording must not start a recording on load
+            if on:
+                self.record_input.set(False)
+            return
+        if not on:
+            self._finish()
+
+    def _start(self):
+        from dpg_system.movie_encoder import MovieEncoder, resolve_movie_path
+        try:
+            path = resolve_movie_path(any_to_string(self.path_input()))
+            self.encoder = MovieEncoder(path, codec=any_to_string(self.codec_option()),
+                                        fps=any_to_float(self.fps_option()),
+                                        bitrate_mbps=any_to_float(self.bitrate_option()),
+                                        drop_when_behind=any_to_bool(self.drop_option()))
+        except Exception as e:
+            self.encoder = None
+            self.status_label.set('error: ' + str(e))
+            self.record_input.set(False)
+
+    def _finish(self):
+        if self.encoder is not None:
+            self.encoder.close()
+            self.finishing.append(self.encoder)
+            self.status_label.set('finishing ' + os.path.basename(self.encoder.path))
+            self.encoder = None
+
+    def execute(self):
+        if not any_to_bool(self.record_input()):
+            return
+        frame = self.frame_input()
+        if frame is None:
+            return
+        if self.encoder is None:
+            self._start()
+            if self.encoder is None:
+                return
+        try:
+            self.encoder.write(frame)
+        except Exception as e:
+            self.status_label.set('error: ' + str(e))
+            return
+        self.count_output.send(self.encoder.written + self.encoder.queued)
+
+    def frame_task(self):
+        enc = self.encoder
+        if enc is not None:
+            if enc.error is not None:
+                self.status_label.set('error: ' + enc.error)
+                self.record_input.set(False)
+                self._finish()
+            elif enc.size is not None and Node.app.frame_number % 15 == 0:
+                text = '%s  %d frames  %dx%d %s' % (os.path.basename(enc.path), enc.written,
+                                                   enc.size[0], enc.size[1], enc.encoder_name or '')
+                if enc.dropped:
+                    text += '  %d dropped' % enc.dropped
+                self.status_label.set(text)
+        for done in [e for e in self.finishing if e.finished]:
+            self.finishing.remove(done)
+            if done.error is not None:
+                self.status_label.set('error: ' + done.error)
+            elif done.written > 0:
+                text = 'wrote %s  %d frames' % (os.path.basename(done.path), done.written)
+                if done.dropped:
+                    text += '  (%d dropped)' % done.dropped
+                self.status_label.set(text)
+                self.file_output.send(done.path)
+            else:
+                self.status_label.set('no frames recorded')
+
+    def custom_cleanup(self):
+        self._finish()
+        for e in self.finishing:
+            e.wait(10.0)

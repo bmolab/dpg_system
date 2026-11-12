@@ -1,0 +1,853 @@
+{
+    "name": "scipy.filtfilt_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.filtfilt_help.json",
+    "patches": {
+        "0": {
+            "height": 840,
+            "width": 710,
+            "position": [
+                160,
+                160
+            ],
+            "id": 940,
+            "name": "make_wobble",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 977,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 500",
+                    "id": 1014,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 500.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment twice a second",
+                    "id": 1051,
+                    "position_x": 190,
+                    "position_y": 55,
+                    "width": 200,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "twice a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "twice a second"
+                },
+                "3": {
+                    "name": "np.arange",
+                    "init": "np.arange 120",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 150,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 120 samples: 2 seconds at 60 a second",
+                    "id": 1125,
+                    "position_x": 210,
+                    "position_y": 150,
+                    "width": 380,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "120 samples: 2 seconds at 60 a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "120 samples: 2 seconds at 60 a second"
+                },
+                "5": {
+                    "name": "*",
+                    "init": "* 9",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 270,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 360,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "comment",
+                    "init": "comment a slow wave: 3 cycles",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 440,
+                    "width": 260,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a slow wave: 3 cycles",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a slow wave: 3 cycles"
+                },
+                "8": {
+                    "name": "*",
+                    "init": "* 45",
+                    "id": 1273,
+                    "position_x": 330,
+                    "position_y": 270,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "9": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1310,
+                    "position_x": 330,
+                    "position_y": 360,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "*",
+                    "init": "* 0.3",
+                    "id": 1347,
+                    "position_x": 330,
+                    "position_y": 450,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "comment",
+                    "init": "comment a ripple: 15 cycles, 0.3 tall",
+                    "id": 1384,
+                    "position_x": 330,
+                    "position_y": 530,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a ripple: 15 cycles, 0.3 tall",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a ripple: 15 cycles, 0.3 tall"
+                },
+                "12": {
+                    "name": "+",
+                    "init": "+",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 580,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "13": {
+                    "name": "comment",
+                    "init": "comment added together",
+                    "id": 1458,
+                    "position_x": 190,
+                    "position_y": 595,
+                    "width": 200,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "added together",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "added together"
+                },
+                "14": {
+                    "name": "out",
+                    "init": "out wobble",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 680,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1088,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "3": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 1,
+                    "dest_input_name": "operand"
+                },
+                "7": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "wobble"
+                }
+            }
+        },
+        "1": {
+            "height": 1471,
+            "width": 1670,
+            "position": [
+                100,
+                100
+            ],
+            "id": 903,
+            "name": "scipy.filtfilt_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.filtfilt_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment scipy.filtfilt - filter a recording without any delay",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 660,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "scipy.filtfilt - filter a recording without any delay",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "scipy.filtfilt - filter a recording without any delay"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 862,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1366,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Filters a whole recording with a Butterworth filter - low-pass, high-pass, band-pass or band-stop - running it once forwards and once backwards, so that the delay of the forward pass is cancelled exactly. Every peak, step and turn stays at the moment it happened.\n\nA filter that runs as data arrives (filter, band_pass, one_euro_filter) can only look at the past, so it always lags: the smoother it is, the later. When the whole recording is in hand - a take, a buffer of the last few seconds - filtfilt can look both ways, and the lag disappears. That matters whenever timing matters: lining movement up with sound or with another performer, measuring when something happened, finding peaks.\n\nlow-pass keeps what is slower than the cutoff: smoothing, removing jitter. high-pass keeps what is faster: removing drift and slow sway. band-pass keeps a range; band-stop removes one - a mains hum, a known vibration.\n\nSYNTAX:\nscipy.filtfilt <kind> <cutoff> <cutoff 2>\nDefaults: lowpass, cutoff 5, sample rate 60.\n\nEXAMPLES:\nscipy.filtfilt lowpass 6\nscipy.filtfilt bandpass 1 3\n\nINPUTS and PARAMETERS:\n\nin:\nThe recording (a list or array). Every input is filtered and sent.\n\ncutoff (float box, also an inlet):\nWhere the filter starts to act, in cycles per second (Hz). It must be below half the sample rate.\n\ncutoff 2 (float box, also an inlet):\nThe other edge, for band-pass and band-stop.\n\nsample rate (float box, also an inlet):\nSamples per second of the recording: 60 for 60 frames a second.\n\norder (int box, also an inlet):\nHow sharply the filter cuts, 1 to 10. Higher is sharper; 4 (the default) suits most uses. Running twice doubles the effect.\n\naxis (int box, also an inlet):\nWhich way time runs: -1 along each row, 0 down each column - for a buffer of frames x joints, use 0 to filter each joint.\n\nkind:\nAn option, under the node: lowpass, highpass, bandpass or bandstop.\n\nOUTPUTS:\n\nfiltered:\nThe filtered recording, the same shape.\n\nTHE ENDS:\nNear the very beginning and end there is less to look at in one direction, so the first and last few samples are the least reliable.\n\nREADING THE DEMO:\nThe wobble comes from the make_wobble subpatcher (double-click it to look inside):\n120 samples - two seconds at 60 a second - of a slow wave going round 3 times, with a ripple five times as fast and a third as tall added to it.\n\nAt 60 samples a second the slow wave is 1.5 cycles a second and the ripple 7.5. Low-passed at 4, the ripple is gone and the slow wave is left (right) - its crests exactly where they were on the left, not a moment later.\n\nRELATED:\nfilter, band_pass and one_euro_filter filter a live stream as it arrives. np.convolve smooths with any weights you choose. scipy.find_peaks works better on a filtered curve.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1350,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Filters a whole recording with a Butterworth filter - low-pass, high-pass, band-pass or band-stop - running it once forwards and once backwards, so that the delay of the forward pass is cancelled exactly. Every peak, step and turn stays at the moment it happened.\n\nA filter that runs as data arrives (filter, band_pass, one_euro_filter) can only look at the past, so it always lags: the smoother it is, the later. When the whole recording is in hand - a take, a buffer of the last few seconds - filtfilt can look both ways, and the lag disappears. That matters whenever timing matters: lining movement up with sound or with another performer, measuring when something happened, finding peaks.\n\nlow-pass keeps what is slower than the cutoff: smoothing, removing jitter. high-pass keeps what is faster: removing drift and slow sway. band-pass keeps a range; band-stop removes one - a mains hum, a known vibration.\n\nSYNTAX:\nscipy.filtfilt <kind> <cutoff> <cutoff 2>\nDefaults: lowpass, cutoff 5, sample rate 60.\n\nEXAMPLES:\nscipy.filtfilt lowpass 6\nscipy.filtfilt bandpass 1 3\n\nINPUTS and PARAMETERS:\n\nin:\nThe recording (a list or array). Every input is filtered and sent.\n\ncutoff (float box, also an inlet):\nWhere the filter starts to act, in cycles per second (Hz). It must be below half the sample rate.\n\ncutoff 2 (float box, also an inlet):\nThe other edge, for band-pass and band-stop.\n\nsample rate (float box, also an inlet):\nSamples per second of the recording: 60 for 60 frames a second.\n\norder (int box, also an inlet):\nHow sharply the filter cuts, 1 to 10. Higher is sharper; 4 (the default) suits most uses. Running twice doubles the effect.\n\naxis (int box, also an inlet):\nWhich way time runs: -1 along each row, 0 down each column - for a buffer of frames x joints, use 0 to filter each joint.\n\nkind:\nAn option, under the node: lowpass, highpass, bandpass or bandstop.\n\nOUTPUTS:\n\nfiltered:\nThe filtered recording, the same shape.\n\nTHE ENDS:\nNear the very beginning and end there is less to look at in one direction, so the first and last few samples are the least reliable.\n\nREADING THE DEMO:\nThe wobble comes from the make_wobble subpatcher (double-click it to look inside):\n120 samples - two seconds at 60 a second - of a slow wave going round 3 times, with a ripple five times as fast and a third as tall added to it.\n\nAt 60 samples a second the slow wave is 1.5 cycles a second and the ripple 7.5. Low-passed at 4, the ripple is gone and the slow wave is left (right) - its crests exactly where they were on the left, not a moment later.\n\nRELATED:\nfilter, band_pass and one_euro_filter filter a live stream as it arrives. np.convolve smooths with any weights you choose. scipy.find_peaks works better on a filtered curve."
+                },
+                "3": {
+                    "init": "comment a slow wave with a ripple on it",
+                    "name": "comment",
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 199,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a slow wave with a ripple on it",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a slow wave with a ripple on it"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 84,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_wobble",
+                    "patcher id": 940
+                },
+                "5": {
+                    "init": "comment low-pass at 4 cycles a second",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 260,
+                    "position_y": 53,
+                    "width": 187,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "low-pass at 4 cycles a second",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "low-pass at 4 cycles a second"
+                },
+                "6": {
+                    "name": "scipy.filtfilt",
+                    "id": 459,
+                    "position_x": 260,
+                    "position_y": 92,
+                    "width": 160,
+                    "height": 112,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "scipy.filtfilt lowpass 4",
+                    "highlight": true
+                },
+                "7": {
+                    "init": "comment in",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 28,
+                    "position_y": 360,
+                    "width": 21,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "in",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "in"
+                },
+                "8": {
+                    "name": "plot",
+                    "id": 533,
+                    "position_x": 28,
+                    "position_y": 395,
+                    "width": 388,
+                    "height": 180,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 130,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 120,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 120.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.5,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.5,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment out: the ripple gone, nothing late",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 440,
+                    "position_y": 360,
+                    "width": 217,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "out: the ripple gone, nothing late",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "out: the ripple gone, nothing late"
+                },
+                "10": {
+                    "name": "plot",
+                    "id": 607,
+                    "position_x": 440,
+                    "position_y": 395,
+                    "width": 388,
+                    "height": 180,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 380,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 130,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 120,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 120.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.5,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.5,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "11": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 630,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 30,
+                    "position_y": 664,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link filter"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 120,
+                    "position_y": 664,
+                    "width": 72,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link band_pass"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 233,
+                    "position_y": 664,
+                    "width": 109,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link one_euro_filter"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 392,
+                    "position_y": 664,
+                    "width": 84,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.convolve"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 520,
+                    "position_y": 664,
+                    "width": 115,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link scipy.find_peaks"
+                },
+                "17": {
+                    "name": "close",
+                    "id": 866,
+                    "position_x": 24,
+                    "position_y": 774,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "wobble",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "1": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "wobble",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "filtered",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

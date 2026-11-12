@@ -728,11 +728,14 @@ def any_to_tensor(data, device='cpu', dtype=torch.float32, requires_grad=False, 
     # .to() handles device/dtype and is efficient (no-op if already correct).
     tensor_ = tensor_.to(device=device, dtype=dtype)
 
-    # Handle requires_grad specifically
-    if tensor_.requires_grad != requires_grad:
+    # Handle requires_grad specifically. Only ever switch it on: switching it
+    # off in place would cut the caller's tensor out of training (and raises
+    # on a computed tensor), so a tensor that already carries gradients
+    # passes through with them.
+    if requires_grad and not tensor_.requires_grad:
         # Only floats and complex types can require grad
         if tensor_.is_floating_point() or tensor_.is_complex():
-            tensor_.requires_grad_(requires_grad)
+            tensor_.requires_grad_(True)
 
     return tensor_
 
@@ -2094,8 +2097,13 @@ def decode_arg(args, index):
         if lower_arg == 'false':
             return False, bool
 
-        # Remove commas for number parsing (e.g., "1,000")
-        num_str = clean_arg.replace(',', '')
+        # Remove commas for number parsing: a separator comma left on a
+        # space-split token ("3," from "3, 4") and thousands separators
+        # ("1,000"). Any other inner comma ("3,7") is not one number, so the
+        # token stays a string rather than silently becoming 37.
+        num_str = clean_arg.strip(',')
+        if ',' in num_str and re.fullmatch(r'[-+]?\d{1,3}(,\d{3})+(\.\d*)?', num_str):
+            num_str = num_str.replace(',', '')
 
         # B. Try Integer
         try:

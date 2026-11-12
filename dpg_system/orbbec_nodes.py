@@ -2,6 +2,7 @@ import threading
 import time
 import ctypes
 from collections import deque
+import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *  # provides np
 
@@ -259,8 +260,17 @@ class OrbbecFemtoNode(Node):
         # costs ~8s of frames (re-enumeration + depth engine warm-up).
         self.auto_reset_option = self.add_option('auto usb reset on stutter', widget_type='checkbox',
                                                  default_value=True, callback=self.filters_changed)
+        # buttons default to 80px, too narrow for these labels
+        text_size = dpg.get_text_size('reset usb device')
+        button_width = (text_size[0] if text_size is not None else 120) + 16
         self.reset_usb_option = self.add_option('reset usb device', widget_type='button',
-                                                callback=self.manual_usb_reset)
+                                                width=button_width, callback=self.manual_usb_reset)
+        # Heavier recovery: disable/re-enable the hub port (femto_reset script)
+        # for mid-session dropouts. Does NOT recover the stuck state behind the
+        # FireNEX after a reboot/link loss (tested Oct 23 2026): the hub never
+        # really cuts 5 V. That needs the remote FireNEX power-cycled, then the Femto.
+        self.reset_port_option = self.add_option('reset usb port', widget_type='button',
+                                                 width=button_width, callback=self.manual_port_reset)
 
         # --- runtime / threading ---
         self.pipeline = None
@@ -705,6 +715,41 @@ class OrbbecFemtoNode(Node):
             return
         self._resetting = True
         threading.Thread(target=self._do_usb_reset, daemon=True).start()
+
+    def _do_port_reset(self):
+        """Worker: stop capture, toggle the Femto's hub port via the root-owned
+        femto_reset script (NOPASSWD sudoers rule; see femto_reset.sh), then
+        restart if capture is wanted. The script waits for re-enumeration."""
+        import subprocess
+        try:
+            self.stop_capture()
+            print(f'{self.label}: resetting USB port (femto_reset)...')
+            try:
+                result = subprocess.run(['sudo', '-n', '/usr/local/sbin/femto_reset'],
+                                        capture_output=True, text=True, timeout=60)
+            except (OSError, subprocess.TimeoutExpired) as e:
+                print(f'{self.label}: femto_reset failed to run: {e}')
+                return
+            for line in (result.stdout + result.stderr).splitlines():
+                print(f'{self.label}: {line}')
+            if result.returncode != 0:
+                if 'password' in result.stderr:
+                    print(f'{self.label}: femto_reset needs a NOPASSWD sudoers rule '
+                          f'(see femto_reset.sh)')
+                return
+            # the enable box, not keep_running: a missing device leaves the box
+            # checked with capture never started, which is the case this is for
+            if self.enable_input():
+                time.sleep(1.0)
+                self.start_capture()
+        finally:
+            self._resetting = False
+
+    def manual_port_reset(self):
+        if self._resetting:
+            return
+        self._resetting = True
+        threading.Thread(target=self._do_port_reset, daemon=True).start()
 
     # ------------------------------------------------------- depth-image filters
 

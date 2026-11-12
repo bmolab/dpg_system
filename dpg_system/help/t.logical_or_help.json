@@ -1,0 +1,548 @@
+{
+    "height": 981,
+    "width": 1710,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "t.logical_or_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.logical_or_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.logical_or - true where either is true",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.logical_or - true where either is true",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.logical_or - true where either is true"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 902,
+            "position_y": 45,
+            "width": 768,
+            "height": 876,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Combines two tensors of true and false element by element, giving true where A OR B (or both) is true.\n\nA     B     or\n1     1     1\n1     0     1\n0     1     1\n0     0     0\n\nUse it to combine conditions any one of which is enough: outside a range (below the low limit or above the high one), either hand raised, a value that is nan or infinite (t.isnan, t.isinf).\n\nThe inputs need not be true and false: any number other than 0 counts as true, and 0 as false, so 2.5 and -1 are both true. The masks from t.gt, t.lt, t.eq, t.isnan and the other tests are ready to use as they are. B is moved to A's device.\n\nSYNTAX:\nt.logical_or\n\nINPUTS and PARAMETERS:\n\nin:\nThe first tensor, A (a list is turned into one). Every input combines and sends - the only inlet that makes the node send.\n\nin 2:\nThe second tensor, B. It is held, and used with every A that follows; it does not send by itself, so send it first. It must have the same shape as A, or a shape that broadcasts against it (a single value goes with every element).\n\noutput_type:\nAn option, under the node: bool (the default), int (1 and 0) or float (1.0 and 0.0). Choose int or float to plot the result, or to multiply with it.\n\nOUTPUTS:\n\nresult:\nTrue where A OR B (or both) is true, the shape of A and B together.\n\nREADING THE DEMO:\nA is 1 1 0 0 and B is 1 0 1 0 - every pairing of true and false once - so the result, 1 1 1 0, is the whole table above in one go (output_type is set to int here, so it shows 1s and 0s). Type other 1s and 0s into either message and click it.\n\nRELATED:\nt.logical_and and t.logical_xor combine the same way with other rules; t.logical_not turns true into false. t.any and t.all ask whether ANY or ALL of one tensor is true. np.logical_or is the numpy version.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 860,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Combines two tensors of true and false element by element, giving true where A OR B (or both) is true.\n\nA     B     or\n1     1     1\n1     0     1\n0     1     1\n0     0     0\n\nUse it to combine conditions any one of which is enough: outside a range (below the low limit or above the high one), either hand raised, a value that is nan or infinite (t.isnan, t.isinf).\n\nThe inputs need not be true and false: any number other than 0 counts as true, and 0 as false, so 2.5 and -1 are both true. The masks from t.gt, t.lt, t.eq, t.isnan and the other tests are ready to use as they are. B is moved to A's device.\n\nSYNTAX:\nt.logical_or\n\nINPUTS and PARAMETERS:\n\nin:\nThe first tensor, A (a list is turned into one). Every input combines and sends - the only inlet that makes the node send.\n\nin 2:\nThe second tensor, B. It is held, and used with every A that follows; it does not send by itself, so send it first. It must have the same shape as A, or a shape that broadcasts against it (a single value goes with every element).\n\noutput_type:\nAn option, under the node: bool (the default), int (1 and 0) or float (1.0 and 0.0). Choose int or float to plot the result, or to multiply with it.\n\nOUTPUTS:\n\nresult:\nTrue where A OR B (or both) is true, the shape of A and B together.\n\nREADING THE DEMO:\nA is 1 1 0 0 and B is 1 0 1 0 - every pairing of true and false once - so the result, 1 1 1 0, is the whole table above in one go (output_type is set to int here, so it shows 1s and 0s). Type other 1s and 0s into either message and click it.\n\nRELATED:\nt.logical_and and t.logical_xor combine the same way with other rules; t.logical_not turns true into false. t.any and t.all ask whether ANY or ALL of one tensor is true. np.logical_or is the numpy version."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment A",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 15,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "A",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "A"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 1 0 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment B, held",
+            "name": "comment",
+            "id": 570,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "B, held",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "B, held"
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 0 1 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment A or B",
+            "name": "comment",
+            "id": 644,
+            "position_x": 370,
+            "position_y": 53,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "A or B",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "A or B"
+        },
+        "12": {
+            "name": "t.logical_or",
+            "id": 681,
+            "position_x": 370,
+            "position_y": 92,
+            "width": 82,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_type",
+                    "value": "int",
+                    "value_type": "str"
+                }
+            },
+            "highlight": true
+        },
+        "13": {
+            "init": "comment result",
+            "name": "comment",
+            "id": 718,
+            "position_x": 590,
+            "position_y": 53,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "result",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "result"
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 590,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 374,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.logical_and"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 174,
+            "position_y": 374,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.logical_xor"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 318,
+            "position_y": 374,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.logical_not"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 462,
+            "position_y": 374,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.any"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 544,
+            "position_y": 374,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.all"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 626,
+            "position_y": 374,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.logical_or"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 484,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}
