@@ -27,6 +27,7 @@ Messages to the 'in' inlet:
     rpc <Method> [json | key value ...]   any RPC call; reply -> 'reply' outlet
     scan                           rescan; device list -> 'reply' outlet
     host <host>                    retarget the node
+    led <0-100>                    LED ring brightness (sets the 'led' slider)
 """
 
 import json
@@ -149,12 +150,20 @@ class ShellyNode(Node):
         self.shown_status = None
         self.devices = []
         self.scanning = False
+        # LED brightness: the worker sends only the latest slider value, and
+        # reads the plug's own value back whenever the node is (re)targeted.
+        self.led_target = None
+        self.led_applied = None
+        self.led_read_needed = True
 
         # Not labelled 'on': a message whose first word names a widget inlet is
         # routed to that widget, so 'on 3' would set the checkbox and lose the timer.
         self.device_property = self.add_property('device', widget_type='combo', width=260,
                                                  callback=self.device_chosen)
         self.on_input = self.add_input('switch', widget_type='checkbox', callback=self.on_changed)
+        # Labelled 'led' on purpose: the message 'led 30' is routed to it.
+        self.led_input = self.add_input('led', widget_type='slider_int', default_value=100,
+                                        min=0, max=100, callback=self.led_changed)
         self.message_input = self.add_input('in', triggers_execution=True)
 
         self.status_label = self.add_label('')
@@ -200,6 +209,8 @@ class ShellyNode(Node):
     def host_changed(self):
         self.host = normalise_host(any_to_string(self.host_option()))
         self.last_output = None
+        self.led_read_needed = True
+        self.led_applied = None
         self.commands.put(('poll',))
         self.show_host_in_list()
 
@@ -224,6 +235,14 @@ class ShellyNode(Node):
         if self.in_loading_process:
             return
         self.commands.put(('set', bool(self.on_input()), None))
+
+    def led_changed(self):
+        # A saved patch does not push its brightness to the plug; the slider
+        # shows the plug's own value once the node has read it.
+        if self.in_loading_process:
+            return
+        self.led_target = max(0, min(100, any_to_int(self.led_input())))
+        self.commands.put(('led',))
 
     def execute(self):
         data = self.message_input()
@@ -336,6 +355,12 @@ class ShellyNode(Node):
                 elif kind == 'toggle':
                     self.rpc('Switch.Toggle', {'id': self.switch_id})
                     kind = 'poll'
+                elif kind == 'led':
+                    target = self.led_target
+                    if target is not None and target != self.led_applied:
+                        self.set_led_brightness(target)
+                        self.led_applied = target
+                    kind = None
                 elif kind == 'rpc':
                     _, method, params = command
                     self.events.put(('reply', self.rpc(method, params)))
@@ -343,12 +368,37 @@ class ShellyNode(Node):
                 if kind == 'poll' and self.host:
                     status = self.rpc('Switch.GetStatus', {'id': self.switch_id})
                     self.events.put(('status', status))
+                    if self.led_read_needed:
+                        self.led_read_needed = False
+                        brightness = self.read_led_brightness()
+                        if brightness is not None:
+                            self.led_applied = brightness
+                            self.events.put(('led', brightness))
             except Exception as e:                   # noqa: BLE001 - surfaced in the node
                 message = str(e) if isinstance(e, ShellyRPCError) else type(e).__name__
                 self.events.put(('error', message))
             if kind == 'poll':
                 next_poll = time.monotonic() + self.poll_interval
         self.session.close()
+
+    def set_led_brightness(self, brightness):
+        """Brightness for both ring modes, so it holds whichever mode the plug
+        is in ('power' shows the load; 'switch' shows on/off colours)."""
+        key = f'switch:{self.switch_id}'
+        colors = {'power': {'brightness': brightness},
+                  key: {'on': {'brightness': brightness}, 'off': {'brightness': brightness}}}
+        self.rpc('PLUGS_UI.SetConfig', {'config': {'leds': {'colors': colors}}})
+
+    def read_led_brightness(self):
+        """The plug's current ring brightness, or None (not a plug, or no LEDs)."""
+        try:
+            leds = self.rpc('PLUGS_UI.GetConfig')['leds']
+            colors = leds['colors']
+            if leds.get('mode') == 'switch':
+                return int(round(colors[f'switch:{self.switch_id}']['on']['brightness']))
+            return int(round(colors['power']['brightness']))
+        except Exception:                            # noqa: BLE001 - not every Shelly has a ring
+            return None
 
     # -- device list ----------------------------------------------------
 
@@ -416,6 +466,8 @@ class ShellyNode(Node):
             kind, payload = event
             if kind == 'status':
                 self.apply_status(payload)
+            elif kind == 'led':
+                self.led_input.set(payload, propagate=False)
             elif kind == 'reply':
                 self.reply_output.send(payload)
             elif kind == 'devices':
