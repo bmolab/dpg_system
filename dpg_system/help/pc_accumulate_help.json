@@ -1,13 +1,13 @@
 {
-    "height": 1209,
-    "width": 2110,
+    "height": 1263,
+    "width": 2091,
     "position": [
         100,
         100
     ],
     "id": 1051,
     "name": "pc_accumulate_help",
-    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/cc498989-3f87-4c50-9c17-a6270d7fcf96/scratchpad/helpbuild/pc_accumulate_help.json",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/cc498989-3f87-4c50-9c17-a6270d7fcf96/scratchpad/accbuild/pc_accumulate_help.json",
     "nodes": {
         "0": {
             "name": "",
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1252,
+            "position_x": 1233,
             "position_y": 45,
             "width": 818,
             "height": 806,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "pc_accumulate records where a cloud has been, and sends it as a cloud of voxels.\n\nTick 'record' and every voxel the cloud touches is counted, frame after frame. The output is one point per voxel that was touched at least 'min hits' times, with a weight saying how much went on there. It is the C++ app's ACCUMULATE VOXELS: walk through the space, stop, and you have a picture of everywhere you went - ready for pc_regions' 'capture cloud in'.\n\nThe input passes straight through on 'cloud out', so it can sit in the middle of a chain.\n\nTHE WEIGHTS ADD UP:\nEach voxel's weight is the SUM, over the recorded frames, of the weight the incoming cloud gave it. From pc_voxel that is its per-voxel weight; a cloud with no weights counts 1 for each frame a voxel is occupied. So a voxel you stood in for a second reads thirty times what one frame gave it, and an accumulation is always at least as strong as any single frame.\n\nThat makes the raw numbers grow without limit, and mgl_point_cloud can only show 0 to 1 - it clamps anything above. Two controls choose which part of the accumulation lands in that visible range.\n\n'normalize' rescales the sums first:\n\n  none        the raw sums. Grows the longer you record.\n  per frame   divided by the frames recorded: the average weight per frame.\n              Stays the same scale however long you record.\n  max         divided by the largest voxel shown, so the busiest one reads 1\n              and everything else is a fraction of it.\n\n'weight scale' then multiplies the result. With 'max', lower values than 1 are pointless and higher ones push the quieter voxels up into view while the busiest saturate - the way to read detail in the places you passed through rather than the places you stood.\n\nmgl_point_cloud has a 'weight scale' of its own, applied when it draws. It changes only the picture; this one changes the numbers that go on to pc_regions too.\n\nMIN HITS:\n'min hits' drops voxels touched in fewer than that many frames - raise it to lose what was only walked through and keep where you stayed. It counts frames, not weight, and it is applied before 'max' finds its maximum.\n\nRECORDING ALONE:\n'delay (s)' and 'duration (s)' (options) are for working without a second person at the computer: tick 'record', walk into the volume during the delay, and it stops itself after the duration. A duration of 0 records until you untick it. 'clear' empties the accumulation; so does changing the volume or the voxel size, since the old counts no longer map onto the new grid.\n\nTHE GRID:\nLike every point cloud node it works on a voxel grid. When the cloud comes from pc_voxel or pc_crop, the volume and voxel size ride in on the frame and pc_accumulate uses those; 'voxel size (cm)' and 'min (x,y,z)' / 'max (x,y,z)' (options) are only for a raw cloud with nothing attached.\n\nSYNTAX:\npc_accumulate\n\nEXAMPLE:\npc_accumulate\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud: an (N, 3) array or a cloud frame. Each one is a frame of the recording while 'record' is on.\n\nrecord:\nAccumulate while ticked.\n\nclear:\nEmpty the accumulation.\n\nmin hits:\nFrames a voxel must be touched in to be sent. Default 1.\n\nnormalize:\nnone, per frame or max, as above.\n\nweight scale:\nMultiplies the weights after normalize. Default 1.\n\ndelay (s) / duration (s) / voxel size (cm) / min (x,y,z) / max (x,y,z) (options):\nAs above.\n\nOUTPUTS:\n\naccumulated:\nOne point per voxel at the voxel centre, as a cloud frame carrying the voxel size and the weights. Sent every recorded frame, and whenever a setting changes.\n\nframes:\nHow many frames have been recorded.\n\ncloud out:\nThe input, unchanged.\n\nRELATED:\npc_voxel is the usual source. mgl_point_cloud draws the result. pc_regions captures it into a region.",
+                    "value": "pc_accumulate records where a cloud has been, and sends it as a cloud of voxels.\n\nTick 'record' and every voxel the cloud touches is counted, frame after frame. The output is one point per voxel that was touched at least 'min hits' times, with a weight saying how much went on there. It is the C++ app's ACCUMULATE VOXELS: walk through the space, stop, and you have a picture of everywhere you went - ready for pc_regions' 'capture cloud in'.\n\nThe input passes straight through on 'cloud out', so it can sit in the middle of a chain.\n\nTHE WEIGHTS ADD UP:\nEach voxel's weight is the SUM, over the recorded frames, of the weight the incoming cloud gave it. From pc_voxel that is its per-voxel weight; a cloud with no weights counts 1 for each frame a voxel is occupied. So a voxel you stood in for a second reads thirty times what one frame gave it, and an accumulation is always at least as strong as any single frame.\n\nThat makes the raw numbers grow without limit, and mgl_point_cloud can only show 0 to 1 - it clamps anything above. Two controls choose which part of the accumulation lands in that visible range.\n\n'normalize' rescales the sums first:\n\n  none        the raw sums. Grows the longer you record.\n  per frame   divided by the frames recorded: the average weight per frame.\n              Stays the same scale however long you record.\n  max         divided by the largest voxel shown, so the busiest one reads 1\n              and everything else is a fraction of it.\n\n'weight scale' then multiplies the result. With 'max', lower values than 1 are pointless and higher ones push the quieter voxels up into view while the busiest saturate - the way to read detail in the places you passed through rather than the places you stood.\n\nmgl_point_cloud has a 'weight scale' of its own, applied when it draws. It changes only the picture; this one changes the numbers that go on to pc_regions too.\n\nA FADING TRAIL:\n'half-life (s)' makes the accumulation fade while it records: everything gathered so far loses half its weight every half-life, so recent presence reads brightest and the past falls away behind it. It goes by the clock, not by frames, so a frame rate change does not change how fast it fades. 0 (the default) is no fading.\n\nA voxel nobody has been in for a while is forgotten outright, not just dimmed - once what it had has faded to a twentieth of a single frame's, about four half-lives after a brief visit and longer after a long stay. It then stops being sent, so a capture never takes a faded trail along with it.\n\nNothing fades while 'record' is off. Untick it and the accumulation holds as it is, ready to capture. With 'per frame', the frame count it divides by fades too, so it stays an average over the recent past.\n\nMIN HITS:\n'min hits' drops voxels touched in fewer than that many frames - raise it to lose what was only walked through and keep where you stayed. It counts frames, not weight (with a half-life, frames since the voxel was last forgotten), and it is applied before 'max' finds its maximum.\n\nRECORDING ALONE:\n'delay (s)' and 'duration (s)' (options) are for working without a second person at the computer: tick 'record', walk into the volume during the delay, and it stops itself after the duration. A duration of 0 records until you untick it. 'clear' empties the accumulation; so does changing the volume or the voxel size, since the old counts no longer map onto the new grid.\n\nTHE GRID:\nLike every point cloud node it works on a voxel grid. When the cloud comes from pc_voxel or pc_crop, the volume and voxel size ride in on the frame and pc_accumulate uses those; 'voxel size (cm)' and 'min (x,y,z)' / 'max (x,y,z)' (options) are only for a raw cloud with nothing attached.\n\nSYNTAX:\npc_accumulate\n\nEXAMPLE:\npc_accumulate\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud: an (N, 3) array or a cloud frame. Each one is a frame of the recording while 'record' is on.\n\nrecord:\nAccumulate while ticked.\n\nclear:\nEmpty the accumulation.\n\nmin hits:\nFrames a voxel must be touched in to be sent. Default 1.\n\nnormalize:\nnone, per frame or max, as above.\n\nweight scale:\nMultiplies the weights after normalize. Default 1.\n\nhalf-life (s):\nHow fast the accumulation fades while recording. 0 is no fading.\n\ndelay (s) / duration (s) / voxel size (cm) / min (x,y,z) / max (x,y,z) (options):\nAs above.\n\nOUTPUTS:\n\naccumulated:\nOne point per voxel at the voxel centre, as a cloud frame carrying the voxel size and the weights. Sent every recorded frame, and whenever a setting changes.\n\nframes:\nHow many frames have been recorded.\n\ncloud out:\nThe input, unchanged.\n\nRELATED:\npc_voxel is the usual source. mgl_point_cloud draws the result. pc_regions captures it into a region.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "pc_accumulate records where a cloud has been, and sends it as a cloud of voxels.\n\nTick 'record' and every voxel the cloud touches is counted, frame after frame. The output is one point per voxel that was touched at least 'min hits' times, with a weight saying how much went on there. It is the C++ app's ACCUMULATE VOXELS: walk through the space, stop, and you have a picture of everywhere you went - ready for pc_regions' 'capture cloud in'.\n\nThe input passes straight through on 'cloud out', so it can sit in the middle of a chain.\n\nTHE WEIGHTS ADD UP:\nEach voxel's weight is the SUM, over the recorded frames, of the weight the incoming cloud gave it. From pc_voxel that is its per-voxel weight; a cloud with no weights counts 1 for each frame a voxel is occupied. So a voxel you stood in for a second reads thirty times what one frame gave it, and an accumulation is always at least as strong as any single frame.\n\nThat makes the raw numbers grow without limit, and mgl_point_cloud can only show 0 to 1 - it clamps anything above. Two controls choose which part of the accumulation lands in that visible range.\n\n'normalize' rescales the sums first:\n\n  none        the raw sums. Grows the longer you record.\n  per frame   divided by the frames recorded: the average weight per frame.\n              Stays the same scale however long you record.\n  max         divided by the largest voxel shown, so the busiest one reads 1\n              and everything else is a fraction of it.\n\n'weight scale' then multiplies the result. With 'max', lower values than 1 are pointless and higher ones push the quieter voxels up into view while the busiest saturate - the way to read detail in the places you passed through rather than the places you stood.\n\nmgl_point_cloud has a 'weight scale' of its own, applied when it draws. It changes only the picture; this one changes the numbers that go on to pc_regions too.\n\nMIN HITS:\n'min hits' drops voxels touched in fewer than that many frames - raise it to lose what was only walked through and keep where you stayed. It counts frames, not weight, and it is applied before 'max' finds its maximum.\n\nRECORDING ALONE:\n'delay (s)' and 'duration (s)' (options) are for working without a second person at the computer: tick 'record', walk into the volume during the delay, and it stops itself after the duration. A duration of 0 records until you untick it. 'clear' empties the accumulation; so does changing the volume or the voxel size, since the old counts no longer map onto the new grid.\n\nTHE GRID:\nLike every point cloud node it works on a voxel grid. When the cloud comes from pc_voxel or pc_crop, the volume and voxel size ride in on the frame and pc_accumulate uses those; 'voxel size (cm)' and 'min (x,y,z)' / 'max (x,y,z)' (options) are only for a raw cloud with nothing attached.\n\nSYNTAX:\npc_accumulate\n\nEXAMPLE:\npc_accumulate\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud: an (N, 3) array or a cloud frame. Each one is a frame of the recording while 'record' is on.\n\nrecord:\nAccumulate while ticked.\n\nclear:\nEmpty the accumulation.\n\nmin hits:\nFrames a voxel must be touched in to be sent. Default 1.\n\nnormalize:\nnone, per frame or max, as above.\n\nweight scale:\nMultiplies the weights after normalize. Default 1.\n\ndelay (s) / duration (s) / voxel size (cm) / min (x,y,z) / max (x,y,z) (options):\nAs above.\n\nOUTPUTS:\n\naccumulated:\nOne point per voxel at the voxel centre, as a cloud frame carrying the voxel size and the weights. Sent every recorded frame, and whenever a setting changes.\n\nframes:\nHow many frames have been recorded.\n\ncloud out:\nThe input, unchanged.\n\nRELATED:\npc_voxel is the usual source. mgl_point_cloud draws the result. pc_regions captures it into a region."
+            "text": "pc_accumulate records where a cloud has been, and sends it as a cloud of voxels.\n\nTick 'record' and every voxel the cloud touches is counted, frame after frame. The output is one point per voxel that was touched at least 'min hits' times, with a weight saying how much went on there. It is the C++ app's ACCUMULATE VOXELS: walk through the space, stop, and you have a picture of everywhere you went - ready for pc_regions' 'capture cloud in'.\n\nThe input passes straight through on 'cloud out', so it can sit in the middle of a chain.\n\nTHE WEIGHTS ADD UP:\nEach voxel's weight is the SUM, over the recorded frames, of the weight the incoming cloud gave it. From pc_voxel that is its per-voxel weight; a cloud with no weights counts 1 for each frame a voxel is occupied. So a voxel you stood in for a second reads thirty times what one frame gave it, and an accumulation is always at least as strong as any single frame.\n\nThat makes the raw numbers grow without limit, and mgl_point_cloud can only show 0 to 1 - it clamps anything above. Two controls choose which part of the accumulation lands in that visible range.\n\n'normalize' rescales the sums first:\n\n  none        the raw sums. Grows the longer you record.\n  per frame   divided by the frames recorded: the average weight per frame.\n              Stays the same scale however long you record.\n  max         divided by the largest voxel shown, so the busiest one reads 1\n              and everything else is a fraction of it.\n\n'weight scale' then multiplies the result. With 'max', lower values than 1 are pointless and higher ones push the quieter voxels up into view while the busiest saturate - the way to read detail in the places you passed through rather than the places you stood.\n\nmgl_point_cloud has a 'weight scale' of its own, applied when it draws. It changes only the picture; this one changes the numbers that go on to pc_regions too.\n\nA FADING TRAIL:\n'half-life (s)' makes the accumulation fade while it records: everything gathered so far loses half its weight every half-life, so recent presence reads brightest and the past falls away behind it. It goes by the clock, not by frames, so a frame rate change does not change how fast it fades. 0 (the default) is no fading.\n\nA voxel nobody has been in for a while is forgotten outright, not just dimmed - once what it had has faded to a twentieth of a single frame's, about four half-lives after a brief visit and longer after a long stay. It then stops being sent, so a capture never takes a faded trail along with it.\n\nNothing fades while 'record' is off. Untick it and the accumulation holds as it is, ready to capture. With 'per frame', the frame count it divides by fades too, so it stays an average over the recent past.\n\nMIN HITS:\n'min hits' drops voxels touched in fewer than that many frames - raise it to lose what was only walked through and keep where you stayed. It counts frames, not weight (with a half-life, frames since the voxel was last forgotten), and it is applied before 'max' finds its maximum.\n\nRECORDING ALONE:\n'delay (s)' and 'duration (s)' (options) are for working without a second person at the computer: tick 'record', walk into the volume during the delay, and it stops itself after the duration. A duration of 0 records until you untick it. 'clear' empties the accumulation; so does changing the volume or the voxel size, since the old counts no longer map onto the new grid.\n\nTHE GRID:\nLike every point cloud node it works on a voxel grid. When the cloud comes from pc_voxel or pc_crop, the volume and voxel size ride in on the frame and pc_accumulate uses those; 'voxel size (cm)' and 'min (x,y,z)' / 'max (x,y,z)' (options) are only for a raw cloud with nothing attached.\n\nSYNTAX:\npc_accumulate\n\nEXAMPLE:\npc_accumulate\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud: an (N, 3) array or a cloud frame. Each one is a frame of the recording while 'record' is on.\n\nrecord:\nAccumulate while ticked.\n\nclear:\nEmpty the accumulation.\n\nmin hits:\nFrames a voxel must be touched in to be sent. Default 1.\n\nnormalize:\nnone, per frame or max, as above.\n\nweight scale:\nMultiplies the weights after normalize. Default 1.\n\nhalf-life (s):\nHow fast the accumulation fades while recording. 0 is no fading.\n\ndelay (s) / duration (s) / voxel size (cm) / min (x,y,z) / max (x,y,z) (options):\nAs above.\n\nOUTPUTS:\n\naccumulated:\nOne point per voxel at the voxel centre, as a cloud frame carrying the voxel size and the weights. Sent every recorded frame, and whenever a setting changes.\n\nframes:\nHow many frames have been recorded.\n\ncloud out:\nThe input, unchanged.\n\nRELATED:\npc_voxel is the usual source. mgl_point_cloud draws the result. pc_regions captures it into a region."
         },
         "3": {
             "name": "mgl_context",
@@ -507,8 +507,8 @@
             "id": 866,
             "position_x": 400,
             "position_y": 810,
-            "width": 166,
-            "height": 140,
+            "width": 172,
+            "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -529,6 +529,11 @@
                     "value_type": "float"
                 },
                 "3": {
+                    "name": "half-life (s)",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "4": {
                     "name": "min (x,y,z)",
                     "value": [
                         -1.0,
@@ -537,7 +542,7 @@
                     ],
                     "value_type": "list"
                 },
-                "4": {
+                "5": {
                     "name": "max (x,y,z)",
                     "value": [
                         1.0,
@@ -554,16 +559,16 @@
             "id": 903,
             "annotation": true,
             "position_x": 905,
-            "position_y": 1085,
-            "width": 317,
-            "height": 64,
+            "position_y": 1115,
+            "width": 298,
+            "height": 88,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "recording from the start: the trail builds up.\n'max' makes the busiest voxel 1; raise\n'weight scale' to bring up where it only\npassed through. Try 'per frame' and 'none'.",
+                    "value": "recording from the start, fading with a 3 s\nhalf-life: a trail behind the blob. Set\nhalf-life to 0 and it builds up for good.\n'max' makes the busiest voxel 1; raise\n'weight scale' to bring up where it only\npassed through. Try 'per frame' and 'none'.",
                     "value_type": "str"
                 },
                 "1": {
@@ -573,12 +578,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 309,
+                    "value": 290,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 48,
+                    "value": 72,
                     "value_type": "int"
                 },
                 "4": {
@@ -587,7 +592,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "recording from the start: the trail builds up.\n'max' makes the busiest voxel 1; raise\n'weight scale' to bring up where it only\npassed through. Try 'per frame' and 'none'."
+            "text": "recording from the start, fading with a 3 s\nhalf-life: a trail behind the blob. Set\nhalf-life to 0 and it builds up for good.\n'max' makes the busiest voxel 1; raise\n'weight scale' to bring up where it only\npassed through. Try 'per frame' and 'none'."
         },
         "19": {
             "name": "int",
@@ -646,7 +651,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 980,
+            "position_y": 994,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

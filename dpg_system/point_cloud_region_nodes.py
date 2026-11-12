@@ -67,6 +67,10 @@ from dpg_system.point_cloud_nodes import (
     PointCloudNode, _VoxelGrid, unwrap_cloud)
 
 REGION_FILE_VERSION = 1
+# pc_accumulate with a half-life: a voxel is forgotten once its decayed hit
+# count falls below this - one frame's presence faded to 5%, about 4.3
+# half-lives - so a faded trail stops being sent instead of lingering.
+DECAY_FORGET = 0.05
 UNDO_DEPTH = 32
 # Labels are compiled to int16: half the memory traffic of int32 on the
 # per-frame gather, and nobody paints thirty thousand regions by hand.
@@ -1860,6 +1864,16 @@ class PointCloudAccumulateNode(PointCloudNode):
     goes straight into pc_regions' ``capture cloud in``: walk the space, stop,
     capture. Raise ``min hits`` to drop what was only passed through.
 
+    'half-life (s)' makes it a fading trail: while recording, everything
+    accumulated so far loses half its weight every half-life (on the clock,
+    not per frame), so recent presence reads brightest. A voxel whose
+    activity has faded to DECAY_FORGET of one frame's is forgotten outright -
+    weight and hit count cleared - so it stops being sent rather than
+    lingering near zero, and a capture never takes a faded trail. 0 is no
+    decay. Nothing fades while 'record' is off: a stopped accumulation
+    holds, ready to capture. 'per frame' then divides by the frames
+    recorded, faded the same way.
+
     'delay (s)' and 'duration (s)' are for working alone: tick ``record``,
     walk into the volume during the delay, and it stops itself. Duration 0
     records until unticked. The input passes through on ``cloud out``."""
@@ -1873,7 +1887,10 @@ class PointCloudAccumulateNode(PointCloudNode):
         self.grid = _VoxelGrid()
         self.hits = None
         self.weight_sum = None
+        self.recent = None           # hits, decayed: what 'forget' reads
         self.frames = 0
+        self.decayed_frames = 0.0    # frames, decayed: what 'per frame' divides by
+        self._last_frame_time = None
         self._armed_at = None
         self._recording = False
         self._warned_large = False
@@ -1890,6 +1907,8 @@ class PointCloudAccumulateNode(PointCloudNode):
         self.weight_scale_input = self.add_input('weight scale', widget_type='drag_float',
                                                  default_value=1.0, min=0.0,
                                                  callback=self._emit)
+        self.half_life_input = self.add_input('half-life (s)', widget_type='drag_float',
+                                              default_value=0.0, min=0.0)
         self.output = self.add_output('accumulated')
         self.frames_output = self.add_output('frames')
         self.passthrough_output = self.add_output('cloud out')
@@ -1916,23 +1935,50 @@ class PointCloudAccumulateNode(PointCloudNode):
             return False
         if changed and self.hits is not None:
             print(f'{self.label}: volume changed — the accumulation no longer maps to it, cleared')
-            self.hits = None
-            self.weight_sum = None
-            self.frames = 0
+            self._reset()
         return True
 
     def _record_changed(self):
+        # A pause is not decay time: the clock restarts with the recording.
+        self._last_frame_time = None
         if self.record_input():
             self._armed_at = time.monotonic()
         else:
             self._armed_at = None
             self._recording = False
 
-    def clear(self):
+    def _reset(self):
         self.hits = None
         self.weight_sum = None
+        self.recent = None
         self.frames = 0
+        self.decayed_frames = 0.0
+        self._last_frame_time = None
+
+    def clear(self):
+        self._reset()
         self._emit()
+
+    def _decay(self):
+        """Fade everything accumulated by the time since the last recorded
+        frame, and forget voxels faded below DECAY_FORGET."""
+        now = time.monotonic()
+        last, self._last_frame_time = self._last_frame_time, now
+        try:
+            half_life = float(self.half_life_input())
+        except (TypeError, ValueError):
+            half_life = 0.0
+        if last is None or half_life <= 0.0 or self.hits is None:
+            return
+        factor = np.float32(0.5 ** ((now - last) / half_life))
+        self.weight_sum *= factor
+        self.recent *= factor
+        self.decayed_frames *= float(factor)
+        gone = (self.recent < DECAY_FORGET) & (self.hits > 0)
+        if gone.any():
+            self.hits[gone] = 0
+            self.weight_sum[gone] = 0.0
+            self.recent[gone] = 0.0
 
     def _emit(self):
         if self.hits is None:
@@ -1942,8 +1988,8 @@ class PointCloudAccumulateNode(PointCloudNode):
             cells = np.flatnonzero(self.hits >= max(1, int(self.min_hits_input())))
             weights = self.weight_sum[cells].copy()
             norm = self.normalize_input()
-            if norm == 'per frame' and self.frames > 0:
-                weights /= np.float32(self.frames)
+            if norm == 'per frame' and self.decayed_frames > 0.0:
+                weights /= np.float32(self.decayed_frames)
             elif norm == 'max' and weights.size:
                 peak = float(weights.max())
                 if peak > 0.0:
@@ -1977,10 +2023,13 @@ class PointCloudAccumulateNode(PointCloudNode):
         if self.hits is None:
             self.hits = np.zeros(self.grid.ncells, dtype=np.int32)
             self.weight_sum = np.zeros(self.grid.ncells, dtype=np.float32)
+            self.recent = np.zeros(self.grid.ncells, dtype=np.float32)
+        self._decay()
         if pts is not None:
             lin, valid = self.grid.index(pts)
             occupied, inverse = np.unique(lin[valid], return_inverse=True)
             self.hits[occupied] += 1
+            self.recent[occupied] += 1.0
             # This frame's weight per voxel: the incoming weights summed into
             # it (pc_voxel sends one point per voxel, so that is its weight),
             # or 1 per touched voxel when the cloud carries none.
@@ -1995,4 +2044,5 @@ class PointCloudAccumulateNode(PointCloudNode):
                 self.weight_sum[occupied] += np.bincount(
                     inverse.reshape(-1), weights=w[valid], minlength=occupied.size).astype(np.float32)
         self.frames += 1
+        self.decayed_frames += 1.0
         self._emit()

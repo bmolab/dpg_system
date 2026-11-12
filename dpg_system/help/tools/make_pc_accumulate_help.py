@@ -43,10 +43,28 @@ mgl_point_cloud has a 'weight scale' of its own, applied when it draws. It
 changes only the picture; this one changes the numbers that go on to
 pc_regions too.
 
+A FADING TRAIL:
+'half-life (s)' makes the accumulation fade while it records: everything
+gathered so far loses half its weight every half-life, so recent presence
+reads brightest and the past falls away behind it. It goes by the clock,
+not by frames, so a frame rate change does not change how fast it fades. 0
+(the default) is no fading.
+
+A voxel nobody has been in for a while is forgotten outright, not just
+dimmed - once what it had has faded to a twentieth of a single frame's,
+about four half-lives after a brief visit and longer after a long stay. It
+then stops being sent, so a capture never takes a faded trail along with
+it.
+
+Nothing fades while 'record' is off. Untick it and the accumulation holds
+as it is, ready to capture. With 'per frame', the frame count it divides by
+fades too, so it stays an average over the recent past.
+
 MIN HITS:
 'min hits' drops voxels touched in fewer than that many frames - raise it to
 lose what was only walked through and keep where you stayed. It counts
-frames, not weight, and it is applied before 'max' finds its maximum.
+frames, not weight (with a half-life, frames since the voxel was last
+forgotten), and it is applied before 'max' finds its maximum.
 
 RECORDING ALONE:
 'delay (s)' and 'duration (s)' (options) are for working without a second
@@ -87,6 +105,9 @@ none, per frame or max, as above.
 
 weight scale:
 Multiplies the weights after normalize. Default 1.
+
+half-life (s):
+How fast the accumulation fades while recording. 0 is no fading.
 
 delay (s) / duration (s) / voxel size (cm) / min (x,y,z) / max (x,y,z)
 (options):
@@ -139,12 +160,13 @@ demo = [
     {'key': 'vox', 'init': 'pc_voxel', 'pos': (400, 530), 'w': 300, 'h': 260,
      'props': {'voxel size (cm)': 10.0, 'distance compensation': 'none',
                'min (x,y,z)': [-1.0, -1.0, -1.0], 'max (x,y,z)': [1.0, 1.0, 1.0]}},
-    {'key': 'acc', 'init': 'pc_accumulate', 'pos': (400, 810), 'w': 300, 'h': 260,
+    {'key': 'acc', 'init': 'pc_accumulate', 'pos': (400, 810), 'w': 300, 'h': 290,
      'props': {'record': True, 'normalize': 'max', 'weight scale': 1.0,
+               'half-life (s)': 3.0,
                'min (x,y,z)': [-1.0, -1.0, -1.0], 'max (x,y,z)': [1.0, 1.0, 1.0]}},
     {'key': 'c3', 'comment': True,
-     'text': "recording from the start: the trail builds up.\n'max' makes the busiest voxel 1; raise\n'weight scale' to bring up where it only\npassed through. Try 'per frame' and 'none'.",
-     'pos': (400, 1085)},
+     'text': "recording from the start, fading with a 3 s\nhalf-life: a trail behind the blob. Set\nhalf-life to 0 and it builds up for good.\n'max' makes the busiest voxel 1; raise\n'weight scale' to bring up where it only\npassed through. Try 'per frame' and 'none'.",
+     'pos': (400, 1115)},
     {'key': 'i1', 'init': 'int', 'pos': (730, 810), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c4', 'comment': True, 'text': 'frames recorded', 'pos': (730, 860)},
 ]
