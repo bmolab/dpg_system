@@ -376,7 +376,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "value_router sends each entry of a list somewhere of its own - an OSC address, or the outlet - scaled and thresholded channel by channel.\n\nIt is made for pc_regions' 'region values': one number per region, every frame, each of which usually wants to become a different OSC message with its own range. It works the same on any list of numbers.\n\nCHANNELS:\nEach position in the list is a channel. 'index' chooses the channel the editor shows, and every field below it belongs to that channel - change 'index' and they show that channel's settings instead. The line under 'index' gives the region's name, when the list came from pc_regions' 'cloud', and 'now' shows the channel's incoming value and what it becomes, which is the quickest way to choose a range and a threshold.\n\nThe list at the bottom shows every channel that is set up and where it goes. 'clear channel' returns the one being edited to its defaults.\n\nFOR EACH CHANNEL:\n\ndestination:\noff, osc, outlet, or osc + outlet. A channel is off until you set it.\n\ntarget:\nThe name of an osc_target (the name it shows, as osc_send takes it). When the patch has exactly one osc_target, new channels start with it.\n\naddress:\nThe OSC address it is sent to - and the name it goes out under on 'out'. A\nnew channel starts as /region/<region name> when the names are known, or\n/value/<index>.\n\nin min / in max / out min / out max:\nLinear scaling: in min becomes out min and in max becomes out max. Out min can be larger than out max, to turn a channel upside down. 'clamp' keeps the result between them.\n\nthreshold:\nAn incoming value below the threshold is sent as out min - a gate that ignores a region with only a stray voxel or two in it. 0, the default, lets everything through when the values are never negative.\n\nSo each value becomes: below threshold ? out min : scaled.\n\nINSIDE THE PATCH INSTEAD OF OSC:\nA channel whose destination includes the outlet sends 'address value' out of 'out'. route splits them by address, as here, so a channel can drive something in the patch instead of, or as well as, going out over the network.\n\n'processed' sends the whole list each time one arrives, with every channel that is set up processed by its settings (whatever its destination) and the rest passed through unchanged - handy for a plot.\n\nSENDING LESS:\nWith 'send on change' (option, on by default) a channel is only sent when its value has changed. A region nobody is in stops sending after its first zero, rather than repeating it thirty times a second.\n\nThe channel settings are saved with the patch.\n\nSYNTAX:\nvalue_router\n\nEXAMPLE:\nvalue_router\n\nINPUTS and PARAMETERS:\n\nvalues:\nA list or array of numbers, or pc_regions' 'cloud' frame. Each one is processed and sent.\n\nindex:\nThe channel the editor shows.\n\ndestination / target / address / in min / in max / out min / out max / clamp / threshold:\nThe selected channel's settings, as above.\n\nclear channel:\nReturn the selected channel to its defaults.\n\nsend on change (option):\nOnly send a channel when its value changes.\n\nOUTPUTS:\n\nout:\n'address value' for each channel sending to the outlet.\n\nprocessed:\nThe whole list, processed.\n\nRELATED:\npc_regions makes 'region values'. osc_target is where OSC goes. osc_send sends a single address. route splits 'out' by address.",
+                            "value": "value_router sends each entry of a list somewhere of its own - an OSC address, or the outlet - scaled and thresholded channel by channel.\n\nIt is made for pc_regions' 'region values': one number per region, every frame, each of which usually wants to become a different OSC message with its own range. It works the same on any list of numbers.\n\nCHANNELS:\nEach position in the list is a channel. 'index' chooses the channel the editor shows, and every field below it belongs to that channel - change 'index' and they show that channel's settings instead. The line under 'index' gives the region's name, when the list came from pc_regions' 'cloud', and 'now' shows the channel's incoming value and what it becomes, which is the quickest way to choose a range and a threshold.\n\nThe list at the bottom shows every channel that is set up and where it goes. 'clear channel' returns the one being edited to its defaults.\n\nFOR EACH CHANNEL:\n\ndestination:\noff, osc, outlet, or osc + outlet. A channel is off until you set it.\n\ntarget:\nThe name of an osc_target (the name it shows, as osc_send takes it). When the patch has exactly one osc_target, new channels start with it.\n\naddress:\nThe OSC address it is sent to - and the name it goes out under on 'out'. A\nnew channel starts as /region/<region name> when the names are known, or\n/value/<index>.\n\nin min / in max / out min / out max:\nLinear scaling: in min becomes out min and in max becomes out max. Out min can be larger than out max, to turn a channel upside down. 'clamp' keeps the result between them.\n\nthreshold / threshold mode:\nIgnores a region with only a stray voxel or two in it. 'threshold mode' says how:\n\n  gate       an incoming value below the threshold is sent as out min;\n             above it, the value is scaled as it is. The output jumps as\n             the value crosses the threshold.\n  subtract   the threshold is taken off the value first, and anything\n             below zero becomes zero. The output starts from nothing at\n             the threshold and rises smoothly - no jump. 'in min' and\n             'in max' are then measured above the threshold: with a\n             threshold of 2, an in max of 8 means 10.\n\nA threshold of 0, the default, lets everything through when the values are never negative.\n\nSo each value becomes, gate: below threshold ? out min : scaled; subtract:\nscaled(the larger of value - threshold and 0).\n\nINSIDE THE PATCH INSTEAD OF OSC:\nA channel whose destination includes the outlet sends 'address value' out of 'out'. route splits them by address, as here, so a channel can drive something in the patch instead of, or as well as, going out over the network.\n\n'processed' sends the whole list each time one arrives, with every channel that is set up processed by its settings (whatever its destination) and the rest passed through unchanged - handy for a plot.\n\nSENDING LESS:\nWith 'send on change' (option, on by default) a channel is only sent when its value has changed. A region nobody is in stops sending after its first zero, rather than repeating it thirty times a second.\n\nThe channel settings are saved with the patch.\n\nSYNTAX:\nvalue_router\n\nEXAMPLE:\nvalue_router\n\nINPUTS and PARAMETERS:\n\nvalues:\nA list or array of numbers, or pc_regions' 'cloud' frame. Each one is processed and sent.\n\nindex:\nThe channel the editor shows.\n\ndestination / target / address / in min / in max / out min / out max / clamp / threshold / threshold mode:\nThe selected channel's settings, as above.\n\nclear channel:\nReturn the selected channel to its defaults.\n\nsend on change (option):\nOnly send a channel when its value changes.\n\nOUTPUTS:\n\nout:\n'address value' for each channel sending to the outlet.\n\nprocessed:\nThe whole list, processed.\n\nRELATED:\npc_regions makes 'region values'. osc_target is where OSC goes. osc_send sends a single address. route splits 'out' by address.",
                             "value_type": "str"
                         },
                         "1": {
@@ -400,7 +400,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "value_router sends each entry of a list somewhere of its own - an OSC address, or the outlet - scaled and thresholded channel by channel.\n\nIt is made for pc_regions' 'region values': one number per region, every frame, each of which usually wants to become a different OSC message with its own range. It works the same on any list of numbers.\n\nCHANNELS:\nEach position in the list is a channel. 'index' chooses the channel the editor shows, and every field below it belongs to that channel - change 'index' and they show that channel's settings instead. The line under 'index' gives the region's name, when the list came from pc_regions' 'cloud', and 'now' shows the channel's incoming value and what it becomes, which is the quickest way to choose a range and a threshold.\n\nThe list at the bottom shows every channel that is set up and where it goes. 'clear channel' returns the one being edited to its defaults.\n\nFOR EACH CHANNEL:\n\ndestination:\noff, osc, outlet, or osc + outlet. A channel is off until you set it.\n\ntarget:\nThe name of an osc_target (the name it shows, as osc_send takes it). When the patch has exactly one osc_target, new channels start with it.\n\naddress:\nThe OSC address it is sent to - and the name it goes out under on 'out'. A\nnew channel starts as /region/<region name> when the names are known, or\n/value/<index>.\n\nin min / in max / out min / out max:\nLinear scaling: in min becomes out min and in max becomes out max. Out min can be larger than out max, to turn a channel upside down. 'clamp' keeps the result between them.\n\nthreshold:\nAn incoming value below the threshold is sent as out min - a gate that ignores a region with only a stray voxel or two in it. 0, the default, lets everything through when the values are never negative.\n\nSo each value becomes: below threshold ? out min : scaled.\n\nINSIDE THE PATCH INSTEAD OF OSC:\nA channel whose destination includes the outlet sends 'address value' out of 'out'. route splits them by address, as here, so a channel can drive something in the patch instead of, or as well as, going out over the network.\n\n'processed' sends the whole list each time one arrives, with every channel that is set up processed by its settings (whatever its destination) and the rest passed through unchanged - handy for a plot.\n\nSENDING LESS:\nWith 'send on change' (option, on by default) a channel is only sent when its value has changed. A region nobody is in stops sending after its first zero, rather than repeating it thirty times a second.\n\nThe channel settings are saved with the patch.\n\nSYNTAX:\nvalue_router\n\nEXAMPLE:\nvalue_router\n\nINPUTS and PARAMETERS:\n\nvalues:\nA list or array of numbers, or pc_regions' 'cloud' frame. Each one is processed and sent.\n\nindex:\nThe channel the editor shows.\n\ndestination / target / address / in min / in max / out min / out max / clamp / threshold:\nThe selected channel's settings, as above.\n\nclear channel:\nReturn the selected channel to its defaults.\n\nsend on change (option):\nOnly send a channel when its value changes.\n\nOUTPUTS:\n\nout:\n'address value' for each channel sending to the outlet.\n\nprocessed:\nThe whole list, processed.\n\nRELATED:\npc_regions makes 'region values'. osc_target is where OSC goes. osc_send sends a single address. route splits 'out' by address."
+                    "text": "value_router sends each entry of a list somewhere of its own - an OSC address, or the outlet - scaled and thresholded channel by channel.\n\nIt is made for pc_regions' 'region values': one number per region, every frame, each of which usually wants to become a different OSC message with its own range. It works the same on any list of numbers.\n\nCHANNELS:\nEach position in the list is a channel. 'index' chooses the channel the editor shows, and every field below it belongs to that channel - change 'index' and they show that channel's settings instead. The line under 'index' gives the region's name, when the list came from pc_regions' 'cloud', and 'now' shows the channel's incoming value and what it becomes, which is the quickest way to choose a range and a threshold.\n\nThe list at the bottom shows every channel that is set up and where it goes. 'clear channel' returns the one being edited to its defaults.\n\nFOR EACH CHANNEL:\n\ndestination:\noff, osc, outlet, or osc + outlet. A channel is off until you set it.\n\ntarget:\nThe name of an osc_target (the name it shows, as osc_send takes it). When the patch has exactly one osc_target, new channels start with it.\n\naddress:\nThe OSC address it is sent to - and the name it goes out under on 'out'. A\nnew channel starts as /region/<region name> when the names are known, or\n/value/<index>.\n\nin min / in max / out min / out max:\nLinear scaling: in min becomes out min and in max becomes out max. Out min can be larger than out max, to turn a channel upside down. 'clamp' keeps the result between them.\n\nthreshold / threshold mode:\nIgnores a region with only a stray voxel or two in it. 'threshold mode' says how:\n\n  gate       an incoming value below the threshold is sent as out min;\n             above it, the value is scaled as it is. The output jumps as\n             the value crosses the threshold.\n  subtract   the threshold is taken off the value first, and anything\n             below zero becomes zero. The output starts from nothing at\n             the threshold and rises smoothly - no jump. 'in min' and\n             'in max' are then measured above the threshold: with a\n             threshold of 2, an in max of 8 means 10.\n\nA threshold of 0, the default, lets everything through when the values are never negative.\n\nSo each value becomes, gate: below threshold ? out min : scaled; subtract:\nscaled(the larger of value - threshold and 0).\n\nINSIDE THE PATCH INSTEAD OF OSC:\nA channel whose destination includes the outlet sends 'address value' out of 'out'. route splits them by address, as here, so a channel can drive something in the patch instead of, or as well as, going out over the network.\n\n'processed' sends the whole list each time one arrives, with every channel that is set up processed by its settings (whatever its destination) and the rest passed through unchanged - handy for a plot.\n\nSENDING LESS:\nWith 'send on change' (option, on by default) a channel is only sent when its value has changed. A region nobody is in stops sending after its first zero, rather than repeating it thirty times a second.\n\nThe channel settings are saved with the patch.\n\nSYNTAX:\nvalue_router\n\nEXAMPLE:\nvalue_router\n\nINPUTS and PARAMETERS:\n\nvalues:\nA list or array of numbers, or pc_regions' 'cloud' frame. Each one is processed and sent.\n\nindex:\nThe channel the editor shows.\n\ndestination / target / address / in min / in max / out min / out max / clamp / threshold / threshold mode:\nThe selected channel's settings, as above.\n\nclear channel:\nReturn the selected channel to its defaults.\n\nsend on change (option):\nOnly send a channel when its value changes.\n\nOUTPUTS:\n\nout:\n'address value' for each channel sending to the outlet.\n\nprocessed:\nThe whole list, processed.\n\nRELATED:\npc_regions makes 'region values'. osc_target is where OSC goes. osc_send sends a single address. route splits 'out' by address."
                 },
                 "3": {
                     "name": "p",
@@ -515,7 +515,7 @@
                     "position_x": 30,
                     "position_y": 160,
                     "width": 353,
-                    "height": 267,
+                    "height": 281,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -527,11 +527,12 @@
                             "target": "demo",
                             "address": "/level/a",
                             "in min": 0.0,
-                            "in max": 10.0,
+                            "in max": 8.0,
                             "out min": 0.0,
                             "out max": 1.0,
                             "clamp": true,
-                            "threshold": 2.0
+                            "threshold": 2.0,
+                            "threshold mode": "subtract"
                         },
                         "1": {
                             "destination": "osc + outlet",
@@ -563,15 +564,15 @@
                     "annotation": true,
                     "position_x": 754,
                     "position_y": 700,
-                    "width": 274,
-                    "height": 64,
+                    "width": 268,
+                    "height": 76,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "already set up: 0 to OSC, 1 to OSC and\nthe outlet, 2 turned upside down to the\noutlet only, 3 off. Drag 'index' to see\neach channel's settings.",
+                            "value": "already set up: 0 to OSC with 2\nsubtracted, 1 to OSC and the outlet, 2\nturned upside down to the outlet only,\n3 off. Drag 'index' to see each\nchannel's settings.",
                             "value_type": "str"
                         },
                         "1": {
@@ -581,12 +582,12 @@
                         },
                         "2": {
                             "name": "width",
-                            "value": 266,
+                            "value": 260,
                             "value_type": "int"
                         },
                         "3": {
                             "name": "height",
-                            "value": 48,
+                            "value": 60,
                             "value_type": "int"
                         },
                         "4": {
@@ -595,7 +596,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "already set up: 0 to OSC, 1 to OSC and\nthe outlet, 2 turned upside down to the\noutlet only, 3 off. Drag 'index' to see\neach channel's settings."
+                    "text": "already set up: 0 to OSC with 2\nsubtracted, 1 to OSC and the outlet, 2\nturned upside down to the outlet only,\n3 off. Drag 'index' to see each\nchannel's settings."
                 },
                 "9": {
                     "name": "route",
@@ -774,7 +775,7 @@
                     "name": "comment",
                     "id": 755,
                     "position_x": 754,
-                    "position_y": 774,
+                    "position_y": 786,
                     "width": 242,
                     "height": 30,
                     "visibility": "show_all",

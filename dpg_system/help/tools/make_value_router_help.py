@@ -11,8 +11,8 @@ from help_common import SIG, PLOT, FLT
 # its own (see ValueRouterNode.save_custom).
 CHANNELS = {
     '0': {'destination': 'osc', 'target': 'demo', 'address': '/level/a',
-          'in min': 0.0, 'in max': 10.0, 'out min': 0.0, 'out max': 1.0,
-          'clamp': True, 'threshold': 2.0},
+          'in min': 0.0, 'in max': 8.0, 'out min': 0.0, 'out max': 1.0,
+          'clamp': True, 'threshold': 2.0, 'threshold mode': 'subtract'},
     '1': {'destination': 'osc + outlet', 'target': 'demo', 'address': '/level/b',
           'in min': 0.0, 'in max': 10.0, 'out min': 0.0, 'out max': 127.0,
           'clamp': True, 'threshold': 0.0},
@@ -57,12 +57,24 @@ Linear scaling: in min becomes out min and in max becomes out max. Out min
 can be larger than out max, to turn a channel upside down. 'clamp' keeps
 the result between them.
 
-threshold:
-An incoming value below the threshold is sent as out min - a gate that
-ignores a region with only a stray voxel or two in it. 0, the default, lets
-everything through when the values are never negative.
+threshold / threshold mode:
+Ignores a region with only a stray voxel or two in it. 'threshold mode'
+says how:
 
-So each value becomes: below threshold ? out min : scaled.
+  gate       an incoming value below the threshold is sent as out min;
+             above it, the value is scaled as it is. The output jumps as
+             the value crosses the threshold.
+  subtract   the threshold is taken off the value first, and anything
+             below zero becomes zero. The output starts from nothing at
+             the threshold and rises smoothly - no jump. 'in min' and
+             'in max' are then measured above the threshold: with a
+             threshold of 2, an in max of 8 means 10.
+
+A threshold of 0, the default, lets everything through when the values are
+never negative.
+
+So each value becomes, gate: below threshold ? out min : scaled; subtract:
+scaled(the larger of value - threshold and 0).
 
 INSIDE THE PATCH INSTEAD OF OSC:
 A channel whose destination includes the outlet sends 'address value' out of
@@ -97,7 +109,7 @@ index:
 The channel the editor shows.
 
 destination / target / address / in min / in max / out min / out max /
-clamp / threshold:
+clamp / threshold / threshold mode:
 The selected channel's settings, as above.
 
 clear channel:
@@ -151,7 +163,7 @@ demo = [
      'pos': (560, 200)},
     {'key': 'vr', 'init': 'value_router', 'pos': (30, 160), 'w': 300, 'h': 520},
     {'key': 'c1', 'comment': True,
-     'text': "already set up: 0 to OSC, 1 to OSC and\nthe outlet, 2 turned upside down to the\noutlet only, 3 off. Drag 'index' to see\neach channel's settings.",
+     'text': "already set up: 0 to OSC with 2\nsubtracted, 1 to OSC and the outlet, 2\nturned upside down to the outlet only,\n3 off. Drag 'index' to see each\nchannel's settings.",
      'pos': (30, 700)},
     {'key': 'rt', 'init': 'route /level/b /level/c', 'pos': (420, 300), 'w': 200, 'h': 120},
     {'key': 'f1', 'init': 'float', 'pos': (420, 440), 'w': 127, 'h': 42, 'props': FLT},

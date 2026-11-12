@@ -4781,8 +4781,12 @@ class ValueRouterNode(Node, OSCBase):
       address      the OSC address, and the name it goes out under on 'out'
       in min / in max -> out min / out max
                    linear scaling; 'clamp' keeps the result inside out min..max
-      threshold    an input value below it is sent as out min
-    The processing is: raw < threshold ? out min : scale(raw).
+      threshold    with 'threshold mode' gate, an input value below it is
+                   sent as out min; with subtract, it is taken off the
+                   input first and anything below zero becomes zero, so
+                   in min / in max are measured above the threshold
+    The processing is, gate:     raw < threshold ? out min : scale(raw)
+                       subtract: scale(max(raw - threshold, 0))
 
     'out' sends 'address value' for every channel whose destination includes
     the outlet, so route can split them by address. 'processed' sends the
@@ -4793,8 +4797,9 @@ class ValueRouterNode(Node, OSCBase):
     The channel settings are saved in the patch."""
 
     DESTINATIONS = ['off', 'osc', 'outlet', 'osc + outlet']
+    THRESHOLD_MODES = ['gate', 'subtract']
     FIELDS = ('destination', 'target', 'address', 'in min', 'in max',
-              'out min', 'out max', 'clamp', 'threshold')
+              'out min', 'out max', 'clamp', 'threshold', 'threshold mode')
     SUMMARY_LIMIT = 16
     LIVE_INTERVAL = 0.1      # seconds between updates of the live readout
 
@@ -4834,6 +4839,10 @@ class ValueRouterNode(Node, OSCBase):
         self.editor['threshold'] = self.add_property('threshold', widget_type='drag_float',
                                                      default_value=0.0,
                                                      callback=self._field_changed)
+        self.editor['threshold mode'] = self.add_property('threshold mode', widget_type='combo',
+                                                          default_value='gate',
+                                                          callback=self._field_changed)
+        self.editor['threshold mode'].widget.combo_items = self.THRESHOLD_MODES
         self.clear_button = self.add_property('clear channel', widget_type='button',
                                               callback=self._clear_channel)
         self.add_spacer()
@@ -4862,7 +4871,7 @@ class ValueRouterNode(Node, OSCBase):
                 target = local[0]
         return {'destination': 'off', 'target': target, 'address': address,
                 'in min': 0.0, 'in max': 1.0, 'out min': 0.0, 'out max': 1.0,
-                'clamp': False, 'threshold': 0.0}
+                'clamp': False, 'threshold': 0.0, 'threshold mode': 'gate'}
 
     def _channel(self, index):
         return self.channels.get(index) or self._default_channel(index)
@@ -4901,7 +4910,7 @@ class ValueRouterNode(Node, OSCBase):
                 value = str(value).strip()
                 if value and not value.startswith('/'):
                     value = '/' + value
-            elif field in ('target', 'destination'):
+            elif field in ('target', 'destination', 'threshold mode'):
                 value = str(value).strip()
             elif field == 'clamp':
                 value = bool(value)
@@ -4943,7 +4952,9 @@ class ValueRouterNode(Node, OSCBase):
 
     @staticmethod
     def _process(raw, c):
-        if raw < c['threshold']:
+        if c.get('threshold mode') == 'subtract':
+            raw = max(raw - c['threshold'], 0.0)
+        elif raw < c['threshold']:
             return float(c['out min'])
         span = c['in max'] - c['in min']
         t = (raw - c['in min']) / span if span != 0.0 else 0.0
