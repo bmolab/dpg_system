@@ -346,18 +346,18 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
     os.makedirs(os.path.dirname(out_file), exist_ok=True)
     # Carry over ALL original keys/values, then add the new arrays.
     out_data = {k: d[k] for k in d.files}
-    out_data['torque'] = torque
-    out_data['torques_grav_vec'] = torques_grav
-    out_data['torques_dyn_vec'] = torques_dyn
-    out_data['torques_passive_vec'] = torques_passive
-    out_data['contact_pressure'] = contact_pressure
-    out_data['angular_velocity'] = angular_velocity
-    out_data['com_pos'] = com_pos
-    out_data['com_vel'] = com_vel
-    out_data['com_acc'] = com_acc
-    out_data['max_torque'] = processor.max_torque_array.astype(np.float32)
-    out_data['total_mass_kg'] = np.float32(total_mass)
-    out_data['processing_options'] = np.array(options_to_json(options))
+    # out_data['torque'] = torque
+    # out_data['torques_grav_vec'] = torques_grav
+    # out_data['torques_dyn_vec'] = torques_dyn
+    # out_data['torques_passive_vec'] = torques_passive
+    # out_data['contact_pressure'] = contact_pressure
+    # out_data['angular_velocity'] = angular_velocity
+    # out_data['com_pos'] = com_pos
+    # out_data['com_vel'] = com_vel
+    # out_data['com_acc'] = com_acc
+    # out_data['max_torque'] = processor.max_torque_array.astype(np.float32)
+    # out_data['total_mass_kg'] = np.float32(total_mass)
+    # out_data['processing_options'] = np.array(options_to_json(options))
     out_data['rotation_band'] = rotation_band 
     # Write atomically (tmp then rename) so an interrupted run never leaves a
     # half-written npz that the resume logic would treat as "done".
