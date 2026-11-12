@@ -1888,6 +1888,9 @@ class MGLShapeNode(MGLNode):
             if 'point_weight_mode' in self.prog:
                 flags = getattr(self, '_point_weight_flags', 0)
                 self.prog['point_weight_mode'].value = flags if mode == 'points' else 0
+            if 'point_weight_scale' in self.prog:
+                # GL zero-initialises uniforms, so every shape node must set it
+                self.prog['point_weight_scale'].value = float(getattr(self, '_point_weight_scale', 1.0))
 
             # Texturing
             tex = self.texture_input()
@@ -2649,6 +2652,11 @@ class MGLPointCloudNode(MGLShapeNode):
         self.blend_input = self.add_input('blend', widget_type='combo',
                                           default_value='additive')
         self.blend_input.widget.combo_items = ['normal', 'additive']
+        # Display sensitivity: weights are multiplied by this in the shader
+        # before the 0..1 clamp, so it applies live to any weights mode
+        # without rebuilding the geometry.
+        self.weight_scale_input = self.add_input('weight scale', widget_type='drag_float',
+                                                 default_value=1.0, min=0.0)
         # When the frame carries a voxel size (attached by pc_voxel), draw
         # each point at that world size instead of the point_size widget.
         self.voxel_size_draw_input = self.add_input('draw at voxel size', widget_type='checkbox',
@@ -2711,7 +2719,9 @@ class MGLPointCloudNode(MGLShapeNode):
                         w = np.asarray(weights, dtype=np.float32).reshape(-1)
                         # A weight per point or none at all: a partial array
                         # would silently mis-size the points it did not cover.
-                        w = np.clip(w, 0.0, 1.0) if w.size == data.shape[0] else None
+                        # Kept unclamped: the shader applies 'weight scale'
+                        # and then clamps to 0..1.
+                        w = w if w.size == data.shape[0] else None
                     vs = None
                     if voxel_size is not None:
                         try:
@@ -2806,6 +2816,10 @@ class MGLPointCloudNode(MGLShapeNode):
         self._point_weight_flags = (self.WEIGHT_MODE_FLAGS.get(self.weights_input(), 0)
                                     if self.weights_data is not None else 0)
         self._points_additive = self.blend_input() == 'additive'
+        try:
+            self._point_weight_scale = max(0.0, float(self.weight_scale_input()))
+        except (TypeError, ValueError):
+            self._point_weight_scale = 1.0
         super().draw()
 
     def get_point_size(self):

@@ -1215,6 +1215,7 @@ class MGLContext:
                 uniform mat4 P;
                 uniform float point_size;
                 uniform int point_weight_mode;   // bit 1: size, bit 2: brightness
+                uniform float point_weight_scale;  // gain on the weight before its 0..1 clamp
                 in vec3 in_position;
                 in vec3 in_normal;
                 in vec2 in_texcoord;
@@ -1239,10 +1240,11 @@ class MGLContext:
                     } else {
                         gl_PointSize = max(1.0, perspective_size);
                     }
-                    // Per-point weight (0..1, carried in texcoord.x) scales the
-                    // core size, keeping the 2px antialias pad.
+                    // Per-point weight (carried in texcoord.x), times
+                    // point_weight_scale and clamped to 0..1, scales the core
+                    // size, keeping the 2px antialias pad.
                     if ((point_weight_mode & 1) != 0) {
-                        float w = clamp(in_texcoord.x, 0.0, 1.0);
+                        float w = clamp(in_texcoord.x * point_weight_scale, 0.0, 1.0);
                         // NaN fails every comparison, so this scrubs it as well
                         // as clamping: clamp() itself is not required to reject
                         // one, and a NaN reaching gl_PointSize is rounded by
@@ -1273,6 +1275,7 @@ class MGLContext:
                 uniform bool point_culling;
                 uniform bool round_points;
                 uniform int point_weight_mode;   // bit 1: size, bit 2: brightness
+                uniform float point_weight_scale;  // gain on the weight before its 0..1 clamp
                 in float v_point_px;
                 
                 // Texturing
@@ -1368,9 +1371,11 @@ class MGLContext:
                         final_rgb = (total_ambient + total_diffuse) * base_color.rgb * alpha + total_specular;
                     }
 
-                    // Per-point weight (0..1, in texcoord.x) dims sparse points.
+                    // Per-point weight (in texcoord.x, times point_weight_scale,
+                    // clamped to 0..1) dims sparse points.
                     if ((point_weight_mode & 2) != 0) {
-                        float w = clamp(v_texcoord.x, 0.0, 1.0);
+                        float w = clamp(v_texcoord.x * point_weight_scale, 0.0, 1.0);
+                        if (!(w >= 0.0)) { w = 0.0; }
                         final_rgb *= w;
                         alpha *= w;
                     }

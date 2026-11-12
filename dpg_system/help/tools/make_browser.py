@@ -130,7 +130,7 @@ TREE = {
     'nodes_graphics': ('3D graphics', 'A scene is a chain of nodes hanging from a context.', [
         ('ModernGL scenes', ['mgl_context', 'mgl_camera', 'mgl_light', 'mgl_material', 'mgl_color', 'mgl_transform', 'mgl_sphere', 'mgl_mesh', 'mgl_model', 'mgl_surface', 'mgl_point_cloud', 'mgl_line_array',
                              'mgl_texture', 'mgl_text', 'mgl_shader', 'mgl_body', 'body_proportions', 'mgl_body_orientation', 'mgl_orientation_disks', 'mgl_contact_disks', 'mgl_torque_arc', 'mgl_smpl_mesh']),
-        ('Point clouds', ['femto', 'pc_background', 'pc_denoise', 'pc_crop', 'pc_voxel', 'pc_info', 'pc_cluster_filter', 'mgl_cluster_boxes', 't.point_cloud_voxels']),
+        ('Point clouds', ['femto', 'pc_background', 'pc_denoise', 'pc_crop', 'pc_voxel', 'pc_accumulate', 'pc_regions', 'pc_region_moves', 'pc_info', 'pc_cluster_filter', 'mgl_cluster_boxes', 'mgl_regions', 't.point_cloud_voxels']),
         ('Older GL', ['gl_context', 'gl_translate', 'gl_sphere', 'gl_light', 'gl_material', 'gl_color', 'gl_line_array', 'gl_text',
                       'gl_orientation_disks', 'gl_button_grid', 'gl_body']),
     ]),

@@ -1,0 +1,921 @@
+{
+    "name": "pc_regions_help",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/cc498989-3f87-4c50-9c17-a6270d7fcf96/scratchpad/regbuild/pc_regions_help.json",
+    "patches": {
+        "0": {
+            "height": 600,
+            "width": 730,
+            "position": [
+                160,
+                160
+            ],
+            "id": 829,
+            "name": "make_blob",
+            "parent_node_uuid": 496,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 866,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "comment",
+                    "init": "comment a stand-in for a depth sensor",
+                    "id": 903,
+                    "position_x": 40,
+                    "position_y": 10,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a stand-in for a depth sensor",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a stand-in for a depth sensor"
+                },
+                "2": {
+                    "name": "metro",
+                    "init": "metro 33",
+                    "id": 940,
+                    "position_x": 40,
+                    "position_y": 60,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 33.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "3": {
+                    "name": "np.rand",
+                    "init": "np.rand 2000 3",
+                    "id": 977,
+                    "position_x": 40,
+                    "position_y": 150,
+                    "width": 140,
+                    "height": 130,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": -0.15,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 0.15,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 2000 points in a 30 cm cube",
+                    "id": 1014,
+                    "position_x": 40,
+                    "position_y": 290,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "2000 points in a 30 cm cube",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "2000 points in a 30 cm cube"
+                },
+                "5": {
+                    "name": "signal",
+                    "init": "signal 5.0 sin",
+                    "id": 1051,
+                    "position_x": 260,
+                    "position_y": 60,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 0.7,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "signal",
+                    "init": "signal 7.0 cos",
+                    "id": 1088,
+                    "position_x": 410,
+                    "position_y": 60,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 7.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "cos",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 0.7,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "7": {
+                    "name": "pack",
+                    "init": "pack 3",
+                    "id": 1125,
+                    "position_x": 260,
+                    "position_y": 160,
+                    "width": 130,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "8": {
+                    "name": "comment",
+                    "init": "comment wandering in x and y",
+                    "id": 1162,
+                    "position_x": 410,
+                    "position_y": 170,
+                    "width": 240,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "wandering in x and y",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "wandering in x and y"
+                },
+                "9": {
+                    "name": "+",
+                    "init": "+",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 340,
+                    "width": 140,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "out",
+                    "init": "out cloud",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 440,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 940,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 977,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1051,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "2": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "3": {
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "4": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 1199,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "cloud"
+                }
+            }
+        },
+        "1": {
+            "height": 1150,
+            "width": 2268,
+            "position": [
+                100,
+                100
+            ],
+            "id": 792,
+            "name": "pc_regions_help",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/cc498989-3f87-4c50-9c17-a6270d7fcf96/scratchpad/regbuild/pc_regions_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment pc_regions - named regions of the volume",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 500,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "pc_regions - named regions of the volume",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "pc_regions - named regions of the volume"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1410,
+                    "position_y": 45,
+                    "width": 818,
+                    "height": 1016,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "pc_regions holds a map of named regions in the volume, and sums the cloud into each of them, every frame.\n\nA region is any set of voxels you choose to name: 'the chair', 'stage left', 'where she stood'. pc_voxel's boxes divide the room into a regular lattice;\nregions are whatever shapes the room actually has. Put pc_regions after pc_voxel.\n\nWHAT COMES OUT:\n'region values' is one number per region, indexed by region number: the sum of the weights of the points inside it (their count, for a cloud without weights). From pc_voxel that is how much of the cloud is in each region. A region number is a slot and is never renumbered - emptying region 2 leaves region 3 as region 3, so whatever you mapped to it keeps working.\n\n'cloud' passes the frame on with the regions attached, in the same form pc_voxel's boxes take, so pc_cluster_filter steadies region values exactly as it does box values, and mgl_regions draws them. 'region cells' sends the cells of the region you are working on (or all of them - 'show', option) as a plain cloud whenever the map changes. 'info' describes the current region.\n\nTHE MAP'S VOLUME:\nThe map takes its grid from the first frame - the volume and the voxel size carried in from pc_voxel or pc_crop - and keeps it from then on, for as long as any region holds a cell. Points are looked up by position, so changing pc_voxel's voxel size or the crop later does not wipe the map. The options show the volume actually in use. 'clear all' lets it follow the cloud again.\n\nMAKING REGIONS:\nThe node reads top to bottom in the order the work goes, and every button acts on the CURRENT region at once. 'undo' takes back the last change.\n\n'region' and 'name' choose the region you are working on and name it. An unused number is a new region. 'pick region' makes current whichever region holds most of the cloud: stand in it and press. 'clear region' empties the current one; 'clear all' removes every region.\n\nCAPTURE INTO REGION takes the cells under a cloud - the one on 'capture cloud in', or the live cloud when nothing is connected there: 'where I am standing now'. 'add' puts them in the region, 'remove' takes them out, 'replace' makes them the whole of it. When a cell already belongs to another region, 'assign mode' (option) decides: 'steal' it, or 'yield' to the other region.\n\nWire pc_accumulate into 'capture cloud in' to capture everywhere someone has been over a stretch of time, rather than one moment.\n\nEDIT REGION reshapes the region itself, by 'steps' cells:\n  grow / shrink  out or in by 'steps' cells.\n  fill           close gaps up to 'steps' wide, then fill what that encloses.\n                 Mends a speckled capture.\n  hull           the convex hull. A captured body is only the shell the\n                 camera saw; hull makes it solid.\n  box            the bounding box.\n  snap           the pc_voxel boxes at least 'snap coverage' (option) full of\n                 the region, whole.\n  cut            remove the pieces of the region (its separate blobs - the\n                 count is shown under the name) that the capture cloud\n                 touches: stand in the stray bit and press.\n\nVOXELS OR BOXES:\n'work in' sets the grain all of that works in. 'voxels' is the map's own cells. 'boxes' is pc_voxel's boxes (set 'boxes (x,y,z)' there): a capture takes every box the cloud touches, whole; an edit treats the region as the boxes it touches and gives it back as those boxes; 'steps' counts boxes. 'min points' (option) is how many points must land in a cell or box for it to count as cloud - in boxes it stops a box that a stray voxel grazes from being taken.\n\nBUILDING ONE PIECE AT A TIME:\n'absorb' (option, from region 'absorb from', or the message 'absorb n') moves every cell of another region into the current one. To sculpt a piece before it joins a region that already has cells - where a hull would bridge the two - capture it into a spare number, shape it there, and absorb it.\n\nCLICKING IN THE PICTURE:\nmgl_regions draws the map and lets you author it with the mouse. Wire mgl_context's 'ui' to it, its 'picked region' to 'region' and its 'click command' to 'command', as here. A click makes the clicked region current; a shift-click adds the clicked piece of the cloud to the current region; a ctrl-click cuts the clicked piece out of whichever region it hit; an alt-click makes the clicked piece a new region.\n\nMESSAGES:\nEvery button is also a message of the same name, accepted on any input - 'command' is there to give a pedal, OSC or a button_set somewhere to plug in. Some actions are messages only:\n\n  left / right / down / up / back / forward\n                 move the region by 'steps' cells along -x / +x, -y / +y,\n                 -z / +z. pc_region_moves is a ready-made set of these.\n  move x y z     move by whole cells.\n  extend x|y|z [+|-]\n                 stretch the region to the edge of the volume along an axis,\n                 both ways or one: 'extend y' makes a footprint a pillar.\n  add / replace / new / cut / pick  ox oy oz dx dy dz\n                 the action aimed along a ray (an origin and a direction, in\n                 metres): it takes only the piece the ray first meets. This\n                 is what mgl_regions' clicks send.\n  absorb n       as above.\n\nKEEPING THE MAP:\nThe map is saved in the patch. It can also live in an .npz file of its own:\n'save' and 'load' (options). With 'path' set, saving the patch rewrites that file too, and a patch with no map in it loads the file.\n\nSYNTAX:\npc_regions\n\nEXAMPLE:\npc_regions\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe live cloud, usually from pc_voxel. Each one is summed into the regions.\n\ncapture cloud in:\nThe cloud that capture, 'pick region' and 'cut' read. With nothing connected they read the live cloud.\n\nregion / name:\nThe current region's number and name.\n\nwork in:\nvoxels or boxes.\n\nsteps:\nHow far grow, shrink, fill and the moves go. Default 1.\n\ncommand:\nMessages, as above.\n\nassign mode / snap coverage / min points / absorb from / absorb / show / surface only / save / load / path / voxel size (cm) / min (x,y,z) / max (x,y,z) (options):\nAs above. 'show' and 'surface only' choose what 'region cells' sends; the volume options are only used before the map has a grid.\n\nOUTPUTS:\n\ncloud:\nThe input frame with the regions attached, for mgl_regions or pc_cluster_filter.\n\nregion values:\nThe sum in each region, indexed by region number.\n\nregion cells:\nThe current region's cells (or all regions') as a cloud of cell centres.\n\ninfo:\nThe current region's name, size, and how many regions there are.\n\nRELATED:\npc_voxel comes before it. mgl_regions draws the map and takes clicks. pc_accumulate makes a capture cloud of where someone has been. pc_region_moves moves regions about. pc_cluster_filter steadies the values.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 810,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1000,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "pc_regions holds a map of named regions in the volume, and sums the cloud into each of them, every frame.\n\nA region is any set of voxels you choose to name: 'the chair', 'stage left', 'where she stood'. pc_voxel's boxes divide the room into a regular lattice;\nregions are whatever shapes the room actually has. Put pc_regions after pc_voxel.\n\nWHAT COMES OUT:\n'region values' is one number per region, indexed by region number: the sum of the weights of the points inside it (their count, for a cloud without weights). From pc_voxel that is how much of the cloud is in each region. A region number is a slot and is never renumbered - emptying region 2 leaves region 3 as region 3, so whatever you mapped to it keeps working.\n\n'cloud' passes the frame on with the regions attached, in the same form pc_voxel's boxes take, so pc_cluster_filter steadies region values exactly as it does box values, and mgl_regions draws them. 'region cells' sends the cells of the region you are working on (or all of them - 'show', option) as a plain cloud whenever the map changes. 'info' describes the current region.\n\nTHE MAP'S VOLUME:\nThe map takes its grid from the first frame - the volume and the voxel size carried in from pc_voxel or pc_crop - and keeps it from then on, for as long as any region holds a cell. Points are looked up by position, so changing pc_voxel's voxel size or the crop later does not wipe the map. The options show the volume actually in use. 'clear all' lets it follow the cloud again.\n\nMAKING REGIONS:\nThe node reads top to bottom in the order the work goes, and every button acts on the CURRENT region at once. 'undo' takes back the last change.\n\n'region' and 'name' choose the region you are working on and name it. An unused number is a new region. 'pick region' makes current whichever region holds most of the cloud: stand in it and press. 'clear region' empties the current one; 'clear all' removes every region.\n\nCAPTURE INTO REGION takes the cells under a cloud - the one on 'capture cloud in', or the live cloud when nothing is connected there: 'where I am standing now'. 'add' puts them in the region, 'remove' takes them out, 'replace' makes them the whole of it. When a cell already belongs to another region, 'assign mode' (option) decides: 'steal' it, or 'yield' to the other region.\n\nWire pc_accumulate into 'capture cloud in' to capture everywhere someone has been over a stretch of time, rather than one moment.\n\nEDIT REGION reshapes the region itself, by 'steps' cells:\n  grow / shrink  out or in by 'steps' cells.\n  fill           close gaps up to 'steps' wide, then fill what that encloses.\n                 Mends a speckled capture.\n  hull           the convex hull. A captured body is only the shell the\n                 camera saw; hull makes it solid.\n  box            the bounding box.\n  snap           the pc_voxel boxes at least 'snap coverage' (option) full of\n                 the region, whole.\n  cut            remove the pieces of the region (its separate blobs - the\n                 count is shown under the name) that the capture cloud\n                 touches: stand in the stray bit and press.\n\nVOXELS OR BOXES:\n'work in' sets the grain all of that works in. 'voxels' is the map's own cells. 'boxes' is pc_voxel's boxes (set 'boxes (x,y,z)' there): a capture takes every box the cloud touches, whole; an edit treats the region as the boxes it touches and gives it back as those boxes; 'steps' counts boxes. 'min points' (option) is how many points must land in a cell or box for it to count as cloud - in boxes it stops a box that a stray voxel grazes from being taken.\n\nBUILDING ONE PIECE AT A TIME:\n'absorb' (option, from region 'absorb from', or the message 'absorb n') moves every cell of another region into the current one. To sculpt a piece before it joins a region that already has cells - where a hull would bridge the two - capture it into a spare number, shape it there, and absorb it.\n\nCLICKING IN THE PICTURE:\nmgl_regions draws the map and lets you author it with the mouse. Wire mgl_context's 'ui' to it, its 'picked region' to 'region' and its 'click command' to 'command', as here. A click makes the clicked region current; a shift-click adds the clicked piece of the cloud to the current region; a ctrl-click cuts the clicked piece out of whichever region it hit; an alt-click makes the clicked piece a new region.\n\nMESSAGES:\nEvery button is also a message of the same name, accepted on any input - 'command' is there to give a pedal, OSC or a button_set somewhere to plug in. Some actions are messages only:\n\n  left / right / down / up / back / forward\n                 move the region by 'steps' cells along -x / +x, -y / +y,\n                 -z / +z. pc_region_moves is a ready-made set of these.\n  move x y z     move by whole cells.\n  extend x|y|z [+|-]\n                 stretch the region to the edge of the volume along an axis,\n                 both ways or one: 'extend y' makes a footprint a pillar.\n  add / replace / new / cut / pick  ox oy oz dx dy dz\n                 the action aimed along a ray (an origin and a direction, in\n                 metres): it takes only the piece the ray first meets. This\n                 is what mgl_regions' clicks send.\n  absorb n       as above.\n\nKEEPING THE MAP:\nThe map is saved in the patch. It can also live in an .npz file of its own:\n'save' and 'load' (options). With 'path' set, saving the patch rewrites that file too, and a patch with no map in it loads the file.\n\nSYNTAX:\npc_regions\n\nEXAMPLE:\npc_regions\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe live cloud, usually from pc_voxel. Each one is summed into the regions.\n\ncapture cloud in:\nThe cloud that capture, 'pick region' and 'cut' read. With nothing connected they read the live cloud.\n\nregion / name:\nThe current region's number and name.\n\nwork in:\nvoxels or boxes.\n\nsteps:\nHow far grow, shrink, fill and the moves go. Default 1.\n\ncommand:\nMessages, as above.\n\nassign mode / snap coverage / min points / absorb from / absorb / show / surface only / save / load / path / voxel size (cm) / min (x,y,z) / max (x,y,z) (options):\nAs above. 'show' and 'surface only' choose what 'region cells' sends; the volume options are only used before the map has a grid.\n\nOUTPUTS:\n\ncloud:\nThe input frame with the regions attached, for mgl_regions or pc_cluster_filter.\n\nregion values:\nThe sum in each region, indexed by region number.\n\nregion cells:\nThe current region's cells (or all regions') as a cloud of cell centres.\n\ninfo:\nThe current region's name, size, and how many regions there are.\n\nRELATED:\npc_voxel comes before it. mgl_regions draws the map and takes clicks. pc_accumulate makes a capture cloud of where someone has been. pc_region_moves moves regions about. pc_cluster_filter steadies the values."
+                },
+                "3": {
+                    "name": "mgl_context",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 92,
+                    "height": 84,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "auto_render",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "display_width",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "display_height",
+                            "value": 240,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "node_mouse_events",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "4": {
+                            "name": "display_mode",
+                            "value": "node",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "width",
+                            "value": 640,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "height",
+                            "value": 480,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "text_block",
+                    "id": 385,
+                    "annotation": true,
+                    "position_x": 1094,
+                    "position_y": 410,
+                    "width": 286,
+                    "height": 52,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "drag to orbit; click a region to make\nit current. shift-click the blob: add it.\nctrl-click a region: cut that bit out",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 278,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 36,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "drag to orbit; click a region to make\nit current. shift-click the blob: add it.\nctrl-click a region: cut that bit out"
+                },
+                "5": {
+                    "name": "mgl_orbit_camera",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 500,
+                    "width": 188,
+                    "height": 126,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "mgl_regions",
+                    "id": 459,
+                    "position_x": 30,
+                    "position_y": 690,
+                    "width": 197,
+                    "height": 168,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "sensitivity",
+                            "value": 0.1,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "frame sensitivity",
+                            "value": 0.4,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "7": {
+                    "name": "p",
+                    "id": 496,
+                    "position_x": 420,
+                    "position_y": 62,
+                    "width": 72,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_blob",
+                    "patcher id": 829
+                },
+                "8": {
+                    "init": "comment a blob wandering through the volume",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 1094,
+                    "position_y": 140,
+                    "width": 224,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a blob wandering through the volume",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a blob wandering through the volume"
+                },
+                "9": {
+                    "name": "pc_voxel",
+                    "id": 570,
+                    "position_x": 420,
+                    "position_y": 190,
+                    "width": 276,
+                    "height": 196,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "voxel size (cm)",
+                            "value": 10.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "distance compensation",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "min (x,y,z)",
+                            "value": [
+                                -1.0,
+                                -1.0,
+                                -1.0
+                            ],
+                            "value_type": "list"
+                        },
+                        "3": {
+                            "name": "max (x,y,z)",
+                            "value": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ],
+                            "value_type": "list"
+                        }
+                    }
+                },
+                "10": {
+                    "name": "pc_regions",
+                    "id": 607,
+                    "position_x": 420,
+                    "position_y": 480,
+                    "width": 216,
+                    "height": 411,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true,
+                    "region_map_npz": "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"
+                },
+                "11": {
+                    "name": "text_block",
+                    "id": 644,
+                    "annotation": true,
+                    "position_x": 1094,
+                    "position_y": 1050,
+                    "width": 243,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "four regions already in the map,\nround the edges of the blob's path",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 235,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "four regions already in the map,\nround the edges of the blob's path"
+                },
+                "12": {
+                    "name": "plot",
+                    "id": 681,
+                    "position_x": 760,
+                    "position_y": 480,
+                    "width": 308,
+                    "height": 178,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 25.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "13": {
+                    "name": "text_block",
+                    "id": 718,
+                    "annotation": true,
+                    "position_x": 1094,
+                    "position_y": 670,
+                    "width": 261,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "'region values': one line per region,\nrising as the blob passes through it",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 253,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "'region values': one line per region,\nrising as the blob passes through it"
+                },
+                "14": {
+                    "name": "close",
+                    "id": 755,
+                    "position_x": 24,
+                    "position_y": 921,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mgl_chain",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "mgl chain in"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "ui",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "ui"
+                },
+                "2": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "ui",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "ui"
+                },
+                "3": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mgl chain out",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "mgl chain in"
+                },
+                "4": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "cloud",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "point cloud"
+                },
+                "5": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "voxel cloud",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "point cloud"
+                },
+                "6": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "cloud",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "region cloud"
+                },
+                "7": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "picked region",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "region"
+                },
+                "8": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "click command",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "command"
+                },
+                "9": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "region values",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

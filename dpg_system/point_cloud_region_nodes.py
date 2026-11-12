@@ -1847,8 +1847,16 @@ class RegionMovesNode(ButtonSetNode):
 class PointCloudAccumulateNode(PointCloudNode):
     """Record where the cloud has been. While ``record`` is on, every voxel
     the cloud touches counts a hit per frame; the output is the cloud of
-    voxels with at least ``min hits``, weighted by dwell (hits over the most
-    any voxel got). It is the C++ app's ACCUMULATE VOXELS, as a cloud — so it
+    voxels with at least ``min hits``. Each voxel's weight is the sum, over
+    the recorded frames, of the weight the incoming cloud gave it (pc_voxel's
+    per-voxel weights; 1 per frame for a cloud without weights), so dwell
+    adds up and an accumulation reads stronger than any one frame. That sum
+    is then put through ``normalize`` — none (the raw sum), per frame (over
+    the frames recorded: the mean weight per frame) or max (over the largest
+    voxel shown, so it reads 1) — and multiplied by ``weight scale``.
+    mgl_point_cloud clamps weights to 0..1 for drawing (after its own
+    'weight scale'), so these pick which part of the range shows detail.
+    It is the C++ app's ACCUMULATE VOXELS, as a cloud — so it
     goes straight into pc_regions' ``capture cloud in``: walk the space, stop,
     capture. Raise ``min hits`` to drop what was only passed through.
 
@@ -1864,6 +1872,7 @@ class PointCloudAccumulateNode(PointCloudNode):
         super().__init__(label, data, args)
         self.grid = _VoxelGrid()
         self.hits = None
+        self.weight_sum = None
         self.frames = 0
         self._armed_at = None
         self._recording = False
@@ -1875,6 +1884,12 @@ class PointCloudAccumulateNode(PointCloudNode):
         self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
         self.min_hits_input = self.add_input('min hits', widget_type='drag_int', default_value=1,
                                              min=1, callback=self._emit)
+        self.normalize_input = self.add_input('normalize', widget_type='combo',
+                                              default_value='none', callback=self._emit)
+        self.normalize_input.widget.combo_items = ['none', 'per frame', 'max']
+        self.weight_scale_input = self.add_input('weight scale', widget_type='drag_float',
+                                                 default_value=1.0, min=0.0,
+                                                 callback=self._emit)
         self.output = self.add_output('accumulated')
         self.frames_output = self.add_output('frames')
         self.passthrough_output = self.add_output('cloud out')
@@ -1902,6 +1917,7 @@ class PointCloudAccumulateNode(PointCloudNode):
         if changed and self.hits is not None:
             print(f'{self.label}: volume changed — the accumulation no longer maps to it, cleared')
             self.hits = None
+            self.weight_sum = None
             self.frames = 0
         return True
 
@@ -1914,6 +1930,7 @@ class PointCloudAccumulateNode(PointCloudNode):
 
     def clear(self):
         self.hits = None
+        self.weight_sum = None
         self.frames = 0
         self._emit()
 
@@ -1923,9 +1940,15 @@ class PointCloudAccumulateNode(PointCloudNode):
             weights = np.empty((0,), dtype=np.float32)
         else:
             cells = np.flatnonzero(self.hits >= max(1, int(self.min_hits_input())))
-            weights = self.hits[cells].astype(np.float32)
-            if cells.size:
-                weights /= float(self.hits.max())
+            weights = self.weight_sum[cells].copy()
+            norm = self.normalize_input()
+            if norm == 'per frame' and self.frames > 0:
+                weights /= np.float32(self.frames)
+            elif norm == 'max' and weights.size:
+                peak = float(weights.max())
+                if peak > 0.0:
+                    weights /= np.float32(peak)
+            weights *= np.float32(self.weight_scale_input())
         pts = self.grid.centres(cells) if cells.size else np.empty((0, 3), dtype=np.float32)
         self.frames_output.send(self.frames)
         self._send(self.output, pts, voxel_size=self.grid.voxel_size_meta(), weights=weights)
@@ -1953,8 +1976,23 @@ class PointCloudAccumulateNode(PointCloudNode):
             return
         if self.hits is None:
             self.hits = np.zeros(self.grid.ncells, dtype=np.int32)
+            self.weight_sum = np.zeros(self.grid.ncells, dtype=np.float32)
         if pts is not None:
             lin, valid = self.grid.index(pts)
-            self.hits[np.unique(lin[valid])] += 1
+            occupied, inverse = np.unique(lin[valid], return_inverse=True)
+            self.hits[occupied] += 1
+            # This frame's weight per voxel: the incoming weights summed into
+            # it (pc_voxel sends one point per voxel, so that is its weight),
+            # or 1 per touched voxel when the cloud carries none.
+            w = self.in_meta.get('weights')
+            if w is not None:
+                w = np.asarray(w, dtype=np.float32).reshape(-1)
+                if w.shape[0] != pts.shape[0]:
+                    w = None
+            if w is None:
+                self.weight_sum[occupied] += 1.0
+            else:
+                self.weight_sum[occupied] += np.bincount(
+                    inverse.reshape(-1), weights=w[valid], minlength=occupied.size).astype(np.float32)
         self.frames += 1
         self._emit()

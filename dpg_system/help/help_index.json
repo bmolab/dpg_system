@@ -538,6 +538,9 @@
   "mgl_cluster_boxes": [
     "mgl_cluster_boxes"
   ],
+  "mgl_regions": [
+    "mgl_regions"
+  ],
   "_midi_nodes": [
     "--- midi_nodes.py ---"
   ],
@@ -773,11 +776,11 @@
   "_neural_synth_nodes": [
     "--- neural_synth_nodes.py ---"
   ],
-  "neural_synth": [
-    "neural_synth"
-  ],
   "neural_atlas": [
     "neural_atlas"
+  ],
+  "neural_synth": [
+    "neural_synth"
   ],
   "_neuronpedia_node": [
     "--- neuronpedia_node.py ---"
@@ -1111,6 +1114,18 @@
   ],
   "pc_voxel": [
     "pc_voxel"
+  ],
+  "_point_cloud_region_nodes": [
+    "--- point_cloud_region_nodes.py ---"
+  ],
+  "pc_accumulate": [
+    "pc_accumulate"
+  ],
+  "pc_region_moves": [
+    "pc_region_moves"
+  ],
+  "pc_regions": [
+    "pc_regions"
   ],
   "_prompt_nodes": [
     "--- prompt_nodes.py ---"

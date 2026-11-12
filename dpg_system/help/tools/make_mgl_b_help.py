@@ -311,7 +311,7 @@ WHAT IT TAKES:
 'points' takes an n by 3 array, or a flat list of x y z triples. It also
 takes a cloud frame from the point cloud nodes: a dictionary whose
 'point_cloud' entry holds the points, and which may carry a 'weights' entry
-(one value per point, 0 to 1) and a 'voxel_size'. Points that are not
+(one value per point) and a 'voxel_size'. Points that are not
 finite numbers are dropped, with a note in the console. An empty cloud
 clears the picture.
 
@@ -328,6 +328,13 @@ WEIGHTS:
 When the frame carries weights, 'weights' chooses what they do: make
 low-weight points smaller ('size'), dim them ('brightness'), both (the
 default), or neither ('off').
+
+'weight scale' is the display sensitivity: each weight is multiplied by it,
+then clamped to 0 to 1, before it is used. Weights at or above 1 draw at
+full size and brightness, so raise it to bring faint points up into view
+and lower it when everything is saturated - pc_accumulate's sums, for
+instance, run far past 1. It acts as you drag, on the cloud already on
+screen, and changes only the picture, never the cloud.
 
 BLEND:
 'additive' (the default) adds the points' light together, so dense regions
@@ -360,6 +367,9 @@ The points, as above.
 weights:
 off, size, brightness, or size + brightness.
 
+weight scale:
+Multiplies the weights before they are clamped to 0 to 1. Default 1.
+
 blend:
 additive or normal.
 
@@ -373,7 +383,8 @@ mgl chain out:
 The chain, continuing.
 
 RELATED:
-The point cloud nodes (pc_voxel and others) produce cloud frames. mgl_mesh
+The point cloud nodes (pc_voxel, pc_accumulate and others) produce cloud
+frames. mgl_mesh
 also draws bare corners as points. gl_vertex_buffer is the older system's
 way to draw points."""
 

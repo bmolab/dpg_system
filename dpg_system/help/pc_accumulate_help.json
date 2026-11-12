@@ -1,0 +1,786 @@
+{
+    "height": 1209,
+    "width": 2110,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "pc_accumulate_help",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/cc498989-3f87-4c50-9c17-a6270d7fcf96/scratchpad/helpbuild/pc_accumulate_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment pc_accumulate - where the cloud has been",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pc_accumulate - where the cloud has been",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pc_accumulate - where the cloud has been"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1252,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pc_accumulate records where a cloud has been, and sends it as a cloud of voxels.\n\nTick 'record' and every voxel the cloud touches is counted, frame after frame. The output is one point per voxel that was touched at least 'min hits' times, with a weight saying how much went on there. It is the C++ app's ACCUMULATE VOXELS: walk through the space, stop, and you have a picture of everywhere you went - ready for pc_regions' 'capture cloud in'.\n\nThe input passes straight through on 'cloud out', so it can sit in the middle of a chain.\n\nTHE WEIGHTS ADD UP:\nEach voxel's weight is the SUM, over the recorded frames, of the weight the incoming cloud gave it. From pc_voxel that is its per-voxel weight; a cloud with no weights counts 1 for each frame a voxel is occupied. So a voxel you stood in for a second reads thirty times what one frame gave it, and an accumulation is always at least as strong as any single frame.\n\nThat makes the raw numbers grow without limit, and mgl_point_cloud can only show 0 to 1 - it clamps anything above. Two controls choose which part of the accumulation lands in that visible range.\n\n'normalize' rescales the sums first:\n\n  none        the raw sums. Grows the longer you record.\n  per frame   divided by the frames recorded: the average weight per frame.\n              Stays the same scale however long you record.\n  max         divided by the largest voxel shown, so the busiest one reads 1\n              and everything else is a fraction of it.\n\n'weight scale' then multiplies the result. With 'max', lower values than 1 are pointless and higher ones push the quieter voxels up into view while the busiest saturate - the way to read detail in the places you passed through rather than the places you stood.\n\nmgl_point_cloud has a 'weight scale' of its own, applied when it draws. It changes only the picture; this one changes the numbers that go on to pc_regions too.\n\nMIN HITS:\n'min hits' drops voxels touched in fewer than that many frames - raise it to lose what was only walked through and keep where you stayed. It counts frames, not weight, and it is applied before 'max' finds its maximum.\n\nRECORDING ALONE:\n'delay (s)' and 'duration (s)' (options) are for working without a second person at the computer: tick 'record', walk into the volume during the delay, and it stops itself after the duration. A duration of 0 records until you untick it. 'clear' empties the accumulation; so does changing the volume or the voxel size, since the old counts no longer map onto the new grid.\n\nTHE GRID:\nLike every point cloud node it works on a voxel grid. When the cloud comes from pc_voxel or pc_crop, the volume and voxel size ride in on the frame and pc_accumulate uses those; 'voxel size (cm)' and 'min (x,y,z)' / 'max (x,y,z)' (options) are only for a raw cloud with nothing attached.\n\nSYNTAX:\npc_accumulate\n\nEXAMPLE:\npc_accumulate\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud: an (N, 3) array or a cloud frame. Each one is a frame of the recording while 'record' is on.\n\nrecord:\nAccumulate while ticked.\n\nclear:\nEmpty the accumulation.\n\nmin hits:\nFrames a voxel must be touched in to be sent. Default 1.\n\nnormalize:\nnone, per frame or max, as above.\n\nweight scale:\nMultiplies the weights after normalize. Default 1.\n\ndelay (s) / duration (s) / voxel size (cm) / min (x,y,z) / max (x,y,z) (options):\nAs above.\n\nOUTPUTS:\n\naccumulated:\nOne point per voxel at the voxel centre, as a cloud frame carrying the voxel size and the weights. Sent every recorded frame, and whenever a setting changes.\n\nframes:\nHow many frames have been recorded.\n\ncloud out:\nThe input, unchanged.\n\nRELATED:\npc_voxel is the usual source. mgl_point_cloud draws the result. pc_regions captures it into a region.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "pc_accumulate records where a cloud has been, and sends it as a cloud of voxels.\n\nTick 'record' and every voxel the cloud touches is counted, frame after frame. The output is one point per voxel that was touched at least 'min hits' times, with a weight saying how much went on there. It is the C++ app's ACCUMULATE VOXELS: walk through the space, stop, and you have a picture of everywhere you went - ready for pc_regions' 'capture cloud in'.\n\nThe input passes straight through on 'cloud out', so it can sit in the middle of a chain.\n\nTHE WEIGHTS ADD UP:\nEach voxel's weight is the SUM, over the recorded frames, of the weight the incoming cloud gave it. From pc_voxel that is its per-voxel weight; a cloud with no weights counts 1 for each frame a voxel is occupied. So a voxel you stood in for a second reads thirty times what one frame gave it, and an accumulation is always at least as strong as any single frame.\n\nThat makes the raw numbers grow without limit, and mgl_point_cloud can only show 0 to 1 - it clamps anything above. Two controls choose which part of the accumulation lands in that visible range.\n\n'normalize' rescales the sums first:\n\n  none        the raw sums. Grows the longer you record.\n  per frame   divided by the frames recorded: the average weight per frame.\n              Stays the same scale however long you record.\n  max         divided by the largest voxel shown, so the busiest one reads 1\n              and everything else is a fraction of it.\n\n'weight scale' then multiplies the result. With 'max', lower values than 1 are pointless and higher ones push the quieter voxels up into view while the busiest saturate - the way to read detail in the places you passed through rather than the places you stood.\n\nmgl_point_cloud has a 'weight scale' of its own, applied when it draws. It changes only the picture; this one changes the numbers that go on to pc_regions too.\n\nMIN HITS:\n'min hits' drops voxels touched in fewer than that many frames - raise it to lose what was only walked through and keep where you stayed. It counts frames, not weight, and it is applied before 'max' finds its maximum.\n\nRECORDING ALONE:\n'delay (s)' and 'duration (s)' (options) are for working without a second person at the computer: tick 'record', walk into the volume during the delay, and it stops itself after the duration. A duration of 0 records until you untick it. 'clear' empties the accumulation; so does changing the volume or the voxel size, since the old counts no longer map onto the new grid.\n\nTHE GRID:\nLike every point cloud node it works on a voxel grid. When the cloud comes from pc_voxel or pc_crop, the volume and voxel size ride in on the frame and pc_accumulate uses those; 'voxel size (cm)' and 'min (x,y,z)' / 'max (x,y,z)' (options) are only for a raw cloud with nothing attached.\n\nSYNTAX:\npc_accumulate\n\nEXAMPLE:\npc_accumulate\n\nINPUTS and PARAMETERS:\n\npoint cloud:\nThe cloud: an (N, 3) array or a cloud frame. Each one is a frame of the recording while 'record' is on.\n\nrecord:\nAccumulate while ticked.\n\nclear:\nEmpty the accumulation.\n\nmin hits:\nFrames a voxel must be touched in to be sent. Default 1.\n\nnormalize:\nnone, per frame or max, as above.\n\nweight scale:\nMultiplies the weights after normalize. Default 1.\n\ndelay (s) / duration (s) / voxel size (cm) / min (x,y,z) / max (x,y,z) (options):\nAs above.\n\nOUTPUTS:\n\naccumulated:\nOne point per voxel at the voxel centre, as a cloud frame carrying the voxel size and the weights. Sent every recorded frame, and whenever a setting changes.\n\nframes:\nHow many frames have been recorded.\n\ncloud out:\nThe input, unchanged.\n\nRELATED:\npc_voxel is the usual source. mgl_point_cloud draws the result. pc_regions captures it into a region."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "display_mode",
+                    "value": "node",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "width",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "height",
+                    "value": 480,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
+            "id": 385,
+            "position_x": 905,
+            "position_y": 62,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 430,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "mgl_point_cloud",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 620,
+            "width": 166,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "mode",
+                    "value": "points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "cull",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 905,
+            "position_y": 935,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "its 'weight scale' changes only\nthe picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "its 'weight scale' changes only\nthe picture"
+        },
+        "8": {
+            "name": "metro",
+            "id": 533,
+            "position_x": 400,
+            "position_y": 130,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 33.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 33"
+        },
+        "9": {
+            "name": "np.rand",
+            "id": 570,
+            "position_x": 400,
+            "position_y": 220,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -0.15,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.15,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 2000 3"
+        },
+        "10": {
+            "init": "comment a small blob of points...",
+            "name": "comment",
+            "id": 607,
+            "position_x": 905,
+            "position_y": 360,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a small blob of points...",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a small blob of points..."
+        },
+        "11": {
+            "name": "signal",
+            "id": 644,
+            "position_x": 600,
+            "position_y": 130,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 5.0 sin"
+        },
+        "12": {
+            "name": "signal",
+            "id": 681,
+            "position_x": 750,
+            "position_y": 130,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 7.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "cos",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 7.0 cos"
+        },
+        "13": {
+            "name": "pack",
+            "id": 718,
+            "position_x": 600,
+            "position_y": 230,
+            "width": 33,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 3"
+        },
+        "14": {
+            "name": "+",
+            "id": 755,
+            "position_x": 400,
+            "position_y": 400,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "init": "comment ...wandering about the volume",
+            "name": "comment",
+            "id": 792,
+            "position_x": 905,
+            "position_y": 480,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "...wandering about the volume",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "...wandering about the volume"
+        },
+        "16": {
+            "name": "pc_voxel",
+            "id": 829,
+            "position_x": 400,
+            "position_y": 530,
+            "width": 276,
+            "height": 196,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "voxel size (cm)",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "distance compensation",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "min (x,y,z)",
+                    "value": [
+                        -1.0,
+                        -1.0,
+                        -1.0
+                    ],
+                    "value_type": "list"
+                },
+                "3": {
+                    "name": "max (x,y,z)",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "17": {
+            "name": "pc_accumulate",
+            "id": 866,
+            "position_x": 400,
+            "position_y": 810,
+            "width": 166,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "record",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "normalize",
+                    "value": "max",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "weight scale",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "min (x,y,z)",
+                    "value": [
+                        -1.0,
+                        -1.0,
+                        -1.0
+                    ],
+                    "value_type": "list"
+                },
+                "4": {
+                    "name": "max (x,y,z)",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                }
+            },
+            "highlight": true
+        },
+        "18": {
+            "name": "text_block",
+            "id": 903,
+            "annotation": true,
+            "position_x": 905,
+            "position_y": 1085,
+            "width": 317,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "recording from the start: the trail builds up.\n'max' makes the busiest voxel 1; raise\n'weight scale' to bring up where it only\npassed through. Try 'per frame' and 'none'.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 309,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "recording from the start: the trail builds up.\n'max' makes the busiest voxel 1; raise\n'weight scale' to bring up where it only\npassed through. Try 'per frame' and 'none'."
+        },
+        "19": {
+            "name": "int",
+            "id": 940,
+            "position_x": 730,
+            "position_y": 810,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "init": "comment frames recorded",
+            "name": "comment",
+            "id": 977,
+            "position_x": 905,
+            "position_y": 860,
+            "width": 101,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "frames recorded",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "frames recorded"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 980,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "9": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "voxel cloud",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "10": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frames",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "accumulated",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "points"
+        }
+    }
+}
