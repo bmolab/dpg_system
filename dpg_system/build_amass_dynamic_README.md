@@ -23,7 +23,7 @@ Per-frame streams, where `T` is the frame count:
 | `com_pos` | (T, 3) | whole-body centre-of-mass position |
 | `com_vel` | (T, 3) | centre-of-mass velocity |
 | `com_acc` | (T, 3) | centre-of-mass acceleration |
-| `rotation_band` | (T, 22, 7, 3) | rotation bands |
+| `rotation_band` | (T, 31, 7, 3) | rotation bands |
 
 File-level metadata:
 
