@@ -1188,6 +1188,12 @@
     "sampler_voice",
     "multi_voice_sampler"
   ],
+  "_shelly_nodes": [
+    "--- shelly_nodes.py ---"
+  ],
+  "shelly": [
+    "shelly"
+  ],
   "_signal_nodes": [
     "--- signal_nodes.py ---"
   ],

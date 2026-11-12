@@ -43,6 +43,7 @@
  "nvx_nodes": true,
  "erae_nodes": true,
  "atem_nodes": true,
+ "shelly_nodes": true,
  "bonsai_2_node": true,
  "qwen_moe_node": true,
  "monitor_nodes": true,

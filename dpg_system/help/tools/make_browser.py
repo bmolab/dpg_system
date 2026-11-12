@@ -261,7 +261,7 @@ TREE = {
                                   'mpe_in', 'mpd218', 'blue_board', 'erae', 'finger_zones']),
         ('OSC', ['osc_source', 'osc_receive', 'osc_float', 'osc_query_json', 'osc_cue', 'oscq_service']),
         ('Arrays across the network', ['udp_numpy_send', 'tcp_numpy_send', 'process_group', 'ip_address']),
-        ('Show control', ['eos_console', 'color_source', 'digico.fader', 'pjlink_projector', 'nvx_kvm', 'visca_camera',
+        ('Show control', ['eos_console', 'color_source', 'digico.fader', 'pjlink_projector', 'nvx_kvm', 'visca_camera', 'shelly',
                           'display_info']),
     ]),
 }

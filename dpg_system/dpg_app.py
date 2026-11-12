@@ -94,6 +94,7 @@ optional_import = [
     'qwen_moe_node',
     'neuronpedia_node',
     'neural_synth_nodes',
+    'shelly_nodes',
 ]
 
 imported = []

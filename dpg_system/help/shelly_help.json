@@ -1,0 +1,676 @@
+{
+    "height": 1021,
+    "width": 1930,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "shelly_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/shelly_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment shelly - smart plug",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 242,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shelly - smart plug",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shelly - smart plug"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1082,
+            "position_y": 45,
+            "width": 808,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Switch a Shelly smart plug on and off, and read how much power it is passing.\n\nTHE NODE:\n\nshelly   one plug (or one relay of a multi-relay Shelly)\n\nIT TALKS TO THE PLUG DIRECTLY:\nEvery Shelly from Gen2 on answers JSON-RPC calls on its own web server, so the node needs no Shelly cloud account and no app - only the plug on the same network. Built against a Shelly Plug US Gen4; any Gen2/Gen3/Gen4 switch device should work.\n\nFINDING THE PLUG:\nThe argument is the plug's IP address:\n\nshelly 10.1.1.222\n\nGive each plug a FIXED address, set on the plug itself (Wifi.SetConfig, ipv4mode static) or reserved in the router, so the patch keeps finding it.\n\nIts device id works too, and needs no fixed address: a bare id becomes\n<id>.local and is found by name on the network.\n\nshelly shellyplugusg4-98c37700dc94\n\nPICK IT FROM THE LIST:\nThe 'device' list on the node holds every Shelly on the network, by address and name (or id, until you name the plug). The node scans when it is created - that takes five seconds - so the list fills in shortly after. Pick an entry and the node switches to that plug. With no argument, it takes the first plug found.\n\n'scan' rescans, and sends the list as [id, ip, model, generation, name] to 'reply'. Plugs that join the network later appear after a rescan.\n\nOPENING A PATCH NEVER SWITCHES THE PLUG:\nThe 'switch' checkbox is saved with the patch, but restoring it does nothing - the node ignores widget callbacks during a load. The checkbox then shows the plug's REAL state at the first poll.\n\nIT POLLS, SO THE PLUG'S OWN BUTTON SHOWS UP:\nOnce a second (the 'poll interval' option; 0 stops polling) the node reads the plug's status. Press the button on the plug and 'switch' follows within a second. 'on' sends only when the state changes; 'power (W)' and 'status' send at every poll, so they can drive a plot directly.\n\n'status' is the whole reading as a dict: output, apower (W), voltage, current (A), freq, aenergy.total (Wh since the counters were reset), temperature.\n\nA TIMER THAT LIVES IN THE PLUG:\n'on 3' switches on and has the PLUG switch itself off again 3 seconds later ('off 3' is the reverse). The timer runs on the plug, so it completes even if the patch is closed or the computer crashes - safer than a delay in the patch for anything that must not be left on.\n\nEVERYTHING ELSE: 'rpc':\n'rpc <Method> [params]' makes any call the plug supports and sends the result to\n'reply'. Parameters are key value pairs or one JSON object:\n\nrpc Shelly.GetDeviceInfo\nrpc Switch.GetConfig id 0\nrpc PLUGS_UI.GetConfig        (the LED ring)\n\nThe full method list: rpc Shelly.ListMethods\n\nA PASSWORD, IF YOU SET ONE:\nPlugs ship with no password. If one has been set (in the Shelly app, or Shelly.SetAuth), give it as the second argument or in the options. The status line says 'password required' or 'wrong password' when it is the problem.\n\nAll network calls run on a worker thread one at a time, so a slow or missing plug never stalls the patch. Errors show in the status line.\n\nSYNTAX:\nshelly <host> [password]\n\nEXAMPLE:\nshelly 10.1.1.222\nshelly shellyplugusg4-98c37700dc94\n\nINPUTS and PARAMETERS:\n\ndevice:\nEvery Shelly on the network; pick one to switch to it.\n\nswitch:\nCheckbox. Switches the plug, and follows its real state.\n\nin:\non / off / 1 / 0 / toggle; on <seconds> / off <seconds>; bang (read status now);\nrpc <Method> [params]; scan (rescan); host <host>.\n\nOPTIONS:\n\nhost, password, poll interval (seconds), switch id (for multi-relay devices), print debug (every call and reply in the console).\n\nOUTPUTS:\n\non:\n1 or 0, sent when the state changes - including from the plug's own button.\n\npower (W):\nActive power, at every poll.\n\nstatus:\nThe full Switch.GetStatus reading as a dict, at every poll.\n\nreply:\nResults of 'rpc' calls, and the device list from 'scan'.\n\nRELATED:\npjlink_projector and nvx_kvm for the other things in the rack that answer to the network.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Switch a Shelly smart plug on and off, and read how much power it is passing.\n\nTHE NODE:\n\nshelly   one plug (or one relay of a multi-relay Shelly)\n\nIT TALKS TO THE PLUG DIRECTLY:\nEvery Shelly from Gen2 on answers JSON-RPC calls on its own web server, so the node needs no Shelly cloud account and no app - only the plug on the same network. Built against a Shelly Plug US Gen4; any Gen2/Gen3/Gen4 switch device should work.\n\nFINDING THE PLUG:\nThe argument is the plug's IP address:\n\nshelly 10.1.1.222\n\nGive each plug a FIXED address, set on the plug itself (Wifi.SetConfig, ipv4mode static) or reserved in the router, so the patch keeps finding it.\n\nIts device id works too, and needs no fixed address: a bare id becomes\n<id>.local and is found by name on the network.\n\nshelly shellyplugusg4-98c37700dc94\n\nPICK IT FROM THE LIST:\nThe 'device' list on the node holds every Shelly on the network, by address and name (or id, until you name the plug). The node scans when it is created - that takes five seconds - so the list fills in shortly after. Pick an entry and the node switches to that plug. With no argument, it takes the first plug found.\n\n'scan' rescans, and sends the list as [id, ip, model, generation, name] to 'reply'. Plugs that join the network later appear after a rescan.\n\nOPENING A PATCH NEVER SWITCHES THE PLUG:\nThe 'switch' checkbox is saved with the patch, but restoring it does nothing - the node ignores widget callbacks during a load. The checkbox then shows the plug's REAL state at the first poll.\n\nIT POLLS, SO THE PLUG'S OWN BUTTON SHOWS UP:\nOnce a second (the 'poll interval' option; 0 stops polling) the node reads the plug's status. Press the button on the plug and 'switch' follows within a second. 'on' sends only when the state changes; 'power (W)' and 'status' send at every poll, so they can drive a plot directly.\n\n'status' is the whole reading as a dict: output, apower (W), voltage, current (A), freq, aenergy.total (Wh since the counters were reset), temperature.\n\nA TIMER THAT LIVES IN THE PLUG:\n'on 3' switches on and has the PLUG switch itself off again 3 seconds later ('off 3' is the reverse). The timer runs on the plug, so it completes even if the patch is closed or the computer crashes - safer than a delay in the patch for anything that must not be left on.\n\nEVERYTHING ELSE: 'rpc':\n'rpc <Method> [params]' makes any call the plug supports and sends the result to\n'reply'. Parameters are key value pairs or one JSON object:\n\nrpc Shelly.GetDeviceInfo\nrpc Switch.GetConfig id 0\nrpc PLUGS_UI.GetConfig        (the LED ring)\n\nThe full method list: rpc Shelly.ListMethods\n\nA PASSWORD, IF YOU SET ONE:\nPlugs ship with no password. If one has been set (in the Shelly app, or Shelly.SetAuth), give it as the second argument or in the options. The status line says 'password required' or 'wrong password' when it is the problem.\n\nAll network calls run on a worker thread one at a time, so a slow or missing plug never stalls the patch. Errors show in the status line.\n\nSYNTAX:\nshelly <host> [password]\n\nEXAMPLE:\nshelly 10.1.1.222\nshelly shellyplugusg4-98c37700dc94\n\nINPUTS and PARAMETERS:\n\ndevice:\nEvery Shelly on the network; pick one to switch to it.\n\nswitch:\nCheckbox. Switches the plug, and follows its real state.\n\nin:\non / off / 1 / 0 / toggle; on <seconds> / off <seconds>; bang (read status now);\nrpc <Method> [params]; scan (rescan); host <host>.\n\nOPTIONS:\n\nhost, password, poll interval (seconds), switch id (for multi-relay devices), print debug (every call and reply in the console).\n\nOUTPUTS:\n\non:\n1 or 0, sent when the state changes - including from the plug's own button.\n\npower (W):\nActive power, at every poll.\n\nstatus:\nThe full Switch.GetStatus reading as a dict, at every poll.\n\nreply:\nResults of 'rpc' calls, and the device list from 'scan'.\n\nRELATED:\npjlink_projector and nvx_kvm for the other things in the rack that answer to the network."
+        },
+        "3": {
+            "init": "comment click a message to send it",
+            "name": "comment",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 44,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click a message to send it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click a message to send it"
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "on",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 148,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "off",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 204,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "toggle",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "on 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 30,
+            "position_y": 318,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "'on 3': on now, and the PLUG\nswitches itself off after 3 s",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "'on 3': on now, and the PLUG\nswitches itself off after 3 s"
+        },
+        "9": {
+            "name": "shelly",
+            "id": 570,
+            "position_x": 250,
+            "position_y": 92,
+            "width": 309,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "shelly 10.1.1.222",
+            "highlight": true
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 250,
+            "position_y": 270,
+            "width": 249,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "device: pick any Shelly on the\nnetwork. switch: follows the plug;\nopening this page never switches it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "device: pick any Shelly on the\nnetwork. switch: follows the plug;\nopening this page never switches it"
+        },
+        "11": {
+            "name": "toggle",
+            "id": 644,
+            "position_x": 600,
+            "position_y": 92,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 660,
+            "position_y": 100,
+            "width": 231,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "on / off, sent when it changes -\nalso from the button on the plug",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "on / off, sent when it changes -\nalso from the button on the plug"
+        },
+        "13": {
+            "name": "float",
+            "id": 718,
+            "position_x": 600,
+            "position_y": 160,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment watts, every poll",
+            "name": "comment",
+            "id": 755,
+            "position_x": 740,
+            "position_y": 172,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "watts, every poll",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "watts, every poll"
+        },
+        "15": {
+            "init": "comment any other call, and finding plugs",
+            "name": "comment",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 384,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "any other call, and finding plugs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "any other call, and finding plugs"
+        },
+        "16": {
+            "name": "message",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 432,
+            "width": 250,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "rpc Shelly.GetDeviceInfo",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 220,
+                    "value_type": "int"
+                }
+            }
+        },
+        "17": {
+            "name": "message",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 488,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "scan",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "name": "text_display",
+            "id": 903,
+            "position_x": 600,
+            "position_y": 432,
+            "width": 434,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 420,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 120,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max_lines",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "name": "text_block",
+            "id": 940,
+            "annotation": true,
+            "position_x": 600,
+            "position_y": 610,
+            "width": 280,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "'reply': rpc results, and scan's list of\n[id, ip, model, generation, name].\nA scan listens for 5 seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "'reply': rpc results, and scan's list of\n[id, ip, model, generation, name].\nA scan listens for 5 seconds"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 720,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "on",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "power (W)",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "reply",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

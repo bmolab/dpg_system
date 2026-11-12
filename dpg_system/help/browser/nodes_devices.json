@@ -361,7 +361,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Eos lighting console, color_source, digico.fader,\npjlink projector / control, nvx_kvm, visca_camera / ptz_camera,\ndisplay_info",
+                    "value": "Eos lighting console, color_source, digico.fader,\npjlink projector / control, nvx_kvm, visca_camera / ptz_camera,\nshelly, display_info",
                     "value_type": "str"
                 },
                 "1": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Eos lighting console, color_source, digico.fader,\npjlink projector / control, nvx_kvm, visca_camera / ptz_camera,\ndisplay_info",
+            "text": "Eos lighting console, color_source, digico.fader,\npjlink projector / control, nvx_kvm, visca_camera / ptz_camera,\nshelly, display_info",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
