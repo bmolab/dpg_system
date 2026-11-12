@@ -143,6 +143,7 @@ class NeuralSynthNode(Node):
         opt('iteration factor', 'drag_float', 'iter_factor', 0.01)
         opt('seed', 'drag_int', 'seed', None)
         self.seed_mode_option = opt('seed mode', 'combo', 'seed_mode', None, ['fixed', 'random'])
+        opt('deterministic', 'checkbox', 'deterministic', None)
         opt('noise amplitude', 'drag_float', 'noise_amplitude', 0.0)
         # gradient
         opt('objective', 'combo', 'objective', None, ['sum', 'square', 'all'])

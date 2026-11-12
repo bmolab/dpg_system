@@ -34,6 +34,7 @@ direction_cossim (clamped at 0.1), so the picture is pushed to match the
 direction rather than just to be loud in it.
 """
 import math
+import os
 import threading
 import time
 from dataclasses import dataclass, field
@@ -49,6 +50,11 @@ from .atlas import Direction
 from .shaping import (BandSplitter, GradientShaper, shift_zero, shift_wrap,
                       display_normalize, octave_sizes)
 
+# cuBLAS only repeats its results with a fixed workspace, and reads this when
+# it first starts, so it has to be set before any CUDA work in the process
+# (no effect, and no cost, without CUDA)
+os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':4096:8')
+
 
 def default_settings():
     """June 2018 (neural_synth_inception5h_June3.py) defaults."""
@@ -62,6 +68,7 @@ def default_settings():
         iter_factor=1.1,
         seed=78190,                   # image noise seed
         seed_mode='fixed',            # 'fixed' or 'random' per image
+        deterministic=False,          # cuda only: repeatable (slower) arithmetic
         noise_amplitude=1.0,
         objective='sum',              # 'sum' / 'square' of one channel, 'all' = square of whole layer
         direction_cossim=1.0,         # atlas directions: power of the cosine-similarity factor
@@ -198,9 +205,6 @@ class SynthEngine:
         key = (self.s.model, self.s.device)
         if key != self.model_key:
             device = torch.device(self.s.device)
-            if device.type == 'cuda':
-                # sizes are fixed within an octave: let cuDNN pick kernels once per size
-                torch.backends.cudnn.benchmark = True
             self.model = load_model(self.s.model, device)
             if self.device is None or device != self.device:
                 self.splitter = BandSplitter(device)
@@ -211,12 +215,36 @@ class SynthEngine:
             self.device = device
             self.model_key = key
         self.model.set_lrn(*self.s.lrn)
+        self._apply_determinism()
+
+    def _apply_determinism(self):
+        """On CUDA, 'deterministic' trades speed for repeatable arithmetic:
+        cuDNN's kernel search off, and PyTorch's deterministic algorithms on
+        (warn_only: an operation with no repeatable version prints a warning
+        naming itself rather than stopping the synth). These switches are
+        process-wide, so they are only touched when this engine's wish
+        changes. MPS and CPU repeat without them."""
+        if self.device is None or self.device.type != 'cuda':
+            return
+        want = bool(self.s.deterministic)
+        if getattr(self, '_det_applied', None) == want:
+            return
+        self._det_applied = want
+        torch.backends.cudnn.deterministic = want
+        # sizes are fixed within an octave: otherwise let cuDNN pick its
+        # fastest kernels once per size
+        torch.backends.cudnn.benchmark = not want
+        torch.use_deterministic_algorithms(want, warn_only=True)
 
     # ---- one image -----------------------------------------------------
     def _base_noise(self, sizes):
         s = self.s
         seed = s.seed if s.seed_mode == 'fixed' else int(np.random.randint(0, 2 ** 31 - 1))
         rs = np.random.RandomState(seed)
+        # the per-step jitter restarts from the image's seed too, so a fixed
+        # seed repeats the whole picture exactly, not just its starting noise
+        self.rng = np.random.RandomState([seed, 1])
+        self.seed_used = seed
         noise = rs.uniform(size=(1, s.height, s.width, 3)) * s.noise_amplitude
         t = torch.from_numpy(np.ascontiguousarray(noise.transpose(0, 3, 1, 2)).astype(np.float32))
         t = t.to(self.device)
