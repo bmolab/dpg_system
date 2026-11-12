@@ -130,7 +130,7 @@ TREE = {
     'nodes_graphics': ('3D graphics', 'A scene is a chain of nodes hanging from a context.', [
         ('ModernGL scenes', ['mgl_context', 'mgl_camera', 'mgl_light', 'mgl_material', 'mgl_color', 'mgl_transform', 'mgl_sphere', 'mgl_mesh', 'mgl_model', 'mgl_surface', 'mgl_point_cloud', 'mgl_line_array',
                              'mgl_texture', 'mgl_text', 'mgl_shader', 'mgl_body', 'body_proportions', 'mgl_body_orientation', 'mgl_orientation_disks', 'mgl_contact_disks', 'mgl_torque_arc', 'mgl_smpl_mesh']),
-        ('Point clouds', ['femto', 'pc_background', 'pc_denoise', 'pc_crop', 'pc_voxel', 'pc_accumulate', 'pc_regions', 'pc_region_moves', 'pc_info', 'pc_cluster_filter', 'mgl_cluster_boxes', 'mgl_regions', 't.point_cloud_voxels']),
+        ('Point clouds', ['femto', 'pc_background', 'pc_denoise', 'pc_crop', 'pc_voxel', 'pc_accumulate', 'pc_regions', 'pc_region_moves', 'value_router', 'pc_info', 'pc_cluster_filter', 'mgl_cluster_boxes', 'mgl_regions', 't.point_cloud_voxels']),
         ('Older GL', ['gl_context', 'gl_translate', 'gl_sphere', 'gl_light', 'gl_material', 'gl_color', 'gl_line_array', 'gl_text',
                       'gl_orientation_disks', 'gl_button_grid', 'gl_body']),
     ]),
@@ -259,7 +259,7 @@ TREE = {
     'nodes_devices': ('Devices and networks', 'Hardware and other programs.', [
         ('MIDI and controllers', ['midi_device', 'midi_note_in', 'midi_control_in', 'midi_pitchbend_in',
                                   'mpe_in', 'mpd218', 'blue_board', 'erae', 'finger_zones']),
-        ('OSC', ['osc_source', 'osc_receive', 'osc_float', 'osc_query_json', 'osc_cue', 'oscq_service']),
+        ('OSC', ['osc_source', 'osc_receive', 'osc_float', 'osc_query_json', 'osc_cue', 'value_router', 'oscq_service']),
         ('Arrays across the network', ['udp_numpy_send', 'tcp_numpy_send', 'process_group', 'ip_address']),
         ('Show control', ['eos_console', 'color_source', 'digico.fader', 'pjlink_projector', 'nvx_kvm', 'visca_camera', 'shelly',
                           'display_info']),

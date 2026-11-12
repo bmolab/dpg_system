@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 170,
             "position_y": 250,
-            "width": 434,
+            "width": 440,
             "height": 64,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "femto / femto_bolt, pc_background, pc_denoise, pc_crop, pc_voxel,\npc_accumulate, pc_regions, pc_region_moves, pc_info,\npc_cluster_filter, mgl_cluster_boxes, mgl_regions,\nt point cloud voxels / crop",
+                    "value": "femto / femto_bolt, pc_background, pc_denoise, pc_crop, pc_voxel,\npc_accumulate, pc_regions, pc_region_moves, value_router, pc_info,\npc_cluster_filter, mgl_cluster_boxes, mgl_regions,\nt point cloud voxels / crop",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,7 +243,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 426,
+                    "value": 432,
                     "value_type": "int"
                 },
                 "3": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "femto / femto_bolt, pc_background, pc_denoise, pc_crop, pc_voxel,\npc_accumulate, pc_regions, pc_region_moves, pc_info,\npc_cluster_filter, mgl_cluster_boxes, mgl_regions,\nt point cloud voxels / crop",
+            "text": "femto / femto_bolt, pc_background, pc_denoise, pc_crop, pc_voxel,\npc_accumulate, pc_regions, pc_region_moves, value_router, pc_info,\npc_cluster_filter, mgl_cluster_boxes, mgl_regions,\nt point cloud voxels / crop",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,

@@ -1,0 +1,870 @@
+{
+    "name": "value_router_help",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/cc498989-3f87-4c50-9c17-a6270d7fcf96/scratchpad/vrbuild/value_router_help.json",
+    "patches": {
+        "0": {
+            "height": 480,
+            "width": 699,
+            "position": [
+                160,
+                160
+            ],
+            "id": 866,
+            "name": "make_values",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 903,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "comment",
+                    "init": "comment four values, each wandering between 0 and 10",
+                    "id": 940,
+                    "position_x": 40,
+                    "position_y": 10,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "four values, each wandering between 0 and 10",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "four values, each wandering between 0 and 10"
+                },
+                "2": {
+                    "name": "signal",
+                    "init": "signal 3.0 sin",
+                    "id": 977,
+                    "position_x": 40,
+                    "position_y": 60,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 3.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 10.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "3": {
+                    "name": "signal",
+                    "init": "signal 5.0 sin",
+                    "id": 1014,
+                    "position_x": 190,
+                    "position_y": 60,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 5.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 10.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "signal",
+                    "init": "signal 7.0 sin",
+                    "id": 1051,
+                    "position_x": 340,
+                    "position_y": 60,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 7.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 10.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "signal",
+                    "init": "signal 11.0 sin",
+                    "id": 1088,
+                    "position_x": 490,
+                    "position_y": 60,
+                    "width": 129,
+                    "height": 78,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 11.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "shape",
+                            "value": "sin",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "range",
+                            "value": 10.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "bipolar",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "5": {
+                            "name": "vector size",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "pack",
+                    "init": "pack 4",
+                    "id": 1125,
+                    "position_x": 40,
+                    "position_y": 170,
+                    "width": 130,
+                    "height": 120,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out values",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 320,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 4"
+                },
+                "1": {
+                    "source_node": 1051,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 3"
+                },
+                "2": {
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "3": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "4": {
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "values"
+                }
+            }
+        },
+        "1": {
+            "height": 1121,
+            "width": 1922,
+            "position": [
+                100,
+                100
+            ],
+            "id": 829,
+            "name": "value_router_help",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/cc498989-3f87-4c50-9c17-a6270d7fcf96/scratchpad/vrbuild/value_router_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment value_router - a list to OSC, channel by channel",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 598,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "value_router - a list to OSC, channel by channel",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "value_router - a list to OSC, channel by channel"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1064,
+                    "position_y": 45,
+                    "width": 818,
+                    "height": 1016,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "value_router sends each entry of a list somewhere of its own - an OSC address, or the outlet - scaled and thresholded channel by channel.\n\nIt is made for pc_regions' 'region values': one number per region, every frame, each of which usually wants to become a different OSC message with its own range. It works the same on any list of numbers.\n\nCHANNELS:\nEach position in the list is a channel. 'index' chooses the channel the editor shows, and every field below it belongs to that channel - change 'index' and they show that channel's settings instead. The line under 'index' gives the region's name, when the list came from pc_regions' 'cloud', and 'now' shows the channel's incoming value and what it becomes, which is the quickest way to choose a range and a threshold.\n\nThe list at the bottom shows every channel that is set up and where it goes. 'clear channel' returns the one being edited to its defaults.\n\nFOR EACH CHANNEL:\n\ndestination:\noff, osc, outlet, or osc + outlet. A channel is off until you set it.\n\ntarget:\nThe name of an osc_target (the name it shows, as osc_send takes it). When the patch has exactly one osc_target, new channels start with it.\n\naddress:\nThe OSC address it is sent to - and the name it goes out under on 'out'. A\nnew channel starts as /region/<region name> when the names are known, or\n/value/<index>.\n\nin min / in max / out min / out max:\nLinear scaling: in min becomes out min and in max becomes out max. Out min can be larger than out max, to turn a channel upside down. 'clamp' keeps the result between them.\n\nthreshold:\nAn incoming value below the threshold is sent as out min - a gate that ignores a region with only a stray voxel or two in it. 0, the default, lets everything through when the values are never negative.\n\nSo each value becomes: below threshold ? out min : scaled.\n\nINSIDE THE PATCH INSTEAD OF OSC:\nA channel whose destination includes the outlet sends 'address value' out of 'out'. route splits them by address, as here, so a channel can drive something in the patch instead of, or as well as, going out over the network.\n\n'processed' sends the whole list each time one arrives, with every channel that is set up processed by its settings (whatever its destination) and the rest passed through unchanged - handy for a plot.\n\nSENDING LESS:\nWith 'send on change' (option, on by default) a channel is only sent when its value has changed. A region nobody is in stops sending after its first zero, rather than repeating it thirty times a second.\n\nThe channel settings are saved with the patch.\n\nSYNTAX:\nvalue_router\n\nEXAMPLE:\nvalue_router\n\nINPUTS and PARAMETERS:\n\nvalues:\nA list or array of numbers, or pc_regions' 'cloud' frame. Each one is processed and sent.\n\nindex:\nThe channel the editor shows.\n\ndestination / target / address / in min / in max / out min / out max / clamp / threshold:\nThe selected channel's settings, as above.\n\nclear channel:\nReturn the selected channel to its defaults.\n\nsend on change (option):\nOnly send a channel when its value changes.\n\nOUTPUTS:\n\nout:\n'address value' for each channel sending to the outlet.\n\nprocessed:\nThe whole list, processed.\n\nRELATED:\npc_regions makes 'region values'. osc_target is where OSC goes. osc_send sends a single address. route splits 'out' by address.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 810,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1000,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "value_router sends each entry of a list somewhere of its own - an OSC address, or the outlet - scaled and thresholded channel by channel.\n\nIt is made for pc_regions' 'region values': one number per region, every frame, each of which usually wants to become a different OSC message with its own range. It works the same on any list of numbers.\n\nCHANNELS:\nEach position in the list is a channel. 'index' chooses the channel the editor shows, and every field below it belongs to that channel - change 'index' and they show that channel's settings instead. The line under 'index' gives the region's name, when the list came from pc_regions' 'cloud', and 'now' shows the channel's incoming value and what it becomes, which is the quickest way to choose a range and a threshold.\n\nThe list at the bottom shows every channel that is set up and where it goes. 'clear channel' returns the one being edited to its defaults.\n\nFOR EACH CHANNEL:\n\ndestination:\noff, osc, outlet, or osc + outlet. A channel is off until you set it.\n\ntarget:\nThe name of an osc_target (the name it shows, as osc_send takes it). When the patch has exactly one osc_target, new channels start with it.\n\naddress:\nThe OSC address it is sent to - and the name it goes out under on 'out'. A\nnew channel starts as /region/<region name> when the names are known, or\n/value/<index>.\n\nin min / in max / out min / out max:\nLinear scaling: in min becomes out min and in max becomes out max. Out min can be larger than out max, to turn a channel upside down. 'clamp' keeps the result between them.\n\nthreshold:\nAn incoming value below the threshold is sent as out min - a gate that ignores a region with only a stray voxel or two in it. 0, the default, lets everything through when the values are never negative.\n\nSo each value becomes: below threshold ? out min : scaled.\n\nINSIDE THE PATCH INSTEAD OF OSC:\nA channel whose destination includes the outlet sends 'address value' out of 'out'. route splits them by address, as here, so a channel can drive something in the patch instead of, or as well as, going out over the network.\n\n'processed' sends the whole list each time one arrives, with every channel that is set up processed by its settings (whatever its destination) and the rest passed through unchanged - handy for a plot.\n\nSENDING LESS:\nWith 'send on change' (option, on by default) a channel is only sent when its value has changed. A region nobody is in stops sending after its first zero, rather than repeating it thirty times a second.\n\nThe channel settings are saved with the patch.\n\nSYNTAX:\nvalue_router\n\nEXAMPLE:\nvalue_router\n\nINPUTS and PARAMETERS:\n\nvalues:\nA list or array of numbers, or pc_regions' 'cloud' frame. Each one is processed and sent.\n\nindex:\nThe channel the editor shows.\n\ndestination / target / address / in min / in max / out min / out max / clamp / threshold:\nThe selected channel's settings, as above.\n\nclear channel:\nReturn the selected channel to its defaults.\n\nsend on change (option):\nOnly send a channel when its value changes.\n\nOUTPUTS:\n\nout:\n'address value' for each channel sending to the outlet.\n\nprocessed:\nThe whole list, processed.\n\nRELATED:\npc_regions makes 'region values'. osc_target is where OSC goes. osc_send sends a single address. route splits 'out' by address."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 84,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_values",
+                    "patcher id": 866
+                },
+                "4": {
+                    "name": "text_block",
+                    "id": 385,
+                    "annotation": true,
+                    "position_x": 754,
+                    "position_y": 62,
+                    "width": 280,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "a list of four values - like pc_regions'\n'region values' for four regions",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 272,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "a list of four values - like pc_regions'\n'region values' for four regions"
+                },
+                "5": {
+                    "name": "osc_target",
+                    "id": 422,
+                    "position_x": 560,
+                    "position_y": 62,
+                    "width": 117,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "osc_target demo 127.0.0.1 9000"
+                },
+                "6": {
+                    "name": "text_block",
+                    "id": 459,
+                    "annotation": true,
+                    "position_x": 754,
+                    "position_y": 200,
+                    "width": 200,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "the target channels 0 and 1\nsend to, by its name 'demo'",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 192,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "the target channels 0 and 1\nsend to, by its name 'demo'"
+                },
+                "7": {
+                    "name": "value_router",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 160,
+                    "width": 353,
+                    "height": 267,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "highlight": true,
+                    "value_router_channels": {
+                        "0": {
+                            "destination": "osc",
+                            "target": "demo",
+                            "address": "/level/a",
+                            "in min": 0.0,
+                            "in max": 10.0,
+                            "out min": 0.0,
+                            "out max": 1.0,
+                            "clamp": true,
+                            "threshold": 2.0
+                        },
+                        "1": {
+                            "destination": "osc + outlet",
+                            "target": "demo",
+                            "address": "/level/b",
+                            "in min": 0.0,
+                            "in max": 10.0,
+                            "out min": 0.0,
+                            "out max": 127.0,
+                            "clamp": true,
+                            "threshold": 0.0
+                        },
+                        "2": {
+                            "destination": "outlet",
+                            "target": "demo",
+                            "address": "/level/c",
+                            "in min": 0.0,
+                            "in max": 10.0,
+                            "out min": 1.0,
+                            "out max": 0.0,
+                            "clamp": true,
+                            "threshold": 0.0
+                        }
+                    }
+                },
+                "8": {
+                    "name": "text_block",
+                    "id": 533,
+                    "annotation": true,
+                    "position_x": 754,
+                    "position_y": 700,
+                    "width": 274,
+                    "height": 64,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "already set up: 0 to OSC, 1 to OSC and\nthe outlet, 2 turned upside down to the\noutlet only, 3 off. Drag 'index' to see\neach channel's settings.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 266,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 48,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "already set up: 0 to OSC, 1 to OSC and\nthe outlet, 2 turned upside down to the\noutlet only, 3 off. Drag 'index' to see\neach channel's settings."
+                },
+                "9": {
+                    "name": "route",
+                    "id": 570,
+                    "position_x": 420,
+                    "position_y": 300,
+                    "width": 64,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "route /level/b /level/c"
+                },
+                "10": {
+                    "name": "float",
+                    "id": 607,
+                    "position_x": 420,
+                    "position_y": 440,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "11": {
+                    "name": "float",
+                    "id": 644,
+                    "position_x": 560,
+                    "position_y": 440,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "text_block",
+                    "id": 681,
+                    "annotation": true,
+                    "position_x": 754,
+                    "position_y": 490,
+                    "width": 243,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "'out', split by address: channel 1\n(0 to 127) and channel 2 (1 to 0)",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 235,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "'out', split by address: channel 1\n(0 to 127) and channel 2 (1 to 0)"
+                },
+                "13": {
+                    "name": "plot",
+                    "id": 718,
+                    "position_x": 420,
+                    "position_y": 560,
+                    "width": 308,
+                    "height": 178,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 200.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 127.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "14": {
+                    "init": "comment 'processed': the whole list, processed",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 754,
+                    "position_y": 774,
+                    "width": 242,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "'processed': the whole list, processed",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "'processed': the whole list, processed"
+                },
+                "15": {
+                    "name": "close",
+                    "id": 792,
+                    "position_x": 24,
+                    "position_y": 768,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "values",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "values"
+                },
+                "1": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "/level/b",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "3": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "/level/c",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "processed",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

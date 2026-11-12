@@ -1,11 +1,11 @@
 {
-    "height": 528,
+    "height": 580,
     "width": 903,
     "position": [
         100,
         100
     ],
-    "id": 1166,
+    "id": 1240,
     "name": "nodes_devices_osc",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_devices_osc.json",
     "nodes": {
@@ -481,7 +481,7 @@
             "presentation_state": "show_all"
         },
         "15": {
-            "init": "help_link oscq_service OSCQuery service / browse / host",
+            "init": "help_link value_router value_router",
             "name": "help_link",
             "position_x": 24,
             "position_y": 418,
@@ -489,7 +489,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "OSCQuery service / browse / host",
+                    "name": "value_router",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -514,6 +514,75 @@
             "annotation": true,
             "position_x": 287,
             "position_y": 422,
+            "width": 237,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a list to OSC, channel by channel",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a list to OSC, channel by channel",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link oscq_service OSCQuery service / browse / host",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 470,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "OSCQuery service / browse / host",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 474,
             "width": 268,
             "height": 40,
             "properties": {
@@ -544,7 +613,7 @@
                 }
             },
             "text": "OSC that describes itself\n(oscq_browse, oscq_host, oscq_service)",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

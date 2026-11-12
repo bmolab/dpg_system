@@ -92,6 +92,7 @@ def register_osc_nodes():
     Node.app.register_node('osc_query_json', OSCQueryJSONNode.factory)
     Node.app.register_node('osc_manager', OSCManagerNode.factory)
     Node.app.register_node('osc_vector', OSCVectorNode.factory)
+    Node.app.register_node('value_router', ValueRouterNode.factory)
     Node.app.register_node('pipo_range', PipoRangeSourceNode.factory)
     Node.app.register_node('pipo_motion', PipoMotionSourceNode.factory)
 
@@ -4761,3 +4762,267 @@ class OSCVectorNode(Node, OSCWidget):
         registration = self.get_registry_container()
         if registration is not None:
             registration['VALUE'] = self._collect_values()
+
+
+class ValueRouterNode(Node, OSCBase):
+    """Route each entry of a list of values - pc_regions' 'region values',
+    say - to its own OSC address or to the outlet, scaled and thresholded
+    channel by channel.
+
+    'values' takes a list or array, or pc_regions' 'cloud' frame (whose
+    region names then appear in the editor and in the default addresses).
+    Each index is a channel. 'index' picks the channel the editor shows;
+    every editor field below it belongs to that channel, and changing
+    'index' loads that channel's settings into them.
+
+    Per channel:
+      destination  off / osc / outlet / osc + outlet
+      target       an osc_target's name (as osc_send takes it)
+      address      the OSC address, and the name it goes out under on 'out'
+      in min / in max -> out min / out max
+                   linear scaling; 'clamp' keeps the result inside out min..max
+      threshold    an input value below it is sent as out min
+    The processing is: raw < threshold ? out min : scale(raw).
+
+    'out' sends 'address value' for every channel whose destination includes
+    the outlet, so route can split them by address. 'processed' sends the
+    whole array, every channel processed (destination aside), each time a
+    list arrives. With 'send on change' (option) a channel is only sent when
+    its processed value has changed.
+
+    The channel settings are saved in the patch."""
+
+    DESTINATIONS = ['off', 'osc', 'outlet', 'osc + outlet']
+    FIELDS = ('destination', 'target', 'address', 'in min', 'in max',
+              'out min', 'out max', 'clamp', 'threshold')
+    SUMMARY_LIMIT = 16
+    LIVE_INTERVAL = 0.1      # seconds between updates of the live readout
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return ValueRouterNode(name, data, args)
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.channels = {}           # index -> settings dict
+        self._last_sent = {}         # index -> last value sent (send on change)
+        self._names = []
+        self._raw = None
+        self._live_time = 0.0
+        self._quiet = False          # True while the editor is being filled in
+
+        self.values_input = self.add_input('values', triggers_execution=True)
+        self.index_input = self.add_input('index', widget_type='drag_int', default_value=0,
+                                          min=0, callback=self._index_changed)
+        self.name_label = self.add_label('')
+        self.live_label = self.add_label('')
+        self.editor = {}
+        self.editor['destination'] = self.add_property('destination', widget_type='combo',
+                                                       default_value='off',
+                                                       callback=self._field_changed)
+        self.editor['destination'].widget.combo_items = self.DESTINATIONS
+        self.editor['target'] = self.add_property('target', widget_type='text_input',
+                                                  default_value='', callback=self._field_changed)
+        self.editor['address'] = self.add_property('address', widget_type='text_input',
+                                                   default_value='', callback=self._field_changed)
+        for field, default in (('in min', 0.0), ('in max', 1.0), ('out min', 0.0), ('out max', 1.0)):
+            self.editor[field] = self.add_property(field, widget_type='drag_float',
+                                                   default_value=default,
+                                                   callback=self._field_changed)
+        self.editor['clamp'] = self.add_property('clamp', widget_type='checkbox',
+                                                 default_value=False, callback=self._field_changed)
+        self.editor['threshold'] = self.add_property('threshold', widget_type='drag_float',
+                                                     default_value=0.0,
+                                                     callback=self._field_changed)
+        self.clear_button = self.add_property('clear channel', widget_type='button',
+                                              callback=self._clear_channel)
+        self.add_spacer()
+        self.summary_label = self.add_label('no channels set')
+
+        self.out_output = self.add_output('out')
+        self.processed_output = self.add_output('processed')
+        self.on_change_option = self.add_option('send on change', widget_type='checkbox',
+                                                default_value=True)
+
+    def custom_create(self, from_file):
+        if not from_file:
+            self._fill_editor()
+
+    # -- channels -------------------------------------------------------------
+
+    def _default_channel(self, index):
+        name = self._names[index] if index < len(self._names) and self._names[index] else ''
+        address = '/region/' + name.replace(' ', '_') if name else f'/value/{index}'
+        target = ''
+        manager = self.osc_manager
+        if manager is not None:
+            local = [n for n, t in manager.targets.items()
+                     if not getattr(t, '_is_browse_device', False)]
+            if len(local) == 1:
+                target = local[0]
+        return {'destination': 'off', 'target': target, 'address': address,
+                'in min': 0.0, 'in max': 1.0, 'out min': 0.0, 'out max': 1.0,
+                'clamp': False, 'threshold': 0.0}
+
+    def _channel(self, index):
+        return self.channels.get(index) or self._default_channel(index)
+
+    def _index(self):
+        try:
+            return max(0, int(self.index_input()))
+        except (TypeError, ValueError):
+            return 0
+
+    def _index_changed(self):
+        self._fill_editor()
+
+    def _fill_editor(self):
+        """Show the selected channel's settings, without writing them back."""
+        index = self._index()
+        channel = self._channel(index)
+        self._quiet = True
+        try:
+            for field in self.FIELDS:
+                self.editor[field].set(channel[field], propagate=False)
+        finally:
+            self._quiet = False
+        name = self._names[index] if index < len(self._names) else ''
+        self.name_label.set(f'channel {index}' + (f": '{name}'" if name else ''))
+        self._show_live(force=True)
+
+    def _field_changed(self):
+        if self._quiet:
+            return
+        index = self._index()
+        channel = dict(self._channel(index))
+        for field in self.FIELDS:
+            value = self.editor[field]()
+            if field == 'address':
+                value = str(value).strip()
+                if value and not value.startswith('/'):
+                    value = '/' + value
+            elif field in ('target', 'destination'):
+                value = str(value).strip()
+            elif field == 'clamp':
+                value = bool(value)
+            else:
+                try:
+                    value = float(value)
+                except (TypeError, ValueError):
+                    value = channel[field]
+            channel[field] = value
+        self.channels[index] = channel
+        self._last_sent.pop(index, None)
+        self._update_summary()
+
+    def _clear_channel(self):
+        index = self._index()
+        self.channels.pop(index, None)
+        self._last_sent.pop(index, None)
+        self._fill_editor()
+        self._update_summary()
+
+    def _update_summary(self):
+        active = [(i, c) for i, c in sorted(self.channels.items()) if c['destination'] != 'off']
+        if not active:
+            self.summary_label.set('no channels set')
+            return
+        lines = []
+        for i, c in active[:self.SUMMARY_LIMIT]:
+            where = c['address']
+            if 'osc' in c['destination']:
+                where = f"{c['target'] or '?'} {where}"
+            if 'outlet' in c['destination']:
+                where += ' (out)' if 'osc' in c['destination'] else ' -> out'
+            lines.append(f'{i}: {where}')
+        if len(active) > self.SUMMARY_LIMIT:
+            lines.append(f'... and {len(active) - self.SUMMARY_LIMIT} more')
+        self.summary_label.set('\n'.join(lines))
+
+    # -- processing -----------------------------------------------------------
+
+    @staticmethod
+    def _process(raw, c):
+        if raw < c['threshold']:
+            return float(c['out min'])
+        span = c['in max'] - c['in min']
+        t = (raw - c['in min']) / span if span != 0.0 else 0.0
+        value = c['out min'] + t * (c['out max'] - c['out min'])
+        if c['clamp']:
+            lo, hi = sorted((c['out min'], c['out max']))
+            value = min(max(value, lo), hi)
+        return float(value)
+
+    def _show_live(self, force=False):
+        now = time.monotonic()
+        if not force and now - self._live_time < self.LIVE_INTERVAL:
+            return
+        self._live_time = now
+        index = self._index()
+        raw = self._raw
+        if raw is None or index >= len(raw):
+            self.live_label.set('no value yet' if raw is None else 'no such index in the list')
+            return
+        value = self._process(float(raw[index]), self._channel(index))
+        self.live_label.set(f'now {float(raw[index]):.4g} -> {value:.4g}')
+
+    def execute(self):
+        data = self.values_input()
+        if isinstance(data, dict):
+            clusters = data.get('clusters')
+            if not isinstance(clusters, dict) or clusters.get('values') is None:
+                return
+            names = clusters.get('names')
+            if names is not None and list(names) != self._names:
+                self._names = [str(n) for n in names]
+                self.name_label.set('')      # refreshed below
+                self._fill_editor()
+            data = clusters['values']
+        raw = any_to_array(data)
+        if raw is None:
+            return
+        raw = np.asarray(raw, dtype=np.float64).reshape(-1)
+        self._raw = raw
+        on_change = bool(self.on_change_option())
+        processed = np.empty_like(raw)
+        manager = self.osc_manager
+        for i in range(raw.size):
+            channel = self.channels.get(i)
+            if channel is None:
+                processed[i] = raw[i]
+                continue
+            value = self._process(float(raw[i]), channel)
+            processed[i] = value
+            destination = channel['destination']
+            if destination == 'off':
+                continue
+            if on_change and self._last_sent.get(i) == value:
+                continue
+            self._last_sent[i] = value
+            if 'osc' in destination and manager is not None and channel['address']:
+                target = manager.find_target(channel['target'])
+                if target is not None:
+                    target.send_message(channel['address'], value)
+            if 'outlet' in destination:
+                self.out_output.send([channel['address'], value])
+        self.processed_output.send(processed)
+        self._show_live()
+
+    # -- the patch ------------------------------------------------------------
+
+    def save_custom(self, container):
+        container['value_router_channels'] = {str(i): c for i, c in self.channels.items()}
+
+    def load_custom(self, container):
+        saved = container.get('value_router_channels') or {}
+        self.channels = {}
+        for key, channel in saved.items():
+            try:
+                merged = self._default_channel(int(key))
+                merged.update(channel)
+                self.channels[int(key)] = merged
+            except (TypeError, ValueError):
+                continue
+        self._last_sent = {}
+        self._fill_editor()
+        self._update_summary()
