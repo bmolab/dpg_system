@@ -682,6 +682,10 @@ class App:
             self._pan_pending = [0.0, 0.0]
             self._pan_gesture_new = False
             self._pan_queued = False
+        if self._mouse_button_held():
+            # A second finger on the trackpad during a drag (a node, a link
+            # being retargeted with Shift-Cmd) is not a pan.
+            return
         if new_gesture:
             # Whose the gesture is, is settled where it starts: nodes slide
             # under a still pointer as the patch pans, and a plot arriving
@@ -784,6 +788,13 @@ class App:
         except Exception:
             return list(found)
 
+    @staticmethod
+    def _mouse_button_held():
+        try:
+            return any(dpg.is_mouse_button_down(b) for b in (0, 1, 2))
+        except Exception:
+            return False
+
     def zoom_magnify_listener(self, amount, flags):
         """Pinch, from mac_gestures. No dpg calls here either."""
         if amount > -1.0:
@@ -822,6 +833,11 @@ class App:
             self._zoom_pending = 0.0
             self._zoom_gesture_new = False
             self._zoom_queued = False
+        if self._mouse_button_held():
+            # A drag is under way: a finger brushing the trackpad sends scroll
+            # (Cmd-scroll, while Shift-Cmd retargets a link) or pinch events
+            # that are not a zoom.
+            return
         editor = self.get_current_editor()
         if editor is None:
             return
