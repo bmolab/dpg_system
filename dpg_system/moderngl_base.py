@@ -578,6 +578,7 @@ class MGLDisplayWindow:
             # dispatch to our handlers at delivery time (they only append to
             # a Python list, so this is safe inside DPG's pump).
             self._win._enable_event_queue = False
+            self._listen_for_gestures()
             self._win.push_handlers(
                 on_activate=self._on_activate,
                 on_deactivate=self._on_deactivate,
@@ -611,6 +612,7 @@ class MGLDisplayWindow:
             import traceback
             traceback.print_exc()
             if self._win is not None:
+                self._stop_gestures()
                 try:
                     self._win.close()
                 except Exception:
@@ -628,6 +630,52 @@ class MGLDisplayWindow:
     def _push_ui_event(self, event):
         if len(self.ui_events) < _UI_EVENT_QUEUE_MAX:
             self.ui_events.append(event)
+
+    # --- trackpad gestures (macOS) ---
+    # pyglet's view gives only a coarse scroll and no pinch. mac_gestures
+    # hooks it for this window's view: a two-finger move becomes a 'pan'
+    # (as a fraction of the window, the scene following the fingers), a
+    # pinch a 'magnify', a mouse wheel the 'scroll' pyglet would have sent -
+    # the events the node picture sends (see MGLContextNode._take_gestures).
+
+    def _nsview_ptr(self):
+        try:
+            return int(self._win._nsview.ptr.value)
+        except Exception:
+            return None
+
+    def _listen_for_gestures(self):
+        if sys.platform != 'darwin':
+            return
+        view = self._nsview_ptr()
+        if view:
+            from dpg_system import mac_gestures
+            mac_gestures.add_view_listener(view, self._on_gesture_scroll,
+                                           self._on_gesture_magnify)
+
+    def _stop_gestures(self):
+        view = self._nsview_ptr()
+        if view and sys.platform == 'darwin':
+            from dpg_system import mac_gestures
+            mac_gestures.remove_view_listener(view)
+
+    def _on_gesture_scroll(self, dx, dy, precise, flags, momentum):
+        if precise:
+            from dpg_system import mac_gestures
+            if flags & (mac_gestures.COMMAND | mac_gestures.OPTION | mac_gestures.CONTROL):
+                return
+            try:
+                w, h = self._win.get_size()
+            except Exception:
+                return
+            self._push_ui_event(['pan', dx / max(1.0, float(w)), dy / max(1.0, float(h))])
+        elif not momentum:
+            # pyglet's own sign (it reports -deltaY), so the wheel zooms
+            # this window the way it always has
+            self._push_ui_event(['scroll', float(dx), -float(dy)])
+
+    def _on_gesture_magnify(self, amount, flags):
+        self._push_ui_event(['magnify', float(amount)])
 
     def _mouse_uv(self, x, y):
         # (top-left) pixel position as a 0..1 fraction of the window, for
@@ -802,6 +850,7 @@ class MGLDisplayWindow:
     def destroy(self):
         if self._win is None:
             return
+        self._stop_gestures()
         try:
             self._win.close()
         except Exception as e:

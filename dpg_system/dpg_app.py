@@ -787,7 +787,9 @@ class App:
     def zoom_magnify_listener(self, amount, flags):
         """Pinch, from mac_gestures. No dpg calls here either."""
         if amount > -1.0:
-            self._nudge_zoom(math.log1p(amount))
+            # Over a picture or plot that takes gestures for itself (an
+            # mgl_context's picture pinch-zooms its camera), not the patcher.
+            self._nudge_zoom(math.log1p(amount), respect_scroll_items='items')
 
     def _nudge_zoom(self, amount, respect_scroll_items=False):
         """Move the zoom by `amount` (log zoom), about the pointer.
@@ -826,8 +828,12 @@ class App:
         if new_gesture:
             # The plain wheel zooms only over the patcher, and not over what
             # scrolls itself - settled once, where the gesture starts.
-            self._zoom_gesture_blocked = self._zoom_respects_scroll_items and (
-                self._pointer_in(editor) is None or self._scroll_taken_at_pointer())
+            # 'items' (a pinch) yields only to what scrolls itself, and still
+            # zooms with the pointer off the patcher.
+            respects = self._zoom_respects_scroll_items
+            self._zoom_gesture_blocked = bool(respects) and (
+                (respects is True and self._pointer_in(editor) is None)
+                or self._scroll_taken_at_pointer())
         if self._zoom_gesture_blocked:
             return
         levels = NodeEditor.ZOOM_LEVELS

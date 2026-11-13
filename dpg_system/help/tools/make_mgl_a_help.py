@@ -37,7 +37,8 @@ GETTING SOMETHING ON SCREEN:
 
 The context shows the picture itself, in its own window by default, and it has 
 an orbit camera built in: drag the picture to orbit, scroll to zoom, and drag 
-with the middle button (or shift + drag) to pan. That 
+with the middle button (or shift + drag) to pan. On a Mac trackpad, a 
+two-finger drag pans and a pinch zooms. That 
 view is saved with the patch. To set the view exactly, or to change the lens, 
 add an mgl_orbit_camera or mgl_camera after the context; it replaces the 
 built-in view for everything drawn after it.
@@ -230,8 +231,9 @@ eye is.
 YOU DO NOT NEED ONE TO SEE SOMETHING:
 mgl_context has an orbit camera built in, which starts 3 units from the origin
 and 20 degrees above it; drag the picture to orbit, scroll to zoom, and drag
-with the middle button - or hold shift and drag, on a trackpad - to pan. A
-camera node replaces that view for everything drawn after it.
+with the middle button - or hold shift and drag - to pan. On a Mac trackpad, a
+two-finger drag pans and a pinch zooms. A camera node replaces that view for
+everything drawn after it.
 
 A CAMERA IS NOT PUT BACK:
 Transforms, colours and materials are undone at the end of the branch they
@@ -248,9 +250,12 @@ the angle around the vertical in degrees - 0 puts the eye on the plus z side
 Patch the context's 'ui' outlet into its 'ui' inlet and the picture becomes
 the control: dragging with the left button orbits (elevation stops at 89
 degrees either way), and the scroll wheel zooms by changing the distance.
-Dragging with the middle button - or with shift held, on a trackpad - pans:
-it moves 'target' up, down and sideways so that the point you grabbed stays
-under the cursor, in either projection.
+Dragging with the middle button - or with shift held - pans: it moves
+'target' up, down and sideways so that the point you grabbed stays under the
+cursor, in either projection. On a Mac trackpad a two-finger drag pans the
+same way, the scene following the fingers, and a pinch zooms. (Over the
+picture these go to the camera, not the patcher; Cmd-scroll still zooms the
+patcher.)
 The events come from the context's own picture - its window or fullscreen
 view, or the picture inside the node when the context's 'node_mouse_events'
 option is ticked, as here.
@@ -258,6 +263,10 @@ option is ticked, as here.
 The messages top, bottom, front, back, left and right snap it to that view,
 keeping target and distance. 'front' looks at a subject facing minus z from
 in front of it; 'side' is an older name for 'right'.
+
+'reset view' (or the message 'reset') puts target, distance, yaw and
+elevation back where a new orbit camera starts - after panning off somewhere,
+say. The lens is left alone: fov, projection, near and far stay as they are.
 
 ORTHOGRAPHIC:
 The orbit camera's 'projection' option can be orthographic - no perspective,
@@ -293,6 +302,9 @@ elevation 20).
 ui (mgl_orbit_camera):
 Interaction events from mgl_context's 'ui' outlet.
 
+reset view (mgl_orbit_camera):
+Back to target 0 0 0, distance 3, yaw 0, elevation 20.
+
 near / far (options, both):
 The nearest and farthest distances drawn, 0.1 and 100.
 
@@ -322,7 +334,7 @@ demo = [
      'props': {'auto_render': True, 'display_width': 320,
                'display_height': 240, 'node_mouse_events': True}},
     {'key': 'c1', 'comment': True,
-     'text': 'drag on this picture to orbit,\nscroll to zoom, middle-drag\n(or shift-drag) to pan', 'pos': (420, 120)},
+     'text': 'drag on this picture to orbit,\nscroll or pinch to zoom,\nmiddle-drag, shift-drag or\ntwo-finger drag to pan', 'pos': (420, 120)},
     {'key': 'm1', 'init': 'message', 'pos': (420, 420), 'w': 80, 'h': 42,
      'props': {'text in': 'front', 'font size': '24'}},
     {'key': 'm2', 'init': 'message', 'pos': (560, 420), 'w': 80, 'h': 42,

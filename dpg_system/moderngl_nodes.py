@@ -4,6 +4,7 @@ import dearpygui.dearpygui as dpg
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
 from dpg_system.moderngl_base import MGLContext, _char_code_with_shift
+from dpg_system import mac_gestures
 import moderngl
 import threading
 import math
@@ -369,8 +370,8 @@ def orbit_ui_event(event, yaw, elevation, distance, drag_last, drag_speed, zoom_
     """Apply one ui event (mouse_down/drag/up/move, scroll) to an orbit view.
 
     Left-drag orbits (yaw/elevation follow the mouse), scroll wheel zooms the
-    distance, and a middle-button drag - or a shift + left drag, for a
-    trackpad - pans: the target moves so the scene follows the cursor
+    distance (as does a 'magnify' pinch), and a middle-button drag - or a
+    shift + left drag, or a trackpad two-finger 'pan' - pans: the target moves so the scene follows the cursor
     (needs the drag's u, v and a target). Deltas are computed between
     consecutive events, so a missed mouse_up (possible on the DPG readback
     path) can't cause a jump. Returns the new (yaw, elevation, distance,
@@ -426,6 +427,16 @@ def orbit_ui_event(event, yaw, elevation, distance, drag_last, drag_speed, zoom_
         drag_last = None
     elif kind == 'scroll' and len(event) >= 3:
         distance = max(0.01, distance * (0.9 ** (float(event[2]) * zoom_speed)))
+    elif kind == 'pan' and len(event) >= 3 and target is not None:
+        # a trackpad two-finger move, as a fraction of the image (see
+        # MGLContextNode._take_gestures): the scene follows the fingers
+        target = orbit_pan(target, distance, yaw, elevation, fov, aspect,
+                           float(event[1]), float(event[2]))
+    elif kind == 'magnify' and len(event) >= 2:
+        # a pinch: spreading the fingers (positive) brings the scene closer
+        amount = float(event[1])
+        if amount > -1.0:
+            distance = max(0.01, distance * math.exp(-math.log1p(amount) * zoom_speed))
     return yaw, elevation, distance, drag_last, target
 
 
@@ -459,6 +470,10 @@ class MGLContextNode(Node):
         self._dpg_ui_events = []
         self._dpg_ui_registry = None
         self._dpg_mouse_captured = False
+        # Trackpad gestures from mac_gestures (see _gesture_scroll), summed
+        # until the next frame: [pan dx, pan dy, wheel lines, magnify].
+        self._gesture_lock = threading.Lock()
+        self._gesture_pending = [0.0, 0.0, 0.0, 0.0]
 
         # PBO double-buffer state for async readback
         self._pbo = [None, None]   # two Buffer objects
@@ -608,6 +623,55 @@ class MGLContextNode(Node):
             return win
         return None
 
+    # --- trackpad gestures (macOS), from mac_gestures ---
+    # dpg rounds trackpad scrolling to whole wheel steps and never reports a
+    # pinch; mac_gestures hooks the window for both. Over this node's
+    # picture a two-finger move pans the camera, a pinch zooms it, and a
+    # mouse wheel zooms it as before. Cmd-scroll stays the patcher's zoom.
+    # The listeners run inside dpg's event polling, so they only add up the
+    # numbers; _take_gestures turns them into ui events once a frame.
+
+    def _gesture_scroll(self, dx, dy, precise, flags, momentum):
+        if self._dpg_ui_registry is None:
+            return      # no display taking mouse events
+        if flags & (mac_gestures.COMMAND | mac_gestures.OPTION | mac_gestures.CONTROL):
+            return
+        with self._gesture_lock:
+            if precise:
+                self._gesture_pending[0] += dx
+                self._gesture_pending[1] += dy
+            elif not momentum:
+                self._gesture_pending[2] += dy
+
+    def _gesture_magnify(self, amount, flags):
+        if self._dpg_ui_registry is None:
+            return
+        with self._gesture_lock:
+            # summed in log terms, so many small steps compose exactly
+            if amount > -1.0:
+                self._gesture_pending[3] += math.log1p(amount)
+
+    def _take_gestures(self):
+        """Main thread, once a frame: the gestures since the last frame, as
+        ui events, if the pointer is over the picture."""
+        with self._gesture_lock:
+            pan_x, pan_y, lines, magnify = self._gesture_pending
+            self._gesture_pending = [0.0, 0.0, 0.0, 0.0]
+        if not (pan_x or pan_y or lines or magnify):
+            return
+        win = self._dpg_ui_window()
+        if win is None or not dpg.is_item_hovered(win):
+            return
+        if pan_x or pan_y:
+            # points -> a fraction of the image as shown, which is what the
+            # camera needs to keep the scene under the fingers
+            w, h = self._dpg_ui_mouse_uv(win, 1.0, 1.0)
+            self._push_dpg_ui_event(['pan', pan_x * w, pan_y * h])
+        if lines:
+            self._push_dpg_ui_event(['scroll', 0.0, lines])
+        if magnify:
+            self._push_dpg_ui_event(['magnify', math.expm1(magnify)])
+
     def _push_dpg_ui_event(self, event):
         if len(self._dpg_ui_events) < 256:
             self._dpg_ui_events.append(event)
@@ -703,6 +767,8 @@ class MGLContextNode(Node):
         return []
 
     def _dpg_ui_mouse_wheel(self, sender, delta):
+        if mac_gestures.installed():
+            return      # the exact path, _gesture_scroll, has it
         win = self._dpg_ui_window()
         if win is None or not dpg.is_item_hovered(win):
             return
@@ -741,11 +807,17 @@ class MGLContextNode(Node):
                 format=dpg.mvFormat_Float_rgba
             )
 
+    def _listen_for_gestures(self):
+        if mac_gestures.installed():
+            mac_gestures.add_scroll_listener(self._gesture_scroll)
+            mac_gestures.add_magnify_listener(self._gesture_magnify)
+
     def custom_create(self, from_file):
         # Always registered: renders auto_render frames and replays renders
         # requested from off-main threads (GL work must stay on this thread).
         self.add_frame_task()
         self._ensure_texture()
+        self._listen_for_gestures()
 
     def frame_task(self):
         if self._render_requested or self.auto_render_input():
@@ -754,6 +826,8 @@ class MGLContextNode(Node):
 
     def custom_cleanup(self):
         self.remove_frame_tasks()
+        mac_gestures.remove_scroll_listener(self._gesture_scroll)
+        mac_gestures.remove_magnify_listener(self._gesture_magnify)
         if self._dpg_ui_registry is not None and dpg.does_item_exist(self._dpg_ui_registry):
             dpg.delete_item(self._dpg_ui_registry)
         if self.texture_tag:
@@ -1076,6 +1150,7 @@ class MGLContextNode(Node):
             ui_events = getattr(self._native_win, 'ui_events', None)
             if ui_events:
                 self._native_win.ui_events = []
+        self._take_gestures()
         if self._dpg_ui_events:
             ui_events = (ui_events or []) + self._dpg_ui_events
             self._dpg_ui_events = []
@@ -4845,6 +4920,10 @@ class MGLOrbitCameraNode(MGLNode):
         # wire mgl_context's ui output here: left-drag orbits, scroll zooms,
         # middle-drag (or shift + left-drag) pans the target
         self.ui_input = self.add_input('ui', callback=self.ui_event_in)
+        # back to where a new camera starts; the lens (fov, projection, near,
+        # far) is left as it is. The message 'reset' does the same.
+        self.reset_input = self.add_input('reset view', widget_type='button',
+                                          callback=self.reset_view)
         # In orthographic mode the view volume's half-height is
         # distance * tan(fov/2), so zoom (distance) and fov keep working
         # and toggling projections preserves apparent scale at the target.
@@ -4867,6 +4946,14 @@ class MGLOrbitCameraNode(MGLNode):
                               'side': (90.0, 0.0)}
         for view in self._view_presets:
             self.message_handlers[view] = self._view_message
+        self.message_handlers['reset'] = lambda message='', args=None: self.reset_view()
+
+    def reset_view(self):
+        self.target.set(list(ORBIT_VIEW_DEFAULTS['target']))
+        self.distance.set(ORBIT_VIEW_DEFAULTS['distance'])
+        self.yaw.set(ORBIT_VIEW_DEFAULTS['yaw'])
+        self.elevation.set(ORBIT_VIEW_DEFAULTS['elevation'])
+        self._drag_last = None
 
     def _view_message(self, message='', args=None):
         yaw, elevation = self._view_presets[message]

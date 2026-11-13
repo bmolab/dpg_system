@@ -44,6 +44,16 @@ def add_magnify_listener(fn):
     _magnify_listeners.append(fn)
 
 
+def remove_scroll_listener(fn):
+    if fn in _scroll_listeners:
+        _scroll_listeners.remove(fn)
+
+
+def remove_magnify_listener(fn):
+    if fn in _magnify_listeners:
+        _magnify_listeners.remove(fn)
+
+
 def installed():
     return _installed
 
@@ -144,6 +154,106 @@ def install():
     previous = objc.method_setImplementation(scroll_method, ctypes.cast(scroll_imp, ctypes.c_void_p))
     original[0] = _IMP(previous)
     _installed = True
+    return True
+
+
+# --- pyglet's view ---------------------------------------------------------
+# mgl_context's own window on macOS is a pyglet window, whose view
+# (PygletView) turns a scroll into pyglet's coarse on_mouse_scroll and has no
+# pinch at all. Its scrollWheel: is wrapped and magnifyWithEvent: added the
+# same way, but per view: a view with listeners gets the exact numbers and
+# pyglet's handler is skipped, so nothing is counted twice; any other
+# pyglet view is left exactly as it was.
+
+_view_listeners = {}   # NSView pointer -> (scroll fn, magnify fn)
+_pyglet_hooked = False
+
+
+def add_view_listener(view_ptr, scroll_fn, magnify_fn):
+    """Exact scroll and pinch for one pyglet window's view. scroll_fn(dx,
+    dy, precise, flags, momentum) and magnify_fn(magnification, flags), as
+    above. True if the hooks are in."""
+    if not _hook_pyglet_view():
+        return False
+    _view_listeners[int(view_ptr)] = (scroll_fn, magnify_fn)
+    return True
+
+
+def remove_view_listener(view_ptr):
+    _view_listeners.pop(int(view_ptr), None)
+
+
+def _hook_pyglet_view():
+    global _pyglet_hooked
+    if _pyglet_hooked:
+        return True
+    if sys.platform != 'darwin':
+        return False
+    try:
+        objc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('objc'))
+    except OSError:
+        return False
+    objc.objc_getClass.restype = ctypes.c_void_p
+    objc.objc_getClass.argtypes = [ctypes.c_char_p]
+    objc.sel_registerName.restype = ctypes.c_void_p
+    objc.sel_registerName.argtypes = [ctypes.c_char_p]
+    objc.class_getInstanceMethod.restype = ctypes.c_void_p
+    objc.class_getInstanceMethod.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    objc.method_setImplementation.restype = ctypes.c_void_p
+    objc.method_setImplementation.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    objc.class_addMethod.restype = ctypes.c_bool
+    objc.class_addMethod.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_char_p]
+    view = objc.objc_getClass(b'PygletView')
+    if not view:
+        return False
+    send = ctypes.cast(objc.objc_msgSend, ctypes.c_void_p).value
+
+    def message(restype):
+        return ctypes.CFUNCTYPE(restype, ctypes.c_void_p, ctypes.c_void_p)(send)
+
+    send_double = message(ctypes.c_double)
+    send_ulong = message(ctypes.c_ulong)
+    send_bool = message(ctypes.c_bool)
+    sel = {name: objc.sel_registerName(name) for name in (
+        b'scrollingDeltaX', b'scrollingDeltaY', b'hasPreciseScrollingDeltas',
+        b'modifierFlags', b'momentumPhase', b'magnification')}
+    scroll_method = objc.class_getInstanceMethod(view, objc.sel_registerName(b'scrollWheel:'))
+    if not scroll_method:
+        return False
+    original = [None]
+
+    def scroll_wheel(this, cmd, event):
+        listeners = _view_listeners.get(int(this or 0))
+        if listeners is None:
+            original[0](this, cmd, event)
+            return
+        try:
+            listeners[0](send_double(event, sel[b'scrollingDeltaX']),
+                         send_double(event, sel[b'scrollingDeltaY']),
+                         send_bool(event, sel[b'hasPreciseScrollingDeltas']),
+                         send_ulong(event, sel[b'modifierFlags']),
+                         send_ulong(event, sel[b'momentumPhase']) != 0)
+        except Exception as e:
+            print('mac_gestures pyglet scroll:', e)
+
+    def magnify(this, cmd, event):
+        listeners = _view_listeners.get(int(this or 0))
+        if listeners is None:
+            return
+        try:
+            listeners[1](send_double(event, sel[b'magnification']),
+                         send_ulong(event, sel[b'modifierFlags']))
+        except Exception as e:
+            print('mac_gestures pyglet magnify:', e)
+
+    scroll_imp = _IMP(scroll_wheel)
+    magnify_imp = _IMP(magnify)
+    _keep.extend([scroll_imp, magnify_imp])
+    objc.class_addMethod(view, objc.sel_registerName(b'magnifyWithEvent:'),
+                         ctypes.cast(magnify_imp, ctypes.c_void_p), b'v@:@')
+    previous = objc.method_setImplementation(scroll_method, ctypes.cast(scroll_imp, ctypes.c_void_p))
+    original[0] = _IMP(previous)
+    _pyglet_hooked = True
     return True
 
 
