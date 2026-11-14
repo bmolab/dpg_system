@@ -120,7 +120,6 @@ with open('dpg_system_config.json', 'r') as f:
         import_core(basic_import)
     for try_import in optional_import:
         import_test(try_import)
-
 if 'gl_nodes' in to_be_imported:
     opengl_active = True
     import glfw
@@ -136,9 +135,43 @@ _line_width = 0
 _indent = len('Imported: ')
 _wrap_at = 100
 _skipped = []
+_import_output = []   # (module, text) printed by modules while importing
+
+
+def _captured_import(module_name, label):
+    # Run import_module with stdout/stderr redirected at the file-descriptor
+    # level, so prints, warnings, and native-library chatter (which bypass
+    # sys.stdout) all land in a temp file instead of breaking the import line.
+    # Whatever was captured is queued for the report after the loop, even if
+    # the import raises.
+    import tempfile
+    sys.stdout.flush()
+    sys.stderr.flush()
+    saved_out, saved_err = os.dup(1), os.dup(2)
+    with tempfile.TemporaryFile(mode='w+b') as tmp:
+        os.dup2(tmp.fileno(), 1)
+        os.dup2(tmp.fileno(), 2)
+        try:
+            return import_module(module_name)
+        finally:
+            try:
+                sys.stdout.flush()
+                sys.stderr.flush()
+            except Exception:
+                pass
+            os.dup2(saved_out, 1)
+            os.dup2(saved_err, 2)
+            os.close(saved_out)
+            os.close(saved_err)
+            tmp.seek(0)
+            text = tmp.read().decode('utf-8', errors='replace').strip()
+            if text:
+                _import_output.append((label, text))
+
+
 for import_name in to_be_imported:
     try:
-        globals()[import_name] = import_module('dpg_system.' + import_name)
+        globals()[import_name] = _captured_import('dpg_system.' + import_name, import_name)
         if import_name.endswith('_nodes'):
             bare_import_name = import_name[:-len('_nodes')]
         elif import_name.endswith('_node'):
@@ -173,13 +206,24 @@ for import_name in to_be_imported:
         # like a missing one rather than stopping the app. Core modules still
         # fail loudly.
         if import_name not in optional_import:
+            if _line_started:
+                sys.stdout.write('\n')
+            for _mod, _text in _import_output:
+                print(f'--- output from {_mod} ---\n{_text}')
             raise
         _skipped.append(f'Skipped {import_name}: {type(e).__name__}: {e}')
 if _line_started:
     sys.stdout.write('\n')
     sys.stdout.flush()
-for msg in _skipped:
-    print(msg)
+if _import_output:
+    print()
+    for _mod, _text in _import_output:
+        print(f'--- output from {_mod} ---')
+        print(_text)
+if _skipped:
+    print()
+    for msg in _skipped:
+        print(msg)
 
 def widget_activated(source, data, user_data):
     if dpg.does_item_exist(data):
